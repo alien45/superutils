@@ -1,0 +1,23 @@
+{
+  "author": "Toufiqur Rahaman Chowdhury",
+  "description": "Core RxJS utilities for JS/Node.js environments.",
+  "devDependencies": {
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["javascript", "rxjs", "utils", "typescript", "node"],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "@utiils/core",
+  "peerDependencies": {
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
+}

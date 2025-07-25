@@ -1,0 +1,23 @@
+{
+  "author": "Toufiqur Rahaman Chowdhury",
+  "description": "Examples",
+  "devDependencies": {
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["javascript", "rxjs", "utils", "typescript", "node"],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "@utiils/example",
+  "peerDependencies": {
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
+}

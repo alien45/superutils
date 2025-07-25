@@ -1,0 +1,27 @@
+{
+  "author": "Toufiqur Rahaman Chowdhury",
+  "description": "RxJS utilities and hooks for React applications.",
+  "devDependencies": {
+    "@utiils/core": "^0.1.0",
+    "@types/react": "^18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["rxjs", "utils", "typescript", "react", "hooks"],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "@utiils/react",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "rxjs": "^7.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
+}
