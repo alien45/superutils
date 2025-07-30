@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BehaviorSubject } from './BehaviorSubject'
 
+/**
+ * @name	IntervalSubject
+ * @summary	
+ */
 export class IntervalSubject extends BehaviorSubject<number> {
 	private intervalId: any
 	constructor(
