@@ -1,4 +1,5 @@
-import { BehaviorSubject } from 'rxjs'
+// ToDo: remove dependency to utiils/rx?
+// import { BehaviorSubject, subjectAsPromise } from '@utiils/rx'
 import { fallbackIfFails } from './fallbackIfFails'
 import {
     deferred,
@@ -13,17 +14,16 @@ import {
     isStr,
     isValidURL,
 } from './utils'
-import subjectAsPromise from '@utiils/rx/src/subjectAsPromise'
 
 const textsCap = {
     invalidUrl: 'Invalid URL',
     timedout: 'Request timed out',
 }
 
-export interface PromisEReturn<T = unknown> extends Promise<T> {
-    pending: Boolean,
-    rejected: Boolean,
-    resolved: Boolean,
+export interface PromisEType<T = unknown> extends Promise<T> {
+    pending?: Boolean,
+    rejected?: Boolean,
+    resolved?: Boolean,
 }
 
 /*
@@ -63,38 +63,111 @@ export interface PromisEReturn<T = unknown> extends Promise<T> {
  *  then: Function,
  * }} result promise
  */
-export default function PromisE<T = unknown>(
-    promise: any, // ToDo: add types
-    ...args: unknown[]
-): PromisEReturn<T> {
-    if (!(promise instanceof Promise)) {
-        try {
-            // supplied is not a promise instance
-            // check if it is an uninvoked async function
-            promise = isPromise(promise)
-                ? promise
-                : isAsyncFn(promise) // may or may not work on nodejs with webpack & babel
-                    ? promise.apply(null, args) // pass rest of the arguments to the async function (args[0])
-                    : isFn(promise)
-                        ? new Promise(promise)
-                        : Promise.resolve(promise) // anything else resolve as value
-        } catch (err) {
-            // something unexpected happened!
-            promise = Promise.reject(err)
-        }
+type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
+type ExecutorFunc<T = unknown> = PromiseParams<T>[0]
+type AsyncFunc<T = unknown> = (...args: any[]) => Promise<Awaited<T>>
+const isAsyncFunc = (x: any): x is AsyncFunc => isAsyncFn(x) 
+
+export class PromisE<T = unknown> extends Promise<T> {
+    public pending = false
+    public resolved = false
+    public rejected = false
+
+    constructor(...args: PromiseParams<T>)
+    constructor(promise: Promise<T>)
+    constructor(value: T)
+    constructor(asyncFn: AsyncFunc<T>, ...args: unknown[])
+    constructor(
+        input: 
+            | ExecutorFunc<T>
+            | Promise<T>
+            | AsyncFunc<T>
+            | T,
+        ...args: unknown[]
+    ) {
+        const promise = isPromise(input)
+            ? input as Promise<T>
+            : !isFn(input)
+                ? Promise.resolve(input as T)
+                : isAsyncFunc(input)
+                    ? input(...args || []) as Promise<T>
+                    : new Promise<T>(input as ExecutorFunc<T>)
+        super((resolve, reject) => setTimeout(async () => {
+            try {
+                this.pending = true
+                this.resolved = false
+                this.rejected = false
+                const value = await promise
+                this.resolved = true
+                resolve(value)
+            } catch (err) {
+                this.rejected = true
+                reject(err)
+            }
+            this.pending = false
+        }))
     }
 
-    promise.pending = true
-    promise.resolved = false
-    promise.rejected = false
-    promise
-        .then(
-            () => promise.resolved = true,
-            () => promise.rejected = true
-        )
-        .finally(() => promise.pending = false)
-    return promise
+    /**
+     * @name    PromisE.delay
+     * @summary simply a setTimeout as a promise
+     * 
+     * @param   {Number} delay
+     * @param   {*}      result (optional) specify a value to resolve with.
+     *                          Default: the value of delay
+     * 
+     * @returns {PromisE}
+     */
+    static delay = <T = number>(
+        delay: number,
+        result: T = delay as T
+    ): PromisE<T> => new PromisE<T>(
+        resolve => setTimeout(() => resolve(result), delay)
+    )
+
+    static reject = (reason: any) => new PromisE(Promise.reject(reason))
+
+    static resolve(): PromisE<void>
+    static resolve<T>(value: T | PromiseLike<T>): PromisE<T>
+    static resolve<T = void>(value?: T | PromiseLike<T>): PromisE<T>
+    static resolve(value?: unknown): PromisE<unknown> {
+        return new PromisE(Promise.resolve(value))
+    }
+
 }
+
+// export default function PromisE<T = unknown>(
+//     promise: any, // ToDo: add types
+//     ...args: unknown[]
+// ): PromisEReturn<T> {
+//     if (!(promise instanceof Promise)) {
+//         try {
+//             // supplied is not a promise instance
+//             // check if it is an uninvoked async function
+//             promise = isPromise(promise)
+//                 ? promise
+//                 : isAsyncFn(promise) // may or may not work on nodejs with webpack & babel
+//                     ? promise.apply(null, args) // pass rest of the arguments to the async function (args[0])
+//                     : isFn(promise)
+//                         ? new Promise(promise)
+//                         : Promise.resolve(promise) // anything else resolve as value
+//         } catch (err) {
+//             // something unexpected happened!
+//             promise = Promise.reject(err)
+//         }
+//     }
+
+//     promise.pending = true
+//     promise.resolved = false
+//     promise.rejected = false
+//     promise
+//         .then(
+//             () => promise.resolved = true,
+//             () => promise.rejected = true
+//         )
+//         .finally(() => promise.pending = false)
+//     return promise
+// }
 
 // /** 
 //  * @name    PromisE.all
@@ -270,17 +343,17 @@ export default function PromisE<T = unknown>(
 //     return await resultPromise
 // }
 
-// /**
-//  * @name    PromisE.delay
-//  * @summary simply a setTimeout as a promise
-//  * 
-//  * @param   {Number} delay
-//  * @param   {*}      result (optional) specify a value to resolve with.
-//  *                          Default: the value of delay
-//  * 
-//  * @returns {PromisE}
-//  */
-// PromisE.delay = (delay, result = delay) => new PromisE(resolve =>
+/**
+ * @name    PromisE.delay
+ * @summary simply a setTimeout as a promise
+ * 
+ * @param   {Number} delay
+ * @param   {*}      result (optional) specify a value to resolve with.
+ *                          Default: the value of delay
+ * 
+ * @returns {PromisE}
+ */
+// PromisE.delay = (delay: number, result = delay) => new PromisE(resolve =>
 //     setTimeout(() => resolve(result), delay)
 // )
 

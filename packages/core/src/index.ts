@@ -1,4 +1,6 @@
 export * from './curry'
+export * from './fallbackIfFails'
+export * from './PromisE'
 export * from './toDatetimeLocal'
 export * from './types'
 export * from './utils'
