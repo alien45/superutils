@@ -3,8 +3,8 @@ import {
     isArr,
     isFn,
 } from '@utiils/core'
-import { isSubjectLike } from './isSubjectLike'
 import { BehaviorSubject } from './BehaviorSubject'
+import { isSubjectLike } from './isSubjectLike'
 import { SubjectLike } from './types'
 import { unsubscribeAll } from './unsubscribeAll'
 
@@ -39,6 +39,7 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *      Default: `new BehaviorSubject()`
  * @param valueModifier (optional) callback to modify the value (an thus type) before copying from `rxSource`.
  *      Accepts async functions. Function invocation errors will be gracefully ignored.
+ *      PS: If the very first invokation returns `IGNORE_UPDATE_SYMBOL`, the value of `rxCopy.value` will be undefined.
  *      Args: `newValue, previousValue, rxCopy`
  * @param defer (optional) delay in milliseconds.
  *      Default: `100` if rxSource is an array, otherwise, `0`.
@@ -54,8 +55,8 @@ type ValueModifier<T = unknown, TCopy = T> = (
  * const rxNumber = new BehaviorSubject(1)
  * const rxEven = copyRxSubject(
  *     rxNumber,
- *     // rxEven will be created and returned: `new BehaviorSubject<boolean>(false),`
- *     // Type will be inferred from `valueModifier`.
+ *     // If not provided, rxEven will be created and returned: `new BehaviorSubject<boolean>(false),`
+ *     // Type will be inferred from `valueModifier` if available, otherwise, `rxNumber`.
  *     undefined,
  *     // whenever a new value is received from rxNumber, reduce it to the appropriate value for the rxEven.
  *     (newValue) => newValue % 2 === 0,
@@ -192,7 +193,7 @@ export function copyRxSubject<
         let initialValue = getCopiedValue()
         rxCopy ??= new BehaviorSubject<TCopy>(
             gotModifier
-                ? undefined as any
+                ? undefined as any // for type consistency
                 : initialValue
         )
         if (gotModifier) {
@@ -221,6 +222,7 @@ export function copyRxSubject<
                         rxCopy
                     )
                 value != IGNORE_UPDATE_SYMBOL
+                    && value !== rxCopy.value
                     && rxCopy.next(value as TCopy)
             } catch (_) { } //ignore if valueModifier threw exception
         }
@@ -244,3 +246,5 @@ export function copyRxSubject<
     }
     return rxCopy
 }
+copyRxSubject.IGNORE_UPDATE_SYMBOL = IGNORE_UPDATE_SYMBOL
+export default copyRxSubject

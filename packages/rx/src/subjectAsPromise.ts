@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isFn, PromisE } from '@utiils/core'
 import { SubjectLike, SubscriptionLike } from './types'
 
-export const isFn = (x: unknown): x is Function => typeof x === 'function'
-
+export const ANY_VALUE_SYMBOL = Symbol('any-value')
 /**
  * @name    subjectAsPromise
  * @summary sugar for RxJS subject as promise and, optionally, wait until an expected value is received
@@ -14,17 +14,29 @@ export const isFn = (x: unknown): x is Function => typeof x === 'function'
  * @param   {String}            timeoutMsg      (optional) error message to use when times out.
  *                                              Default: 'Request timed out before an expected value is received'
  * 
- * @returns {[Promise<T>, Function]}   will reject with: 
+ * @returns {[PromisE<T>, Function]}   will reject with: 
  *                                  - `null` if times out
  *                                  - `undefined` if @subject is not a valid RxJS subject like subscribable
+ * 
+ * ----------------------------------------
+ * 
+ * @example ```javascript
+ * 
+ * // Create an interval runner subject that triggers incremental value every second.
+ * const rxInterval = new IntervalSubject(true, 1000, 1, 1)
+ *  
+ * // create a promise that only resolves when expected value is received
+ * const [promise, unsubscribe] = subjectAsPromise(rxInterval, 10)
+ * promise.then(value => console.log('Value should be 10', value))
+ * ```
  */
 export const subjectAsPromise = <T = unknown>(
 	subject: SubjectLike<T>,
 	expectedValue?: T | ((value: T) => boolean),
 	timeout?: number,
 	timeoutMsg: string = 'request timed out before an expected value is received',
-): [Promise<T>, () => void] => {
-	if (!subject) return [Promise.reject('subject must be an instance of BehaviorSubject.'), () => { }]
+): [PromisE<T>, () => void] => {
+	if (!subject) return [PromisE.reject('subject must be an instance of BehaviorSubject.'), () => { }]
 
 	let subscription: SubscriptionLike
 	let timeoutId: NodeJS.Timeout
@@ -33,16 +45,16 @@ export const subjectAsPromise = <T = unknown>(
 		!unsubscribed && subscription?.unsubscribe?.()
 		unsubscribed = true
 		clearTimeout(timeoutId)
-	}, 50)
-	const promise = new Promise<T>((resolve, reject) => {
+	}, 50) // ToDo: double-check if timeout is really needed here
+	const promise = new PromisE<T>((resolve, reject) => {
 		subscription = subject.subscribe(value => {
-			const shouldResolve = isFn(expectedValue) && expectedValue(value)
+			const shouldResolve = value === expectedValue // exact match
 				// no expected value set. resolve with first value received
 				|| expectedValue === undefined
-				// exact match
-				|| value === expectedValue
+				// expected value is a function and returns boolean
+				|| isFn(expectedValue) && expectedValue(value)
 				// resolve only when `subject.value` is NOT undefined
-				|| (expectedValue === subjectAsPromise.anyValueSymbol && value !== undefined)
+				|| (expectedValue === ANY_VALUE_SYMBOL && value !== undefined)
 			if (!shouldResolve) return
 
 			unsubscribe()
@@ -62,6 +74,6 @@ export const subjectAsPromise = <T = unknown>(
 /**
  * Use this symbol as expected value to indicate the promise should resolve whenever any value (except for `undefined`) is received
  */
-subjectAsPromise.anyValueSymbol = Symbol('any-value')
+subjectAsPromise.ANY_VALUE_SYMBOL = ANY_VALUE_SYMBOL
 
 export default subjectAsPromise
