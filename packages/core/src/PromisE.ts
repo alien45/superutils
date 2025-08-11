@@ -25,6 +25,10 @@ export interface PromisEType<T = unknown> extends Promise<T> {
     rejected?: Boolean,
     resolved?: Boolean,
 }
+export type AsyncFunc<T = unknown> = (...args: any[]) => Promise<Awaited<T>>
+export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
+export type ExecutorFunc<T = unknown> = PromiseParams<T>[0]
+export const isAsyncFunc = (x: any): x is AsyncFunc => isAsyncFn(x) 
 
 /*
  * List of optional node-modules and the functions required for NodeJS:
@@ -63,11 +67,6 @@ export interface PromisEType<T = unknown> extends Promise<T> {
  *  then: Function,
  * }} result promise
  */
-type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
-type ExecutorFunc<T = unknown> = PromiseParams<T>[0]
-type AsyncFunc<T = unknown> = (...args: any[]) => Promise<Awaited<T>>
-const isAsyncFunc = (x: any): x is AsyncFunc => isAsyncFn(x) 
-
 export class PromisE<T = unknown> extends Promise<T> {
     public pending = false
     public resolved = false
@@ -92,6 +91,7 @@ export class PromisE<T = unknown> extends Promise<T> {
                 : isAsyncFunc(input)
                     ? input(...args || []) as Promise<T>
                     : new Promise<T>(input as ExecutorFunc<T>)
+
         super((resolve, reject) => setTimeout(async () => {
             try {
                 this.pending = true
@@ -125,8 +125,72 @@ export class PromisE<T = unknown> extends Promise<T> {
         resolve => setTimeout(() => resolve(result), delay)
     )
 
+    /**
+     * @name    PromisE.fetch
+     * @summary makes HTTP requests using `fetch` easier
+     * 
+     * @param   {String}    url
+     * @param   {Object}    options         (optional)
+     * @param   {String}    options.method  (optional) request method: get, post...
+     *                                      Default: `"get"`
+     * @param   {Number}    timeout         (optional)
+     * @param   {Boolean}   asJson          (optional) if `false`, will return the `Response` instead of the result.
+     */
+    static fetch<TData = unknown>(
+        url: string | URL,
+        options?: RequestInit,
+        timeout?: number,
+        asJson?: true
+    ): Promise<TData>
+    static fetch<TData = unknown>(
+        url: string | URL,
+        options: RequestInit | undefined,
+        timeout: number | undefined,
+        asJson: false
+    ): Promise<Response>
+    static async fetch<TData = unknown>(
+        url: string | URL,
+        options?: RequestInit,
+        timeout?: number,
+        asJson: boolean = true
+    ): Promise<TData | Response> {
+        if (!isValidURL(url, false)) throw new Error(textsCap.invalidUrl)
+
+        options = isObj(options) && options || {}
+        options.method ??= 'get'
+        const signal = isInteger(timeout) && getAbortSignal(timeout)
+        if (signal) options.signal = signal
+
+        const result = await fetch(url.toString(), options)
+            .catch(err =>
+                Promise.reject(
+                    err.name === 'AbortError'
+                        ? new Error(textsCap.timedout)
+                        : err
+                )
+            )
+        const { status = 0 } = result || {}
+        const isSuccess = status >= 200 && status <= 299
+        if (!isSuccess) {
+            const json = await result.json() || {}
+            const message = json.message || `Request failed with status code ${status}. ${JSON.stringify(json || '')}`
+            const error = new Error(`${message}`.replace('Error: ', ''))
+            throw error
+        }
+
+        return asJson
+            ? await result.json()
+            : result
+    }
+
+    /**
+     * Create a rejected PromisE
+     */
     static reject = (reason: any) => new PromisE(Promise.reject(reason))
 
+    /**
+     * Create a resolved PromisE.
+     */
     static resolve(): PromisE<void>
     static resolve<T>(value: T | PromiseLike<T>): PromisE<T>
     static resolve<T = void>(value?: T | PromiseLike<T>): PromisE<T>
@@ -135,6 +199,7 @@ export class PromisE<T = unknown> extends Promise<T> {
     }
 
 }
+PromisE.fetch('https://google.com', )
 
 // export default function PromisE<T = unknown>(
 //     promise: any, // ToDo: add types
@@ -343,20 +408,6 @@ export class PromisE<T = unknown> extends Promise<T> {
 //     return await resultPromise
 // }
 
-/**
- * @name    PromisE.delay
- * @summary simply a setTimeout as a promise
- * 
- * @param   {Number} delay
- * @param   {*}      result (optional) specify a value to resolve with.
- *                          Default: the value of delay
- * 
- * @returns {PromisE}
- */
-// PromisE.delay = (delay: number, result = delay) => new PromisE(resolve =>
-//     setTimeout(() => resolve(result), delay)
-// )
-
 // /**
 //  * @name    PromisE.getSocketEmitter
 //  * @summary a wrapper function for socket.io emitter to eliminate the need to use callbacks. 
@@ -465,49 +516,6 @@ export class PromisE<T = unknown> extends Promise<T> {
 //             ? promise
 //             : PromisE.timeout(timeout, promise)
 //     }
-
-// /**
-//  * @name    PromisE.fetch
-//  * @summary makes HTTP requests
-//  * 
-//  * @param   {String}    url 
-//  * @param   {Object}    options 
-//  * @param   {String}    options.method  request method: get, post...
-//  *                                      Default: `"get"`
-//  * @param   {Number}    timeout 
-//  * @param   {Boolean}   asJson 
-//  * 
-//  * @returns {*} result
-//  */
-// PromisE.fetch = async (url, options, timeout, asJson = true) => {
-//     if (!isValidURL(url, false)) throw new Error(textsCap.invalidUrl)
-
-//     options = isObj(options) && options || {}
-//     options.method ??= 'get'
-//     const signal = isInteger(timeout) && getAbortSignal(timeout)
-//     if (signal) options.signal = signal
-
-//     const result = await fetch(url.toString(), options)
-//         .catch(err =>
-//             Promise.reject(
-//                 err.name === 'AbortError'
-//                     ? new Error(textsCap.timedout)
-//                     : err
-//             )
-//         )
-//     const { status = 0 } = result || {}
-//     const isSuccess = status >= 200 && status <= 299
-//     if (!isSuccess) {
-//         const json = await result.json() || {}
-//         const message = json.message || `Request failed with status code ${status}. ${JSON.stringify(json || '')}`
-//         const error = new Error(`${message}`.replace('Error: ', ''))
-//         throw error
-//     }
-
-//     return asJson
-//         ? await result.json()
-//         : result
-// }
 
 // /**
 //  * @name    PromisE.post
@@ -628,12 +636,12 @@ export class PromisE<T = unknown> extends Promise<T> {
 //     return resultPromise
 // }
 
-// const getAbortSignal = timeout => {
-//     try {
-//         let abortCtrl = new AbortController()
-//         setTimeout(() => abortCtrl.abort(), timeout)
-//         return abortCtrl.signal
-//     } catch (err) {
-//         console.log(`Failed to instantiate AbortController. ${err}`)
-//     }
-// }
+const getAbortSignal = (timeout: number) => {
+    try {
+        let abortCtrl = new AbortController()
+        setTimeout(() => abortCtrl.abort(), timeout)
+        return abortCtrl.signal
+    } catch (err) {
+        console.log(`Failed to instantiate AbortController. ${err}`)
+    }
+}
