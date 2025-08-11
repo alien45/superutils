@@ -1,6 +1,6 @@
 {
   "author": "Toufiqur Rahaman Chowdhury",
-  "description": "RxJS utilities and hooks for React applications.",
+  "description": "Utilities, components and hooks for React applications.",
   "devDependencies": {
     "@utiils/core": "^0.1.0",
     "@types/react": "^18.0.0"
@@ -19,8 +19,9 @@
     "rxjs": "^7.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
+    "build": "tsc -p tsconfig.json",
+    "test": "jest",
+    "watch": "tsc -p tsconfig.json --watch"
   },
   "types": "dist/index.d.ts",
   "version": "0.1.0"

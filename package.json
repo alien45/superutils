@@ -14,9 +14,10 @@
   "private": true,
   "scripts": {
     "build": "npm run build --ws --if-present",
-    "test": "npm run test --ws --if-present",
     "lint": "eslint . --ext .ts,.tsx",
-    "publish:packages": "lerna publish"
+    "publish:packages": "lerna publish",
+    "test": "npm run test --ws --if-present",
+    "watch": "npm run watch --ws --if-present"
   },
   "workspaces": [
     "packages/*"

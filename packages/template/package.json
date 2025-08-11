@@ -11,12 +11,13 @@
   "keywords": ["javascript", "rxjs", "utils", "typescript", "node"],
   "license": "MIT",
   "main": "dist/index.js",
-  "name": "@utiils/example",
+  "name": "@utiils/template",
   "peerDependencies": {
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
+    "build": "tsc -p tsconfig.json",
+    "test": "jest",
+    "watch": "tsc -p tsconfig.json --watch"
   },
   "types": "dist/index.d.ts",
   "version": "0.1.0"

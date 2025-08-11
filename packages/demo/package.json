@@ -1,6 +1,6 @@
 {
   "author": "Toufiqur Rahaman Chowdhury",
-  "description": "Core RxJS utilities for JS/Node.js environments.",
+  "description": "Demo",
   "devDependencies": {
   },
   "files": [
@@ -11,11 +11,12 @@
   "keywords": ["javascript", "rxjs", "utils", "typescript", "node"],
   "license": "MIT",
   "main": "dist/index.js",
-  "name": "@utiils/core",
+  "name": "@utiils/demo",
   "peerDependencies": {
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "tsc && node dist/index.js",
     "test": "jest",
     "watch": "tsc -p tsconfig.json --watch"
   },

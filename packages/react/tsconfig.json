@@ -1,5 +1,8 @@
 {
     "compilerOptions": {
+      "composite": true,
+      "incremental": true,
+      "jsx": "react",
       "outDir": "./dist",
       "rootDir": "./src"
     },
