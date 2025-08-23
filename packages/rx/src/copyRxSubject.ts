@@ -10,8 +10,7 @@ import { unsubscribeAll } from './unsubscribeAll'
 
 export const IGNORE_UPDATE_SYMBOL = Symbol('ignore-rx-subject-update')
 export type IgnoreUpdate = typeof IGNORE_UPDATE_SYMBOL
-export type SubjectsNValuesArray<T = unknown> = Array<T | SubjectLike<T>>
-
+type SubjectsNValuesArray<T = unknown> = Array<T | SubjectLike<T>>
 type RxSourceType = SubjectLike<any> | SubjectsNValuesArray<any>
 type UnwrapRxSourceValue<T> = T extends ReadonlyArray<any> 
     ? { -readonly [K in keyof T]: SubjectToValue<T[K]> }
@@ -32,7 +31,7 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * @param rxSource  RxJS source subject(s). If Array provied, value of `rxCopy` will also be an Array by default,
  *      unless a different type is provided by `rxCopy` or `valueModifier`.
- *      If an array is provided, it is recomende
+ * 
  * @param rxCopy    (optional) RxJS copy/destination subject.
  *      If `undefined`, a new subject will be created.
  *      Value type will be inferred automatically based on `rxCopy`, `valueModifier` and `rxSource`.
@@ -93,7 +92,6 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
  *  const rxUserId = new BehaviorSubject('username')
  *  const rxUserSettings = copyRxSubject(
- *      // 'as const' is needed to make sure combined value array's items are appropriately typed
  *      [rxTheme, rxUserId] as const,
  *      // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
  *      undefined,
