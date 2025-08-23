@@ -1,4 +1,4 @@
-import { isError, isFn, isPromise } from "./utils"
+import { isError, isFn, isPromise } from "./is"
 
 /**
  * @name	fallbackIfFails
@@ -18,8 +18,8 @@ import { isError, isFn, isPromise } from "./utils"
  * @returns if func is a promise the return a promise 
  * 
  * @example ```javascript
- * 
- * const args: [string, boolean] = ['some value', true]
+ * // Working with async functions returns a promise
+ * const args = ['some value', true] as const
  * const ensureValue = async (value: string, criteria?: boolean) => {
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
  *     return value
@@ -31,6 +31,23 @@ import { isError, isFn, isPromise } from "./utils"
  *     async () => 'fallback value'
  * )
  * ```
+ * 
+ * ---
+ * 
+ * @example ```javascript
+ * // Working synchronous function just returns the value
+ * const args = ['some value', true] as const
+ * const ensureValue = (value: string, criteria?: boolean) => {
+ *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
+ *     return value
+ * }
+ * // this makes sure there's always a value without having to manually write try-catch block.
+ * const value = fallbackIfFails(
+ *     ensureValue,
+ *     () => args,
+ *     () => 'fallback value'
+ * ) 
+ * ``` 
  */
 export const fallbackIfFails = <
     TValue = unknown,

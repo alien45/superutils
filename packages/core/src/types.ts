@@ -1,6 +1,14 @@
 /**
  * Drop the first item from an array/tuple and keep the rest
  */
+export type AsyncFn<
+    TOut = unknown,
+    TArgs extends any[] = any[]
+> = (...args: TArgs) => Promise<Awaited<TOut>>
+
+/**
+ * Drop the first item from an array/tuple and keep the rest
+ */
 export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
     ? Rest
     : []
@@ -24,6 +32,10 @@ export type DropLast<T extends any[]> = T extends [...infer Rest, any]
     ? Rest
     : []
 
+export type ExtractDataType<T = unknown> = T extends Readonly<infer DataType>
+    ? DataType
+    : T
+
 /**
  * Keep the first item from an array/tuple and drop the rest
  */
@@ -40,6 +52,9 @@ export type KeepFirstN<
     : T extends [...infer TWithoutLast, any]
         ? KeepFirstN<TWithoutLast, N>
         : []
+
+export type TimeoutId = Parameters<typeof clearTimeout>[0]
+
 
 // type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
 // type X = DropFirst<Tuple>

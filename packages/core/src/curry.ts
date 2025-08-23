@@ -9,11 +9,11 @@ type Curry<TParams extends any[], TReturn> = <TArgs extends any[]>(
     // Ensure the provided arguments `TArgs` match the types of the expected parameters `TParams`.
     ...args: TArgs & KeepFirstN<TParams, TArgs['length']>
 ) => // Check if there are any parameters left to be supplied.
-DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
-    ? // If yes, return a new curried function expecting the remaining parameters.
-      Curry<DropFirstN<TParams, TArgs['length']>, TReturn>
-    : // If no, all parameters have been supplied, so return the final result.
-      TReturn
+    DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
+        ? // If yes, return a new curried function expecting the remaining parameters.
+        Curry<DropFirstN<TParams, TArgs['length']>, TReturn>
+        : // If no, all parameters have been supplied, so return the final result.
+        TReturn
 
 /**
  * Creates a curried version of a function. The curried function can be

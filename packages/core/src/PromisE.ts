@@ -1,42 +1,57 @@
 // ToDo: remove dependency to utiils/rx?
 // import { BehaviorSubject, subjectAsPromise } from '@utiils/rx'
+import deferred from './deferred'
 import { fallbackIfFails } from './fallbackIfFails'
 import {
-    deferred,
     isArr,
     isAsyncFn,
     isError,
     isFn,
     isInteger,
     isObj,
+    isPositiveInteger,
     isPositiveNumber,
     isPromise,
     isStr,
     isValidURL,
-} from './utils'
+} from './is'
+import { AsyncFn, TimeoutId } from './types'
 
 const textsCap = {
     invalidUrl: 'Invalid URL',
-    timedout: 'Request timed out',
+    reqTimedout: 'Request timed out',
+    timedout: 'Timed out after',
 }
-
 export interface PromisEType<T = unknown> extends Promise<T> {
-    pending?: Boolean,
-    rejected?: Boolean,
-    resolved?: Boolean,
+    pending: Boolean,
+    rejected: Boolean,
+    resolved: Boolean,
 }
-export type AsyncFunc<T = unknown> = (...args: any[]) => Promise<Awaited<T>>
+export type PromisEWithResolvers<T = unknown> = { promise: PromisE<T> }
+    & Omit<ReturnType<typeof Promise.withResolvers<T>>, 'promise'>
 export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
 export type ExecutorFunc<T = unknown> = PromiseParams<T>[0]
-export const isAsyncFunc = (x: any): x is AsyncFunc => isAsyncFn(x) 
-
-/*
- * List of optional node-modules and the functions required for NodeJS:
- * Module Name     : Substitue For
- * ------------------------------------
- * abort-controller: AbortController
- * node-fetch      : fetch
- */
+export type PromisE_Delay<T = unknown> = PromisE<T> & {
+    /**
+     * Caution: pausing will prevent the promise from ever resolving/rejeting and leaving it for the garbage collector.
+     * If the promise must either resolved, use the `continue()` method
+     */
+    pause: () => void
+    /* Reject the un-/paused delay promise. */
+    reject: (err: Error) => void
+    /* Resolve the un-/paused delay promise. */
+    resolve: (value?: T) => void
+    timeoutId: TimeoutId
+}
+export type PromisE_Timeout<T = unknown> = PromisE<T> & { 
+    /** The result/data promise. If more than one supplied in `args` result promise will be a combined `PromiE.all` */
+    data: PromisE<T>
+    timedout: boolean
+    /** Clearing the timeout will prevent it from timing out */
+    clearTimeout: () => void
+    /** The timeout promise */
+    timeout: PromisE_Delay<Error>
+}
 
 /** 
  * @name PromisE
@@ -68,128 +83,415 @@ export const isAsyncFunc = (x: any): x is AsyncFunc => isAsyncFn(x)
  * }} result promise
  */
 export class PromisE<T = unknown> extends Promise<T> {
-    public pending = false
-    public resolved = false
-    public rejected = false
+    private _pending = true
+    private _resolved = false
+    private _rejected = false
 
     constructor(...args: PromiseParams<T>)
     constructor(promise: Promise<T>)
     constructor(value: T)
-    constructor(asyncFn: AsyncFunc<T>, ...args: unknown[])
-    constructor(
-        input: 
-            | ExecutorFunc<T>
-            | Promise<T>
-            | AsyncFunc<T>
-            | T,
-        ...args: unknown[]
-    ) {
-        const promise = isPromise(input)
-            ? input as Promise<T>
-            : !isFn(input)
-                ? Promise.resolve(input as T)
-                : isAsyncFunc(input)
-                    ? input(...args || []) as Promise<T>
-                    : new Promise<T>(input as ExecutorFunc<T>)
+    constructor(input: T | Promise<T> | ExecutorFunc<T>) {
+        if (input instanceof PromisE) return input
 
-        super((resolve, reject) => setTimeout(async () => {
+        const promise = isPromise(input)
+            ? input
+            : !isFn(input)
+                ? Promise.resolve<T>(input)
+                : new Promise<T>(input)
+              
+        super((resolve, reject) => (async () => {
             try {
-                this.pending = true
-                this.resolved = false
-                this.rejected = false
                 const value = await promise
-                this.resolved = true
+                this._resolved = true
                 resolve(value)
             } catch (err) {
-                this.rejected = true
+                this._rejected = true
                 reject(err)
             }
-            this.pending = false
-        }))
+            this._pending = false
+        })())
+    }
+
+    public get pending () { return this._pending }
+    public get rejected () { return this._rejected }
+    public get resolved () { return this._resolved }
+
+    /**
+     * @name    PromisE.delay
+     * @summary Creates a promise that completes after given delay/duration.
+     * 
+     * @param {Number}    delayMs   duration in milliseconds
+     * @param {unknown}   result    (optional) specify a value to resolve or reject with.
+     *                              Default: `delayMs` when resolved or timed out error when rejected
+     * @param {boolean}   asRejected (optional) if `true`, will reject the promise after the delay.
+     * 
+     * @example ```javascript
+     * console.log('Waiting for app initialization or something else to be ready')
+     * // wait 3 seconds before proceeding
+     * await PromisE.delay(3000)
+     * console.log('App ready')
+     * ```
+     */
+    static delay = <T = number>(
+        delayMs: number,
+        result: T = delayMs as T,
+        asRejected: boolean = false
+    ): PromisE_Delay<T> => {
+        const { 
+            promise: _promise,
+            reject,
+            resolve
+        } = PromisE.withResolvers<T>()
+        const promise = _promise as PromisE_Delay<T>
+        const finalize = (result?: T | Error, doReject = false) => {
+            if (!promise.pending) return
+            
+            // clear the timeout
+            promise.pause()
+
+            !doReject 
+                ? resolve((result ?? delayMs) as T)
+                : reject(result ?? new Error(`${textsCap.timedout} ${delayMs}ms`))
+        }
+        promise.timeoutId = setTimeout(
+            () => finalize(result, asRejected),
+            delayMs
+        )
+        promise.pause = () => clearTimeout(promise.timeoutId)
+        promise.reject = error => finalize(error, true)
+        promise.resolve = (value = result) => finalize(value, false)
+        return promise
     }
 
     /**
      * @name    PromisE.delay
-     * @summary simply a setTimeout as a promise
+     * @summary Creates a promise that rejects after given delay/duration.
      * 
-     * @param   {Number} delay
-     * @param   {*}      result (optional) specify a value to resolve with.
-     *                          Default: the value of delay
-     * 
-     * @returns {PromisE}
+     * @example ```javascript
+     * console.log('Will reject after 3 seconds')
+     * const rejectPromise = PromisE.delay(3000, new Error('App did not initialization on time'))
+     * const intervalId = setInterval(() => {
+     *     if (appReady()) rejectPromise.cancel('resolves with a string so that execution continues')
+     * })
+     * await rejectPromise
+     * clearInterval(intervalId)
+     * ```
      */
-    static delay = <T = number>(
+    static delayReject = <T = unknown>(
         delay: number,
-        result: T = delay as T
-    ): PromisE<T> => new PromisE<T>(
-        resolve => setTimeout(() => resolve(result), delay)
+        reason?: T,
+    ) => PromisE.delay(
+        delay,
+        reason,
+        true
     )
 
     /**
      * @name    PromisE.fetch
-     * @summary makes HTTP requests using `fetch` easier
+     * @summary makes a fetch request and returns Response.
+     * Default options.headers["content-type"] is 'application/json'.
+     * Will reject promise if response status code is 2xx (200 <= status < 300).
      * 
-     * @param   {String}    url
-     * @param   {Object}    options         (optional)
-     * @param   {String}    options.method  (optional) request method: get, post...
-     *                                      Default: `"get"`
-     * @param   {Number}    timeout         (optional)
-     * @param   {Boolean}   asJson          (optional) if `false`, will return the `Response` instead of the result.
+     * @param   {string|URL} url
+     * @param   {String}    options.method  (optional) Default: `"get"`
+     * @param   {Number}    timeout         (optional) duration in milliseconds to abort the request if it takes longer.
      */
-    static fetch<TData = unknown>(
+    static fetch = <T = unknown>(
+        ...args: Parameters<typeof PromisE.fetchRaw>
+    ): PromisE<T> => new PromisE<T>(
+        PromisE
+        .fetchRaw(...args)
+        .then(response => response.json())
+    )
+
+    /**
+     * @name    PromisE.fetchRaw
+     * @summary makes a fetch request and returns Response.
+     * Does not return an instance of `PromisE`.
+     */
+    static fetchRaw = async (
         url: string | URL,
         options?: RequestInit,
         timeout?: number,
-        asJson?: true
-    ): Promise<TData>
-    static fetch<TData = unknown>(
-        url: string | URL,
-        options: RequestInit | undefined,
-        timeout: number | undefined,
-        asJson: false
-    ): Promise<Response>
-    static async fetch<TData = unknown>(
-        url: string | URL,
-        options?: RequestInit,
-        timeout?: number,
-        asJson: boolean = true
-    ): Promise<TData | Response> {
+      ) => {
         if (!isValidURL(url, false)) throw new Error(textsCap.invalidUrl)
 
         options = isObj(options) && options || {}
         options.method ??= 'get'
-        const signal = isInteger(timeout) && getAbortSignal(timeout)
-        if (signal) options.signal = signal
+        let timeoutId: TimeoutId
+        if (isPositiveNumber(timeout)) {
+            const abortCtrl = new AbortController()
+            timeoutId = setTimeout(() => abortCtrl.abort(), timeout)
+            options.signal = abortCtrl.signal
+        }
 
-        const result = await fetch(url.toString(), options)
-            .catch(err =>
-                Promise.reject(
-                    err.name === 'AbortError'
-                        ? new Error(textsCap.timedout)
-                        : err
-                )
-            )
-        const { status = 0 } = result || {}
-        const isSuccess = status >= 200 && status <= 299
+        const response = await fetch(url.toString(), options)
+            .catch(err => Promise.reject(
+                err?.name === 'AbortError'
+                    ? new Error(textsCap.reqTimedout)
+                    : err
+            ))
+            .finally(() => timeoutId && clearTimeout(timeoutId))
+        const { status = 0 } = response || {}
+        const isSuccess = status >= 200 && status < 300
         if (!isSuccess) {
-            const json = await result.json() || {}
+            const json = await response.json() || {}
             const message = json.message || `Request failed with status code ${status}. ${JSON.stringify(json || '')}`
             const error = new Error(`${message}`.replace('Error: ', ''))
             throw error
         }
 
-        return asJson
-            ? await result.json()
-            : result
+        return response
     }
+    
+    /**
+     * @name    PromisE.post
+     * @summary make a HTTP "POST" request and return result as JSON.
+     * Default "content-type" is 'application/json'.
+     * Will reject promise if response status code is 2xx (200 <= status < 300).
+     */
+    static post = <T = unknown> (...args: Parameters<typeof PromisE.postRaw>) => new PromisE<T>(
+        PromisE
+            .postRaw(...args)
+            .then(response => response.json())
+    )
 
     /**
-     * Create a rejected PromisE
+     * @name    PromisE.postRaw
+     * @summary makes a HTTP "POST" request and returns Response.
+     * Does not return an instance of `PromisE`.
+     */
+    static postRaw = (
+        url: string,
+        data?: Pick<RequestInit, 'body'>,
+        options?: Omit<RequestInit, 'method'>,
+        timeout?: number,
+    ) => PromisE.fetchRaw(
+        url,
+        {
+            ...options,
+            body: !isStr(data)
+                ? JSON.stringify(data)
+                : data,
+            headers: {
+                'content-type': 'application/json',
+                ...options?.headers,
+            },
+            method: 'POST',
+        },
+        timeout
+    )
+
+    // /**
+//  * @name    PromisE.timeout
+//  * @summary times out a promise after specified timeout duration.
+//  * 
+//  * @param {Number}      timeout  (optional) timeout duration in milliseconds. 
+//  *                               Default: `10000`
+//  * @param {...Promise}  promise  promise/function: one or more promises as individual arguments
+//  * 
+//  * @example Example 1: multiple promises
+//  * ```javascript
+//  *    PromisE.timeout(
+//  *      30000, // timeout duration
+//  *      Promise.resolve(1)
+//  *    )
+//  *    // Result: 1
+//  * ```
+//  *
+//  * @example Example 2: multiple promises
+//  *
+//  * ```javascript
+//  *    PromisE.timeout(
+//  *      30000, // timeout duration
+//  *      Promise.resolve(1),
+//  *      Promise.resolve(2),
+//  *      Promise.resolve(3),
+//  *    )
+//  *    // Result: [ 1, 2, 3 ]
+//  * ```
+//  * 
+//  * @example Example 3: default timeout duration 10 seconds
+//  * ```javascript
+//  *    const promise = PromisE.timeout(PromisE.delay(20000))
+//  *    promise.catch(err => {
+//  *          if (promise.timeout) {
+//  *              // request timed out
+//  *              alert('Request is taking longer than expected......')
+//  *              promise.promise.then(result => alert(result))
+//  *              return
+//  *          }
+//  *          alert(err)
+//  *      })
+//  *```
+//  * @returns {PromisE} resultPromise
+//  */
+// PromisE.timeout = (...args) => {
+//     const timeoutIndex = args.findIndex(isPositiveNumber)
+//     const timeout = timeoutIndex >= 0
+//         && args.splice(timeoutIndex, 1)
+//         || 10000
+//     // use all arguments except last one
+//     const promiseArgs = args
+//     const promise = promiseArgs.length === 1
+//         ? PromisE(promiseArgs[0]) // makes sure single promise resolves to a single result
+//         : PromisE.all(promiseArgs)
+//     let timeoutId
+//     const timeoutPromise = new PromisE((_, reject) =>
+//         // only reject if it's still pending
+//         timeoutId = setTimeout(() => {
+//             if (!promise.pending) return
+
+//             resultPromise.timeout = true
+//             reject(textsCap.timedout)
+//         }, timeout)
+//     )
+//     const resultPromise = PromisE.race([promise, timeoutPromise])
+//     resultPromise.promise = promise
+//     resultPromise.timeoutId = timeoutId
+//     resultPromise.clearTimeout = () => clearTimeout(timeoutId)
+//     resultPromise.timeoutPromise = timeoutPromise
+//     return resultPromise
+// }
+
+    /**
+     * @name    PromisE.timeout
+     * @summary times out a promise after specified timeout duration.
+     * 
+     * @param {Number}      timeout  (optional) timeout duration in milliseconds. 
+     *                               Default: `10000`
+     * @param {...Promise}  promise  promise/function: one or more promises as individual arguments
+     * 
+     * @example Example 1: single promise - resolved
+     * ```javascript
+     *      PromisE.timeout(
+     *        5000, // timeout after 5000ms
+     *        PromisE.delay(1000), // resolves after 1000ms with value 1000
+     *      ).then(console.log)
+     *    // Result: 1000
+     * ```
+     *
+     * @example Example 2: multiple promises - resolved
+     *
+     * ```javascript
+     *    PromisE.timeout(
+     *      5000, // timeout after 5000ms
+     *      PromisE.delay(1000), // resolves after 1000ms with value 1000
+     *      PromisE.delay(2000), // resolves after 2000ms with value 2000
+     *      PromisE.delay(3000), // resolves after 3000ms with value 3000
+     *    ).then(console.log)
+     *    // Result: [ 1000, 2000, 3000 ]
+     * ```
+     * 
+     * @example Example 3: timed out & rejected
+     * ```javascript
+     *    PromisE.timeout(
+     *      5000, // timeout after 5000ms
+     *      PromisE.delay(20000), // resolves after 20000ms with value 20000
+     *    ).catch(console.error)
+     *    // Error: Error('Timed out after 5000ms')
+     *```
+     * 
+     * @example Example 4: timed out & but not rejected.
+     * // Eg: when API request is taking longer than expected, print a message but not reject the promise.
+     * ```javascript
+     * const promise = PromisE.timeout(
+     *   5000, // timeout after 5000ms
+     *   PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000
+     * )
+     * const data = await promise.catch(err => {
+     *     // promise did not time out, but was rejected because one of the data promises rejected
+     *     if (!promise.timeout.rejected) return Promise.reject(err)
+     * 
+     *     // promise timed out >> print/update UI
+     *     console.log('Request is taking longer than expected......')
+     *     // now return the data promise (the promise(s) provided in the PromisE.timeout())
+     *     return promise.data
+     * })
+     *```
+    */
+    static timeout = <
+        T extends readonly unknown[] | [],
+        TOut = T['length'] extends 1
+            ? Awaited<T[0]>
+            : { -readonly [K in keyof T]: Awaited<T[K]>}
+    >(
+        timeout: number = 10000,
+        ...values: T
+    ): PromisE_Timeout<TOut> => {
+        const dataPromise = (
+            values.length === 1
+                ? new PromisE(values[0]) // single promise resolves to a single result
+                : PromisE.all(values) // array of promises resolves to an array of results
+        ) as PromisE<TOut>
+        const timeoutPromise = PromisE.delayReject<Error>(timeout)
+        const promise = PromisE.race([
+            dataPromise,
+            timeoutPromise
+        ]) as PromisE_Timeout<TOut>
+        promise.clearTimeout = () => clearTimeout(timeoutPromise.timeoutId)
+        promise.data = dataPromise
+        promise.timeout = timeoutPromise
+        // make sure to 
+        dataPromise
+            .catch(e => e) // prevents unhandled rejection here
+            .finally(promise.clearTimeout)
+        return promise
+    }
+
+    /*
+     * ---------------------------- Sugary bits -----------------------------
+     */
+
+    /** 
+     * @name    PromisE.all
+     * @summary sugar for `new PromisE(Promise.all(...))`
+     */
+    static all = <
+        T extends readonly unknown[] | [],
+    >(values: T) => new PromisE(
+        Promise.all<T>(values)
+    )
+
+    /** 
+     * @name    PromisE.all
+     * @summary sugar for `new PromisE(Promise.allSettled(...))`
+     */
+    // static allSettled<T extends readonly unknown[] | []>(values: T): Promise<{ -readonly [P in keyof T]: PromiseSettledResult<Awaited<T[P]>> }>
+    // static allSettled<T>(values: Iterable<T | PromiseLike<T>>): Promise<PromiseSettledResult<Awaited<T>>[]>
+    static allSettled <T extends readonly unknown[] | []>(values: T) {
+        return new PromisE(
+            Promise.allSettled<T>(values)
+        )
+    }
+
+    /** 
+     * @name    PromisE.any
+     * @summary sugar for `new PromisE(Promise.any(...))`
+     */
+    static any<T extends readonly unknown[] | []>(values: T): PromisE<Awaited<T[number]>>
+    static any<T>(values: Iterable<T | PromiseLike<T>>): PromisE<Awaited<T>>
+    static any <T extends readonly unknown[]>(values: T) {
+        return new PromisE(
+            Promise.any<T>(values)
+        )
+    }
+
+    /** 
+     * @name    PromisE.race
+     * @summary sugar for `new PromisE(Promise.race(..))`
+     */
+    static race = <T>(values: T[]) => new PromisE(
+        Promise.race(values)
+    )
+
+    /**
+     * Sugar for `new PromisE(Promise.reject(...))`
      */
     static reject = (reason: any) => new PromisE(Promise.reject(reason))
 
     /**
-     * Create a resolved PromisE.
+     * Sugar for `new PromisE(Promise.resolve(...))`
      */
     static resolve(): PromisE<void>
     static resolve<T>(value: T | PromiseLike<T>): PromisE<T>
@@ -198,8 +500,51 @@ export class PromisE<T = unknown> extends Promise<T> {
         return new PromisE(Promise.resolve(value))
     }
 
+    /**
+     * Sugar for `new PromisE(Promise.try(...))`
+     */
+    static try = <T, U extends unknown[]>(
+        ...args: Parameters<typeof Promise.try<T, U>>
+    ) => new PromisE<Awaited<T>>(
+        Promise.try<T, U>(...args)
+    )
+
+    /**
+     * Sugar for `new PromisE(Promise.resolve(...))`
+     */
+    static withResolvers = <T = unknown>(): PromisEWithResolvers<T> => {
+        const res = Promise.withResolvers<T>()
+        return {
+            ...res,
+            promise: new PromisE<T>(res.promise),
+        }
+    }
 }
-PromisE.fetch('https://google.com', )
+
+// const promises = [
+//     Promise.resolve(1),
+//     Promise.resolve('2'),
+//     Promise.resolve(false),
+// ] as const
+
+// const tout = PromisE.timeout(1000, promises)
+// tout.then(x => console.log({x}))
+
+// const all = Promise.all(promises)
+// const all2 = PromisE.all(promises)
+// all2.then(x => {})
+// const all3 = new PromisE(Promise.all(promises))
+// const race = Promise.race(promises)
+// const race2 = PromisE.race([...promises])
+// const as = Promise.allSettled(promises).then(x => x)
+// const try1 = Promise.try(() => 2)
+// const try2 = PromisE.try(() => PromisE.delay(2000).then(x => `${x}`))
+// const b = PromisE.post<{a: string}>(
+//     'https://google.com',
+//     {},
+//     {},
+//     100,
+// )
 
 // export default function PromisE<T = unknown>(
 //     promise: any, // ToDo: add types
@@ -233,22 +578,6 @@ PromisE.fetch('https://google.com', )
 //         .finally(() => promise.pending = false)
 //     return promise
 // }
-
-// /** 
-//  * @name    PromisE.all
-//  * @summary a wrapper for Promise.all with the benefits of `PromisE`
-//  * 
-//  * @param   {Array|...Promise} promises
-//  * 
-//  * @returns {PromisE} 
-//  */
-// PromisE.all = (...promises) => PromisE(
-//     Promise.all(
-//         promises
-//             .flat()
-//             .map(p => PromisE(p))
-//     )
-// )
 
 // /** 
 //  * @name PromisE.deferred
@@ -516,132 +845,3 @@ PromisE.fetch('https://google.com', )
 //             ? promise
 //             : PromisE.timeout(timeout, promise)
 //     }
-
-// /**
-//  * @name    PromisE.post
-//  * @summary makes HTTP post requests
-//  * 
-//  * @param   {String}    url 
-//  * @param   {Object}    data 
-//  * @param   {Object}    options 
-//  * @param   {Number}    timeout 
-//  * @param   {Boolean}   asJson 
-//  * 
-//  * @returns {*} result
-//  */
-// PromisE.post = async (
-//     url,
-//     data,
-//     options = {},
-//     timeout,
-//     asJson = true
-// ) => await PromisE.fetch(
-//     url,
-//     {
-//         ...options,
-//         body: data,
-//         body: !isStr(data)
-//             ? JSON.stringify(data)
-//             : data,
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'Content-type': 'application/json',
-//             ...options.headers,
-//         },
-//         method: 'POST',
-//     },
-//     timeout,
-//     asJson
-// )
-
-// /** 
-//  * @name    PromisE.race
-//  * @summary a wrapper for Promise.race with the benefits of `PromisE`
-//  * 
-//  * @param   {...Promise} promises
-//  * 
-//  * @returns {PromisE}
-//  */
-// PromisE.race = (...promises) => PromisE(Promise.race(promises.flat()))
-
-// /**
-//  * @name    PromisE.timeout
-//  * @summary times out a promise after specified timeout duration.
-//  * 
-//  * @param {Number}      timeout  (optional) timeout duration in milliseconds. 
-//  *                               Default: `10000`
-//  * @param {...Promise}  promise  promise/function: one or more promises as individual arguments
-//  * 
-//  * @example Example 1: multiple promises
-//  * ```javascript
-//  *    PromisE.timeout(
-//  *      30000, // timeout duration
-//  *      Promise.resolve(1)
-//  *    )
-//  *    // Result: 1
-//  * ```
-//  *
-//  * @example Example 2: multiple promises
-//  *
-//  * ```javascript
-//  *    PromisE.timeout(
-//  *      30000, // timeout duration
-//  *      Promise.resolve(1),
-//  *      Promise.resolve(2),
-//  *      Promise.resolve(3),
-//  *    )
-//  *    // Result: [ 1, 2, 3 ]
-//  * ```
-//  * 
-//  * @example Example 3: default timeout duration 10 seconds
-//  * ```javascript
-//  *    const promise = PromisE.timeout(PromisE.delay(20000))
-//  *    promise.catch(err => {
-//  *          if (promise.timeout) {
-//  *              // request timed out
-//  *              alert('Request is taking longer than expected......')
-//  *              promise.promise.then(result => alert(result))
-//  *              return
-//  *          }
-//  *          alert(err)
-//  *      })
-//  *```
-//  * @returns {PromisE} resultPromise
-//  */
-// PromisE.timeout = (...args) => {
-//     const timeoutIndex = args.findIndex(isPositiveNumber)
-//     const timeout = timeoutIndex >= 0
-//         && args.splice(timeoutIndex, 1)
-//         || 10000
-//     // use all arguments except last one
-//     const promiseArgs = args
-//     const promise = promiseArgs.length === 1
-//         ? PromisE(promiseArgs[0]) // makes sure single promise resolves to a single result
-//         : PromisE.all(promiseArgs)
-//     let timeoutId
-//     const timeoutPromise = new PromisE((_, reject) =>
-//         // only reject if it's still pending
-//         timeoutId = setTimeout(() => {
-//             if (!promise.pending) return
-
-//             resultPromise.timeout = true
-//             reject(textsCap.timedout)
-//         }, timeout)
-//     )
-//     const resultPromise = PromisE.race([promise, timeoutPromise])
-//     resultPromise.promise = promise
-//     resultPromise.timeoutId = timeoutId
-//     resultPromise.clearTimeout = () => clearTimeout(timeoutId)
-//     resultPromise.timeoutPromise = timeoutPromise
-//     return resultPromise
-// }
-
-const getAbortSignal = (timeout: number) => {
-    try {
-        let abortCtrl = new AbortController()
-        setTimeout(() => abortCtrl.abort(), timeout)
-        return abortCtrl.signal
-    } catch (err) {
-        console.log(`Failed to instantiate AbortController. ${err}`)
-    }
-}

@@ -1,47 +1,22 @@
+import { AsyncFn } from "./types"
 
-export const arrUnique = <T = unknown>(arr: T[]) => Array.from(new Set<T>(arr))
-
-/**
- * @name	deferred
- * @summary returns a function that invokes the callback function after certain delay/timeout
- * 
- * @param	{Function}	callback 	function to be invoked after timeout
- * @param	{Number}	delay		(optional) timeout duration in milliseconds.
- * 									Default: 50
- * @param	{*}			thisArg		(optional) the special `thisArgs` to be used when invoking the callback.
- * 
- * @returns {Function}
- */
-export const deferred = (
-    callback: any,
-    delay: number = 50,
-    thisArg?: any,
-    tid?: any
-): ((...args: any[]) => void) => (...args: any[]) => {
-    clearTimeout(tid)
-    tid = setTimeout(
-        callback?.bind?.(thisArg),
-        delay,
-        ...args //arguments for callback
-    )
-}
-
-export const delay = (delayMs: number, result: unknown = delayMs) => new Promise(resolve =>
-    setTimeout(() => resolve(result), delayMs)
-)
 export const isArr = <T = any> (x: any): x is Array<T> => Array.isArray(x)
+export const isArrUnique = <T = unknown>(arr: T[]) => Array.from(new Set<T>(arr))
 /**
  * Check if `x` is an Async function.
- * Caution: May not work when Babel/Webpack is used due to code compilation.
+ * Caution: May not work at runtime when Babel/Webpack is used due to code compilation.
  */
-export const isAsyncFn = (x: any) => x instanceof (async () => { }).constructor
-	&& (x as any)[Symbol.toStringTag] === 'AsyncFunction'
+export const isAsyncFn = <
+    TData = unknown,
+    TArgs extends any[] = unknown[]
+>(x: any): x is AsyncFn<TData, TArgs> => x instanceof (async () => { }).constructor
+    && (x as any)[Symbol.toStringTag] === 'AsyncFunction' 
 export const isBool = (x: any): x is boolean => typeof x === 'boolean'
 export const isDate = (x: any): x is Date => x instanceof Date
 export const isError = (x: any): x is Error => x instanceof Error
-export const isFn = (x: unknown): x is Function => typeof x === 'function'
-export const isMap = <TKey = any, TValue = any>(x: any): x is Map<TKey, TValue> => x instanceof Map
+export const isFn = (x: any): x is Function => typeof x === 'function'
 export const isInteger = (x: any): x is number => Number.isInteger(x)
+export const isMap = <TKey = any, TValue = any>(x: any): x is Map<TKey, TValue> => x instanceof Map
 export const isObj = (x: any, strict = true): x is Object => !!x // excludes null, NaN, Infinity....
     && typeof x === 'object'
     && (
@@ -51,11 +26,12 @@ export const isObj = (x: any, strict = true): x is Object => !!x // excludes nul
         && !isMap(x)
         && !isSet(x)
     )
+export const isPositiveInteger = (x: any): x is Number => isInteger(x) && x > 0
 export const isPositiveNumber = (x: any): x is number => isValidNumber(x) && x > 0
 export const isPromise = <T = any>(x: any): x is Promise<T> => x instanceof Promise
 export const isSet = <T = any>(x: any): x is Set<T> => x instanceof Set
 export const isStr = (x: any): x is string => typeof x === 'string'
-export const isURL = (x: any): x is URL => x instanceof URL
+export const isUrl = (x: any): x is URL => x instanceof URL
 export const isValidDate = (dateOrStr: Date | string) => {
     const date = new Date(dateOrStr)
     // avoids "Invalid Date"
@@ -74,11 +50,11 @@ export const isValidNumber = (x: any): x is number =>
     typeof x == 'number'
     && !isNaN(x)
     && isFinite(x)
-
 export const isValidURL = (x: any, strict = true) => {
+    if (!x) return false
     try {
         const isAStr = isStr(x)
-        const url = isURL(x)
+        const url = isUrl(x)
             ? x
             : new URL(x)
         // If strict mode is set to `true` and if a string value provided, it must match resulting value of new URL(x).
@@ -93,3 +69,31 @@ export const isValidURL = (x: any, strict = true) => {
         return false
     }
 }
+
+/**
+ * 
+ * Compile & runtime type etc checking utilities functions
+ * 
+ */
+export const is = {
+    arr: isArr,
+    arrUnique: isArrUnique,
+    asyncFn: isAsyncFn,
+    bool: isBool,
+    date: isDate,
+    error: isError,
+    fn: isFn,
+    integer: isInteger,
+    map: isMap,
+    obj: isObj,
+    positiveInteger: isPositiveInteger,
+    positiveNumber: isPositiveNumber,
+    promise: isPromise,
+    set: isSet,
+    str: isStr,
+    url: isUrl,
+    validDate: isValidDate,
+    validNumber: isValidNumber,
+    validURL: isValidURL,
+}
+export default is

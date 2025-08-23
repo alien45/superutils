@@ -1,4 +1,4 @@
-import { isDate } from "./utils"
+import { isDate } from "./is"
 
 /**
  * Convert timestamp to HTML `datetime-local` compatible format.
