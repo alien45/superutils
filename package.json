@@ -13,11 +13,13 @@
   "license": "ISC",
   "private": true,
   "scripts": {
-    "build": "npm run build --ws --if-present",
+    "clean": "tsc --build --clean",
+    "build": "tsc --build",
     "lint": "eslint . --ext .ts,.tsx",
     "publish:packages": "lerna publish",
+    "start": "npm run clean && npm run build && npm run watch",
     "test": "npm run test --ws --if-present",
-    "watch": "npm run watch --ws --if-present"
+    "watch": "tsc --build --watch"
   },
   "workspaces": [
     "packages/*"

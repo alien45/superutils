@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "tsc && node dist/index.js",
+    "start": "node dist/index.js",
     "test": "jest",
     "watch": "tsc -p tsconfig.json --watch"
   },
