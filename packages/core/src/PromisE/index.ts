@@ -1,0 +1,13 @@
+export * from './deferred'
+export * from './deferredCallback'
+export * from './deferredFetch'
+export * from './deferredPost'
+export * from './delay'
+export * from './delayReject'
+export * from './fetch'
+export * from './fetchResponse'
+export * from './post'
+export * from './PromisE'
+export * from './timeout'
+export * from './types'
+export default require('./PromisE').default

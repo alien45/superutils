@@ -3,55 +3,120 @@
  */
 export type AsyncFn<
     TOut = unknown,
-    TArgs extends any[] = any[]
+    TArgs extends any[] = []
 > = (...args: TArgs) => Promise<Awaited<TOut>>
 
 /**
  * Drop the first item from an array/tuple and keep the rest
+ * ---
+ * @example ```javascript
+ * type MyTuple = [first: string, second: number, third: boolean]
+ * type MyTupleWOFirst = DropFirst<MyTuple> // result: [second: number, third: boolean]
+ * ```
  */
-export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
+export type DropFirst<T extends readonly unknown[]> = T extends [any, ...infer Rest]
     ? Rest
     : []
 
 /**
  * Drop first N items from an array/tuple and keep the rest
+ * ---
+ * @example ```javascript
+ * type MyTuple = [first: string, second: number, third: boolean]
+ * type MyTupleWO2 = DropFirstN<MyTuple, 2> // result: [third: boolean]
+ * ```
  */
 export type DropFirstN<
-    T extends any[],
+    T extends readonly unknown[],
     N extends number,
-    TDropped extends any[] = [],
+    TDropped extends readonly unknown[] = [],
 > = TDropped['length'] extends N
     ? T
-    : T extends [infer First, ...infer TWithoutFirst]
+    : T extends readonly [infer First, ...infer TWithoutFirst]
         ? DropFirstN<TWithoutFirst, N, [...TDropped, First]>
         : T
 /**
  * Drop the last item from an array/tuple and keep the rest
+ * ---
+ * @example ```javascript
+ * type MyTuple = [first: string, second: number, third: boolean]
+ * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
+ * ```
  */
-export type DropLast<T extends any[]> = T extends [...infer Rest, any]
+export type DropLast<T extends readonly unknown[]> = T extends readonly [...infer Rest, any]
     ? Rest
     : []
 
+/**
+ * Extract inner data type of any supported type
+ * ---
+ * @example ```javascript
+ * type MyArray = Array<string>
+ * type MyArraData = ExtractDataType<MyArray> // string
+ * ```
+ */
 export type ExtractDataType<T = unknown> = T extends Readonly<infer DataType>
     ? DataType
     : T
 
 /**
  * Keep the first item from an array/tuple and drop the rest
+ * ---
+ * @example ```javascript
+ * type MyTuple = [first: string, second: number, third: boolean]
+ * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
+ * ```
  */
-export type KeepFirst<T extends any[]> = KeepFirstN<T, 1>
+export type KeepFirst<T extends readonly unknown[]> = KeepFirstN<T, 1>
 
 /**
  * Keep first N items from an array/tuple and drop the rest
+ * ---
+ * @example ```javascript
+ * type MyTuple = [first: string, second: number, third: boolean]
+ * type MyTupleWith1st2 = KeepFirstN<MyTuple, 2> // result: [first: string, second: number]
+ * ```
  */
 export type KeepFirstN<
-    T extends any[],
+    T extends readonly unknown[],
     N extends number = 1,
 > = T['length'] extends N
     ? T
-    : T extends [...infer TWithoutLast, any]
+    : T extends readonly [...infer TWithoutLast, any]
         ? KeepFirstN<TWithoutLast, N>
         : []
+
+/** Make T1 optional if T2 is undefined */
+export type OptionalIf<
+    T1,
+    T2,
+    T2IF = undefined,
+    T1Alt = undefined
+> = T2 extends T2IF
+    ? T1
+    : T1 | T1Alt
+
+export type MakeOptional<
+    Tuple extends readonly unknown[],
+    IndexStart extends number,
+    IndexEn extends number = IndexStart,
+> = Tuple extends readonly [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
+    ? [...KeepFirstN<Tuple, IndexStart>, ...Partial<Range>, ...DropFirstN<Tuple, IndexEn>]
+    : Tuple
+
+export type MakeOptionalLeft<
+    Tuple extends readonly unknown[],
+    IndexEnd extends number,
+> = Tuple extends readonly [...infer Range, ...DropFirstN<Tuple, IndexEnd>]
+    ? [...Partial<Range>, ...DropFirstN<Tuple, IndexEnd>]
+    : never
+
+export type MakeOptionalRight<
+    Tuple extends readonly unknown[],
+    Start extends number,
+> = Tuple extends readonly [...KeepFirstN<Tuple, Start>, ...infer Range]
+    ? [...KeepFirstN<Tuple, Start>, ...Partial<Range>]
+    : Tuple
 
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
 
