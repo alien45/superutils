@@ -52,7 +52,3 @@ export function PromisE_deferredCallback<TDefault = unknown, CbArgs extends any[
     )
 }
 export default PromisE_deferredCallback
-
-const sum = (...args: number[]) => args.reduce((a, b) => a + b, 0)
-const dfc = PromisE_deferredCallback(sum)
-dfc<string>(2, 3, 34).then(x => {})
