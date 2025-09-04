@@ -14,7 +14,7 @@ export type AsyncFn<
  * type MyTupleWOFirst = DropFirst<MyTuple> // result: [second: number, third: boolean]
  * ```
  */
-export type DropFirst<T extends readonly unknown[]> = T extends [any, ...infer Rest]
+export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
     ? Rest
     : []
 
@@ -27,12 +27,12 @@ export type DropFirst<T extends readonly unknown[]> = T extends [any, ...infer R
  * ```
  */
 export type DropFirstN<
-    T extends readonly unknown[],
+    T extends any[],
     N extends number,
-    TDropped extends readonly unknown[] = [],
+    TDropped extends any[] = [],
 > = TDropped['length'] extends N
     ? T
-    : T extends readonly [infer First, ...infer TWithoutFirst]
+    : T extends [infer First, ...infer TWithoutFirst]
         ? DropFirstN<TWithoutFirst, N, [...TDropped, First]>
         : T
 /**
@@ -43,7 +43,7 @@ export type DropFirstN<
  * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
  * ```
  */
-export type DropLast<T extends readonly unknown[]> = T extends readonly [...infer Rest, any]
+export type DropLast<T extends Array<any>> = T extends [...infer Rest, any]
     ? Rest
     : []
 
@@ -67,7 +67,7 @@ export type ExtractDataType<T = unknown> = T extends Readonly<infer DataType>
  * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
  * ```
  */
-export type KeepFirst<T extends readonly unknown[]> = KeepFirstN<T, 1>
+export type KeepFirst<T extends any[]> = KeepFirstN<T, 1>
 
 /**
  * Keep first N items from an array/tuple and drop the rest
@@ -78,13 +78,13 @@ export type KeepFirst<T extends readonly unknown[]> = KeepFirstN<T, 1>
  * ```
  */
 export type KeepFirstN<
-    T extends readonly unknown[],
+    T extends readonly any[],
     N extends number = 1,
 > = T['length'] extends N
     ? T
     : T extends readonly [...infer TWithoutLast, any]
         ? KeepFirstN<TWithoutLast, N>
-        : []
+        : never
 
 /** Make T1 optional if T2 is undefined */
 export type OptionalIf<
@@ -97,33 +97,37 @@ export type OptionalIf<
     : T1 | T1Alt
 
 export type MakeOptional<
-    Tuple extends readonly unknown[],
+    Tuple extends any[],
     IndexStart extends number,
     IndexEn extends number = IndexStart,
-> = Tuple extends readonly [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
-    ? [...KeepFirstN<Tuple, IndexStart>, ...Partial<Range>, ...DropFirstN<Tuple, IndexEn>]
+> = Tuple extends [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
+    ? [
+        ...KeepFirstN<Tuple, IndexStart>,
+        ...Partial<Range>,
+        ...DropFirstN<Tuple, IndexEn>
+    ]
     : Tuple
 
 export type MakeOptionalLeft<
-    Tuple extends readonly unknown[],
+    Tuple extends any[],
     IndexEnd extends number,
-> = Tuple extends readonly [...infer Range, ...DropFirstN<Tuple, IndexEnd>]
+> = Tuple extends [...infer Range, ...DropFirstN<Tuple, IndexEnd>]
     ? [...Partial<Range>, ...DropFirstN<Tuple, IndexEnd>]
     : never
 
 export type MakeOptionalRight<
-    Tuple extends readonly unknown[],
+    Tuple extends any[],
     Start extends number,
-> = Tuple extends readonly [...KeepFirstN<Tuple, Start>, ...infer Range]
+> = Tuple extends [...KeepFirstN<Tuple, Start>, ...infer Range]
     ? [...KeepFirstN<Tuple, Start>, ...Partial<Range>]
     : Tuple
 
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
 
 
-// type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
-// type X = DropFirst<Tuple>
-// type Y = DropFirstN<Tuple, 3>
-// type Z = DropLast<Tuple>
-// type A = TakeFirst<Tuple>
-// type B = TakeFirstN<Tuple, 2>
+type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
+type X = DropFirst<Tuple>
+type Y = DropFirstN<Tuple, 3>
+type Z = DropLast<Tuple>
+type A = KeepFirst<Tuple>
+type B = KeepFirstN<Tuple, 2>

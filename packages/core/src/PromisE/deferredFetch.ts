@@ -1,10 +1,19 @@
-import { KeepFirstN, DropFirstN } from "../types"
-import PromisE from "./PromisE"
-import { PromisE_Deferred_Options } from "./types"
+import { KeepFirstN, DropFirstN, MakeOptionalLeft } from "../types"
+import PromisE_deferred from "./deferred"
+import PromisE_deferredCallback from "./deferredCallback"
+import PromisE_fetch from "./fetch"
+import mergeFetchOptions from "./mergeFetchOptions"
+import {
+    IPromisE,
+    PromisE_Deferred_Options,
+    PromisE_FetchArgs,
+    PromisE_FetchDeferredArgs
+} from "./types"
 
+type Defaults = PromisE_FetchDeferredArgs
 /**
  * @name    PromisE.deferredFetch
- * @summary {@link PromisE.fetch} with the advantages of {@link PromisE.deferred} and auto-abort feature
+ * @summary {@link PromisE_fetch} with the advantages of {@link PromisE_deferred} and auto-abort feature
  * 
  * @example ```javascript
  * ---
@@ -31,22 +40,38 @@ import { PromisE_Deferred_Options } from "./types"
  * ```
  */    
 export function PromisE_deferredFetch<
-    TData = unknown,
-    TArgs extends any[] = Parameters<typeof PromisE.fetch<TData>>,
-    TArgsPartial extends any[] = KeepFirstN<Partial<TArgs>, 3>,
+    const TArgs extends Defaults = Defaults,
 >(
-    deferOptions: PromisE_Deferred_Options<TData> = {},
-    ...defaults: TArgsPartial
+    deferOptions: PromisE_Deferred_Options = {},
+    ...[
+        defaultUrl,
+        defaultOptions = {},
+        defaultTimeout,
+        defaultErrMsgs,
+    ]: TArgs
 ) {
-    let abortCtrl: AbortController | undefined
-    type TArgs2 = DropFirstN<TArgs, Required<TArgsPartial>['length']>
-    const fetchCallback = <TCbData = TData>(...args: TArgs2) => {
-        const allArgs = [...defaults, ...args]
+    let _abortCtrl: AbortController | undefined
+    type CbArgs = MakeOptionalLeft<PromisE_FetchArgs, TArgs['length']>
+    const fetchCallback = <TCbData = unknown>(...[
+        url,
+        options,
+        timeout,
+        abortCtrl = new AbortController(),
+        errMsgs,
+    ]: CbArgs) => {
         // abort any previous fetch
-        abortCtrl?.abort()
-        abortCtrl = allArgs[3] ?? new AbortController()
-        return (PromisE.fetch as any).apply(null, allArgs) as PromisE<TCbData>
+        _abortCtrl?.abort()
+        _abortCtrl = abortCtrl as AbortController
+        const allArgs = [
+            url ?? defaultUrl,
+            mergeFetchOptions(defaultOptions, options ?? {}),
+            timeout ?? defaultTimeout,
+            abortCtrl,
+            errMsgs ?? defaultErrMsgs,
+        ] as any as PromisE_FetchArgs
+        console.log({allArgs})
+        return PromisE_fetch.apply(null, allArgs) as IPromisE<TCbData>
     }
-    return PromisE.deferredCallback(fetchCallback, deferOptions)
+    return PromisE_deferredCallback(fetchCallback, deferOptions)
 }
 export default PromisE_deferredFetch

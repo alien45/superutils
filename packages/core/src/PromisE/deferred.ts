@@ -1,30 +1,32 @@
 import deferred from '../deferred'
 import { isFn, isPositiveNumber } from '../is'
 import throttled from '../throttled'
-import PromisE from './PromisE'
-import { PromisE_Deferred_Options } from './types'
+import PromisEBase from './PromisEBase'
+import {
+    IPromisE,
+    PromisE_Deferred_Options,
+    ResolveIgnored
+} from './types'
 
-/** Options for what to do when a promise/callback is ignored, either because of being deferred, throttled or another been prioritized. */
-export enum ResolveIgnored {
-    /** Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks. */
-    NEVER = 'never',
-    /** (default) resolve with active promise result, the one that caused the current promise/callback to be ignored).  */
-    WITH_ACTIVE = 'with_active',
-    /** resolve with `undefined` value */
-    WITH_UNDEFINED = 'with_undefined',
-}
 /** 
- * @name PromisE_deferred
+ * @name PromisE.deferred
  * @summary the adaptation of the `deferred()` function tailored for Promises.
  * 
  *
- * @param   {Object}    optons        (optional)
- * @param   {Function}  optons.onError   (optional)
- * @param   {Function}  optons.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
- * @param   {Function}  optons.onResult  (optional)
- * @param   {ResolveIgnored}  optons.resolveIgnored  (optional) see {@link ResolveIgnored}
- * @param   {Boolean}   options.throttle  (optional) toggle to switch between debounce/deferred and throttle mode. Requires `defer`.
- *                                        Default: `false`
+ * @param {Object}    o           (optional) options
+ * @param {Function}  o.onError   (optional)
+ * @param {Function}  o.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
+ * @param {Function}  o.onResult  (optional)
+ * @param {ResolveIgnored}  o.resolveIgnored  (optional) see {@link ResolveIgnored}.
+ * Default: `PromisE.defaultResolveIgnord` (changeable)
+ * 
+ * @param {Boolean}   o.throttle  (optional) toggle to switch between debounce/deferred and throttle mode.
+ * Requires `defer`.
+ * Default: `false`
+ * 
+ * @returns a callback to add promise/function to defer/throttle queue.
+ * 
+ * ---
  * 
  * @description The main difference is that:
  *  - Notes: 
@@ -45,6 +47,8 @@ export enum ResolveIgnored {
  *      4. If every single request/function needs to be invoked, avoid using throttle.
  * 
  *  - If throttled and `strict` is truthy, all subsequent request while a request is being handled will be ignored.
+ * 
+ * ---
  * 
  * @example Explanation & example usage:
  * <BR>
@@ -72,23 +76,20 @@ export enum ResolveIgnored {
  * example(true)
  * // `5000` will be printed in the console
  * ```
- * 
- * @returns callback accepts only one argument and it must be a either a promise 
- * or a function that returns a promise
  */
-export function PromisE_deferred<T = unknown>(options: PromisE_Deferred_Options<T> = {}) {
+export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
     let {
         defer = 100,
         onError = () => { },
         onIgnore,
-        onResult, // result: whatever is returned from the callback on the execution/request that was "handled"
-        resolveIgnored = ResolveIgnored.WITH_ACTIVE,
+        onResult, // result: whatever is returned from the callback that was not ignored
+        resolveIgnored = PromisEBase.defaultResolveIgnored,
         silent = true,
         thisArg,
         throttle: throttle = false,
     } = options
-    let lastPromisE: PromisE<T> | null = null
-    type QueueItem = ReturnType<typeof PromisE.withResolvers<T>> & {
+    let lastPromisE: IPromisE<T> | null = null
+    type QueueItem = ReturnType<typeof PromisEBase.withResolvers<T>> & {
         callback: () => Promise<T>,
     }
     const queue: Map<Symbol, QueueItem> = new Map()
@@ -105,10 +106,10 @@ export function PromisE_deferred<T = unknown>(options: PromisE_Deferred_Options<
         const cb = resolve
             ? onResult
             : onError
-        cb && PromisE.try(cb, result)
+        cb && PromisEBase.try(cb, result)
     }
     let executor = (id: Symbol, queueItem: QueueItem) => {
-        const promise = new PromisE(queueItem.callback())
+        const promise = new PromisEBase(queueItem.callback())
         lastPromisE = promise
         promise.then(
             finalize(true, queueItem),
@@ -127,11 +128,11 @@ export function PromisE_deferred<T = unknown>(options: PromisE_Deferred_Options<
             // Options for ignored 
             // 0. resolve with undefined
             // 1. resolve with most recent value
-            // 2. leave unresovled (potential memory leak if not handled properly)   
+            // 2. leave unresovled (potential memory leak if not handled properly by consumer)
             switch (resolveIgnored) {
                 case ResolveIgnored.WITH_UNDEFINED:
                     item.resolve(undefined as T)
-                case ResolveIgnored.WITH_ACTIVE:
+                case ResolveIgnored.WITH_LAST:
                     item.resolve(promise)
             }
         }
@@ -141,18 +142,19 @@ export function PromisE_deferred<T = unknown>(options: PromisE_Deferred_Options<
         defer,
         silent
     )
-    const deferPromise = (promise: Promise<T> | (() => Promise<T>)) => {
+    const deferPromise = <TResult = T>(promise: Promise<T> | (() => Promise<T>)) => {
         const id = Symbol('deferred-queue-item-id')
         // add to queue
         const queueItem = { 
-            ...PromisE.withResolvers<T>(),
+            ...PromisEBase.withResolvers<T>(),
             callback: isFn(promise)
                 ? promise
                 : () => promise
         }
         queue.set(id, queueItem)
         if (!lastPromisE || defer > 0) executor(id, queueItem)
-        return queueItem.promise
+        return queueItem.promise as any as IPromisE<TResult>
     }
     return deferPromise
 }
+export default PromisE_deferred

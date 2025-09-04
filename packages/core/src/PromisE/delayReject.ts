@@ -1,4 +1,5 @@
-import PromisE from "./PromisE";
+import PromisE_delay from "./delay";
+import PromisEBase from "./PromisEBase";
 
 /**
  * @name    PromisE.delayReject
@@ -31,11 +32,8 @@ import PromisE from "./PromisE";
  * doMoreStuff()
  * ```
  */
-export function PromisE_delayReject <T = unknown>(
-    delay: number,
-    reason?: T,
-) {
-    return PromisE.delay(
+export function PromisE_delayReject<T = unknown>(delay: number, reason?: T) {
+    return PromisE_delay(
         delay,
         reason,
         true

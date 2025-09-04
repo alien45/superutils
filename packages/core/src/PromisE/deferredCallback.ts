@@ -1,11 +1,8 @@
-import PromisE from "./PromisE"
+import PromisE_deferred from "./deferred"
+import PromisEBase from "./PromisEBase"
 import { PromisE_Deferred_Options } from './types'
 
 /**
- * 
- * @param PromisE.deferredCallback Callback function
- * @param options {@link PromisE.deferred} options
- * 
  * @returns deferred/throttled callback function
  * 
  * 
@@ -38,16 +35,24 @@ import { PromisE_Deferred_Options } from './types'
  * // 200, 600, 1000
  * ```
  */
-export function PromisE_deferredCallback<T = unknown, CbArgs extends any[] = []>(
-    callback: (...args: CbArgs) => T | Promise<T>,
-    options: PromisE_Deferred_Options<T> = {}
+
+export function PromisE_deferredCallback<TDefault = unknown, CbArgs extends any[] = []>(
+    callback: (...args: CbArgs) => TDefault | Promise<TDefault>,
+    options: PromisE_Deferred_Options = {}
 ) {
     const { thisArg } = options
-    const deferPromise = PromisE.deferred<T>(options)
-    if (thisArg !== undefined) callback = callback.bind(thisArg)
-
-    return (...args: CbArgs) => deferPromise(
-        () => PromisE.try<T, CbArgs>(callback, ...args)
+    if (thisArg !== undefined) {
+        callback = callback.bind(thisArg)
+        options = {...options, thisArg: undefined }
+    }
+    const deferPromise = PromisE_deferred<TDefault>(options)
+    
+    return <TResult = TDefault>(...args: CbArgs) => deferPromise<TResult>(
+        () => PromisEBase.try(callback, ...args)
     )
 }
 export default PromisE_deferredCallback
+
+const sum = (...args: number[]) => args.reduce((a, b) => a + b, 0)
+const dfc = PromisE_deferredCallback(sum)
+dfc<string>(2, 3, 34).then(x => {})

@@ -1,5 +1,6 @@
-import PromisE from "./PromisE"
-import { PromisE_Timeout } from "./types"
+import PromisE_delayReject from "./delayReject"
+import PromisEBase from "./PromisEBase"
+import { IPromisE_Timeout } from "./types"
 
 /**
  * @name    PromisE.timeout
@@ -60,22 +61,22 @@ import { PromisE_Timeout } from "./types"
 export function PromisE_timeout <
     T extends readonly unknown[] | [],
     TOut = T['length'] extends 1
-        ? Awaited<T[0]>
-        : { -readonly [K in keyof T]: Awaited<T[K]>}
+        ? T[0]
+        : T
 >(
     timeout: number = 10_000,
-    ...values: T
+    ...values: Promise<T>[]
 ) {
     const dataPromise = (
         values.length === 1
-            ? new PromisE(values[0]) // single promise resolves to a single result
-            : PromisE.all(values) // array of promises resolves to an array of results
-    ) as PromisE<TOut>
-    const timeoutPromise = PromisE.delayReject<Error>(timeout)
-    const promise = PromisE.race([
+            ? new PromisEBase<T[0]>(values[0]) // single promise resolves to a single result
+            : PromisEBase.all(values) // array of promises resolves to an array of results
+    ) as PromisEBase<TOut>
+    const timeoutPromise = PromisE_delayReject<TOut>(timeout)
+    const promise = PromisEBase.race([
         dataPromise,
         timeoutPromise
-    ]) as PromisE_Timeout<TOut>
+    ]) as IPromisE_Timeout<TOut>
     promise.clearTimeout = () => clearTimeout(timeoutPromise.timeoutId)
     promise.data = dataPromise
     promise.timeout = timeoutPromise

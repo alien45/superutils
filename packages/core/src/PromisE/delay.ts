@@ -1,5 +1,5 @@
-import PromisE from "./PromisE"
-import { PromisE_Delay } from "./types"
+import PromisEBase from "./PromisEBase"
+import { IPromisE_Delay } from "./types"
 
 /**
  * @name    PromisE.delay
@@ -10,7 +10,7 @@ import { PromisE_Delay } from "./types"
  *                              Default: `delayMs` when resolved or timed out error when rejected
  * @param {boolean}   asRejected (optional) if `true`, will reject the promise after the delay.
  * 
- * @returns See {@link PromisE_Delay}
+ * @returns See {@link IPromisE_Delay}
  * 
  * @example ```javascript
  * console.log('Waiting for app initialization or something else to be ready')
@@ -19,24 +19,24 @@ import { PromisE_Delay } from "./types"
  * console.log('App ready')
  * ```
  */
-export function PromisE_delay <T = number>(
+export function PromisE_delay<T = number>(
     delayMs: number,
     result: T = delayMs as T,
     asRejected: boolean = false,
-    timeoutErrMsg = 'Timed out after'
+    timeoutErrMsg?: string,
 ) {
     const { 
         promise: _promise,
         reject,
         resolve
-    } = PromisE.withResolvers<T>()
-    const promise = _promise as PromisE_Delay<T>
+    } = PromisEBase.withResolvers<T>()
+    const promise = _promise as IPromisE_Delay<T>
     const finalize = (result?: T | Error, doReject = false) => {
         if (!promise.pending) return
 
-        !doReject 
+        !doReject
             ? resolve((result ?? delayMs) as T)
-            : reject(result ?? new Error(`${timeoutErrMsg} ${delayMs}ms`))
+            : reject(result ?? new Error(timeoutErrMsg ?? `Timed out after ${delayMs}ms`))
     }
     promise.timeoutId = setTimeout(
         () => finalize(result, asRejected),

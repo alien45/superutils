@@ -24,7 +24,7 @@ import { isError, isFn, isPromise } from "./is"
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
  *     return value
  * }
- * // this makes sure there's always a value without having to manually write try-catch block.
+ * // This makes sure there's always a value without having to manually write try-catch block.
  * const value = await fallbackIfFails(
  *     ensureValue,
  *     () => args,

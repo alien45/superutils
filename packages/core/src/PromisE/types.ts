@@ -1,60 +1,26 @@
-import { TimeoutId } from '../types'
-import { ResolveIgnored } from './deferred'
-import PromisE from './PromisE'
+export interface IPromisE<T = unknown> extends Promise<T> {
 
-export type ExecutorFunc<T = unknown> = PromiseParams<T>[0]
+    /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
+    onEarlyFinalize: OnEarlyFinalize<T>[]
+    
+    /** Indicates if the promise is still pending/unfinalized */
+    readonly pending: boolean
+    
+    /** Reject pending promise early. */
+    reject: (reason: any) => IPromisE<T>
 
-export type FetchOptions = Omit<RequestInit, 'headers'> & { 
-    headers?: Record<string, string>
-}
+    /** Indicates if the promise has been rejected */
+    readonly rejected: boolean
 
-export type OnEarlyFinalize<T> = <
-    TResolved extends boolean,
-    TValue = TResolved extends true
-        ? T
-        : any
->(
-    resolved: TResolved,
-    resultOrReason: TValue
-) => void | Promise<void>
+    /** Resovle pending promise early. */
+    resolve: (value: T) => IPromisE<T>
 
-export type PostArgs = Parameters<typeof PromisE.post>
-
-export type PostBody = Record<string, unknown> | string | BodyInit | null
-
-// export interface PromisEType<T = unknown> extends Promise<T> {
-//     pending: Boolean,
-//     rejected: Boolean,
-//     resolved: Boolean,
-// }
-
-export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
-
-export type PromisE_withResolvers<T = unknown> = { promise: PromisE<T> }
-    & Omit<ReturnType<typeof Promise.withResolvers<T>>, 'promise'>
-
-export type PromisE_Deferred_Options<TDefault = unknown> = {
-    defer?: number,
-    onError?: (err: Error) => void,
-    /**
-     * Use for debugging or logging purposes only.
-     */
-    onIgnore?: (ignored: (() => Promise<TDefault>)) => void,
-    onResult?: (result: TDefault | undefined) => void | Promise<void>,
-    /** 
-     * Indicates what to do when a promise in the queue is ignored.
-     * See {@link ResolveIgnored} for available options.
-     */
-    resolveIgnored?: ResolveIgnored,
-    /** If true will gracefully ignore eny exception while invoking any callback function provided */
-    silent?: boolean,
-    /** If provided will be used as the "thisArg" when invoking any of the provided callback functions */
-    thisArg?: unknown,
-    throttle?: boolean,
+    /** Indicates if the promise has been resolved */
+    readonly resolved: boolean
 }
 
 /* Describes a delay PromisE and it's additional properties. */
-export type PromisE_Delay<T = unknown> = PromisE<T> & {
+export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
     /**
      * Caution: pausing will prevent the promise from resolving/rejeting automatically.
      * 
@@ -100,18 +66,110 @@ export type PromisE_Delay<T = unknown> = PromisE<T> & {
      * ```
      */
     pause: () => void
-    timeoutId: TimeoutId
+    timeoutId: Parameters<typeof clearTimeout>[0]
 }
 
 /**
  * Descibes a timeout PromisE and it's additional properties.
  */
-export type PromisE_Timeout<T = unknown> = PromisE<T> & { 
+export type IPromisE_Timeout<T = unknown> = IPromisE<T> & { 
     /** The result/data promise. If more than one supplied in `args` result promise will be a combined `PromisE.all` */
-    data: PromisE<T>
+    data: IPromisE<T>
     timedout: boolean
     /** Clearing the timeout will prevent it from timing out */
     clearTimeout: () => void
     /** The timeout promise */
-    timeout: PromisE_Delay<Error>
+    timeout: IPromisE_Delay<T>
+}
+
+export type FetchOptions = Omit<RequestInit, 'headers'> & { 
+    headers?: Record<string, string>
+}
+
+export type OnEarlyFinalize<T> = <
+    TResolved extends boolean,
+    TValue = TResolved extends true
+        ? T
+        : any
+>(
+    resolved: TResolved,
+    resultOrReason: TValue
+) => void | Promise<void>
+
+export type PostBody = Record<string, unknown> | BodyInit | null
+
+export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
+
+export type PromisE_Deferred_Options = {
+    defer?: number,
+    onError?: (err: Error) => void,
+    /**
+     * Use for debugging or logging purposes only.
+     */
+    // onIgnore?: <TResult = TData>(ignored: (() => Promise<TResult>)) => void,
+    onIgnore?: (ignored: (() => Promise<any>)) => any,
+
+    // onResult?: <TResult = TData>(result: TResult | undefined) => void | Promise<void>,
+    onResult?: (result: any | undefined) => any | IPromisE<any>,
+
+    /** 
+     * Indicates what to do when a promise in the queue is ignored.
+     * See {@link ResolveIgnored} for available options.
+     */
+    resolveIgnored?: ResolveIgnored,
+    /** If true will gracefully ignore eny exception while invoking any callback function provided */
+    silent?: boolean,
+    /** If provided will be used as the "thisArg" when invoking any of the provided callback functions */
+    thisArg?: unknown,
+    throttle?: boolean,
+}
+
+export type PromisE_FetchArgs = [
+    url: string | URL,
+    options?: FetchOptions,
+    timeout?: number,
+    abortCtrl?: AbortController,
+    errMsgs?: {
+        invalidUrl: string,
+        reqTimedout: string,
+    }
+]
+export type PromisE_FetchDeferredArgs = [
+    url?: string | URL,
+    options?: FetchOptions,
+    timeout?: number,
+    errMsgs?: {
+        invalidUrl: string,
+        reqTimedout: string,
+    }
+]
+
+export type PromisE_PostArgs = [
+    url: string | URL,
+    data?: PostBody,
+    options?: Omit<FetchOptions, 'method'>,
+    timeout?: number,
+    abortCtrl?: AbortController,
+]
+
+export type PromisE_PostDeferredArgs = [
+    url?: string | URL,
+    data?: PostBody,
+    options?: Omit<FetchOptions, 'method'>,
+    timeout?: number,
+    // abortCtrl?: AbortController,
+]
+
+/** Describes PromisE with with resolvers */
+export type PromisE_WithResolvers<T = unknown> = { promise: IPromisE<T> }
+    & Omit<ReturnType<typeof Promise.withResolvers<T>>, 'promise'>
+
+/** Options for what to do when a promise/callback is ignored, either because of being deferred, throttled or another been prioritized. */
+export enum ResolveIgnored {
+    /** Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks. */
+    NEVER = 'NEVER',
+    /** (default) resolve with active promise result, the one that caused the current promise/callback to be ignored).  */
+    WITH_LAST = 'WITH_LAST',
+    /** resolve with `undefined` value */
+    WITH_UNDEFINED = 'WITH_UNDEFINED',
 }

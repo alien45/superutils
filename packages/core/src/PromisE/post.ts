@@ -1,6 +1,7 @@
 import { isStr } from "../is"
-import PromisE from "./PromisE"
-import { PostBody, FetchOptions } from "./types"
+import PromisE_fetch from "./fetch"
+import mergeFetchOptions from "./mergeFetchOptions"
+import { FetchOptions, PostBody, PromisE_PostArgs } from "./types"
 
 /**
  * @name    PromisE.post
@@ -8,32 +9,25 @@ import { PostBody, FetchOptions } from "./types"
  * Default "content-type" is 'application/json'.
  * Will reject promise if response status code is 2xx (200 <= status < 300).
  */
-export function PromisE_post<T = unknown> (
-    url: string | URL,
-    data: PostBody,
-    options?: Omit<FetchOptions, 'method'>,
-    timeout?: number,
-    abortCtrl?: AbortController,
-) {
-    return PromisE.fetch<T>(
+export default function PromisE_post<T = unknown> (...[
+    url = '',
+    data,
+    options,
+    timeout,
+    abortCtrl,
+]: PromisE_PostArgs) {
+    return PromisE_fetch<T>(
         url,
-        getPostOptions(data, options),
+        mergeFetchOptions(
+            {
+                method: 'post',
+                body: isStr(data)
+                    ? data
+                    : JSON.stringify(data)
+            },
+            options,
+        ),
         timeout,
         abortCtrl,
     )
 }
-export default PromisE_post
-
-export const getPostOptions = (data?: PostBody, options?: FetchOptions) => ({
-    ...options,
-    body: !isStr(data)
-        ? JSON.stringify(data)
-        : data,
-    headers: {
-        ...!options?.headers?.['Content-Type']
-            && !options?.headers?.['content-type']
-            && { 'content-type': 'application/json' },
-        ...options?.headers,
-    },
-    method: 'POST',
-})
