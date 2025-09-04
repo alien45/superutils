@@ -2,6 +2,7 @@
   "author": "Toufiqur Rahaman Chowdhury",
   "description": "RxJS utilities and hooks for React applications.",
   "devDependencies": {
+    "@utiils/core": "^0.1.0",
     "@types/react": "^18.0.0"
   },
   "files": [

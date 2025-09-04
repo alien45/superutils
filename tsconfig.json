@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/core" },
+    { "path": "packages/promise" },
     { "path": "packages/rx" },
     { "path": "packages/react" },
     { "path": "packages/demo" },

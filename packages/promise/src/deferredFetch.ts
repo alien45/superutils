@@ -1,14 +1,13 @@
-import { KeepFirstN, DropFirstN, MakeOptionalLeft } from "../types"
-import PromisE_deferred from "./deferred"
-import PromisE_deferredCallback from "./deferredCallback"
-import PromisE_fetch from "./fetch"
-import mergeFetchOptions from "./mergeFetchOptions"
+import { MakeOptionalLeft } from '@utiils/core'
+import PromisE_deferred from './deferred'
+import PromisE_deferredCallback from './deferredCallback'
+import PromisE_fetch from './fetch'
+import mergeFetchOptions from './mergeFetchOptions'
 import {
-    IPromisE,
     PromisE_Deferred_Options,
     PromisE_FetchArgs,
     PromisE_FetchDeferredArgs
-} from "./types"
+} from './types'
 
 type Defaults = PromisE_FetchDeferredArgs
 /**
@@ -69,8 +68,10 @@ export function PromisE_deferredFetch<
             abortCtrl,
             errMsgs ?? defaultErrMsgs,
         ] as any as PromisE_FetchArgs
-        console.log({allArgs})
-        return PromisE_fetch.apply(null, allArgs) as IPromisE<TCbData>
+        const promise = PromisE_fetch<TCbData>(...allArgs)
+        // abort fetch request if promise is finalized manually before completion
+        // by invoking `promise.reject()` or `promise.resolve()        promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
+        return promise
     }
     return PromisE_deferredCallback(fetchCallback, deferOptions)
 }

@@ -1,5 +1,4 @@
-import { isFn, isPromise } from '../is'
-import { ExtractDataType } from '../types'
+import { isFn, isPromise } from '@utiils/core'
 import {
     PromisE_WithResolvers,
     OnEarlyFinalize,

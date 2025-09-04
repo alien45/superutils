@@ -1,25 +1,20 @@
 {
   "author": "Toufiqur Rahaman Chowdhury",
-  "description": "Utilities, components and hooks for React applications.",
+  "description": "An extended Promise class with extra features and utilities.",
   "devDependencies": {
-    "@utiils/core": "^0.1.0",
-    "@utiils/promise": "^0.1.0",
-    "@types/react": "^18.0.0"
+    "@utiils/core": "^0.1.0"
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "keywords": ["rxjs", "utils", "typescript", "react", "hooks"],
+  "keywords": ["promise", "async", "util", "typescript"],
   "license": "MIT",
   "main": "dist/index.js",
-  "name": "@utiils/react",
+  "name": "@utiils/promise",
   "peerDependencies": {
-    "@utiils/promise": "^0.1.0",
-    "@utiils/core": "^0.1.0",
-    "react": ">=16.8.0",
-    "rxjs": "^7.0.0"
+    "@utiils/core": "^0.1.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

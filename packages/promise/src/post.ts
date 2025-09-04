@@ -1,12 +1,12 @@
-import { isStr } from "../is"
-import PromisE_fetch from "./fetch"
-import mergeFetchOptions from "./mergeFetchOptions"
-import { FetchOptions, PostBody, PromisE_PostArgs } from "./types"
+import { isStr } from '@utiils/core'
+import PromisE_fetch from './fetch'
+import mergeFetchOptions from './mergeFetchOptions'
+import { PromisE_PostArgs } from './types'
 
 /**
  * @name    PromisE.post
- * @summary make a HTTP "POST" request and return result as JSON.
- * Default "content-type" is 'application/json'.
+ * @summary make a HTTP 'POST' request and return result as JSON.
+ * Default 'content-type' is 'application/json'.
  * Will reject promise if response status code is 2xx (200 <= status < 300).
  */
 export default function PromisE_post<T = unknown> (...[

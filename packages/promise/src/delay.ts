@@ -1,5 +1,5 @@
-import PromisEBase from "./PromisEBase"
-import { IPromisE_Delay } from "./types"
+import PromisEBase from './PromisEBase'
+import { IPromisE_Delay } from './types'
 
 /**
  * @name    PromisE.delay

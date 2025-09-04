@@ -1,5 +1,5 @@
-import PromisE_deferred from "./deferred"
-import PromisEBase from "./PromisEBase"
+import PromisE_deferred from './deferred'
+import PromisEBase from './PromisEBase'
 import { PromisE_Deferred_Options } from './types'
 
 /**

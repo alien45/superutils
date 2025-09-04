@@ -1,9 +1,8 @@
-import { MakeOptionalLeft } from "../types"
-import PromisE_deferredCallback from "./deferredCallback"
-import mergeFetchOptions from "./mergeFetchOptions"
-import PromisE_post from "./post"
+import { MakeOptionalLeft } from '@utiils/core'
+import PromisE_deferredCallback from './deferredCallback'
+import mergeFetchOptions from './mergeFetchOptions'
+import PromisE_post from './post'
 import {
-    IPromisE,
     PromisE_Deferred_Options,
     PromisE_PostDeferredArgs,
     PromisE_PostArgs
@@ -39,7 +38,12 @@ export function PromisE_deferredPost<const TArgs extends Defaults = Defaults>(
             timeout ?? defaultOptions,
             abortCtrl,
         ] as any as PromisE_PostArgs
-        return PromisE_post(...postArgs) as IPromisE<TData>
+
+        const promise = PromisE_post<TData>(...postArgs)
+        // abort post request if promise is finalized manually before completion
+        // by invoking `promise.reject()` or `promise.resolve()`
+        promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
+        return promise
     }
     const postCb = PromisE_deferredCallback(doPost, deferOptions)
     return postCb

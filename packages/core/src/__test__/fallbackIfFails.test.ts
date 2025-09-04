@@ -5,7 +5,6 @@ import {
 	vi
 } from 'vitest'
 import { fallbackIfFails } from '../fallbackIfFails'
-import PromisE from '../PromisE'
 
 describe('fallbackIfFails', () => {
 	// Synchronous tests
@@ -90,7 +89,10 @@ describe('fallbackIfFails', () => {
 		})
 
 		it('should return a promise that resolves with the fallback value if target is a rejecting promise', async () => {
-			const promise = PromisE.delayReject<string>(0, 'Promise Rejected')
+			const promise = new Promise(
+				(_, reject) => 
+					setTimeout(() => reject('Promise Rejected'), 1)
+			)
 			const result = await fallbackIfFails(promise, [], 'fallback')
 			expect(result).toBe('fallback')
 		})

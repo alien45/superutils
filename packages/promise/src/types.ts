@@ -75,7 +75,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 export type IPromisE_Timeout<T = unknown> = IPromisE<T> & { 
     /** The result/data promise. If more than one supplied in `args` result promise will be a combined `PromisE.all` */
     data: IPromisE<T>
-    timedout: boolean
+    /** A shorthand getter to check if the promise has timed out. Same as `promise.timeout.rejected`. */
+    readonly timedout: boolean
     /** Clearing the timeout will prevent it from timing out */
     clearTimeout: () => void
     /** The timeout promise */

@@ -1,6 +1,6 @@
-import PromisE_delayReject from "./delayReject"
-import PromisEBase from "./PromisEBase"
-import { IPromisE_Timeout } from "./types"
+import PromisE_delayReject from './delayReject'
+import PromisEBase from './PromisEBase'
+import { IPromisE_Timeout } from './types'
 
 /**
  * @name    PromisE.timeout
@@ -39,25 +39,25 @@ import { IPromisE_Timeout } from "./types"
  * ).catch(console.error)
  * // Error: Error('Timed out after 5000ms')
  *```
-    * 
-    * @example Example 4: timed out & but not rejected.
-    * // Eg: when API request is taking longer than expected, print a message but not reject the promise.
-    * ```javascript
-    * const promise = PromisE.timeout(
-    *     5000, // timeout after 5000ms
-    *     PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000
-    * )
-    * const data = await promise.catch(err => {
-    *     // promise did not time out, but was rejected because one of the data promises rejected
-    *     if (!promise.timeout.rejected) return Promise.reject(err)
-    * 
-    *     // promise timed out >> print/update UI
-    *     console.log('Request is taking longer than expected......')
-    *     // now return the data promise (the promise(s) provided in the PromisE.timeout())
-    *     return promise.data
-    * })
-    *```
-*/
+ * 
+ * @example Example 4: timed out & but not rejected.
+ * // Eg: when API request is taking longer than expected, print a message but not reject the promise.
+ * ```javascript
+ * const promise = PromisE.timeout(
+ *     5000, // timeout after 5000ms
+ *     PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000
+ * )
+ * const data = await promise.catch(err => {
+ *     // promise did not time out, but was rejected because one of the data promises rejected
+ *     if (!promise.timedout) return Promise.reject(err)
+ * 
+ *     // promise timed out >> print/update UI
+ *     console.log('Request is taking longer than expected......')
+ *     // now return the data promise (the promise(s) provided in the PromisE.timeout())
+ *     return promise.data
+ * })
+ *```
+ */
 export function PromisE_timeout <
     T extends any[] | [],
     TOut = T['length'] extends 1
@@ -80,7 +80,11 @@ export function PromisE_timeout <
     promise.clearTimeout = () => clearTimeout(timeoutPromise.timeoutId)
     promise.data = dataPromise
     promise.timeout = timeoutPromise
-    // make sure to 
+    // add a short hand `promise.timedout` to access whether promise has timed out
+    Object.defineProperty(promise, 'timedout', {
+        get: () => promise.timeout.rejected,
+    })
+    // clear timeout after finalization
     dataPromise
         .catch(e => e) // prevents unhandled rejection here
         .finally(promise.clearTimeout)

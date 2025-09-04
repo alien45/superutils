@@ -1,7 +1,11 @@
-import { isValidURL, isObj, isPositiveNumber } from "../is"
-import { TimeoutId } from "../types"
-import PromisEBase from "./PromisEBase"
-import { IPromisE, PromisE_FetchArgs } from "./types"
+import {
+    isValidURL,
+    isObj,
+    isPositiveNumber,
+    TimeoutId
+} from '@utiils/core'
+import PromisEBase from './PromisEBase'
+import { IPromisE, PromisE_FetchArgs } from './types'
 
 /**
  * @name    PromisE.fetchResponse

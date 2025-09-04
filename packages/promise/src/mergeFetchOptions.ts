@@ -1,5 +1,4 @@
-import { isStr } from "../is";
-import { FetchOptions, PostBody } from "./types";
+import { FetchOptions } from './types'
 
 export const mergeFetchOptions = (
     defaults: FetchOptions = {},

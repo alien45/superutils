@@ -1,6 +1,9 @@
-import deferred from '../deferred'
-import { isFn, isPositiveNumber } from '../is'
-import throttled from '../throttled'
+import {
+    deferred,
+    isFn,
+    isPositiveNumber,
+    throttled,
+} from '@utiils/core'
 import PromisEBase from './PromisEBase'
 import {
     IPromisE,

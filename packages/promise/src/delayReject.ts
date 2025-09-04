@@ -1,5 +1,4 @@
-import PromisE_delay from "./delay";
-import PromisEBase from "./PromisEBase";
+import PromisE_delay from './delay'
 
 /**
  * @name    PromisE.delayReject
