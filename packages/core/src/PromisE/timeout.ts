@@ -59,7 +59,7 @@ import { IPromisE_Timeout } from "./types"
     *```
 */
 export function PromisE_timeout <
-    T extends readonly unknown[] | [],
+    T extends any[] | [],
     TOut = T['length'] extends 1
         ? T[0]
         : T

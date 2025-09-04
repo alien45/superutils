@@ -29,11 +29,15 @@ export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
 export type DropFirstN<
     T extends any[],
     N extends number,
-    TDropped extends any[] = [],
-> = TDropped['length'] extends N
+    Dropped extends any[] = [],
+> = Dropped['length'] extends N
     ? T
-    : T extends [infer First, ...infer TWithoutFirst]
-        ? DropFirstN<TWithoutFirst, N, [...TDropped, First]>
+    : T extends [infer First, ...infer Rest]
+        ? DropFirstN<
+            Rest,
+            N,
+            [...Dropped, First] // add to the dropped list
+        >
         : T
 /**
  * Drop the last item from an array/tuple and keep the rest
@@ -124,8 +128,19 @@ export type MakeOptionalRight<
 
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
 
+export type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
 
-type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
+
+// type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
+type Tuple = 
+// Partial<
+    Parameters<(
+        name: string,
+        age: number,
+        userId?: string,
+        sex?: 'm' | 'f',
+    ) => {}>
+// >
 type X = DropFirst<Tuple>
 type Y = DropFirstN<Tuple, 3>
 type Z = DropLast<Tuple>

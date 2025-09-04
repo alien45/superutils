@@ -89,7 +89,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         throttle: throttle = false,
     } = options
     let lastPromisE: IPromisE<T> | null = null
-    type QueueItem = ReturnType<typeof PromisEBase.withResolvers<T>> & {
+    interface QueueItem extends ReturnType<typeof PromisEBase.withResolvers<T>> {
         callback: () => Promise<T>,
     }
     const queue: Map<Symbol, QueueItem> = new Map()
@@ -133,24 +133,29 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                 case ResolveIgnored.WITH_UNDEFINED:
                     item.resolve(undefined as T)
                 case ResolveIgnored.WITH_LAST:
-                    item.resolve(promise)
+                    promise.then(item.resolve)
             }
         }
     }
-    if (isPositiveNumber(defer)) executor = (throttle ? throttled : deferred)(
-        executor,
-        defer,
-        silent
-    )
+    if (isPositiveNumber(defer)) {
+        const deferFn = throttle
+            ? throttled
+            : deferred
+        executor = deferFn(
+            executor,
+            defer,
+            silent
+        )
+    }
+
     const deferPromise = <TResult = T>(promise: Promise<T> | (() => Promise<T>)) => {
-        const id = Symbol('deferred-queue-item-id')
-        // add to queue
-        const queueItem = { 
+        const queueItem = {
             ...PromisEBase.withResolvers<T>(),
             callback: isFn(promise)
                 ? promise
                 : () => promise
         }
+        const id = Symbol('deferred-queue-item-id')
         queue.set(id, queueItem)
         if (!lastPromisE || defer > 0) executor(id, queueItem)
         return queueItem.promise as any as IPromisE<TResult>

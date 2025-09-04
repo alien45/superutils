@@ -20,7 +20,9 @@ export const throttled = <TArgs extends unknown[]>(
     if (thisArg !== undefined) callback = callback.bind(thisArg)
     if (silent ?? throttled.defaultSilent) {
         const _callback = callback
-        callback = (...args: TArgs) => fallbackIfFails(_callback, args)
+        callback = (...args: TArgs) => Promise
+            .try(_callback, ...args)
+            .catch(() => {})
     }
 
     return (...args: TArgs) => {

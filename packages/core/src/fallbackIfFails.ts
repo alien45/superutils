@@ -1,15 +1,24 @@
-import { isError, isFn, isPromise } from "./is"
+import {
+    isError,
+    isFn,
+    isPromise
+} from "./is"
 
 /**
  * @name	fallbackIfFails
- * @summary a flexible try-catch wrapper for invoking functions to catch errors gracefully.
- * Ensures a value is always returned by avoiding any unexpected errors.
+ * @summary a flexible try-catch wrapper for invoking functions and ignore errors gracefully.
+ * Yes, the goal of `fallbackIfFails` is to ignore all runtime errors
+ * and ensure there's always a value returned.
+ * 
+ * ---
  * 
  * `fallbackValue` PS:  
  * 
  * 1. If function provided and Error is thrown it will not be caught. 
  * A fallback of the fallback is out of the scope of this function.
  * 2. If `target` a promise or async function, `fallbackValue` must either be a promise or resolve to a promise
+ * 
+ * ---
  * 
  * @param target        promise or function to execute
  * @param args			arguments to be supplied to `func` fuction
@@ -49,35 +58,39 @@ import { isError, isFn, isPromise } from "./is"
  * ) 
  * ``` 
  */
+type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
 export const fallbackIfFails = <
     TValue = unknown,
-    TArgs extends any[] = unknown[],
+    TArgs extends unknown[] = [],
+    Target = ValueOrFunc<TValue, TArgs> //TValue | ((...args: TArgs) => TValue)
 >(
-    target: TValue | ((...args: TArgs) => TValue),
-    args: TArgs | (() => TArgs),
-    fallbackValue?: TValue | ((err?: Error) => TValue)
-): TValue => {
-    let result: any = undefined
+    target: Target,
+    args?: Target extends ((...args: any[]) => any)
+        ? ValueOrFunc<TArgs | TArgs[number][], []>
+        : [], // when a value/promise is provided as target, only accept undefined or empty array
+    fallbackValue?: ValueOrFunc<TValue | Awaited<TValue>, [Error?]>
+) => {
+    let result: TValue | Promise<Awaited<TValue>> | undefined = undefined
     let err: Error | undefined = undefined
+    const getAltVal = (err?: Error) => isFn(fallbackValue)
+        ? fallbackValue(err)
+        : fallbackValue
     try {
         result = !isFn(target)
             ? target // value or promise received
-            : target(...isFn(args) ? args() : args)
-        if (!isPromise(result)) return result
+            : target(...(
+                isFn(args)
+                    ? args()
+                    : args ?? []
+            ) as unknown as TArgs)
+        return !isPromise(result)
+            ? result
+            : result.catch(getAltVal)
     } catch (error) {
         err = !isError(error)
             ? new Error(error as any)
             : error
+        return getAltVal(err)
     }
-    const getAltVal = (err?: Error) => isFn(fallbackValue)
-        ? fallbackValue(err)
-        : fallbackValue
-    result = isPromise(result)
-        ? result.catch(getAltVal)
-        : isError(err)
-            ? getAltVal(err)
-            : result
-
-    return result
 }
 export default fallbackIfFails
