@@ -1,3 +1,16 @@
+import PromisE_deferred from './deferred'
+import PromisE_deferredCallback from './deferredCallback'
+import PromisE_deferredFetch from './deferredFetch'
+import PromisE_deferredPost from './deferredPost'
+import PromisE_delay from './delay'
+import PromisE_delayReject from './delayReject'
+import PromisE_fetch from './fetch'
+import PromisE_fetchResponse from './fetchResponse'
+import PromisE_post from './post'
+import PromisEBase from './PromisEBase'
+import PromisE_timeout from './timeout'
+import { ResolveIgnored } from './types'
+
 export * from './deferred'
 export * from './deferredCallback'
 export * from './deferredFetch'
@@ -10,20 +23,10 @@ export * from './PromisEBase'
 export * from './post'
 export * from './timeout'
 export * from './types'
-import PromisE_deferred from "./deferred"
-import PromisE_deferredCallback from "./deferredCallback"
-import PromisE_deferredFetch from "./deferredFetch"
-import PromisE_deferredPost from "./deferredPost"
-import PromisE_delay from "./delay"
-import PromisE_delayReject from "./delayReject"
-import PromisE_fetch from "./fetch"
-import PromisE_fetchResponse from "./fetchResponse"
-import PromisE_post from "./post"
-import PromisEBase from "./PromisEBase"
-import PromisE_timeout from "./timeout"
-import { IPromisE } from "./types"
 
 export class PromisE<T = unknown> extends PromisEBase<T> {
+    static get defaultResolveIgnored () { return PromisEBase.defaultResolveIgnored }
+    static set defaultResolveIgnored (v: ResolveIgnored ) { PromisEBase.defaultResolveIgnored = v }
     static deferred = PromisE_deferred
     static deferredCallback = PromisE_deferredCallback
     static deferredFetch = PromisE_deferredFetch

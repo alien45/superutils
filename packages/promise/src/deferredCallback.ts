@@ -13,7 +13,7 @@ import { PromisE_Deferred_Options } from './types'
  *     throttle: false, // throttle with delay duration set in `defer`
  * })
  * // simulate click event
- * ;[
+ * const delays = [
  *     100,
  *     150,
  *     200,
@@ -22,7 +22,8 @@ import { PromisE_Deferred_Options } from './types'
  *     600,
  *     1000,
  *     1100,
- * ].forEach(timeout => 
+ * ]
+ * delays.forEach(timeout => 
  *     setTimeout(() => handleChangeDeferred({ 
  *        target: { value: timeout }
  *     }), timeout)

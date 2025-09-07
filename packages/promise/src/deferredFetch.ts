@@ -1,4 +1,4 @@
-import { MakeOptionalLeft } from '@utiils/core'
+import { forceCast, MakeOptional } from '@utiils/core'
 import PromisE_deferred from './deferred'
 import PromisE_deferredCallback from './deferredCallback'
 import PromisE_fetch from './fetch'
@@ -22,11 +22,8 @@ type Defaults = PromisE_FetchDeferredArgs
  *     resolveIgnored: ResolveIgnored.WITH_ACTIVE,
  *     throttle: true,
  * })
- * ;(async () => {
- *     getProducts('https://dummyjson.com/products/1').then(console.log)
- *     await PromisE.delay(200)
- *     getProducts('https://dummyjson.com/products/2').then(console.log)
- * })()
+ * getProducts('https://dummyjson.com/products/1').then(console.log)
+ * setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log), 200)
  * // result (throttle = true): only product 1 retrieved
  * 
  * // result (throttle = false): only product 2 retrieved
@@ -50,7 +47,7 @@ export function PromisE_deferredFetch<
     ]: TArgs
 ) {
     let _abortCtrl: AbortController | undefined
-    type CbArgs = MakeOptionalLeft<PromisE_FetchArgs, TArgs['length']>
+    type CbArgs = MakeOptional<PromisE_FetchArgs, 0, TArgs['length']>
     const fetchCallback = <TCbData = unknown>(...[
         url,
         options,
@@ -61,16 +58,18 @@ export function PromisE_deferredFetch<
         // abort any previous fetch
         _abortCtrl?.abort()
         _abortCtrl = abortCtrl as AbortController
-        const allArgs = [
-            url ?? defaultUrl,
-            mergeFetchOptions(defaultOptions, options ?? {}),
-            timeout ?? defaultTimeout,
-            abortCtrl,
-            errMsgs ?? defaultErrMsgs,
-        ] as any as PromisE_FetchArgs
-        const promise = PromisE_fetch<TCbData>(...allArgs)
+        const promise = PromisE_fetch<TCbData>(
+            ...forceCast<PromisE_FetchArgs>([
+                url ?? defaultUrl,
+                mergeFetchOptions(defaultOptions, options ?? {}),
+                timeout ?? defaultTimeout,
+                abortCtrl,
+                errMsgs ?? defaultErrMsgs,
+            ])
+        )
         // abort fetch request if promise is finalized manually before completion
-        // by invoking `promise.reject()` or `promise.resolve()        promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
+        // by invoking `promise.reject()` or `promise.resolve()
+        promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
         return promise
     }
     return PromisE_deferredCallback(fetchCallback, deferOptions)

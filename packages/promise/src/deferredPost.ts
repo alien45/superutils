@@ -1,4 +1,4 @@
-import { MakeOptionalLeft } from '@utiils/core'
+import { forceCast, MakeOptional } from '@utiils/core'
 import PromisE_deferredCallback from './deferredCallback'
 import mergeFetchOptions from './mergeFetchOptions'
 import PromisE_post from './post'
@@ -19,27 +19,27 @@ export function PromisE_deferredPost<const TArgs extends Defaults = Defaults>(
     ]: TArgs
 ) {
     let _abortCtrl: AbortController | undefined
-    type CbArgs = MakeOptionalLeft<PromisE_PostArgs, TArgs['length']>
+    type CbArgs = MakeOptional<PromisE_PostArgs, 0, TArgs['length']>
     const doPost = <TData = unknown>(...[
-        url = defaultUrl,
-        data = defaultData,
+        url,
+        data,
         options,
-        timeout = defaultTimeout,
+        timeout,
         abortCtrl = new AbortController()
     ]: CbArgs) => {
         // abort any previous fetch
         _abortCtrl?.abort()
         // create a new abort control for current request
         _abortCtrl = abortCtrl as AbortController
-        const postArgs = [
-            url ?? defaultUrl,
-            data,
-            mergeFetchOptions(options ?? {}, defaultOptions),
-            timeout ?? defaultOptions,
-            abortCtrl,
-        ] as any as PromisE_PostArgs
-
-        const promise = PromisE_post<TData>(...postArgs)
+        const promise = PromisE_post<TData>(
+            ...forceCast<PromisE_PostArgs>([
+                url ?? defaultUrl,
+                data ?? defaultData,
+                mergeFetchOptions(options ?? {}, defaultOptions),
+                timeout ?? defaultTimeout,
+                abortCtrl,
+            ])
+        )
         // abort post request if promise is finalized manually before completion
         // by invoking `promise.reject()` or `promise.resolve()`
         promise.onEarlyFinalize.push(() => _abortCtrl?.abort())

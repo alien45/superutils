@@ -1,4 +1,8 @@
-import { isFn, isPromise } from '@utiils/core'
+import {
+    asAny,
+    isFn,
+    isPromise
+} from '@utiils/core'
 import {
     PromisE_WithResolvers,
     OnEarlyFinalize,
@@ -11,7 +15,7 @@ import {
  * @class PromisEBase
  * @summary attempts to solve a simple problem of Promise status (resolved/rejected) not being accessible externally.
  * 
- * For more example see static functions like {@link PromisEBase.deferred}, {@link PromisEBase.fetch}, {@link PromisEBase.timeout} etc.
+ * For more example see static functions like `PromisE.deferred}, `PromisE.fetch}, `PromisE.timeout} etc.
  *
  * ---
  *
@@ -42,7 +46,7 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
     
     static defaultResolveIgnored = ResolveIgnored.WITH_LAST
 
-    /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
+    /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
     public onEarlyFinalize: OnEarlyFinalize<T>[] = []
     
     constructor(...args: PromiseParams<T>)
@@ -63,13 +67,13 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
                 this._reject = reject
                 try {
                     const value = await promise
-                    ;(this as any).resolved = true
+                    asAny(this).resolved = true
                     resolve(value)
                 } catch (err) {
-                    (this as any).rejected = true
+                    asAny(this).rejected = true
                     reject(err)
                 }
-                (this as any).pending = false
+                asAny(this).pending = false
             })
         })
     }
@@ -123,7 +127,7 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
     /** Sugar for `new PromisE(Promise.all(...))` */
     static all = <T extends readonly unknown[] | []>(values: T) => new PromisEBase(
         Promise.all<T>(values)
-    ) as IPromisE<{ -readonly [P in keyof T]: Awaited<T[P]>; }>
+    ) as IPromisE<{ -readonly [P in keyof T]: Awaited<T[P]> }>
 
     /** Sugar for `new PromisE(Promise.allSettled(...))` */
     static allSettled = <T extends unknown[]>(values: T) => new PromisEBase(
@@ -157,13 +161,11 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
         Promise.try<T, U>(...args)
     ) as IPromisE<Awaited<T>>
 
-    /** Creates a new {@link PromisEBase} and returns it in an object, along with its `resolve` and `reject` functions. */
+    /** Creates a new {@link IPromisE} instance and returns it in an object, along with its `resolve` and `reject` functions. */
     static withResolvers = <T = unknown>(): PromisE_WithResolvers<T> => {
         const pwr = Promise.withResolvers<T>()
-        return {
-            ...pwr,
-            promise: new PromisEBase<T>(pwr.promise) as IPromisE<T>,
-        }
+        const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
+        return { ...pwr, promise }
     }
 }
 export default PromisEBase

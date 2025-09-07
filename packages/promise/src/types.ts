@@ -102,7 +102,7 @@ export type PostBody = Record<string, unknown> | BodyInit | null
 export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
 
 export type PromisE_Deferred_Options = {
-    defer?: number,
+    // defer?: number,
     onError?: (err: Error) => void,
     /**
      * Use for debugging or logging purposes only.
@@ -122,8 +122,8 @@ export type PromisE_Deferred_Options = {
     silent?: boolean,
     /** If provided will be used as the "thisArg" when invoking any of the provided callback functions */
     thisArg?: unknown,
-    throttle?: boolean,
-}
+    // throttle?: boolean,
+} & ({ defer?: number, throttle?: undefined } | { defer: number, throttle: boolean })
 
 export type PromisE_FetchArgs = [
     url: string | URL,

@@ -1,5 +1,6 @@
 import {
     deferred,
+    forceCast,
     isFn,
     isPositiveNumber,
     throttled,
@@ -89,7 +90,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         resolveIgnored = PromisEBase.defaultResolveIgnored,
         silent = true,
         thisArg,
-        throttle: throttle = false,
+        throttle = false,
     } = options
     let lastPromisE: IPromisE<T> | null = null
     interface QueueItem extends ReturnType<typeof PromisEBase.withResolvers<T>> {
@@ -161,6 +162,9 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         const id = Symbol('deferred-queue-item-id')
         queue.set(id, queueItem)
         if (!lastPromisE || defer > 0) executor(id, queueItem)
+        return forceCast<IPromisE<TResult>>(
+            queueItem.promise
+        )
         return queueItem.promise as any as IPromisE<TResult>
     }
     return deferPromise

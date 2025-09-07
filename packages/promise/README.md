@@ -62,6 +62,7 @@ console.log(p.resolved) // true
 console.log(p.rejected) // false
 ```
 
+
 ### `PromisE.try(fn)`
 
 Safely execute a function that might throw an error and wrap it in a `PromisE`.
@@ -78,6 +79,21 @@ p.catch(error => {
   console.log(p.rejected)    // true
 })
 ```
+
+
+### `PromisE.delay(duration)`
+
+Creates a promise that resolves after a specified duration, essentially a promise-based `setTimeout`.
+
+```typescript
+import PromisE from '@utils/promise'
+// Wait until `appReady` becomes truthy but 
+while (!appReady) {
+  await PromisE.delay(100)
+}
+
+```
+
 
 ## Advanced Utilities
 
@@ -175,4 +191,3 @@ const loadUserNProducts = () => {
 }
 loadUserNProducts()
  ```
-

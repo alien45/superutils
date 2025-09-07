@@ -15,9 +15,16 @@ import { IPromisE, PromisE_FetchArgs } from './types'
  * @param   {AbortController} abortCtrl
  */
 export function PromisE_fetch <T = unknown>(...args: PromisE_FetchArgs): IPromisE<T> {
-    return new PromisEBase<T>(
+    args[3] = args[3] ?? new AbortController()
+    const _abortCtrl = args[3]
+    const promise = new PromisEBase<T>(
         PromisE_fetchResponse(...args)
             .then(response => response.json())
     )
+
+    // abort fetch request if promise is finalized manually before completion
+    // by invoking `promise.reject()` or `promise.resolve()
+    promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
+    return promise
 }
 export default PromisE_fetch
