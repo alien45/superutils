@@ -22,8 +22,11 @@
     "lint": "eslint . --ext .ts,.tsx",
     "publish:packages": "lerna publish",
     "start": "npm run clean && npm run build && npm run watch",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
+    "test": "bash scripts/test.sh",
+    "test:ui": "npm test :ui",
+    "test:core:ui": "npm test core:ui",
+    "vitest": "vitest",
+    "vitest:ui": "vitest --ui",
     "watch": "tsc --build --watch"
   },
   "workspaces": [

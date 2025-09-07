@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "incremental": true,
     "outDir": "./dist",
     "rootDir": "./src"
   },
   "extends": "../../tsconfig.base.json",
-  "exclude": ["node_modules", "dist", "__tests__"],
   "include": ["src/**/*"]
 }

@@ -1,14 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "CommonJS",
-    "lib": ["ESNext", "DOM"],
+    "composite": true,
     "declaration": true,
-    "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "lib": ["ESNext", "DOM"],
+    "module": "CommonJS",
     "moduleResolution": "node",
-    "resolveJsonModule": true
-  }
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2018",
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/__tests__",
+    "**/__tests__/**"
+  ]
 }
