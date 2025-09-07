@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isFn, PromisE } from '@utiils/core'
+import { isFn } from '@utiils/core'
+import PromisE from '@utiils/promise'
 import { SubjectLike, SubscriptionLike } from './types'
 
 export const ANY_VALUE_SYMBOL = Symbol('any-value')
@@ -34,9 +35,12 @@ export const subjectAsPromise = <T = unknown>(
 	subject: SubjectLike<T>,
 	expectedValue?: T | ((value: T) => boolean),
 	timeout?: number,
-	timeoutMsg: string = 'request timed out before an expected value is received',
+	timeoutMsg: string = 'request timed out before an expected value is received', // eslint-disable-line @typescript-eslint/no-inferrable-types
 ): [PromisE<T>, () => void] => {
-	if (!subject) return [PromisE.reject('subject must be an instance of BehaviorSubject.'), () => { }]
+	if (!subject) {
+		const r = PromisE.reject<T>('subject must be an instance of BehaviorSubject.')
+		return [r, () => { }]
+	}
 
 	let subscription: SubscriptionLike
 	let timeoutId: NodeJS.Timeout

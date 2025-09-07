@@ -1,5 +1,5 @@
-import { isFn, isObj } from "@utiils/core";
-import { SubjectLike } from "./types";
+import { isFn, isObj } from "@utiils/core"
+import { SubjectLike } from "./types"
 
 /**
  * Check if x is RxJS subject-like

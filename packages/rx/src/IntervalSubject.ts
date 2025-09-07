@@ -45,7 +45,7 @@ export class IntervalSubject extends BehaviorSubject<number> {
 	}
 
 	pause = () => {
-		clearInterval(this.intervalId);
+		clearInterval(this.intervalId)
 
 		this.setRunning(false)
 		return this
