@@ -1,4 +1,4 @@
-import { AsyncFn } from "./types"
+import { AsyncFn } from './types'
 
 export const isArr = <T = any> (x: any): x is Array<T> => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) => Array.from(new Set<T>(arr))
@@ -32,15 +32,26 @@ export const isPromise = <T = any>(x: any): x is Promise<T> => x instanceof Prom
 export const isSet = <T = any>(x: any): x is Set<T> => x instanceof Set
 export const isStr = (x: any): x is string => typeof x === 'string'
 export const isUrl = (x: any): x is URL => x instanceof URL
-export const isValidDate = (dateOrStr: Date | string) => {
-    const date = new Date(dateOrStr)
-    // avoids "Invalid Date"
-    if (Number.isNaN(date.getTime())) return false
+/**
+ * @name    isValidDate
+ * @summary Checks if a value is a valid date.
+ * 
+ * @param   date The value to check. Can be a Date object or a string.
+ * 
+ * @returns `true` if the value is a valid date, `false` otherwise.
+ */
+export const isValidDate = (date: any) => {
+    const dateIsStr = isStr(date)
+    if (!dateIsStr && !isDate(date)) return false
+    
+    const dateObj = new Date(date)
+    // avoids 'Invalid Date'
+    if (Number.isNaN(dateObj.getTime())) return false
     // provided dateOrStr is a Date object and has a valid timestamp
-    if (!isStr(dateOrStr)) return true
+    if (!dateIsStr) return true
 
     // hack to detect & prevent `new Date(dateOrStr)` converting '2021-02-31' to '2021-03-03'
-    const [original, converted] = [dateOrStr, date.toISOString()].map(y => y
+    const [original, converted] = [date, dateObj.toISOString()].map(y => y
         .replace(/[TZ]/g, '')
         .substring(0, 10)
     )
@@ -50,6 +61,17 @@ export const isValidNumber = (x: any): x is number =>
     typeof x == 'number'
     && !isNaN(x)
     && isFinite(x)
+/**
+ * Checks if a value is a valid URL.
+ * @param x The value to check.
+ * @param strict If true:
+ * - requires a domain name with a TLDs etc.
+ * - and x is string, catches any auto-correction (eg: trailing spaces being removed, spaces being replaced by `%20`)
+ * by `new URL()` to ensure string URL is valid
+ * Defaults to true.
+ * 
+ * @returns `true` if the value is a valid URL, `false` otherwise.
+ */
 export const isValidURL = (x: any, strict = true) => {
     if (!x) return false
     try {
@@ -60,8 +82,13 @@ export const isValidURL = (x: any, strict = true) => {
         // If strict mode is set to `true` and if a string value provided, it must match resulting value of new URL(x).
         // This can be used to ensure that a URL can be queried without altering.
         if (!isAStr || !strict) return true
-        // catch any auto-correction by `new URL()`. 
-        // Eg: spaces in the domain name being replaced by`%20` or missing `/` in protocol being auto added
+
+        // require domain name & extension
+        if (strict && url.host.split('.').length <= 1) return false
+
+        // catch any auto-correction by `new URL()` to ensure string URL is valid
+        // Eg: spaces in the domain name being replaced by `%20` or missing `/` in protocol being auto added
+        // Eg: trailing and leading spaces being removed
         x = `${x}`
         if (x.endsWith(url.hostname)) x += '/'
         return url.href == x

@@ -1,4 +1,5 @@
-import { DropFirstN, KeepFirstN } from './types'
+import { forceCast } from './forceCast'
+import { DropFirstN, KeepFirstN, KeepOptionals, KeepRequired } from './types'
 
 /**
  * A recursive helper type that defines the signature of the curry function.
@@ -57,58 +58,21 @@ type Curry<TData, TParams extends any[]> = <TArgs extends any[]>(
  * // All args provided, returns the result
  * const result = fnWith3('last')
  */
-export const curry = <TData, TParams extends any[]>(
-    fn: (...args: TParams) => TData,
+export const curry = <
+    TData,
+    TArgs extends any[],
+    TCurryArgs extends any[] = [...KeepRequired<TArgs>, ...KeepOptionals<TArgs, true>],
+>(
+    fn: (...args: TArgs) => TData,
     arity?: number
-): Curry<TData, TParams> => {
-    const n = arity ?? fn.length;
+): Curry<TData, TCurryArgs> => {
+    const n = arity ?? fn.length
     // The runtime implementation of the curried function.
-    const curriedFn = (
-        ...args: Partial<TParams>
-    ): any => {
+    const curriedFn = (...args: Partial<TCurryArgs>): any => {
         // If we have received enough arguments, call the original function.
-        if (args.length >= n) return fn(...(args as TParams))
+        if (args.length >= n) return fn(...forceCast<TArgs>(args))
         // Otherwise, return a new function that waits for the rest of the arguments.
-        return (...nextArgs: any[]) => curriedFn(...[...args, ...nextArgs] as TParams)
+        return (...nextArgs: any[]) => curriedFn(...[...args, ...nextArgs] as TCurryArgs)
     }
-    return curriedFn as Curry<TData, TParams>
+    return curriedFn as Curry<TData, TCurryArgs>
 }
-
-// export const curryX = <
-//     TReturn,
-//     AllArgs extends any[],
-// >(
-//     fn: (...args: AllArgs) => TReturn,
-// ) => {
-//     const receivedArgs: Partial<AllArgs> = [] as any as Partial<AllArgs>
-//     // if (receivedArgs.length >= fn.length) return fn(...(receivedArgs as TArgs))
-        
-//     const curryY = <TArgs2 extends any[]>(
-//         ...args: DropFirstN<TArgs2, typeof receivedArgs.length>
-//     ) =>(...args: ) => {
-//         const nextArgs = [...receivedArgs, ...arguments]
-//     }
-// }
-
-
-// A regular function
-const func = (
-    first: string,
-    second: number,
-    third: boolean,
-    fourth: string
-) => `${first}-${second}-${third}-${fourth}`
-// We create a new function from the `func()` function that acts like a type-safe curry function
-// while also being flexible with the number of arguments supplied.
-const curriedFunc = curry(func)
-
-const fnWith0 = curriedFunc()
-// Example 1: usage like a regular curry function and provide one argument at a time.
-// Returns a function expecting args: second, third, fourth
-const fnWith1 = fnWith0('first', )
-// Returns a function expecting args: third, fourth
-const fnWith2 = fnWith1(2)
-// returns a function epecting only fourth arg
-const fnWith3 = fnWith2(false)
-// All args are now provided, the original function is called and result is returned.
-const result = fnWith3('last')

@@ -5,6 +5,8 @@
  * @param	{Function}	callback 	function to be invoked after timeout
  * @param	{Number}	delay		(optional) timeout duration in milliseconds.
  * 									Default: 50
+ * @param   {boolean}   silent      (optional) if true, errors on callback will be gracefully ignored.
+ *                                  Default: `deferred.defaultSilent`
  * @param	{*}			thisArg		(optional) the special `thisArgs` to be used when invoking the callback.
  * @param	{*}			tid		    (optional) Timeout Id. If provided, will clear the timeout on first invocation.
  * 

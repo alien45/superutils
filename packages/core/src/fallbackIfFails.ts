@@ -70,13 +70,11 @@ export const fallbackIfFails = <
         : [], // when a value/promise is provided as target, only accept undefined or empty array
     fallbackValue?: ValueOrFunc<TValue | Awaited<TValue>, [Error?]>
 ) => {
-    let result: TValue | Promise<Awaited<TValue>> | undefined = undefined
-    let err: Error | undefined = undefined
     const getAltVal = (err?: Error) => isFn(fallbackValue)
         ? fallbackValue(err)
         : fallbackValue
     try {
-        result = !isFn(target)
+        const result = !isFn(target)
             ? target // value or promise received
             : target(...(
                 isFn(args)
@@ -87,7 +85,7 @@ export const fallbackIfFails = <
             ? result
             : result.catch(getAltVal)
     } catch (error) {
-        err = !isError(error)
+        const err = !isError(error)
             ? new Error(error as any)
             : error
         return getAltVal(err)

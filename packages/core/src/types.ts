@@ -30,7 +30,7 @@ export type DropFirstN<
     T extends any[],
     N extends number,
     Dropped extends any[] = [],
-> = Dropped['length'] extends N
+> = TupleMaxLength<Dropped> extends N
     ? T
     : T extends [infer First, ...infer Rest]
         ? DropFirstN<
@@ -71,7 +71,9 @@ export type ExtractDataType<T = unknown> = T extends Readonly<infer DataType>
  * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
  * ```
  */
-export type KeepFirst<T extends any[]> = KeepFirstN<T, 1>
+export type KeepFirst<T extends any[]> = T extends readonly [infer First, ...DropFirst<T>]
+    ? [First]
+    : never
 
 /**
  * Keep first N items from an array/tuple and drop the rest
@@ -84,11 +86,23 @@ export type KeepFirst<T extends any[]> = KeepFirstN<T, 1>
 export type KeepFirstN<
     T extends readonly any[],
     N extends number = 1,
-> = T['length'] extends N
+> = TupleMaxLength<T> extends N
     ? T
     : T extends readonly [...infer TWithoutLast, any]
         ? KeepFirstN<TWithoutLast, N>
         : never
+
+export type KeepOptionals<
+    T extends any[],
+    Require extends true | false = false,
+    TAlt = undefined
+> = Require extends true
+    ? Required<DropFirstN<T, T['length']>> extends [...infer Optionals]
+        ? { -readonly [K in keyof Optionals]: Optionals[K] | TAlt }
+        : never
+    : DropFirstN<T, T['length']>
+
+export type KeepRequired<T extends any[]> = Slice<T, 0, T['length']>
 
 /** Make T1 optional if T2 is undefined */
 export type OptionalIf<
@@ -103,14 +117,21 @@ export type OptionalIf<
 export type MakeOptional<
     Tuple extends any[],
     IndexStart extends number,
-    IndexEn extends number = IndexStart,
-> = Tuple extends [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
+    IndexEnd extends number = IndexStart,
+> = Tuple extends readonly [...infer Left, ...Slice<Tuple, IndexStart, IndexEnd>, ...infer Right]
     ? [
-        ...KeepFirstN<Tuple, IndexStart>,
-        ...Partial<Range>,
-        ...DropFirstN<Tuple, IndexEn>
+        ...Left,
+        ...Slice<Tuple, IndexStart, IndexEnd>,
+        ...Right
     ]
     : Tuple
+// > = Tuple extends readonly [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
+//     ? [
+//         ...KeepFirstN<Tuple, IndexStart>,
+//         ...Partial<Range>,
+//         ...DropFirstN<Tuple, IndexEn>
+//     ]
+//     : Tuple
 
 export type MakeOptionalLeft<
     Tuple extends any[],
@@ -126,23 +147,57 @@ export type MakeOptionalRight<
     ? [...KeepFirstN<Tuple, Start>, ...Partial<Range>]
     : Tuple
 
+export type Slice<
+    Tuple extends any[],
+    IndexStart extends number,
+    IndexEnd extends number = Tuple['length']
+> = (
+    IndexStart extends 0
+        ? Tuple // left slice
+        : DropFirstN<Tuple, IndexStart> // right slice
+) extends [
+        ...infer Sliced,
+        ...DropFirstN<Tuple, IndexEnd>
+    ]
+    ? Sliced
+    : never
+
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
 
+/**
+ * Get the maximum possible length of a tuple
+ * 
+ * This is particularly useful when a tuple (or function paramenters) contains optional members.
+ * 
+ * ---
+ * @example ```typescript
+ * type MyTuple = [string, number?, boolean?]
+ * type Lengths = MyTuple['length'] // 1 | 2 | 3 // union because of optional parameters
+ * type MaxLength = TupleMaxLength<MyTuple> // 3
+ * ```
+ */
+export type TupleMaxLength<T extends readonly any[], Len = T['length']> = (
+    Len extends any
+        ? (x: () => Len) => void
+        : never
+) extends (x: infer R) => void
+    ? R extends () => infer U
+        ? U
+        : never
+    : never
+
+/** 
+ * Accept a type of value or a function that returns the same type of value
+ * 
+ * Examples:
+ * ---
+ * @example ```typescript
+ * import { isFn, ValueOrFunc } from '@utils/core'
+ * const print = (value: ValueOrFunc<string>) => isFn(value)
+ *  ? value()
+ *  : value
+ * print('Print me!')
+ * print(() => 'Print me too!')
+ * ```
+ */
 export type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
-
-
-// type Tuple = [name: string, age: number, userId: string, sex: 'm' | 'f']
-type Tuple = 
-// Partial<
-    Parameters<(
-        name: string,
-        age: number,
-        userId?: string,
-        sex?: 'm' | 'f',
-    ) => {}>
-// >
-type X = DropFirst<Tuple>
-type Y = DropFirstN<Tuple, 3>
-type Z = DropLast<Tuple>
-type A = KeepFirst<Tuple>
-type B = KeepFirstN<Tuple, 2>
