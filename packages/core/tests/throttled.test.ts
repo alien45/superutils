@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import throttled from './throttled'
+import throttled from '../src/throttled'
 
 describe('throttled', () => {
     beforeEach(() => {

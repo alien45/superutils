@@ -50,10 +50,7 @@ describe('curry', () => {
         expect(wAge).toBeTypeOf('function')
 
         const result = wAge('not type gymnastics')
-        expect(result).toBe([
-            'Hello Mr. Earthling!',
-            'Your hobby is not type gymnastics.',
-        ].join(' '))
+        expect(result).toBe('Hello Mr. Earthling! Your hobby is not type gymnastics.')
     })
 
     it('should allow early invoking by providing arity less than max possible number of arguments', () => {
@@ -64,19 +61,20 @@ describe('curry', () => {
         expect(result).toBe(6)
     })
 
-    // it('should accept arguments with no limit and use arity to limit them', () => {
-    //     const multiply = (...args: number[]) => args.reduce((a, b) => a + b, 0)
-    //     const curriedMultiply = curry(multiply, 3)
-    //     const with12 = curriedMultiply(1, 2)
-    //     // expect(with12).toBeTypeOf('function')
-    //     const result = with12(3)
-    //     expect(result).toBeTypeOf('number')
-    //     expect(with12).toBe(2)
-    // })
+    it('should allow function with limitless arguments and require arity to invoke it', () => {
+        const multiply = vi.fn((...args: number[]) => args.reduce((a, b) => a + b, 0))
+        const curriedMultiply = curry(multiply, 3)
+        const with12 = curriedMultiply(1, 2)
+        const result = with12(3)
+        expect(multiply).toHaveBeenCalledWith(1, 2, 3)
+        expect(result).toBeTypeOf('number')
+        expect(result).toBe(6)
+    })
 
-    it('should keep accepting arguments until arity is met even when higher arity set forcefully', () => {
+    it('should keep accepting curried arguments until arity is met even when higher arity set forcefully', () => {
         const multiply = (a: number, b: number, c?: number) => a * b * (c ?? 1)
         const curriedMultiply = (curry as any)(multiply, 6)
+        // const curriedMultiply = curry(multiply, 6 as any)
         const with1 = curriedMultiply(1)
         const with2 = with1(2)
         const with3 = with2(3)

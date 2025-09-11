@@ -19,7 +19,7 @@ import {
     isValidNumber,
     isValidDate,
     isValidURL
-} from './is'
+} from '../src/is'
 
 describe('is', () => {
 

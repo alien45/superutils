@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toDatetimeLocal } from './toDatetimeLocal'
+import { toDatetimeLocal } from '../src/toDatetimeLocal'
 
 describe('toDatetimeLocal', () => {
     it('should format a Date object into a datetime-local string', () => {

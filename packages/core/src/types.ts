@@ -1,10 +1,49 @@
 /**
- * Drop the first item from an array/tuple and keep the rest
+ * Defines an async function
  */
 export type AsyncFn<
     TOut = unknown,
     TArgs extends any[] = []
 > = (...args: TArgs) => Promise<Awaited<TOut>>
+
+/**
+ * Create a tuple of specific type with given length
+ * ---
+ * ```typescript
+ * // Create a new tuple
+ * type CreatedTuple =  CreateTuple<number, 3>
+ * // Result: [number, number, number]
+ * 
+ * // Create a new tuple by extending an existing tuple
+ * type ExtendedTuple = CreateTuple<string, 6, CreatedTuple>
+ * // Result: [number, number, number, string, string, string]
+ * ```
+ */
+export type CreateTuple<
+    T extends any,
+    Length extends number,
+    Output extends readonly any[] = [],
+> = Output['length'] extends Length
+    ? Output
+    : CreateTuple<T, Length, [...Output, T]>
+
+/**
+ * A recursive helper type that defines the signature of the curry function.
+ * @template TParams The tuple of remaining parameters.
+ * @template TData The final return type.
+ */
+export type Curry<
+    TData,
+    TParams extends any[],
+> = <TArgs extends any[]>(
+    // Ensure the provided arguments `TArgs` match the types of the expected parameters `TParams`.
+    ...args: TArgs & KeepFirstN<TParams, TArgs['length']>
+) => // Check if there are any parameters left to be supplied.
+    DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
+        // If yes, return a new curried function expecting the remaining parameters.
+        ? Curry<TData, DropFirstN<TParams, TArgs['length']>>
+        // If no, all parameters have been supplied, so return the final result.
+        : TData
 
 /**
  * Drop the first item from an array/tuple and keep the rest
@@ -33,12 +72,8 @@ export type DropFirstN<
 > = TupleMaxLength<Dropped> extends N
     ? T
     : T extends [infer First, ...infer Rest]
-        ? DropFirstN<
-            Rest,
-            N,
-            [...Dropped, First] // add to the dropped list
-        >
-        : T
+        ? DropFirstN<Rest, N, [...Dropped, First]> // add to the dropped list
+        : never
 /**
  * Drop the last item from an array/tuple and keep the rest
  * ---
@@ -51,17 +86,13 @@ export type DropLast<T extends Array<any>> = T extends [...infer Rest, any]
     ? Rest
     : []
 
-/**
- * Extract inner data type of any supported type
- * ---
- * @example ```javascript
- * type MyArray = Array<string>
- * type MyArraData = ExtractDataType<MyArray> // string
- * ```
- */
-export type ExtractDataType<T = unknown> = T extends Readonly<infer DataType>
-    ? DataType
-    : T
+export type IsFiniteTuple<T extends any[]> = number extends T['length']
+    ? false
+    : true
+
+export type IsOptional<T, K extends keyof T> = {} extends Pick<T, K>
+    ? true
+    : false
 
 /**
  * Keep the first item from an array/tuple and drop the rest
@@ -92,17 +123,49 @@ export type KeepFirstN<
         ? KeepFirstN<TWithoutLast, N>
         : never
 
+/**
+ * Extract optional members of a tuple.
+ * 
+ * @template Tuple  tuple
+ * @template Require (optional) if true, all returned member of the returned tuple will be required field and TAlt will be added as union.
+ * Defaults to `false`
+ * @template TAlt   (optional) Defaults to `undefined`
+ * 
+ * @example ```typescript
+ * import { KeepOptionals } from '@utiils/core
+ * type MyTuple = [first: string, second?: number, third?: boolean]
+ * type Optionals = KeepOptionals<MyTuple>
+ * // Result: [second?: number, third?: boolean]
+ * type AsRequired = KeepOptionals<MyTuple, true>
+ * // Result: [second: number | undefined, third: boolean | undefined]
+ * type AsRequiredWNull = KeepOptionals<MyTuple, true, null>
+ * // Result: [second: number | null, third: boolean | null]
+ * ```
+ */
 export type KeepOptionals<
-    T extends any[],
+    Tuple extends any[],
     Require extends true | false = false,
     TAlt = undefined
 > = Require extends true
-    ? Required<DropFirstN<T, T['length']>> extends [...infer Optionals]
-        ? { -readonly [K in keyof Optionals]: Optionals[K] | TAlt }
+    ? Required<DropFirstN<Tuple, Tuple['length']>> extends [...infer Optionals]
+        ? TupleWithAlt<Optionals, TAlt>
         : never
-    : DropFirstN<T, T['length']>
+    : DropFirstN<Tuple, Tuple['length']>
 
-export type KeepRequired<T extends any[]> = Slice<T, 0, T['length']>
+/** 
+ * Extract all required members of a tuple
+ */
+export type KeepRequired<T extends unknown[]> = KeepFirstN<
+    Required<T>, // force all members to be required to avoid getting `never` because of optional members
+    MinLength<T>
+>
+
+export type MinLength<T extends any[], Count extends any[] = []> =
+  T extends [infer F, ...infer R]
+    ? undefined extends F // optional param?
+      ? MinLength<R, Count> // skip
+      : MinLength<R, [...Count, any]> // increment
+    : Count['length']
 
 /** Make T1 optional if T2 is undefined */
 export type OptionalIf<
@@ -117,49 +180,32 @@ export type OptionalIf<
 export type MakeOptional<
     Tuple extends any[],
     IndexStart extends number,
-    IndexEnd extends number = IndexStart,
+    IndexEnd extends number = TupleMaxLength<Tuple>,
 > = Tuple extends readonly [...infer Left, ...Slice<Tuple, IndexStart, IndexEnd>, ...infer Right]
     ? [
         ...Left,
-        ...Slice<Tuple, IndexStart, IndexEnd>,
-        ...Right
+        ...Partial<Slice<Tuple, IndexStart>>,
+        ...Right,
     ]
-    : Tuple
-// > = Tuple extends readonly [...KeepFirstN<Tuple, IndexStart>, ...infer Range, ...DropFirstN<Tuple, IndexEn>]
-//     ? [
-//         ...KeepFirstN<Tuple, IndexStart>,
-//         ...Partial<Range>,
-//         ...DropFirstN<Tuple, IndexEn>
-//     ]
-//     : Tuple
-
-export type MakeOptionalLeft<
-    Tuple extends any[],
-    IndexEnd extends number,
-> = Tuple extends [...infer Range, ...DropFirstN<Tuple, IndexEnd>]
-    ? [...Partial<Range>, ...DropFirstN<Tuple, IndexEnd>]
     : never
 
-export type MakeOptionalRight<
-    Tuple extends any[],
-    Start extends number,
-> = Tuple extends [...KeepFirstN<Tuple, Start>, ...infer Range]
-    ? [...KeepFirstN<Tuple, Start>, ...Partial<Range>]
-    : Tuple
-
+/**
+ * Create a new slices tuple from an existing tuple
+ * ---
+ * @example ```typescript
+ * type MyTuple = [a: string, b: boolean, c: number, d: Record<string, unknown>]
+ * type FirstHalf = Slice<MyTuple, 0, 2>
+ * type LastHalf = Slice<MyTuple, 2>
+ * ```
+ */
 export type Slice<
     Tuple extends any[],
     IndexStart extends number,
-    IndexEnd extends number = Tuple['length']
-> = (
-    IndexStart extends 0
-        ? Tuple // left slice
-        : DropFirstN<Tuple, IndexStart> // right slice
-) extends [
-        ...infer Sliced,
-        ...DropFirstN<Tuple, IndexEnd>
-    ]
-    ? Sliced
+    IndexEnd extends number = TupleMaxLength<Tuple>,
+> = [...KeepRequired<Tuple>, ...KeepOptionals<Tuple, true>] extends [...infer All]
+    ? DropFirstN<KeepFirstN<All, IndexEnd>, IndexStart> extends [...infer Sliced]
+        ? Sliced
+        : never
     : never
 
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
@@ -176,15 +222,23 @@ export type TimeoutId = Parameters<typeof clearTimeout>[0]
  * type MaxLength = TupleMaxLength<MyTuple> // 3
  * ```
  */
-export type TupleMaxLength<T extends readonly any[], Len = T['length']> = (
-    Len extends any
-        ? (x: () => Len) => void
-        : never
-) extends (x: infer R) => void
-    ? R extends () => infer U
-        ? U
-        : never
-    : never
+export type TupleMaxLength<T extends readonly any[]> = Required<T>['length']
+
+/**
+ * Add alt type to all members of a tuple.
+ * 
+ * ---
+ * @example ```typescript
+ * type MyTuple = [first: boolean, second: string]
+ * type MyTupleWithUndefined = TupleWithAlt<MyTuple>
+ * // Result: [first: boolean | undefined, second: string | undefined]
+ * type MyTupleWithNull = TupleWithAlt<MyTuple, null>
+ * // Result: [first: boolean | null, second: string | null]
+ * ```
+ */
+export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
+    -readonly [K in keyof Tuple]: Tuple[K] | TAlt
+}
 
 /** 
  * Accept a type of value or a function that returns the same type of value
@@ -201,3 +255,5 @@ export type TupleMaxLength<T extends readonly any[], Len = T['length']> = (
  * ```
  */
 export type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
+
+

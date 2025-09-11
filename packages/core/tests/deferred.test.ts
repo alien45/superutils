@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import deferred from './deferred'
+import deferred from '../src/deferred'
 
 describe('deferred', () => {
     beforeEach(() => {

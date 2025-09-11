@@ -6,7 +6,7 @@ import {
 	it,
 	vi
 } from 'vitest'
-import { fallbackIfFails } from './fallbackIfFails'
+import { fallbackIfFails } from '../src/fallbackIfFails'
 
 describe('fallbackIfFails', () => {
     beforeEach(() => {

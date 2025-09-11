@@ -17,11 +17,11 @@
   "private": true,
   "scripts": {
     "clean": "tsc --build --clean",
-    "rmdist": "rm -rf packages/*/dist/",
+    "rmdist": "rm -rf packages/*/dist/*",
     "build": "tsc --build",
     "lint": "eslint . --ext .ts,.tsx",
     "publish:packages": "lerna publish",
-    "start": "npm run clean && npm run build && npm run watch",
+    "start": "npm run rmdist && npm run clean && npm run watch",
     "test": "bash scripts/test.sh",
     "test:ui": "npm test :ui",
     "test:core:ui": "npm test core:ui",

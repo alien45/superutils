@@ -18,11 +18,13 @@
   "exclude": [
     "node_modules",
     "dist",
+    // Exclude all possible tests files and directories
+    "packages/*/tests**",
+    "**/__tests__",
+    "**/__tests__/**",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
-    "**/__tests__",
-    "**/__tests__/**"
   ]
 }

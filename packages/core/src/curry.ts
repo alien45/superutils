@@ -1,28 +1,28 @@
-import { forceCast } from './forceCast'
-import { DropFirstN, KeepFirstN, KeepOptionals, KeepRequired } from './types'
+import forceCast, { asAny } from './forceCast'
+import {
+    CreateTuple,
+    Curry as Curried,
+    IsFiniteTuple,
+    KeepFirstN,
+    KeepOptionals,
+    KeepRequired,
+    TupleMaxLength,
+} from './types'
 
 /**
- * A recursive helper type that defines the signature of the curry function.
- * @template TParams The tuple of remaining parameters.
- * @template TData The final return type.
- */
-type Curry<TData, TParams extends any[]> = <TArgs extends any[]>(
-    // Ensure the provided arguments `TArgs` match the types of the expected parameters `TParams`.
-    ...args: TArgs & KeepFirstN<TParams, TArgs['length']>
-) => // Check if there are any parameters left to be supplied.
-    DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
-        // If yes, return a new curried function expecting the remaining parameters.
-        ? Curry<TData, DropFirstN<TParams, TArgs['length']>>
-        // If no, all parameters have been supplied, so return the final result.
-        : TData
-
-/**
- * CAUTION: EXPERIMENTAL! May not work as expected in production!
- * 
  * Creates a curried version of a function. The curried function can be
- * called with one or more arguments at a time. Once all arguments have been
+ * called with one or more or all arguments at a time. Once all arguments have been
  * supplied, the original function is executed.
- *
+ * 
+ * ---
+ * 
+ * PS:
+ * ---
+ * To get around Typescript's limitations, all optional parameters to will be 
+ * turned required and unioned with `undefined`.
+ * 
+ * ---
+ * 
  * @param fn The function to curry.
  * @returns A new, curried function that is fully type-safe.
  * 
@@ -34,8 +34,8 @@ type Curry<TData, TParams extends any[]> = <TArgs extends any[]>(
  * const func = (
  *     first: string,
  *     second: number,
- *     third: boolean,
- *     fourth: string
+ *     third?: boolean,
+ *     fourth?: string
  * ) => `${first}-${second}-${third}-${fourth}`
  * // We create a new function from the `func()` function that acts like a type-safe curry function
  * // while also being flexible with the number of arguments supplied.
@@ -57,22 +57,40 @@ type Curry<TData, TParams extends any[]> = <TArgs extends any[]>(
  * const fnWith3 = curriedFunc('first', 2, false)
  * // All args provided, returns the result
  * const result = fnWith3('last')
+ * 
+ * // Example 3: early invokation using `arity`
+ * const curriedWArity3 = curry(func, 3)
+ * const result = curriedWArity3('first', 2, false)
+ * ```
  */
-export const curry = <
+export function curry <
     TData,
-    TArgs extends any[],
-    TCurryArgs extends any[] = [...KeepRequired<TArgs>, ...KeepOptionals<TArgs, true>],
+    TArgs extends unknown[],
+    TArgsIsFinite extends boolean = IsFiniteTuple<TArgs>,
+    TArity extends TArgs['length'] = TArgsIsFinite extends true
+        ? TupleMaxLength<TArgs>
+        : number,
 >(
     fn: (...args: TArgs) => TData,
-    arity?: number
-): Curry<TData, TCurryArgs> => {
-    const n = arity ?? fn.length
+    ...[arity = fn.length as TArity]: (
+        TArgsIsFinite extends true
+            ? [arity?: TArity]
+            : [arity: TArity] // force require arity when TArgs is limitless (eg: number[] as opposed to [a: number, b: number])
+    )
+) {
+    type TCurryArgs = TArgsIsFinite extends false
+        ? CreateTuple<Parameters<typeof fn>[number], TArity>
+        : KeepFirstN<[
+            ...KeepRequired<TArgs>,
+            ...KeepOptionals<TArgs, true, undefined>,
+        ], TArity>
+
     // The runtime implementation of the curried function.
-    const curriedFn = (...args: Partial<TCurryArgs>): any => {
+    const curriedFn = (...args: TCurryArgs ): any => {
         // If we have received enough arguments, call the original function.
-        if (args.length >= n) return fn(...forceCast<TArgs>(args))
+        if (asAny(args).length >= arity) return fn(...forceCast<TArgs>(args))
         // Otherwise, return a new function that waits for the rest of the arguments.
-        return (...nextArgs: any[]) => curriedFn(...[...args, ...nextArgs] as TCurryArgs)
+        return (...nextArgs: any[]) => asAny(curriedFn)(...asAny(args), ...nextArgs)
     }
-    return curriedFn as Curry<TData, TCurryArgs>
+    return curriedFn as Curried<TData, TCurryArgs>
 }
