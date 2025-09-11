@@ -22,30 +22,25 @@ if [[ "${FIRST}" == :* ]]; then
     export FIRST="*${FIRST}"
 fi
 
-# Helper function to check if an array contains a given element.
-# @param $1 - The element to search for.
-# @param $2.. - The array elements.
-# @return 0 if found, 1 if not found.
-arrContains () {
-  local e match="$1"
-  shift
-  for e; do [[ "$e" == "$match" ]] && return 0; done
-  return 1
-}
-
 if [[ -n "$FIRST" ]]; then
-    options=(${FIRST//:/ }) # split by ':'
-    export PKG="${PKG:-${options[0]}}"
+    arr=(${FIRST//:/ }) # split by ':'
+    export PKG="${PKG:-${arr[0]}}"
+    options=("${arr[@]:1}") # remove first element
+    isOption () {
+        for opt in "${options[@]}"; do [[ "$opt" == "$1" ]] && return 0;
+        done
+        return 1
+    }
 
-    if arrContains "ui" "${options[@]}"; then
+    if isOption "ui"; then
         export UI="true"
     fi
 
-    if arrContains "run" "${options[@]}" || arrContains "once" "${options[@]}"; then
+    if isOption "run" || isOption "once"; then
         export RUN="true"
     fi
 
-    if arrContains "coverage" "${options[@]}" || arrContains "%" "${options[@]}"; then
+    if isOption "coverage" || isOption "%"; then
         export COVERAGE="true"
     fi
 fi
