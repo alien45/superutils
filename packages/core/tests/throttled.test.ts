@@ -12,7 +12,7 @@ describe('throttled', () => {
 
     it('should call the callback with the correct arguments', () => {
         const callback = vi.fn((n: number) => n)
-        const throttledFunc = throttled(callback, 100)
+        const throttledFunc = throttled(callback, 100, true, null)
 
         // series 1
         throttledFunc(1) // first in serries gets executed

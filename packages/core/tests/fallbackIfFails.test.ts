@@ -19,12 +19,11 @@ describe('fallbackIfFails', () => {
 	
 	// Synchronous tests
 	describe('synchronous', () => {
-		it('should return the value of a successful sync function', () => {
-			const syncFn = vi.fn((...args: number[]) => args.reduce((a, b) => a + b, 0))
-			const args = [2, 3, 5]
-			const result = fallbackIfFails(syncFn, args, 0)
-			expect(syncFn).toHaveBeenCalledWith(...args)
-			expect(result).toBe(10)
+		it('should return the value of a successful sync function without any arguments', () => {
+			const syncFn = vi.fn(() => true)
+			const result = fallbackIfFails(syncFn)
+			expect(syncFn).toHaveBeenCalledWith()
+			expect(result).toBe(true)
 		})
 
 		it('should return the fallback value if a sync function throws an error', () => {
@@ -36,7 +35,7 @@ describe('fallbackIfFails', () => {
 		})
 
 		it('should execute the fallback function to get the value on sync failure', () => {
-			const mockSyncFail = vi.fn(() => { throw new Error('sync error') })
+			const mockSyncFail = vi.fn(() => { throw 'sync error' })
 			const fallbackFn = vi.fn(() => 'fallback from function')
 			const result = fallbackIfFails(mockSyncFail, [], fallbackFn)
 			expect(fallbackFn).toHaveBeenCalled()

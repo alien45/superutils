@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import deferred from '../src/deferred'
+import { deferred } from '../src'
 
 describe('deferred', () => {
     beforeEach(() => {
@@ -12,7 +12,7 @@ describe('deferred', () => {
 
     it('should call the callback after the specified delay', () => {
         const callback = vi.fn()
-        const delayedFunc = deferred(callback, 100)
+        const delayedFunc = deferred(callback, 100, true, null)
 
         delayedFunc()
 

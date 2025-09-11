@@ -197,8 +197,6 @@ describe('is', () => {
         })
     })
 
-
-
     describe('isValidDate', () => {
         it('should accept valid Date object or strings', () => {
             expect(isValidDate(new Date())).toBe(true)

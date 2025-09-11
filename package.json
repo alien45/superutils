@@ -27,6 +27,7 @@
     "test:core:ui": "npm test core:ui",
     "vitest": "vitest",
     "vitest:ui": "vitest --ui",
+    "vitest:coverage": "vitest --coverage",
     "watch": "tsc --build --watch"
   },
   "workspaces": [
