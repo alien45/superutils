@@ -10,13 +10,13 @@
 # `npm test core:%` // run test on "core" package with coverage enabled
 
 # Respect existing environment variables
+FIRST=$1
 export PKG="${PKG:-*}" # * => all packages
 export UI="${UI:-false}"
 export RUN="${RUN:-false}"
 export COVERAGE="${COVERAGE:-false}"
 
 SCRIPT="vitest"
-FIRST=$1
 
 if [[ "${FIRST}" == :* ]]; then
     export FIRST="*${FIRST}"
@@ -24,7 +24,11 @@ fi
 
 if [[ -n "$FIRST" ]]; then
     arr=(${FIRST//:/ }) # split by ':'
-    export PKG="${PKG:-${arr[0]}}"
+
+    if [[ "$arr[0]" != "*" ]]; then
+        export PKG="${arr[0]}"
+    fi
+
     options=("${arr[@]:1}") # remove first element
     isOption () {
         for opt in "${options[@]}"; do [[ "$opt" == "$1" ]] && return 0;

@@ -1,39 +1,110 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vitest'
 import { deferred } from '../src'
 
 describe('deferred', () => {
+    const delayMs = 100
+    const delayMsX2 = delayMs * 2
+
     beforeEach(() => {
         vi.useFakeTimers()
     })
 
     afterEach(() => {
-        vi.restoreAllMocks()
+        vi.useRealTimers()
+    })
+    
+    it('should swallow errors', () => {
+        const bad = vi.fn(() => { throw new Error('boom') })
+        const dfn = deferred(bad, delayMs)
+        expect(() => dfn()).not.toThrow()
     })
 
-    it('should call the callback after the specified delay', () => {
-        const callback = vi.fn()
-        const delayedFunc = deferred(callback, 100, true, null)
-
-        delayedFunc()
-
-        expect(callback).not.toHaveBeenCalled()
-
-        vi.advanceTimersByTime(100)
-
-        expect(callback).toHaveBeenCalled()
+    it('should bind thisArg correctly', () => {
+        type ThisArg = { value: number }
+        const cb = function (this: ThisArg) { }
+        const viCb = vi.fn(cb)
+        const obj = { value: 42 }
+        deferred(
+            viCb as typeof cb, // casting is required for "thisArg" type-safety which vi.fn() removes
+            delayMs,
+            { thisArg: obj }
+        )()
+        vi.advanceTimersByTime(delayMsX2)
+        const cbThisValue = viCb.mock.instances[0]
+        expect(cbThisValue).toBe(obj)
     })
 
-    it('should call the callback with the correct arguments', () => {
+    it('should debounce the callback WIHTOUT leading-edge execution', () => {
         const callback = vi.fn()
-        const delayedFunc = deferred(callback, 100)
-        const args = [1, 'test', { a: 1 }]
-        const args2 = [2, 'test', { a: 2 }]
-        delayedFunc(...args)
-        delayedFunc(...args2)
+        const delayedFunc = deferred(
+            callback,
+            delayMs,
+            { leading: false },
+        )
 
-        expect(callback).not.toHaveBeenCalled()
-        vi.advanceTimersByTime(100)
+        delayedFunc(1)
+        delayedFunc(2)
+        delayedFunc(3)
+        delayedFunc(4)
+        delayedFunc(5)
 
-        expect(callback).toHaveBeenCalledWith(...args2)
+        vi.advanceTimersByTime(delayMsX2)
+        expect(callback).toHaveBeenCalledExactlyOnceWith(5)
+    })
+
+    it('should debounce the callback WITH leading-edge execution', () => {
+        const callback = vi.fn()
+        const delayedFunc = deferred(
+            callback,
+            delayMs,
+            { leading: true },
+        )
+
+        delayedFunc(1)
+        delayedFunc(2)
+        delayedFunc(3)
+        delayedFunc(4)
+        delayedFunc(5)
+
+        vi.advanceTimersByTime(delayMsX2)
+        expect(callback).toHaveBeenCalledTimes(2)
+        expect(callback).toHaveBeenCalledWith(1)
+        expect(callback).not.toHaveBeenCalledWith(2)
+        expect(callback).not.toHaveBeenCalledWith(3)
+        expect(callback).not.toHaveBeenCalledWith(4)
+        expect(callback).toHaveBeenLastCalledWith(5)
+    })
+
+    it('should debounce the callback WITH leading-edge global execution', () => {
+        const callback = vi.fn()
+        const delayedFunc = deferred(
+            callback,
+            delayMs,
+            { leading: 'global' },
+        )
+
+        delayedFunc(1)
+        delayedFunc(2)
+        delayedFunc(3)
+        delayedFunc(4)
+        delayedFunc(5)
+        vi.advanceTimersByTime(delayMs)
+        delayedFunc(6)
+        delayedFunc(7)
+        delayedFunc(8)
+        delayedFunc(9)
+        delayedFunc(10)
+        vi.advanceTimersByTime(delayMsX2)
+        expect(callback).toHaveBeenCalledTimes(3)
+        expect(callback).toHaveBeenCalledWith(1)
+        expect(callback).toHaveBeenCalledWith(5)
+        expect(callback).toHaveBeenLastCalledWith(10)
     })
 })
