@@ -19,13 +19,26 @@ describe('PromisE_deferred', () => {
         vi.useRealTimers()
     })
 
+    it('should accept promises, async funcions and regular functions that returns a promise', async () => {
+        const onResult = vi.fn()
+        const deferredFn = PromisE_deferred({ delayMs: 0, onResult })
+
+        deferredFn(() => PromisE.delay(50, 1))
+        deferredFn(PromisE.delay(150, 2))
+        const last = deferredFn(async () => 3)
+        vi.runAllTimersAsync()
+        await last
+        expect(onResult).toHaveBeenCalledTimes(3)
+        expect(onResult).toHaveBeenCalledWith(1)
+        expect(onResult).toHaveBeenCalledWith(2)
+        expect(onResult).toHaveBeenCalledWith(3)
+    })
 
     it('should allow sequential execution without debounce or throttle', async () => {
         const deferredFn = PromisE_deferred({ delayMs: 0 })
         const executionOrder: (number | undefined)[] = []
         const addToArr = (res?: number) => {
             executionOrder.push(res)
-            // console.log('addToArr', res, promises.map((p, i) => ({ [i + 1]: p.resolved})))
         }
         const promises = [
             deferredFn(() => PromisE.delay(1000, 1)),
@@ -108,26 +121,29 @@ describe('PromisE_deferred', () => {
         expect(onIgnore).toHaveBeenCalledTimes(4)
     })
 
-    it('should debounce calls and gracefully handle error', async () => {
+    it('should handle errors gracefully by resolving the promise either with `undefined` or error `reason`', async () => {
         const onError = vi.fn()
-        const onIgnore = vi.fn()
-        const deferredFn = PromisE_deferred({
+        const conf = {
             delayMs: 100,
             onError,
-            onIgnore,
             resolveError: ResolveError.WITH_UNDEFINED,
-            resolveIgnored: ResolveIgnored.WITH_LAST,
-        })
-
-        
-        deferredFn(() => PromisE.delay(50, 1))
-        deferredFn(() => PromisE.delay(50, 2))
-        deferredFn(() => PromisE.delay(1000, 2.5))
-        const last = deferredFn(() => PromisE.delayReject(500, 3)) // no .catch() needed bacause of `resolveError` flag
+        }
+        const deferredFnREWU = PromisE_deferred(conf)
+        const last = deferredFnREWU(() => PromisE.delayReject(500, 3)) // no .catch() needed bacause of `resolveError` flag
         vi.runAllTimersAsync()
         expect(await last).toBe(undefined)
         expect(onError).toHaveBeenCalledExactlyOnceWith(3)
-        expect(onIgnore).toHaveBeenCalledTimes(3)
+
+        const conf2 = {
+            ...conf,
+            resolveError: ResolveError.WITH_ERROR,
+        }
+        const deferredFnREWE = PromisE_deferred(conf2)
+        const last2 = deferredFnREWE(() => PromisE.delayReject(500, 3))
+        vi.runAllTimersAsync()
+        const result = await last2
+        expect(result).toBe(3)
+
     })
 
     it('should throttle calls, sequentailly executing the first and last', async () => {

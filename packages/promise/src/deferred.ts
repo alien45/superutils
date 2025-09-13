@@ -122,7 +122,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         const items = [...queue.entries()]
         const currentIndex = items.findIndex(([id]) => id === currentId)
         for (let i = 0; i <= currentIndex; i++) {
-            const [iId, iItem] = items[i] || []
+            const [iId, iItem] = items[i]
             queue.delete(iId)
             if (!iItem || iItem.started) continue
 
@@ -150,10 +150,9 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         const finalize = <TResolve extends true | false = true>(
             resolve: TResolve,
             id: Symbol,
-            qItem = queue.get(id),
+            qItem: QueueItem,
         ) => (resultOrErr: TResolve extends true ? unknown : any) => {
             ignoreOrProceed(id, qItem)
-            if (!qItem) return
             if (resolve) {
                 qItem.resolve(resultOrErr)
                 onResult && Promise.try(onResult, resultOrErr)
@@ -174,12 +173,12 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                     break
             }
         }
-        const execute = (id: Symbol, queueItem: QueueItem) => {
-            queueItem.started = true
-            lastPromisE = new PromisEBase(queueItem.callback())
+        const execute = (id: Symbol, qItem: QueueItem) => {
+            qItem.started = true
+            lastPromisE = new PromisEBase(qItem.callback())
             lastPromisE.then(
-                finalize(true, id),
-                finalize(false, id),
+                finalize(true, id, qItem),
+                finalize(false, id, qItem),
             )
         }
         if (!gotDelay) return execute
@@ -194,7 +193,6 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
         )
     })()
     
-    let count = 0
     const deferPromise = <TResult = T>(promise: Promise<TResult> | (() => Promise<TResult>)) => {
         const qItem = {
             ...PromisEBase.withResolvers<unknown>(),
@@ -202,11 +200,9 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                 ? promise
                 : () => promise
         }
-        const id = forceCast<Symbol>(++count) //Symbol('deferred-queue-item-id')
+        const id = Symbol('deferred-queue-item-id') 
         queue.set(id, qItem)
-        if (gotDelay || !lastPromisE) {
-            execute(id, qItem)
-        }
+        if (gotDelay || !lastPromisE) execute(id, qItem)
         return forceCast<IPromisE<TResult>>(qItem.promise)
     }
     return deferPromise
