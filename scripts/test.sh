@@ -24,7 +24,11 @@ fi
 
 if [[ -n "$FIRST" ]]; then
     # Create a new variable "arr" by splitting "FIRST" variable by ':'
-    ':' read -r -a arr <<< "$FIRST" >> /dev/null
+    # IFS = Internal Field Separator
+    # What IFS Does: The read command, and the shell in general, uses the IFS variable 
+    # to determine how to split a line of text into separate "fields" or "words".
+    # TLDR: DO NOT CHANGE "IFS"
+    IFS=':' read -r -a arr <<< "$FIRST"
 
     if [[ "$arr[0]" != "*" ]]; then
         export PKG="${arr[0]}"
@@ -55,5 +59,6 @@ if [[ "${COVERAGE}" == "true" ]]; then
     rm -rf ./coverage
 fi
 
+echo $SCRIPT
 # run Vitest, it will inherit all exported variables
 npm run $SCRIPT
