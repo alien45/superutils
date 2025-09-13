@@ -23,7 +23,8 @@ if [[ "${FIRST}" == :* ]]; then
 fi
 
 if [[ -n "$FIRST" ]]; then
-    arr=(${FIRST//:/ }) # split by ':'
+    # Create a new variable "arr" by splitting "FIRST" variable by ':'
+    ':' read -r -a arr <<< "$FIRST" >> /dev/null
 
     if [[ "$arr[0]" != "*" ]]; then
         export PKG="${arr[0]}"

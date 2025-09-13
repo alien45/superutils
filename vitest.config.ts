@@ -17,7 +17,7 @@ export default defineConfig((config) => {
 		'coverage',
 		'vitest.config.ts',
 	]
-	pkg !== '*' && console.log('\nPackage:', pkg, '\n')
+	console.log('\nPackage:', pkg !== '*' ? pkg : 'All', '\n')
 	return {
 		test: {
 			api: {

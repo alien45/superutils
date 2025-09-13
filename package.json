@@ -25,6 +25,7 @@
     "test": "bash scripts/test.sh",
     "test:ui": "npm test :ui",
     "test:core:ui": "npm test core:ui",
+    "test:coverage": "npm test :%",
     "vitest": "vitest",
     "vitest:ui": "vitest --ui",
     "vitest:coverage": "vitest --coverage",
