@@ -68,7 +68,6 @@ describe('throttled', () => {
         expect(callback).toHaveBeenLastCalledWith(5)
 
         // series 2
-        vi.advanceTimersByTime(delayMsX2) 
         throttledFunc(6)
         throttledFunc(7)
         vi.advanceTimersByTime(1)

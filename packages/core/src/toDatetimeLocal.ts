@@ -1,4 +1,4 @@
-import { isValidDate } from "./is"
+import { isValidDate } from './is'
 
 /**
  * Convert timestamp to HTML `datetime-local` compatible format.

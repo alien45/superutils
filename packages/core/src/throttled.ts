@@ -1,6 +1,6 @@
-import fallbackIfFails from "./fallbackIfFails"
-import { asAny } from "./forceCast"
-import { TimeoutId } from "./types"
+import fallbackIfFails from './fallbackIfFails'
+import { asAny } from './forceCast'
+import { TimeoutId } from './types'
 
 export type ThrottleConfig<ThisArg = unknown> = {
     onError?: (err: any) => any | Promise<any>
@@ -40,13 +40,6 @@ export const throttled = <TArgs extends unknown[], ThisArg>(
         onError,
     )
 
-    // throttle without trailing-edge
-    if (!trailing) return (...args: TArgs) => {
-        if (tid) return
-        asAny(callback)(...args)
-        tid = setTimeout(() => tid = undefined, delay)
-    }
-
     let trailArgs: TArgs | null = null
     return (...args: TArgs) => {
         if (tid) {
@@ -57,8 +50,13 @@ export const throttled = <TArgs extends unknown[], ThisArg>(
         tid = setTimeout(
             () => {
                 tid = undefined
-                trailArgs && asAny(callback)(...trailArgs)
+                if (!trailing) return
+
+                const cbArgs = trailArgs
                 trailArgs = null
+                cbArgs
+                    && cbArgs !== args
+                    && asAny(callback)(...cbArgs)
             },
             delay,
         )

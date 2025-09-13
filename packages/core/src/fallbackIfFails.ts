@@ -2,7 +2,7 @@ import {
     isError,
     isFn,
     isPromise
-} from "./is"
+} from './is'
 
 /**
  * @name	fallbackIfFails

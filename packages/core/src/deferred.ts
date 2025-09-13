@@ -39,12 +39,6 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
         args,
         onError,
     )
-
-    // debouce without leading-edge or leading-global
-    if (!leading) return (...args: TArgs) => {
-        clearTimeout(tid)
-        tid = setTimeout(callback, delay, ...args)
-    }
     
     let firstArgs: TArgs | true | null = null // true => global leading already executed
     const leadingGlobal = leading === 'global'
@@ -59,7 +53,7 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
         }, delay)
 
         // not leading OR executed global leading
-        if (firstArgs) return
+        if (!leading || firstArgs) return
 
         firstArgs = args
         asAny(callback)(...args)
