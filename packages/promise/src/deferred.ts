@@ -9,6 +9,7 @@ import PromisEBase from './PromisEBase'
 import {
     IPromisE,
     PromisE_Deferred_Options,
+    ResolveError,
     ResolveIgnored
 } from './types'
 
@@ -17,18 +18,22 @@ import {
  * @summary the adaptation of the `deferred()` function tailored for Promises.
  * 
  *
- * @param {Object}    o           (optional) options
- * @param {Function}  o.onError   (optional)
- * @param {Function}  o.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
- * @param {Function}  o.onResult  (optional)
- * @param {ResolveIgnored}  o.resolveIgnored  (optional) see {@link ResolveIgnored}.
+ * @param options           (optional) options
+ * @param options.delayMs (optional) delay in milliseconds to be used with debounce & throttle modes.
+ * @param options.onError   (optional)
+ * @param options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
+ * @param options.onResult  (optional)
+ * @param options.resolveIgnored  (optional) see {@link ResolveIgnored}.
  * Default: `PromisE.defaultResolveIgnord` (changeable)
  * 
- * @param {Boolean}   o.throttle  (optional) toggle to switch between debounce/deferred and throttle mode.
+ * @param options.throttle  (optional) toggle to switch between debounce/deferred and throttle mode.
  * Requires `defer`.
  * Default: `false`
  * 
- * @returns a callback to add promise/function to defer/throttle queue.
+ * @returns a callback that is invoked in one of the followin 3 methods:
+ * - sequential: when `delayMs` is not a positive number.
+ * - debounced: when `delayMs > 0` and `throttle = false`
+ * - throttled: when `delayMs > 0` and `throttle = true`
  * 
  * ---
  * 
@@ -83,51 +88,45 @@ import {
  */
 export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
     let {
-        defer = 100,
-        onError = () => { },
+        delayMs = 100,
+        onError,
         onIgnore,
-        onResult, // result: whatever is returned from the callback that was not ignored
+        onResult,
+        resolveError = ResolveError.REJECT, // by default reject on error
         resolveIgnored = PromisEBase.defaultResolveIgnored,
-        silent = true,
         thisArg,
         throttle = false,
     } = options
-    let lastPromisE: IPromisE<T> | null = null
-    interface QueueItem extends ReturnType<typeof PromisEBase.withResolvers<T>> {
-        callback: () => Promise<T>,
+    let lastPromisE: IPromisE<unknown> | null = null
+    interface QueueItem extends ReturnType<typeof PromisEBase.withResolvers<unknown>> {
+        callback: () => Promise<unknown>
+        started?: boolean
     }
     const queue: Map<Symbol, QueueItem> = new Map()
-    if (thisArg) {
+    const gotDelay = isPositiveNumber(delayMs)
+    if (thisArg !== undefined) {
         onError = onError?.bind(thisArg)
         onIgnore = onIgnore?.bind(thisArg)
         onResult = onResult?.bind(thisArg)
     }
-    const finalize = <TResolve extends true | false = true>(
-        resolve: TResolve,
-        queueItem: QueueItem,
-    ) => (result: TResolve extends true ? T : any) => {
-        queueItem?.[resolve ? 'resolve': 'reject']?.(result)
-        const cb = resolve
-            ? onResult
-            : onError
-        cb && PromisEBase.try(cb, result)
-    }
-    let executor = (id: Symbol, queueItem: QueueItem) => {
-        const promise = new PromisEBase(queueItem.callback())
-        lastPromisE = promise
-        promise.then(
-            finalize(true, queueItem),
-            finalize(false, queueItem)
-        )
+    const ignoreOrProceed = (currentId: Symbol, qItem?: QueueItem) => {
         lastPromisE = null
-        queue.delete(id)
-        if (!queue.size) return
+        if (!gotDelay) {
+            queue.delete(currentId)
+            const [nextId, nextItem] = [...queue.entries()][0] || []
+            return nextId
+                && nextItem
+                && execute(nextId, nextItem)
+        }
+        
+        const items = [...queue.entries()]
+        const currentIndex = items.findIndex(([id]) => id === currentId)
+        for (let i = 0; i <= currentIndex; i++) {
+            const [iId, iItem] = items[i] || []
+            queue.delete(iId)
+            if (!iItem || iItem.started) continue
 
-        const queueItems = [...queue.entries()]
-        queue.clear()
-        // ignore all exising except for the last one
-        for(const [_, item] of queueItems) {
-            onIgnore && Promise.try(onIgnore, item.callback)
+            onIgnore && Promise.try(onIgnore, iItem.callback)
 
             // Options for ignored 
             // 0. resolve with undefined
@@ -135,37 +134,80 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
             // 2. leave unresovled (potential memory leak if not handled properly by consumer)
             switch (resolveIgnored) {
                 case ResolveIgnored.WITH_UNDEFINED:
-                    item.resolve(undefined as T)
+                    iItem.resolve(undefined as T)
+                    break
                 case ResolveIgnored.WITH_LAST:
-                    promise.then(item.resolve)
+                    // error will not be passed down to ignored ones
+                    iItem.resolve(qItem?.promise?.catch(() => {}))
+                    break
+                case ResolveIgnored.NEVER:
+                    // just ignore
+                    break
             }
         }
     }
-    if (isPositiveNumber(defer)) {
+    const execute = (() => {
+        const finalize = <TResolve extends true | false = true>(
+            resolve: TResolve,
+            id: Symbol,
+            qItem = queue.get(id),
+        ) => (resultOrErr: TResolve extends true ? unknown : any) => {
+            ignoreOrProceed(id, qItem)
+            if (!qItem) return
+            if (resolve) {
+                qItem.resolve(resultOrErr)
+                onResult && Promise.try(onResult, resultOrErr)
+                return
+            }
+    
+            onError && Promise.try(onError, resultOrErr)
+            switch(resolveError) {
+                case ResolveError.NEVER: break
+                case ResolveError.REJECT:
+                    qItem.reject(resultOrErr)
+                    break
+                case ResolveError.WITH_ERROR:
+                    qItem.resolve(resultOrErr)
+                    break
+                case ResolveError.WITH_UNDEFINED:
+                    qItem.resolve(undefined)
+                    break
+            }
+        }
+        const execute = (id: Symbol, queueItem: QueueItem) => {
+            queueItem.started = true
+            lastPromisE = new PromisEBase(queueItem.callback())
+            lastPromisE.then(
+                finalize(true, id),
+                finalize(false, id),
+            )
+        }
+        if (!gotDelay) return execute
+
         const deferFn = throttle
             ? throttled
             : deferred
-        executor = deferFn(
-            executor,
-            defer,
-            silent
+        return deferFn(
+            execute,
+            delayMs,
+            options,
         )
-    }
-
-    const deferPromise = <TResult = T>(promise: Promise<T> | (() => Promise<T>)) => {
-        const queueItem = {
-            ...PromisEBase.withResolvers<T>(),
+    })()
+    
+    let count = 0
+    const deferPromise = <TResult = T>(promise: Promise<TResult> | (() => Promise<TResult>)) => {
+        const qItem = {
+            ...PromisEBase.withResolvers<unknown>(),
             callback: isFn(promise)
                 ? promise
                 : () => promise
         }
-        const id = Symbol('deferred-queue-item-id')
-        queue.set(id, queueItem)
-        if (!lastPromisE || defer > 0) executor(id, queueItem)
-        return forceCast<IPromisE<TResult>>(
-            queueItem.promise
-        )
-        return queueItem.promise as any as IPromisE<TResult>
+        const id = forceCast<Symbol>(++count) //Symbol('deferred-queue-item-id')
+        queue.set(id, qItem)
+        if (gotDelay || !lastPromisE) {
+            execute(id, qItem)
+        }
+        return forceCast<IPromisE<TResult>>(qItem.promise)
     }
     return deferPromise
 }

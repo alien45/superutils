@@ -1,3 +1,5 @@
+import { DeferredConfig, ThrottleConfig } from "@utiils/core"
+
 export interface IPromisE<T = unknown> extends Promise<T> {
 
     /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
@@ -95,35 +97,48 @@ export type OnEarlyFinalize<T> = <
 >(
     resolved: TResolved,
     resultOrReason: TValue
-) => void | Promise<void>
+) => any | Promise<any>
 
 export type PostBody = Record<string, unknown> | BodyInit | null
 
 export type PromiseParams<T = unknown> = ConstructorParameters<typeof Promise<T>>
 
-export type PromisE_Deferred_Options = {
-    // defer?: number,
-    onError?: (err: Error) => void,
-    /**
-     * Use for debugging or logging purposes only.
-     */
-    // onIgnore?: <TResult = TData>(ignored: (() => Promise<TResult>)) => void,
-    onIgnore?: (ignored: (() => Promise<any>)) => any,
+export type PromisE_Deferred_Options<ThisArg = unknown> = {
+    /** Delay in milliseconds, used for `debounce` and `throttle` modes. */
+    delayMs?: number,
 
-    // onResult?: <TResult = TData>(result: TResult | undefined) => void | Promise<void>,
-    onResult?: (result: any | undefined) => any | IPromisE<any>,
+    /** Callback invoked whenever promise/function throws error */
+    onError?: (err: any) => any | Promise<any>,
+
+    /**
+     * Whenever a promise/function is ignored when in debource/throttle mode, `onIgnored` wil be invoked.
+     * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
+     * Use for debugging or logging purposes.
+     */
+    onIgnore?: <T = unknown>(ignored: (() => Promise<T>)) => any | Promise<any>,
+
+    /**
+     * Whenever a promise/function is executed successfully `onResult` will be called.
+     * Those that are ignored but resolve with last will not cause `onResult` to be invoked.
+     * 
+     * Result can be `undefined` if `ResolveIgnored.WITH_UNDEFINED` is used.
+     */
+    onResult?: <T = unknown>(result: T | undefined) => any | Promise<any>,
 
     /** 
      * Indicates what to do when a promise in the queue is ignored.
      * See {@link ResolveIgnored} for available options.
      */
     resolveIgnored?: ResolveIgnored,
-    /** If true will gracefully ignore eny exception while invoking any callback function provided */
-    silent?: boolean,
-    /** If provided will be used as the "thisArg" when invoking any of the provided callback functions */
-    thisArg?: unknown,
-    // throttle?: boolean,
-} & ({ defer?: number, throttle?: undefined } | { defer: number, throttle: boolean })
+
+    resolveError?: ResolveError,
+
+    /** Enable throttle mode. Requires {@link PromisE_Deferred_Options.delayMs}*/
+    throttle?: boolean
+} & (
+    | ({ delayMs: number, throttle: true } & ThrottleConfig<ThisArg>)
+    | ({ delayMs?: number, throttle?: false | never } & DeferredConfig<ThisArg>)
+)
 
 export type PromisE_FetchArgs = [
     url: string | URL,
@@ -153,17 +168,23 @@ export type PromisE_PostArgs = [
     abortCtrl?: AbortController,
 ]
 
-export type PromisE_PostDeferredArgs = [
-    url?: string | URL,
-    data?: PostBody,
-    options?: Omit<FetchOptions, 'method'>,
-    timeout?: number,
-    // abortCtrl?: AbortController,
-]
+export type PromisE_PostDeferredArgs = Omit<PromisE_PostArgs, 'abortCtrl'>
 
 /** Describes PromisE with with resolvers */
 export type PromisE_WithResolvers<T = unknown> = { promise: IPromisE<T> }
     & Omit<ReturnType<typeof Promise.withResolvers<T>>, 'promise'>
+
+/** Options for what to do when deferred promise/function fails */
+export enum ResolveError {
+    /** Neither resolve nor reject the failed */
+    NEVER = 'NEVER',
+    /** (default) Reject the failed as usual */
+    REJECT = 'REJECT',
+    /** Resolve with the error/reason */
+    WITH_ERROR = 'RESOLVE_ERROR',
+    /** Resolve with undefined */
+    WITH_UNDEFINED = 'RESOLVE_UNDEFINED',
+}
 
 /** Options for what to do when a promise/callback is ignored, either because of being deferred, throttled or another been prioritized. */
 export enum ResolveIgnored {

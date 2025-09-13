@@ -1,6 +1,7 @@
+import { forceCast } from '@utiils/core'
 import PromisE_deferred from './deferred'
 import PromisEBase from './PromisEBase'
-import { PromisE_Deferred_Options } from './types'
+import { IPromisE, PromisE_Deferred_Options } from './types'
 
 /**
  * @returns deferred/throttled callback function
@@ -48,8 +49,8 @@ export function PromisE_deferredCallback<TDefault = unknown, CbArgs extends any[
     }
     const deferPromise = PromisE_deferred<TDefault>(options)
     
-    return <TResult = TDefault>(...args: CbArgs) => deferPromise<TResult>(
-        () => PromisEBase.try(callback, ...args)
+    return <TResult = TDefault>(...args: CbArgs) => deferPromise(
+        () => forceCast<IPromisE<TResult>>(PromisEBase.try(callback, ...args))
     )
 }
 export default PromisE_deferredCallback
