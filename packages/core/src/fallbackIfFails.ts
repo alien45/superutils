@@ -1,9 +1,8 @@
-import {
-    isError,
-    isFn,
-    isPromise
-} from './is'
+import { isFn, isPromise } from './is'
 
+type IfPromiseAddValue<T> = T extends Promise<infer V>
+    ? T | V
+    : T
 /**
  * @name	fallbackIfFails
  * @summary a flexible try-catch wrapper for invoking functions and ignore errors gracefully.
@@ -58,37 +57,29 @@ import {
  * ) 
  * ``` 
  */
-type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
-export const fallbackIfFails = <
-    TValue = unknown,
-    TArgs extends unknown[] = [],
-    Target = ValueOrFunc<TValue, TArgs> //TValue | ((...args: TArgs) => TValue)
->(
-    target: Target,
-    args?: Target extends ((...args: any[]) => any)
-        ? ValueOrFunc<TArgs | TArgs[number][], []>
-        : [], // when a value/promise is provided as target, only accept undefined or empty array
-    fallbackValue?: ValueOrFunc<TValue | Awaited<TValue>, [Error?]>
+export const fallbackIfFails = <T, TArgs extends any[] = any[]>(
+    target: T | ((...args: TArgs) => T),
+    args: TArgs | (() => TArgs),
+    fallbackValue: IfPromiseAddValue<T> | ((reason: any) => IfPromiseAddValue<T>)
 ) => {
-    const getAltVal = (err?: Error) => isFn(fallbackValue)
-        ? fallbackValue(err)
+    const getAltVal = (reason: any) => isFn(fallbackValue)
+        ? fallbackValue(reason)
         : fallbackValue
+    let result: unknown
     try {
-        const result = !isFn(target)
+        result = !isFn(target)
             ? target // value or promise received
             : target(...(
                 isFn(args)
                     ? args()
-                    : args ?? []
-            ) as unknown as TArgs)
-        return !isPromise(result)
-            ? result
-            : result.catch(getAltVal)
+                    : args
+            ))
+        result = !isPromise(result)
+                ? result
+                : result.catch(getAltVal)
     } catch (error) {
-        const err = !isError(error)
-            ? new Error(error as any)
-            : error
-        return getAltVal(err)
+        result = getAltVal(error)
     }
+    return result as T
 }
 export default fallbackIfFails

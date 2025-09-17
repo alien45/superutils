@@ -254,6 +254,11 @@ export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
  * print(() => 'Print me too!')
  * ```
  */
-export type ValueOrFunc<T, U extends unknown[] | never[] = []> = T | ((...args: U) => T)
+export type ValueOrFunc<
+    Value,
+    Args extends unknown[]
+> = Value | ((...args: Args) => Value)
+
+type TV = ValueOrFunc<number, []>
 
 

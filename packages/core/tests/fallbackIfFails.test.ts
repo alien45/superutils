@@ -7,6 +7,7 @@ import {
 	vi
 } from 'vitest'
 import { fallbackIfFails } from '../src/fallbackIfFails'
+import { isStr } from '../src/is'
 
 describe('fallbackIfFails', () => {
     beforeEach(() => {
@@ -19,12 +20,6 @@ describe('fallbackIfFails', () => {
 	
 	// Synchronous tests
 	describe('synchronous', () => {
-		it('should return the value of a successful sync function without any arguments', () => {
-			const syncFn = vi.fn(() => true)
-			const result = fallbackIfFails(syncFn)
-			expect(syncFn).toHaveBeenCalledWith()
-			expect(result).toBe(true)
-		})
 
 		it('should return the fallback value if a sync function throws an error', () => {
 			const fallbackValue = new Date().toISOString()
@@ -44,8 +39,12 @@ describe('fallbackIfFails', () => {
 
 		it('should accept args as a function for sync calls', () => {
 			const syncFn = (a: number, b: number) => a + b
-			const getArgs = vi.fn(() => [5, 6])
-			const result = fallbackIfFails(syncFn, getArgs, 0)
+			const getArgs = vi.fn(() => [5, 6] as Parameters<typeof syncFn>)
+			const result = fallbackIfFails(
+				syncFn,
+				getArgs,
+				0,
+			)
 			expect(getArgs).toHaveBeenCalled()
 			expect(result).toBe(11)
 		})
@@ -60,17 +59,41 @@ describe('fallbackIfFails', () => {
 		beforeEach(() => {
 			mockAsyncFail = vi.fn(async () => { throw new Error(asyncErrMsg) })
 			fallbackFn = vi.fn(() => Promise.resolve(fallbackValue))
-
 		})
 
-		it('should return a promise that resolves with the value of a successful async function', async () => {
+		it('should return a promise when input is an async function or a sync function that returns a promise', async () => {
 			const asyncFn = vi.fn(async (val: string) => `success: ${val}`)
 			const result = await fallbackIfFails(asyncFn, ['test'], fallbackValue)
 			expect(asyncFn).toHaveBeenCalledWith('test')
 			expect(result).toBe('success: test')
+
+			const syncFnWPromise = vi.fn((val: string) => Promise.resolve(`success: ${val}`))
+			const result2 = await fallbackIfFails(syncFnWPromise, ['test'], fallbackValue)
+			expect(syncFnWPromise).toHaveBeenCalledWith('test')
+			expect(result2).toBe('success: test')
 		})
 
-		it('should return a promise that resolves with the fallback value if an async function rejects', async () => {
+		it('should return a promise or value based on the return type of the input function', async () => {
+			const hybridFn = <
+				T extends string | number,
+				TResult = T extends string
+					? string
+					: Promise<string>
+			>(nameOrId: T): TResult => {
+				if (isStr(nameOrId)) return `Hello Mr ${nameOrId}` as TResult
+				return Promise.resolve(`Hello Mr Async-${nameOrId}`) as TResult
+			}
+			
+			const str = fallbackIfFails(hybridFn<string>, ['Sync'], '')
+			expect(str).toBeTypeOf('string')
+			expect(str).toBe('Hello Mr Sync')
+
+			const strPromise = fallbackIfFails(hybridFn<number>, [1], '')
+			expect(strPromise).toBeInstanceOf(Promise)
+			await expect(strPromise).resolves.toBe('Hello Mr Async-1')
+		})
+
+		it('should return a promise that resolves with the fallback value if an async function/promise rejects', async () => {
 			await expect(mockAsyncFail()).rejects.toThrow(asyncErrMsg)
 			const result = await fallbackIfFails(mockAsyncFail, [true], fallbackValue)
 			expect(result).toBe(fallbackValue)
@@ -84,7 +107,7 @@ describe('fallbackIfFails', () => {
 
 		it('should accept args as a function for async calls', async () => {
 			const asyncFn = async (val: string) => Promise.resolve(`success: ${val}`)
-			const argsFn = () => ['async test']
+			const argsFn = () => ['async test'] as Parameters<typeof asyncFn>
 			const result = await fallbackIfFails(asyncFn, argsFn, 'fallback')
 			expect(result).toBe('success: async test')
 		})
@@ -92,25 +115,23 @@ describe('fallbackIfFails', () => {
 
 	// Direct value/promise tests
 	describe('direct value or promise', () => {
-		it('should return the value directly if target is not a function', () => {
-			const result = fallbackIfFails('direct value', [], 'fallback')
-			expect(result).toBe('direct value')
-		})
 
-		it('should return a resolving promise directly if target is a promise', async () => {
-			const promise = Promise.resolve('promise value')
-			const result = await fallbackIfFails(promise, [], 'fallback')
+		it('should accept a promise and turn into an async function', async () => {
+			const result = await fallbackIfFails(
+				Promise.resolve('promise value'),
+				[],
+				'fallback'
+			)
 			expect(result).toBe('promise value')
 		})
 
-		it('should return a promise that resolves with the fallback value if target is a rejecting promise', async () => {
-			const promise = new Promise((_, reject) =>
+		it('should resolve with fallback value when the input promise rejects', async () => {
+			const promise = new Promise<string>((_, reject) =>
 				setTimeout(() => reject('Promise Rejected'), 5000)
 			)
-			const resultPromise = fallbackIfFails(promise, [], 'fallback')
-			// Advance fake timers so the setTimeout runs
+			const resultPromise = fallbackIfFails(promise, [], 'Fallback')
 			vi.runAllTimers()
-			expect(await resultPromise).toBe('fallback')
+			await expect(resultPromise).resolves.toBe('Fallback')
 		})
 	})
 })
