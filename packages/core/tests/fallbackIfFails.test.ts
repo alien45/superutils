@@ -115,6 +115,10 @@ describe('fallbackIfFails', () => {
 
 	// Direct value/promise tests
 	describe('direct value or promise', () => {
+		it('should return the value if input a value (not a function or a promise)', () => {
+			const result = fallbackIfFails(999, [], 0)
+			expect(result).toBe(999)
+		})
 
 		it('should accept a promise and turn into an async function', async () => {
 			const result = await fallbackIfFails(
@@ -132,6 +136,7 @@ describe('fallbackIfFails', () => {
 			const resultPromise = fallbackIfFails(promise, [], 'Fallback')
 			vi.runAllTimers()
 			await expect(resultPromise).resolves.toBe('Fallback')
+
 		})
 	})
 })
