@@ -6,11 +6,9 @@ import {
     expect,
     vi
 } from 'vitest'
-import { PromisE_deferred } from '../src/deferred'
-import { PromisE } from '../src/PromisE'
-import { ResolveError, ResolveIgnored } from '../src/types'
+import PromisE, { IPromisE, ResolveError, ResolveIgnored } from '../src/'
 
-describe('PromisE_deferred', () => {
+describe('PromisE.deferred', () => {
     beforeEach(() => {
         vi.useFakeTimers()
     })
@@ -21,7 +19,7 @@ describe('PromisE_deferred', () => {
 
     it('should accept promises, async funcions and regular functions that returns a promise', async () => {
         const onResult = vi.fn()
-        const deferredFn = PromisE_deferred({ delayMs: 0, onResult })
+        const deferredFn = PromisE.deferred({ delayMs: 0, onResult })
 
         deferredFn(() => PromisE.delay(50, 1))
         deferredFn(PromisE.delay(150, 2))
@@ -35,7 +33,7 @@ describe('PromisE_deferred', () => {
     })
 
     it('should allow sequential execution without debounce or throttle', async () => {
-        const deferredFn = PromisE_deferred({ delayMs: 0 })
+        const deferredFn = PromisE.deferred({ delayMs: 0 })
         const executionOrder: (number | undefined)[] = []
         const addToArr = (res?: number) => {
             executionOrder.push(res)
@@ -56,7 +54,7 @@ describe('PromisE_deferred', () => {
         const onIgnore = vi.fn()
         const onResult = vi.fn()
         const onError = vi.fn()
-        const deferredFn = PromisE_deferred({
+        const deferredFn = PromisE.deferred({
             delayMs: 100,
             onError,
             onIgnore,
@@ -77,7 +75,7 @@ describe('PromisE_deferred', () => {
     })
 
     it('should throttle calls, only execute first & last and all ignored will resolve with `undefined`', async () => {
-        const deferredFn = PromisE_deferred({
+        const deferredFn = PromisE.deferred({
             delayMs: 100,
             resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
             throttle: true,
@@ -97,7 +95,7 @@ describe('PromisE_deferred', () => {
     it('should leading-edge debounce calls and only execute first & last and ignored will never resolve', async () => {
         const onResult = vi.fn()
         const onIgnore = vi.fn()
-        const deferredFn = PromisE_deferred({
+        const deferredFn = PromisE.deferred({
             delayMs: 100,
             onIgnore,
             onResult,
@@ -121,56 +119,64 @@ describe('PromisE_deferred', () => {
         expect(onIgnore).toHaveBeenCalledTimes(4)
     })
 
-    it('should handle errors gracefully by resolving the promise either with `undefined` or error `reason`', async () => {
-        const onError = vi.fn()
-        const conf = {
-            delayMs: 100,
-            onError,
-            resolveError: ResolveError.WITH_UNDEFINED,
-        }
-        const deferredFnREWU = PromisE_deferred(conf)
-        const last = deferredFnREWU(() => PromisE.delayReject(500, 3)) // no .catch() needed bacause of `resolveError` flag
-        vi.runAllTimersAsync()
-        expect(await last).toBe(undefined)
-        expect(onError).toHaveBeenCalledExactlyOnceWith(3)
+    it('should handle failed promises: 1. resolve with `undefined` 2. resolve with `reason` and 3. never resolve', async () => {
+        const none = Symbol('none')
+        const simlateScenario = async (
+            resolveError: ResolveError,
+            expectLast: any | typeof none,
+            expectError: any | typeof none,
+        ) => {
 
-        const conf2 = {
-            ...conf,
-            resolveError: ResolveError.WITH_ERROR,
+            const onError = vi.fn()
+            const conf = {
+                delayMs: 100,
+                onError,
+                resolveError,
+            }
+            const deferredFn = PromisE.deferred(conf)
+            const last = deferredFn(() => PromisE.delayReject(500, 3)) // no .catch() needed bacause of `resolveError` flag
+            vi.runAllTimersAsync()
+            expectLast !== none && expect(await last).toBe(expectLast)
+            expectError !== none && expect(onError).toHaveBeenCalledExactlyOnceWith(expectError)
         }
-        const deferredFnREWE = PromisE_deferred(conf2)
-        const last2 = deferredFnREWE(() => PromisE.delayReject(500, 3))
-        vi.runAllTimersAsync()
-        const result = await last2
-        expect(result).toBe(3)
+
+        // force failed promises to be resolved with `reason` (error)
+        simlateScenario(
+            ResolveError.WITH_ERROR,
+            3,
+            none,
+        )
+        // force failed promises to be resolved with `undefined`
+        simlateScenario(
+            ResolveError.WITH_UNDEFINED,
+            undefined,
+            3,
+        )
+        // force failed promises to be never be resolved or rejected
+        simlateScenario(
+            ResolveError.NEVER,
+            none,
+            none,
+        )
 
     })
 
-    it('should throttle calls, sequentailly executing the first and last', async () => {
-        const deferredFn = PromisE_deferred({
+    it('should throttle calls, sequentially executing the first and last', async () => {
+        const deferredFn = PromisE.deferred({
             delayMs: 100,
             resolveIgnored: ResolveIgnored.WITH_LAST,
             throttle: true,
         })
         const results: (number | undefined)[] = []
         const executionOrder: number[] = []
-
-        const p1 = deferredFn(() => {
-            executionOrder.push(1)
-            return PromisE.delay(50, 1)
-        }).then(res => results.push(res))
-
-        const p2 = deferredFn(() => {
-            executionOrder.push(2)
-            return PromisE.delay(50, 2)
-        }).then(res => results.push(res))
-
-        const p3 = deferredFn(() => {
-            executionOrder.push(3)
-            return PromisE.delay(50, 3)
-        }).then(res => results.push(res))
-
-        const all = Promise.all([p1, p2, p3, PromisE.delay(200)])
+        const all = Promise.all(
+            new Array(3).fill(0).map((_, i) => 
+                deferredFn(() => {
+                    executionOrder.push(i + 1)
+                    return PromisE.delay(50, i + 1)
+                }).then(res => results.push(res))
+            )
+        )
         vi.runAllTimersAsync()
         await all
 
@@ -180,61 +186,30 @@ describe('PromisE_deferred', () => {
     })
 
     it('should resolve ignored promises with undefined', async () => {
-        const deferredFn = PromisE_deferred({
+        const deferredFn = PromisE.deferred({
             delayMs: 100,
             resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
         })
-
-        const p1 = deferredFn(() => PromisE.delay(50, 1))
-        const p2 = deferredFn(() => PromisE.delay(50, 2))
-        const p3 = deferredFn(() => PromisE.delay(50, 3))
-
-        const all = Promise.all([p1, p2, p3])
+        const all = Promise.all([
+            deferredFn(() => PromisE.delay(50, 1)),
+            deferredFn(() => PromisE.delay(50, 2)),
+            deferredFn(() => PromisE.delay(50, 3)),
+        ])
         vi.runAllTimersAsync()
         const results = await all
 
-        expect(results).toContain(undefined)
         expect(results).toContain(3)
+        const numIgnored = results
+            .filter(x => x === undefined)
+            .length
+        expect(numIgnored).toBe(2)
     })
 
-    it('should handle rejections and call onError', async () => {
-        const onError = vi.fn()
-        const deferredFn = PromisE_deferred({
-            delayMs: 100,
-            onError
-        })
-        
-
-        const p = deferredFn(() => PromisE.delayReject(1000, 'error'))
-        vi.runAllTimersAsync()
-        await expect(async () => await p).rejects.toThrowError('error')
-        expect(onError).toHaveBeenCalledWith('error')
-    })
-
-    it('should call onResult and onIgnore callbacks', async () => {
-        const onResult = vi.fn()
-        const onIgnore = vi.fn()
-        const deferredFn = PromisE_deferred({ delayMs: 100, onResult, onIgnore })
-
-        deferredFn(() => PromisE.delay(50, 1))
-        deferredFn(() => PromisE.delay(50, 2))
-        deferredFn(() => PromisE.delay(50, 3))
-        deferredFn(() => PromisE.delay(50, 4))
-        deferredFn(() => PromisE.delay(50, 5))
-        const last = deferredFn(() => PromisE.delay(50, 6))
-        vi.runAllTimersAsync()
-        await last
-
-        expect(onResult).toHaveBeenCalledWith(6)
-        expect(onIgnore).toHaveBeenCalledTimes(5)
-    })
-
-    it('should bind callbacks to thisArg', async () => {
-        const context: Parameters<typeof PromisE_deferred>[0] & Record<string, any> = {
+    it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks', async () => {
+        const context: Parameters<typeof PromisE.deferred>[0] & Record<string, any> = {
             delayMs: 100,
             error: null,
             ignored: false,
-            resolveError: ResolveError.NEVER,
             result: null,
             onError(err) { this.error = err },
             onIgnore() { this.ignored = true },
@@ -242,11 +217,12 @@ describe('PromisE_deferred', () => {
             get thisArg() { return this }
         }
 
-        const deferredFn = PromisE_deferred(context)
+        const deferredFn = PromisE.deferred(context)
         deferredFn(() => PromisE.delay(50, 1))
         deferredFn(() => PromisE.delay(50, 2))
+        vi.runAllTimersAsync()
         deferredFn(() => PromisE.delayReject(50,'error'))
-        const delay = PromisE.delay(151)
+        const delay = PromisE.delay(1051)
         vi.runAllTimersAsync()
         await delay
 

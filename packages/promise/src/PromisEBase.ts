@@ -1,5 +1,6 @@
 import {
     asAny,
+    asAny,
     isFn,
     isPromise
 } from '@utiils/core'
@@ -55,27 +56,84 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
     constructor(input: Promise<T> | PromiseParams<T>[0]) {
         if (input instanceof PromisEBase) return input
 
-        const promise = isPromise(input)
+        const superArg = isFn(input)
             ? input
-            : !isFn(input)
-                ? Promise.resolve<T>(input)
-                : new Promise<T>(input)
-
-        super((resolve, reject) => {
-            setTimeout(async () => {
-                this._resolve = resolve
-                this._reject = reject
-                try {
-                    const value = await promise
-                    asAny(this).resolved = true
-                    resolve(value)
-                } catch (err) {
-                    asAny(this).rejected = true
-                    reject(err)
-                }
-                asAny(this).pending = false
-            })
+            : ((resolve, reject) => {
+                isPromise(input)
+                    ? input.then(resolve, reject)
+                    : resolve(input)
+            }) as PromiseParams<T>[0]
+        super(superArg)
+        setTimeout(() => {
+            super.then(
+                () => asAny(this).resolved = true,
+                () => asAny(this).rejected = true,
+            ).finally(() => asAny(this).pending = false)
         })
+
+        //
+        // reduced original
+        //
+        // const promise = isPromise(input)
+        //     ? input
+        //     : !isFn(input)
+        //         ? Promise.resolve<T>(input)
+        //         : new Promise<T>(input)
+
+        // super(async (resolve, reject) => {
+        //     setTimeout(() => {
+        //         this._resolve = resolve
+        //         this._reject = reject
+        //     })
+        //     try {
+        //         const value = await (
+        //             isFn(input)
+        //                 ? (async () => {
+        //                     const pwr = Promise.withResolvers<T>()
+        //                     input(pwr.resolve, pwr.reject)
+        //                     return pwr.promise
+        //                 })()
+        //                 : isPromise(promise)
+        //                     ? promise
+        //                     : input
+        //         )
+        //         resolve(value)
+        //         asAny(this).resolve = true
+        //     } catch (err) {
+        //         reject(err)
+        //         asAny(this).rejected = true
+        //     } finally {
+        //         asAny(this).pending = false
+        //     }
+        // })
+
+        //
+        // Original
+        //
+        // const promise = isPromise(input)
+        //     ? input
+        //     : !isFn(input)
+        //         ? Promise.resolve<T>(input)
+        //         : new Promise<T>(input)
+
+        // super((resolve, reject) => {
+        //     setTimeout(() => {
+        //         this._resolve = resolve
+        //         this._reject = reject
+        //     })
+        //     promise.then(
+        //         value => {
+        //             resolve(value)
+        //             asAny(this).resolved = true
+        //             asAny(this).pending = false
+        //         },
+        //         err => {
+        //             reject(err)
+        //             asAny(this).rejected = true
+        //             asAny(this).pending = false
+        //         }
+        //     )
+        // })
     }
     
     //

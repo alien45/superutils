@@ -1,4 +1,4 @@
-import { forceCast } from '@utiils/core'
+import { fallbackIfFails, forceCast } from '@utiils/core'
 import PromisE_deferred from './deferred'
 import PromisEBase from './PromisEBase'
 import { IPromisE, PromisE_Deferred_Options } from './types'
@@ -10,7 +10,7 @@ import { IPromisE, PromisE_Deferred_Options } from './types'
  * @example ```javascript
  * const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
- *     defer: 300,
+ *     delayMs: 300,
  *     throttle: false, // throttle with delay duration set in `defer`
  * })
  * // simulate click event
@@ -34,23 +34,23 @@ import { IPromisE, PromisE_Deferred_Options } from './types'
  * // 100, 550, 1100
  * 
  * // Result (defer: 300, throttle: false): uses deferred()
- * // 200, 600, 1000
+ * // 200, 600, 1100
  * ```
  */
 
-export function PromisE_deferredCallback<TDefault = unknown, CbArgs extends any[] = []>(
+export function PromisE_deferredCallback<
+    TDefault,
+    CbArgs extends any[] = any[],
+>(
     callback: (...args: CbArgs) => TDefault | Promise<TDefault>,
     options: PromisE_Deferred_Options = {}
 ) {
     const { thisArg } = options
-    if (thisArg !== undefined) {
-        callback = callback.bind(thisArg)
-        options = {...options, thisArg: undefined }
-    }
+    if (thisArg !== undefined) callback = callback.bind(thisArg)
     const deferPromise = PromisE_deferred<TDefault>(options)
-    
+
     return <TResult = TDefault>(...args: CbArgs) => deferPromise(
-        () => forceCast<IPromisE<TResult>>(PromisEBase.try(callback, ...args))
+        () => callback(...args) as IPromisE<TResult>
     )
 }
 export default PromisE_deferredCallback
