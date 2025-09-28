@@ -31,8 +31,8 @@ import PromisE_delay from './delay'
  * doMoreStuff()
  * ```
  */
-export function PromisE_delayReject<T = unknown>(delay: number, reason?: T) {
-    return PromisE_delay(
+export function PromisE_delayReject<T = never>(delay: number, reason?: any) {
+    return PromisE_delay<T>(
         delay,
         reason,
         true

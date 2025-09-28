@@ -1,4 +1,4 @@
-import { forceCast, MakeOptional } from '@utiils/core'
+import { curry, forceCast, KeepOptionals, KeepRequired, MakeOptional, OptionalIf, Slice } from '@utiils/core'
 import PromisE_deferred from './deferred'
 import PromisE_deferredCallback from './deferredCallback'
 import PromisE_fetch from './fetch'
@@ -8,6 +8,7 @@ import {
     PromisE_FetchArgs,
     PromisE_FetchDeferredArgs
 } from './types'
+import PromisE from './PromisE'
 
 type Defaults = PromisE_FetchDeferredArgs
 /**
@@ -18,7 +19,7 @@ type Defaults = PromisE_FetchDeferredArgs
  * ---
  * // Example: Fetch paginated products
  * const getProducts = PromisE.deferredFetch({
- *     defer: 300, // used for both "throttle" and "deferred" modes
+ *     delayMs: 300, // used for both "throttle" and "deferred" modes
  *     resolveIgnored: ResolveIgnored.WITH_ACTIVE,
  *     throttle: true,
  * })
@@ -34,27 +35,32 @@ type Defaults = PromisE_FetchDeferredArgs
  * 
  * // result (ResolveIgnored.NEVER): only one product retrieved & resolved but the other will NEVER resolve
  * ```
- */    
+ */
 export function PromisE_deferredFetch<
-    const TArgs extends Defaults = Defaults,
+    TArgs extends PromisE_FetchDeferredArgs,
+    ThisArg = unknown,
 >(
-    deferOptions: PromisE_Deferred_Options = {},
-    ...[
+    deferOptions: PromisE_Deferred_Options<ThisArg> = {},
+    ...defaultArgs: TArgs
+) {
+    const [
         defaultUrl,
         defaultOptions = {},
         defaultTimeout,
         defaultErrMsgs,
-    ]: TArgs
-) {
+    ] = defaultArgs
     let _abortCtrl: AbortController | undefined
-    type CbArgs = MakeOptional<PromisE_FetchArgs, 0, TArgs['length']>
-    const fetchCallback = <TCbData = unknown>(...[
-        url,
-        options,
-        timeout,
-        abortCtrl = new AbortController(),
-        errMsgs,
-    ]: CbArgs) => {
+    type CbArgs = TArgs[0] extends undefined
+        ? PromisE_FetchArgs
+        : Partial<PromisE_FetchArgs>
+    const fetchCallback = <TCbData = unknown>(...args: CbArgs) => {
+        const [
+            url,
+            options,
+            timeout,
+            abortCtrl = new AbortController(),
+            errMsgs,
+        ] = args
         // abort any previous fetch
         _abortCtrl?.abort()
         _abortCtrl = abortCtrl as AbortController
@@ -64,7 +70,7 @@ export function PromisE_deferredFetch<
                 mergeFetchOptions(defaultOptions, options ?? {}),
                 timeout ?? defaultTimeout,
                 abortCtrl,
-                errMsgs ?? defaultErrMsgs,
+                { ...defaultErrMsgs, ...errMsgs },
             ])
         )
         // abort fetch request if promise is finalized manually before completion

@@ -37,30 +37,30 @@ describe('PromisE.deferredCallback', () => {
         vi.useRealTimers()
         context = {}
     })
-    
+
     it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks ', async () => {
         const callback = (value: number) => {
             if (value === 3) return PromisE.delayReject(50, 'error')
             return PromisE.delay(50, `${value}`)
         }
-        
+
         const deferredCb = PromisE.deferredCallback(callback, context)
         deferredCb(1)
         deferredCb(2)
         vi.runAllTimersAsync()
         const last = deferredCb(3)
         vi.runAllTimersAsync()
-        
+
         await expect(last).rejects.toThrow('error')
         expect(context.error).toBe('error')
         expect(context.ignored).toBe(true)
         expect(context.lastResult).toBe(null)// because the last/only executed callback rejected
         expect(context.results).toEqual([])
     })
-    
+
     it('should debounce/defer calls, sequentially executing the last of every series', async () => {
         const values: number[] = []
-        type FakeEvent = { target: { value: number }}
+        type FakeEvent = { target: { value: number } }
         const handleChange = vi.fn((e: FakeEvent) =>
             values.push(e.target.value)
         )
@@ -82,8 +82,8 @@ describe('PromisE.deferredCallback', () => {
             1000,
             1100,
         ]
-        delays.forEach(value => 
-            setTimeout(() => handleChangeDeferred({ 
+        delays.forEach(value =>
+            setTimeout(() => handleChangeDeferred({
                 target: { value }
             }), value)
         )

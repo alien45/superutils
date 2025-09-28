@@ -8,18 +8,23 @@ import {
     PromisE_PostArgs
 } from './types'
 
-type Defaults = PromisE_PostDeferredArgs
-export function PromisE_deferredPost<const TArgs extends Defaults = Defaults>(
-    deferOptions: PromisE_Deferred_Options = {},
-    ...[
+export function PromisE_deferredPost<
+    TArgs extends PromisE_PostDeferredArgs,
+    ThisArg = unknown,
+>(
+    deferOptions: PromisE_Deferred_Options<ThisArg> = {},
+    ...defaultArgs: TArgs
+) {
+    const [
         defaultUrl,
         defaultData,
         defaultOptions,
         defaultTimeout,
-    ]: TArgs
-) {
+    ] = defaultArgs
     let _abortCtrl: AbortController | undefined
-    type CbArgs = MakeOptional<PromisE_PostArgs, 0, TArgs['length']>
+    type CbArgs = TArgs[0] extends undefined
+        ? PromisE_PostArgs
+        : Partial<PromisE_PostArgs>
     const doPost = <TData = unknown>(...[
         url,
         data,

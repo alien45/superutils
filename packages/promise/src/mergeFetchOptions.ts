@@ -8,7 +8,7 @@ export const mergeFetchOptions = (
         ...defaults,
         ...options,
         headers: {
-            ...defaults.headers,
+            ...defaults?.headers,
             ...options?.headers,
         }
     }

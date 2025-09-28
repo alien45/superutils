@@ -19,7 +19,7 @@ import {
  * 
  *
  * @param options           (optional) options
- * @param options.delayMs (optional) delay in milliseconds to be used with debounce & throttle modes.
+ * @param options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes.
  * @param options.onError   (optional)
  * @param options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
  * @param options.onResult  (optional)
@@ -118,15 +118,15 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                 && nextItem
                 && execute(nextId, nextItem)
         }
-        
+
         const items = [...queue.entries()]
         const currentIndex = items.findIndex(([id]) => id === currentId)
-        for (let i = 0; i <= currentIndex; i++) {
+        for (let i = 0;i <= currentIndex;i++) {
             const [iId, iItem] = items[i]
             queue.delete(iId)
             if (!iItem || iItem.started) continue
 
-            onIgnore && Promise.try(onIgnore, iItem.callback)
+            onIgnore && PromisEBase.try(onIgnore, iItem.callback)
 
             // Options for ignored 
             // 0. resolve with undefined
@@ -138,7 +138,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                     break
                 case ResolveIgnored.WITH_LAST:
                     // error will not be passed down to ignored ones
-                    iItem.resolve(qItem?.promise?.catch(() => {}))
+                    iItem.resolve(qItem?.promise?.catch(() => { }))
                     break
                 case ResolveIgnored.NEVER:
                     // just ignore
@@ -155,12 +155,12 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
             ignoreOrProceed(id, qItem)
             if (resolve) {
                 qItem.resolve(resultOrErr)
-                onResult && Promise.try(onResult, resultOrErr)
+                onResult && PromisEBase.try(onResult, resultOrErr)
                 return
             }
-    
-            onError && Promise.try(onError, resultOrErr)
-            switch(resolveError) {
+
+            onError && PromisEBase.try(onError, resultOrErr)
+            switch (resolveError) {
                 case ResolveError.NEVER: break
                 case ResolveError.REJECT:
                     qItem.reject(resultOrErr)
@@ -192,7 +192,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
             options,
         )
     })()
-    
+
     const deferPromise = <TResult = T>(promise: Promise<TResult> | (() => Promise<TResult>)) => {
         const qItem = {
             ...PromisEBase.withResolvers<unknown>(),
@@ -200,7 +200,7 @@ export function PromisE_deferred<T>(options: PromisE_Deferred_Options = {}) {
                 ? promise
                 : () => promise
         }
-        const id = Symbol('deferred-queue-item-id') 
+        const id = Symbol('deferred-queue-item-id')
         queue.set(id, qItem)
         if (gotDelay || !lastPromisE) execute(id, qItem)
         return forceCast<IPromisE<TResult>>(qItem.promise)

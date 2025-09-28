@@ -1,13 +1,19 @@
-import { DeferredConfig, ThrottleConfig } from "@utiils/core"
+import {
+    DeferredConfig,
+    ThrottleConfig,
+    TimeoutId
+} from '@utiils/core'
 
 export interface IPromisE<T = unknown> extends Promise<T> {
+    /** 0: pending, 1: resolved, 2: rejected */
+    readonly state: 0 | 1 | 2
 
     /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
     onEarlyFinalize: OnEarlyFinalize<T>[]
-    
+
     /** Indicates if the promise is still pending/unfinalized */
     readonly pending: boolean
-    
+
     /** Reject pending promise early. */
     reject: (reason: any) => IPromisE<T>
 
@@ -68,32 +74,32 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
      * ```
      */
     pause: () => void
-    timeoutId: Parameters<typeof clearTimeout>[0]
+    timeoutId: TimeoutId
 }
 
 /**
  * Descibes a timeout PromisE and it's additional properties.
  */
-export type IPromisE_Timeout<T = unknown> = IPromisE<T> & { 
+export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
+    /** Clearing the timeout will prevent it from timing out */
+    clearTimeout: () => void
     /** The result/data promise. If more than one supplied in `args` result promise will be a combined `PromisE.all` */
     data: IPromisE<T>
     /** A shorthand getter to check if the promise has timed out. Same as `promise.timeout.rejected`. */
     readonly timedout: boolean
-    /** Clearing the timeout will prevent it from timing out */
-    clearTimeout: () => void
     /** The timeout promise */
     timeout: IPromisE_Delay<T>
 }
 
-export type FetchOptions = Omit<RequestInit, 'headers'> & { 
+export type FetchOptions = Omit<RequestInit, 'headers'> & {
     headers?: Record<string, string>
 }
 
 export type OnEarlyFinalize<T> = <
     TResolved extends boolean,
     TValue = TResolved extends true
-        ? T
-        : any
+    ? T
+    : any
 >(
     resolved: TResolved,
     resultOrReason: TValue
@@ -115,7 +121,7 @@ export type PromisE_Deferred_Options<ThisArg = unknown> = {
      * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
      * Use for debugging or logging purposes.
      */
-    onIgnore?: <T = unknown>(ignored: (() => Promise<T>)) => any | Promise<any>,
+    onIgnore?: (ignored: (() => Promise<any>)) => any | Promise<any>,
 
     /**
      * Whenever a promise/function is executed successfully `onResult` will be called.
@@ -123,7 +129,7 @@ export type PromisE_Deferred_Options<ThisArg = unknown> = {
      * 
      * Result can be `undefined` if `ResolveIgnored.WITH_UNDEFINED` is used.
      */
-    onResult?: <T = unknown>(result: T | undefined) => any | Promise<any>,
+    onResult?: (result?: any) => any | Promise<any>,
 
     /** 
      * Indicates what to do when a promise in the queue is ignored.
@@ -136,30 +142,29 @@ export type PromisE_Deferred_Options<ThisArg = unknown> = {
     /** Enable throttle mode. Requires {@link PromisE_Deferred_Options.delayMs}*/
     throttle?: boolean
 } & (
-    | ({ delayMs: number, throttle: true } & ThrottleConfig<ThisArg>)
-    | ({ delayMs?: number, throttle?: false | never } & DeferredConfig<ThisArg>)
-)
+        | ({ delayMs: number, throttle: true } & ThrottleConfig<ThisArg>)
+        | ({ delayMs?: number, throttle?: false | never } & DeferredConfig<ThisArg>)
+    )
 
+export type PromisE_FetchErrMsgs = {
+    invalidUrl?: string,
+    reqTimedout?: string,
+}
 export type PromisE_FetchArgs = [
     url: string | URL,
     options?: FetchOptions,
     timeout?: number,
     abortCtrl?: AbortController,
-    errMsgs?: {
-        invalidUrl: string,
-        reqTimedout: string,
-    }
+    errMsgs?: PromisE_FetchErrMsgs,
 ]
+/** Default args */
 export type PromisE_FetchDeferredArgs = [
     url?: string | URL,
     options?: FetchOptions,
     timeout?: number,
-    errMsgs?: {
-        invalidUrl: string,
-        reqTimedout: string,
-    }
+    // abortCtrl?: AbortController,
+    errMsgs?: PromisE_FetchErrMsgs,
 ]
-
 export type PromisE_PostArgs = [
     url: string | URL,
     data?: PostBody,
@@ -167,8 +172,14 @@ export type PromisE_PostArgs = [
     timeout?: number,
     abortCtrl?: AbortController,
 ]
-
-export type PromisE_PostDeferredArgs = Omit<PromisE_PostArgs, 'abortCtrl'>
+/** Default args */
+export type PromisE_PostDeferredArgs = [
+    url?: string | URL,
+    data?: PostBody,
+    options?: Omit<FetchOptions, 'method'>,
+    timeout?: number,
+    // abortCtrl?: AbortController,
+]
 
 /** Describes PromisE with with resolvers */
 export type PromisE_WithResolvers<T = unknown> = { promise: IPromisE<T> }
@@ -180,7 +191,7 @@ export enum ResolveError {
     NEVER = 'NEVER',
     /** (default) Reject the failed as usual */
     REJECT = 'REJECT',
-    /** Resolve with the error/reason */
+    /** Resolve (not reject) with the error/reason */
     WITH_ERROR = 'RESOLVE_ERROR',
     /** Resolve with undefined */
     WITH_UNDEFINED = 'RESOLVE_UNDEFINED',

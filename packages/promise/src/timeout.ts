@@ -58,21 +58,24 @@ import { IPromisE_Timeout } from './types'
  * })
  *```
  */
-export function PromisE_timeout <
+export function PromisE_timeout<
     T extends any[] | [],
     TOut = T['length'] extends 1
-        ? T[0]
-        : T
+    ? T[0]
+    : T
 >(
     timeout: number = 10_000,
-    ...values: Promise<T>[]
+    ...values: Promise<TOut>[]
 ) {
     const dataPromise = (
         values.length === 1
             ? new PromisEBase<T[0]>(values[0]) // single promise resolves to a single result
             : PromisEBase.all(values) // array of promises resolves to an array of results
     ) as PromisEBase<TOut>
-    const timeoutPromise = PromisE_delayReject<TOut>(timeout)
+    const timeoutPromise = PromisE_delayReject<TOut>(
+        timeout,
+        new Error(`Timed out after ${timeout}ms`)
+    )
     const promise = PromisEBase.race([
         dataPromise,
         timeoutPromise

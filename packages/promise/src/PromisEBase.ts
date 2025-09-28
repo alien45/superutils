@@ -1,141 +1,63 @@
-import {
-    asAny,
-    asAny,
-    isFn,
-    isPromise
-} from '@utiils/core'
+import { fallbackIfFails, isFn, isPromise } from '@utiils/core'
 import {
     PromisE_WithResolvers,
     OnEarlyFinalize,
     PromiseParams,
     IPromisE,
     ResolveIgnored,
- } from './types'
+} from './types'
 
-/** 
- * @class PromisEBase
- * @summary attempts to solve a simple problem of Promise status (resolved/rejected) not being accessible externally.
- * 
- * For more example see static functions like `PromisE.deferred}, `PromisE.fetch}, `PromisE.timeout} etc.
- *
- * ---
- *
- * @example ```javascript
- * // Examples of how to use `PromisE`.
- * 
- * // Example 1: As a drop-in replacement for `Promise` class
- * const p = new PromisE((resolve, reject) => resolve('done'))
- * console.log(
- *  p.pending, // Indicates if promise has finalized (resolved/rejected)
- *  p.resolved, // Indicates if the promise has resolved
- *  p.rejected // Indicates if the promise has rejected
- * ) 
- * 
- * // Example 2: Extend an existing `Proimse` instance to check status
- * const p = new PromisE(promiseInstance)
- * console.log(p.pending)
- * 
- * // 3. Invoke functions
- * const p = PromisE.try(() => { throw new Error('I am a naughty function' ) })
- * p.catch(console.error)
- * console.log(p.pending)
- * ```
- */
 export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> {
+    public readonly state: 0 | 1 | 2 = 0
     private _resolve?: ((value: T) => void)
     private _reject?: (reason: any) => void
-    
+
+    /** Default value for `options.resolveIgnored` for any `PromisE.deferred` related functions */
     static defaultResolveIgnored = ResolveIgnored.WITH_LAST
 
-    /** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
+    /**
+     * callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
     public onEarlyFinalize: OnEarlyFinalize<T>[] = []
-    
+
+    /** Create a PromisE instance as a drop-in replacement for Promise */
     constructor(...args: PromiseParams<T>)
+    /** Extend an existing Promise instance to check status or finalize early */
     constructor(promise: Promise<T>)
-    constructor(data: T)
-    constructor(input: Promise<T> | PromiseParams<T>[0]) {
+    /**
+     * If executor function is not provided, the promise must be resolved/rejected externally.
+     * 
+     * ---
+     * @example ```typescript
+     * const p = new PromisE<number>()
+     * setTimeout(() => p.resolve(1), 1000)
+     * p.then(console.log)
+     * ```
+     */
+    constructor()
+    constructor(input: Promise<T> | PromiseParams<T>[0] = () => { }) {
         if (input instanceof PromisEBase) return input
 
-        const superArg = isFn(input)
-            ? input
-            : ((resolve, reject) => {
-                isPromise(input)
-                    ? input.then(resolve, reject)
-                    : resolve(input)
-            }) as PromiseParams<T>[0]
-        super(superArg)
-        setTimeout(() => {
-            super.then(
-                () => asAny(this).resolved = true,
-                () => asAny(this).rejected = true,
-            ).finally(() => asAny(this).pending = false)
+        let _resolve: any, _reject: any
+        super((resolve, reject) => {
+            _reject = (reason: any) => {
+                (this as any).state = 2;
+                reject(reason)
+            }
+            _resolve = (value: T) => {
+                (this as any).state = 1;
+                resolve(value)
+            }
+            const promise = isPromise(input)
+                ? input
+                : new Promise<T>(input)
+            promise.then(_resolve, _reject)
         })
 
-        //
-        // reduced original
-        //
-        // const promise = isPromise(input)
-        //     ? input
-        //     : !isFn(input)
-        //         ? Promise.resolve<T>(input)
-        //         : new Promise<T>(input)
-
-        // super(async (resolve, reject) => {
-        //     setTimeout(() => {
-        //         this._resolve = resolve
-        //         this._reject = reject
-        //     })
-        //     try {
-        //         const value = await (
-        //             isFn(input)
-        //                 ? (async () => {
-        //                     const pwr = Promise.withResolvers<T>()
-        //                     input(pwr.resolve, pwr.reject)
-        //                     return pwr.promise
-        //                 })()
-        //                 : isPromise(promise)
-        //                     ? promise
-        //                     : input
-        //         )
-        //         resolve(value)
-        //         asAny(this).resolve = true
-        //     } catch (err) {
-        //         reject(err)
-        //         asAny(this).rejected = true
-        //     } finally {
-        //         asAny(this).pending = false
-        //     }
-        // })
-
-        //
-        // Original
-        //
-        // const promise = isPromise(input)
-        //     ? input
-        //     : !isFn(input)
-        //         ? Promise.resolve<T>(input)
-        //         : new Promise<T>(input)
-
-        // super((resolve, reject) => {
-        //     setTimeout(() => {
-        //         this._resolve = resolve
-        //         this._reject = reject
-        //     })
-        //     promise.then(
-        //         value => {
-        //             resolve(value)
-        //             asAny(this).resolved = true
-        //             asAny(this).pending = false
-        //         },
-        //         err => {
-        //             reject(err)
-        //             asAny(this).rejected = true
-        //             asAny(this).pending = false
-        //         }
-        //     )
-        // })
+        this._resolve = _resolve
+        this._reject = _reject
     }
-    
+
+
     //
     //
     //-------------------- Status related read-only attributes --------------------
@@ -143,13 +65,14 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
     //
 
     /** Indicates if the promise is still pending/unfinalized */
-    public readonly pending: boolean = true
+    public get pending() { return this.state === 0 }
 
     /** Indicates if the promise has been rejected */
-    public readonly rejected: boolean = false
+    public get rejected() { return this.state === 2 }
 
     /** Indicates if the promise has been resolved */
-    public readonly resolved: boolean = false
+    public get resolved() { return this.state === 1 }
+
 
     //
     //
@@ -159,18 +82,22 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
 
     /** Resovle pending promise early. */
     public resolve = (value: T) => {
-        this.pending && setTimeout(() => {
+        this.pending && queueMicrotask(() => {
             this._resolve?.(value)
-            this.onEarlyFinalize.forEach(fn => Promise.try(fn, true, value))
+            this.onEarlyFinalize.forEach(fn =>
+                PromisEBase.try(fn, true, value)
+            )
         })
         return this as IPromisE<T>
     }
 
     /** Reject pending promise early. */
     public reject = (reason: any) => {
-        this.pending && setTimeout(() => {
+        this.pending && queueMicrotask(() => {
             this._reject?.(reason)
-            this.onEarlyFinalize.forEach(fn => Promise.try(fn, false, reason))
+            this.onEarlyFinalize.forEach(fn =>
+                PromisEBase.try(fn, false, reason)
+            )
         })
         return this as IPromisE<T>
     }
@@ -203,7 +130,7 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
     /** Extends Promise.reject */
     static reject = <T = never>(reason: any) => {
         const { promise, reject } = PromisEBase.withResolvers<T>()
-        setTimeout(() => reject(reason)) // required to avoid unhandled rejection
+        queueMicrotask(() => reject(reason)) // required to avoid unhandled rejection
         return promise
     }
 
@@ -214,13 +141,39 @@ export class PromisEBase<T = unknown> extends Promise<T> implements IPromisE<T> 
 
     /** Sugar for `new PromisE(Promise.try(...))` */
     static try = <T, U extends unknown[]>(
-        ...args: Parameters<typeof Promise.try<T, U>>
-    ) => new PromisEBase(
-        Promise.try<T, U>(...args)
-    ) as IPromisE<Awaited<T>>
+        callbackFn: (...args: U) => T | PromiseLike<T>,
+        ...args: U
+    ) => new PromisEBase<T>(resolve => resolve(
+        // Promise.try is not supported in Node < 23.
+        fallbackIfFails(
+            callbackFn,
+            args,
+            // rethrow error to ensure the returned promise is rejected
+            err => Promise.reject(err),
+        )
+    )) as IPromisE<Awaited<T>>
 
-    /** Creates a new {@link IPromisE} instance and returns it in an object, along with its `resolve` and `reject` functions. */
-    static withResolvers = <T = unknown>(): PromisE_WithResolvers<T> => {
+    /**
+     * Creates a `PromisE` instance and returns it in an object, along with its `resolve` and `reject` functions.
+     * 
+     * NB: this function is technically no longer needed because the `PromisE` class already comes with the resolvers.
+     *
+     * ---
+     * 
+     * 
+     * @example ```typescript
+     * // Using `PromisE` directly: simply provide an empty function as the executor
+     * const promisE = new PromisE<number>(() => {})
+     * setTimeout(() => promisE.resolve(1), 1000)
+     * promisE.then(console.log)
+     * 
+     * // Using `withResolvers`
+     * const pwr = PromisE.withResolvers<number>()
+     * setTimeout(() => pwr.resolve(1), 1000)
+     * pwr.promise.then(console.log)
+     * ```
+     */
+    static withResolvers = <T = unknown>() => {
         const pwr = Promise.withResolvers<T>()
         const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
         return { ...pwr, promise }
