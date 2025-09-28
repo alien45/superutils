@@ -39,7 +39,7 @@ export type Curry<
     // Ensure the provided arguments `TArgs` match the types of the expected parameters `TParams`.
     ...args: TArgs & KeepFirstN<TParams, TArgs['length']>
 ) => // Check if there are any parameters left to be supplied.
-    DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
+        DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
         // If yes, return a new curried function expecting the remaining parameters.
         ? Curry<TData, DropFirstN<TParams, TArgs['length']>>
         // If no, all parameters have been supplied, so return the final result.
@@ -72,8 +72,8 @@ export type DropFirstN<
 > = TupleMaxLength<Dropped> extends N
     ? T
     : T extends [infer First, ...infer Rest]
-        ? DropFirstN<Rest, N, [...Dropped, First]> // add to the dropped list
-        : never
+    ? DropFirstN<Rest, N, [...Dropped, First]> // add to the dropped list
+    : never
 /**
  * Drop the last item from an array/tuple and keep the rest
  * ---
@@ -120,8 +120,8 @@ export type KeepFirstN<
 > = TupleMaxLength<T> extends N
     ? T
     : T extends readonly [...infer TWithoutLast, any]
-        ? KeepFirstN<TWithoutLast, N>
-        : never
+    ? KeepFirstN<TWithoutLast, N>
+    : never
 
 /**
  * Extract optional members of a tuple.
@@ -148,8 +148,8 @@ export type KeepOptionals<
     TAlt = undefined
 > = Require extends true
     ? Required<DropFirstN<Tuple, Tuple['length']>> extends [...infer Optionals]
-        ? TupleWithAlt<Optionals, TAlt>
-        : never
+    ? TupleWithAlt<Optionals, TAlt>
+    : never
     : DropFirstN<Tuple, Tuple['length']>
 
 /** 
@@ -161,10 +161,10 @@ export type KeepRequired<T extends unknown[]> = KeepFirstN<
 >
 
 export type MinLength<T extends any[], Count extends any[] = []> =
-  T extends [infer F, ...infer R]
+    T extends [infer F, ...infer R]
     ? undefined extends F // optional param?
-      ? MinLength<R, Count> // skip
-      : MinLength<R, [...Count, any]> // increment
+    ? MinLength<R, Count> // skip
+    : MinLength<R, [...Count, any]> // increment
     : Count['length']
 
 /** Make T1 optional if T2 is undefined */
@@ -204,8 +204,8 @@ export type Slice<
     IndexEnd extends number = TupleMaxLength<Tuple>,
 > = [...KeepRequired<Tuple>, ...KeepOptionals<Tuple, true>] extends [...infer All]
     ? DropFirstN<KeepFirstN<All, IndexEnd>, IndexStart> extends [...infer Sliced]
-        ? Sliced
-        : never
+    ? Sliced
+    : never
     : never
 
 export type TimeoutId = Parameters<typeof clearTimeout>[0]
@@ -258,7 +258,4 @@ export type ValueOrFunc<
     Value,
     Args extends unknown[]
 > = Value | ((...args: Args) => Value)
-
-type TV = ValueOrFunc<number, []>
-
 

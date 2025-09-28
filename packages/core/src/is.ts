@@ -1,6 +1,6 @@
 import { AsyncFn } from './types'
 
-export const isArr = <T = any> (x: any): x is Array<T> => Array.isArray(x)
+export const isArr = <T = any>(x: any): x is Array<T> => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) => Array.from(new Set<T>(arr))
 /**
  * Check if `x` is an Async function.
@@ -10,7 +10,7 @@ export const isAsyncFn = <
     TData = unknown,
     TArgs extends any[] = unknown[]
 >(x: any): x is AsyncFn<TData, TArgs> => x instanceof (async () => { }).constructor
-    && (x as any)[Symbol.toStringTag] === 'AsyncFunction' 
+    && (x as any)[Symbol.toStringTag] === 'AsyncFunction'
 export const isBool = (x: any): x is boolean => typeof x === 'boolean'
 export const isDate = (x: any): x is Date => x instanceof Date
 export const isError = (x: any): x is Error => x instanceof Error
@@ -43,7 +43,7 @@ export const isUrl = (x: any): x is URL => x instanceof URL
 export const isValidDate = (date: any) => {
     const dateIsStr = isStr(date)
     if (!dateIsStr && !isDate(date)) return false
-    
+
     const dateObj = new Date(date)
     // avoids 'Invalid Date'
     if (Number.isNaN(dateObj.getTime())) return false
@@ -57,7 +57,7 @@ export const isValidDate = (date: any) => {
     )
     return original === converted
 }
-export const isValidNumber = (x: any): x is number => 
+export const isValidNumber = (x: any): x is number =>
     typeof x == 'number'
     && !isNaN(x)
     && isFinite(x)
@@ -68,11 +68,17 @@ export const isValidNumber = (x: any): x is number =>
  * - requires a domain name with a TLDs etc.
  * - and x is string, catches any auto-correction (eg: trailing spaces being removed, spaces being replaced by `%20`)
  * by `new URL()` to ensure string URL is valid
- * Defaults to true.
+ * Defaults to `true`.
+ * @param tldExceptions when in strict mode, treat these hosts as valid despite no domain name extensions
+ * Defaults to `['localhost']`
  * 
  * @returns `true` if the value is a valid URL, `false` otherwise.
  */
-export const isValidURL = (x: any, strict = true) => {
+export const isValidURL = (
+    x: any,
+    strict = true,
+    tldExceptions = ['localhost']
+) => {
     if (!x) return false
     try {
         const isAStr = isStr(x)
@@ -83,8 +89,10 @@ export const isValidURL = (x: any, strict = true) => {
         // This can be used to ensure that a URL can be queried without altering.
         if (!isAStr || !strict) return true
 
-        // require domain name & extension
-        if (strict && url.host.split('.').length <= 1) return false
+        // require domain name & extension when not using localhost
+        const gotTld = tldExceptions.includes(url.hostname)
+            || url.host.split('.').length > 1
+        if (!gotTld) return false
 
         // catch any auto-correction by `new URL()` to ensure string URL is valid
         // Eg: spaces in the domain name being replaced by `%20` or missing `/` in protocol being auto added

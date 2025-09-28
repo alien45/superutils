@@ -48,11 +48,11 @@ describe('is', () => {
 
     describe('isAsyncFn', () => {
         it('should return true for async functions', () => {
-            expect(isAsyncFn(async () => {})).toBe(true)
+            expect(isAsyncFn(async () => { })).toBe(true)
         })
         it('should return false for non-async functions', () => {
-            expect(isAsyncFn(() => {})).toBe(false)
-            expect(isAsyncFn(function() {})).toBe(false)
+            expect(isAsyncFn(() => { })).toBe(false)
+            expect(isAsyncFn(function () { })).toBe(false)
             expect(isAsyncFn({})).toBe(false)
         })
     })
@@ -90,8 +90,8 @@ describe('is', () => {
 
     describe('isFn', () => {
         it('should return true for functions', () => {
-            expect(isFn(() => {})).toBe(true)
-            expect(isFn(function() {})).toBe(true)
+            expect(isFn(() => { })).toBe(true)
+            expect(isFn(function () { })).toBe(true)
         })
         it('should return false for non-functions', () => {
             expect(isFn({})).toBe(false)
@@ -162,10 +162,10 @@ describe('is', () => {
 
     describe('isPromise', () => {
         it('should return true for Promises', () => {
-            expect(isPromise(new Promise(() => {}))).toBe(true)
+            expect(isPromise(new Promise(() => { }))).toBe(true)
         })
         it('should return false for non-Promises', () => {
-            expect(isPromise({ then: () => {} })).toBe(false)
+            expect(isPromise({ then: () => { } })).toBe(false)
         })
     })
 
