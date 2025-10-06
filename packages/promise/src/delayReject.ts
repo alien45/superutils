@@ -3,7 +3,7 @@ import PromisE_delay from './delay'
 /**
  * @name    PromisE.delayReject
  * @summary Creates a promise that rejects after given delay/duration.
- * 
+ *
  * @example ```javascript
  * // Example 1: Will reject after 3 seconds
  * const rejectPromise = PromisE.delayReject(
@@ -13,9 +13,9 @@ import PromisE_delay from './delay'
  * await rejectPromise // throws error message after 3 seconds
  * codeThatWillNotExecute()
  * ```
- * 
+ *
  * ---
- * 
+ *
  * @example ```javascript
  * // Example 2: Cancel the rejectPromise by forcing it to resolve
  * const rejectPromise = PromisE.delayReject(
@@ -32,10 +32,6 @@ import PromisE_delay from './delay'
  * ```
  */
 export function PromisE_delayReject<T = never>(delay: number, reason?: any) {
-    return PromisE_delay<T>(
-        delay,
-        reason,
-        true
-    )
+	return PromisE_delay<T>(delay, reason, true)
 }
 export default PromisE_delayReject
