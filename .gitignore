@@ -4,3 +4,5 @@ packages/*/dist
 packages/*/*.tsbuildinfo
 *.tsbuildinfoa
 coverage
+credentials.json
+*credentials*.json
