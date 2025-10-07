@@ -247,7 +247,7 @@ export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
  * Examples:
  * ---
  * @example ```typescript
- * import { isFn, ValueOrFunc } from '@utils/core'
+ * import { isFn, ValueOrFunc } from '@utiils/core'
  * const print = (value: ValueOrFunc<string>) => isFn(value)
  *  ? value()
  *  : value

@@ -1,40 +1,42 @@
 import { BehaviorSubject, Subscription } from 'rxjs'
-import IntervalSubject from './IntervalSubject'
 
 export type OnResultType<TResult = unknown> = (
 	error: Error | null,
 	result: TResult | undefined,
 	runCount: number,
-	once: boolean
+	once: boolean,
 ) => void
-export type onBeforeExecType = ((runCount: number, once: boolean) => void | Promise<any>)
+export type onBeforeExecType = (
+	runCount: number,
+	once: boolean,
+) => void | Promise<unknown>
 
 /**
  * @name	IntervalRunner
  * @summary	a simple runner to execute a task periodically.
- * 
+ *
  * @description When to use `IntervalRunner` instead of `IntervalSubject`?
- * 
- * `IntervalRunner` is useful when the execution of the `onResult` time must be on the clock and/or must be considered 
- * but excluded from the interval delay/duration.
- * 
- * Example use case: 
- * When an API call needs to be made periodically and there's a possibility of delayed response (due to network issues or 
- * longer backend execution time). In this case, using IntervalRunner with `sequential = true` will ensure the delay is 
- * consistent between completion of current and start of the next API call.
- * 
- * @param	{function}	taskFn		task function to be executed periodically
- * @param	{any[]}		taskArgs	arguments to be supplied to the task function.
- * @param	{number}	intervalMs	timer delay in milliseconds.
- * @param	{boolean}	sequential	true (default): will use setTimeout and will delay until execution is completed.
+ *
+ * `IntervalRunner` is useful when the execution of the `onResult` time must be on the clock and/or must be excluded
+ * from the interval delay duration.
+ *
+ * Example use case:
+ * When an API call needs to be made periodically and there's a possibility of delayed response (due to network issues
+ * or longer backend execution time). In this case, using IntervalRunner with `sequential = true` will ensure the
+ * delay is consistent between completion of current and start of the next API call.
+ *
+ * @param	taskFn		task function to be executed periodically
+ * @param	taskArgs	arguments to be supplied to the task function.
+ * @param	intervalMs	timer delay in milliseconds.
+ * @param	sequential	true (default): will use setTimeout and will delay until execution is completed.
  * This will ensure, in case the current execution takes longer, the following execution will not occur until current one is done and the interval delay is passed.
- * 
+ *
  * false: will use setInterval and the delay time to execute task will not affected. This may cause unwanted issues if the execution takes longer than the interval delay time. Use with caution.
- * 									
- * @param	{boolean}	preExecute	if true, will pre-execute task before starting the timer.
- * 
+ *
+ * @param	preExecute	(optional) if true, will pre-execute task before starting the timer.
+ *
  * @example ```javascript
- * 
+ *
  * const runner = new IntervalRunner(
  *     PromisE.fetch,
  * 	   ['https://my-api-url.com/get-data'],
@@ -45,7 +47,10 @@ export type onBeforeExecType = ((runCount: number, once: boolean) => void | Prom
  * runner.start(result => console.log({ result }))
  * ```
  */
-export default class IntervalRunner<TResult = unknown> {
+export default class IntervalRunner<
+	TResult = unknown,
+	TArgs extends unknown[] = unknown[],
+> {
 	private idInterval: NodeJS.Timeout | undefined
 	public lastResult: TResult | undefined
 	public minIntervalMs = 1000
@@ -55,22 +60,23 @@ export default class IntervalRunner<TResult = unknown> {
 	 * @name	rxIntervalMs
 	 * @summary RxJS BehaviorSubject to change timer delay and restart the timer
 	 */
-	readonly rxIntervalMs: BehaviorSubject<any>
+	readonly rxIntervalMs: BehaviorSubject<number>
 	private runCount = 0
 	private started = false
 	private subscription: Subscription | undefined
 
 	constructor(
-		readonly taskFn: (...args: any[]) => TResult | Promise<TResult>,
-		readonly taskArgs: any[] = [],
+		readonly taskFn: (...args: TArgs) => TResult | Promise<TResult>,
+		readonly taskArgs: TArgs,
 		intervalMs: BehaviorSubject<number> | number,
 		readonly sequential = true, // if true, timer will start start only after execution is finished
 		readonly preExecute = true, // false = delay >> execute, true = execute >> delay
-		readonly deferStartMs = 100
+		readonly deferStartMs = 100,
 	) {
-		this.rxIntervalMs = intervalMs instanceof BehaviorSubject
-			? intervalMs
-			: new BehaviorSubject(intervalMs)
+		this.rxIntervalMs =
+			intervalMs instanceof BehaviorSubject
+				? intervalMs
+				: new BehaviorSubject(intervalMs)
 	}
 
 	private clearInterval = () => {
@@ -80,7 +86,9 @@ export default class IntervalRunner<TResult = unknown> {
 		this.idInterval = undefined
 	}
 
-	private exec = async (once: boolean = false): Promise<TResult | undefined> => {
+	private executeTask = async (
+		once: boolean = false,
+	): Promise<TResult | undefined> => {
 		let err: unknown
 		let result: TResult | undefined
 
@@ -94,25 +102,36 @@ export default class IntervalRunner<TResult = unknown> {
 			err = _err
 		}
 		this.onResult?.(
-			!err
-				? null
-				: err as Error,
+			!err ? null : (err as Error),
 			result,
 			this.runCount,
-			once
+			once,
 		)
 
 		if (this.sequential && this.rxIntervalMs.value > this.minIntervalMs) {
-			this.idInterval = setTimeout(this.exec, this.rxIntervalMs.value)
+			this.idInterval = setTimeout(
+				this.executeTask,
+				this.rxIntervalMs.value,
+			)
 		}
 		return this.lastResult
 	}
 
-	executeOnce = async (): Promise<TResult | undefined> => await this.exec(true)
+	/** Execute the task function regardless of the intervar runner state */
+	executeOnce = async (): Promise<TResult | undefined> =>
+		await this.executeTask(true)
 
+	/** Check if interval is running*/
 	isStarted = () => this.started
 
-	restart = (resetRunCount = false) => {
+	/**
+	 * Restart interval
+	 *
+	 * @param resetRunCount (optional) whether to reset run count
+	 *
+	 * @returns {Boolean} indicates whether restart was successful
+	 */
+	restart = (resetRunCount = false): boolean => {
 		if (!this.onResult) return false
 
 		this.stop(resetRunCount)
@@ -123,21 +142,26 @@ export default class IntervalRunner<TResult = unknown> {
 	/**
 	 * @name	start
 	 * @summary set `onResult` & `onBeforeExec` callbacks and start execution.
-	 * 
+	 *
 	 * @description
 	 * If it's already running, the callbacks will be used on the next execution.
-	 * 
+	 *
 	 * In order to start using callbacks immediately, invoke the `intervalRunner.stop()` function first.
+	 *
+	 * @returns {Boolean} indicates whether starting interveral waa successful
 	 */
-	start = (onResult: OnResultType<TResult>, onBeforeExec?: onBeforeExecType) => {
-		if (!onResult) return
+	start = (
+		onResult: OnResultType<TResult>,
+		onBeforeExec?: onBeforeExecType,
+	): boolean => {
+		if (!onResult) return false
 
 		this.onResult = onResult
 		this.onBeforeExec = onBeforeExec
 
 		// already started, must stop using instance.stop() in order to re-start
 		// new `onResult` & `onBeforeExec` will be used on next execution
-		if (this.started) return
+		if (this.started) return false
 
 		this.started = true
 		let delayMs: number
@@ -150,18 +174,25 @@ export default class IntervalRunner<TResult = unknown> {
 
 			const exit = delayMs <= this.minIntervalMs
 			const preExec = this.lastResult === undefined && this.preExecute
-			preExec && this.exec(exit)
+			preExec && this.executeTask(exit)
 			// turn off the runner and execute task only once
 			if (exit) return
 
 			this.idInterval = !this.sequential
-				? setInterval(() => this.exec(), delayMs)
+				? setInterval(() => this.executeTask(), delayMs)
 				: !preExec
-					? setTimeout(() => this.exec(), delayMs)
+					? setTimeout(() => this.executeTask(), delayMs)
 					: undefined
 		})
+
+		return true
 	}
 
+	/**
+	 * Stop interval runner
+	 *
+	 * @param	resetRunCount	(optional) whether to reset the run counter
+	 */
 	stop = (resetRunCount = false) => {
 		if (resetRunCount) this.runCount = 0
 
@@ -169,5 +200,6 @@ export default class IntervalRunner<TResult = unknown> {
 		this.subscription?.unsubscribe?.()
 
 		this.clearInterval()
+		return this
 	}
 }

@@ -59,6 +59,6 @@ if [[ "${COVERAGE}" == "true" ]]; then
     rm -rf ./coverage
 fi
 
-echo $SCRIPT
+# echo $SCRIPT
 # run Vitest, it will inherit all exported variables
 npm run $SCRIPT

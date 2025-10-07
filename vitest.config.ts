@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig((config) => {
+export default defineConfig(config => {
 	const port = Number(process.env.API_PORT) || 3000
 	const strictPort = `${process.env.API_STRICT_PORT}`.toLowerCase() === 'true'
 	const host = process.env.API_HOST || 'localhost'
@@ -17,7 +17,7 @@ export default defineConfig((config) => {
 		'coverage',
 		'vitest.config.ts',
 	]
-	console.log('\nPackage:', pkg !== '*' ? pkg : 'All', '\n')
+	console.log('\nTest Package(s):', pkg !== '*' ? pkg : 'All', '\n')
 	return {
 		test: {
 			api: {
@@ -25,8 +25,8 @@ export default defineConfig((config) => {
 				port,
 				strictPort,
 			},
-			...coverage && {
-				coverage:  {
+			...(coverage && {
+				coverage: {
 					enabled: true,
 					exclude,
 					provider: 'v8',
@@ -34,7 +34,7 @@ export default defineConfig((config) => {
 					reportsDirectory: './coverage',
 					skipFull,
 				},
-			},
+			}),
 			environment: 'node',
 			globals: true,
 			headless: true,
