@@ -89,11 +89,11 @@ export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
 
 export type OnEarlyFinalize<T> = <
 	TResolved extends boolean,
-	TValue = TResolved extends true ? T : any,
+	TValue = TResolved extends true ? T : unknown,
 >(
 	resolved: TResolved,
 	resultOrReason: TValue,
-) => any | Promise<any>
+) => unknown | Promise<unknown>
 
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>

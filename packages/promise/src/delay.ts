@@ -1,3 +1,4 @@
+import config from './config'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
@@ -20,7 +21,7 @@ import { IPromisE_Delay } from './types'
  * ```
  */
 export function PromisE_delay<T = number>(
-	duration: number,
+	duration: number = 100,
 	result: T = duration as T,
 	asRejected: boolean = false,
 	timeoutErrMsg?: string,
@@ -32,16 +33,12 @@ export function PromisE_delay<T = number>(
 	} = PromisEBase.withResolvers<T>()
 	const promise = _promise as IPromisE_Delay<T>
 	const finalize = (result?: T | Error, doReject = false) => {
-		if (!promise.pending) return
+		if (!doReject) return resolve(result as T)
 
-		!doReject
-			? resolve((result ?? duration) as T)
-			: reject(
-					result
-						?? new Error(
-							timeoutErrMsg ?? `Timed out after ${duration}ms`,
-						),
-				)
+		result ??= new Error(
+			timeoutErrMsg ?? `${config.defaults.delayTimeoutMsg} ${duration}ms`,
+		)
+		reject(result)
 	}
 	promise.timeoutId = setTimeout(() => finalize(result, asRejected), duration)
 	promise.pause = () => clearTimeout(promise.timeoutId)

@@ -3,7 +3,6 @@ import {
 	FetchErrMsgs,
 	ResolveError,
 	ResolveIgnored,
-	FetchConf,
 	FetchAs,
 	FetchOptionsInterceptor,
 } from './types'
@@ -18,6 +17,7 @@ export const config = {
 			resolveIgnored: ResolveIgnored.WITH_LAST,
 			throttle: false,
 		} as DeferredOptions,
+		delayTimeoutMsg: 'Timed out after',
 		/** Global defalut values for fetch (get, post....) requests and global interceptors */
 		fetchOptions: {
 			as: FetchAs.json,

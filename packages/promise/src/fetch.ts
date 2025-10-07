@@ -15,6 +15,7 @@ import {
 	FetchResult,
 	FetchArgsInterceptor,
 	FetchOptionsInterceptor,
+	ThePromise,
 } from './types'
 import config from './config'
 import PromisE_delay from './delay'
@@ -42,12 +43,12 @@ import mergeFetchOptions from './mergeFetchOptions'
  * For raw `Response` use {@link FetchAs.response}
  */
 export default function PromisE_fetch<
-	TJSON,
-	const Options extends FetchOptions = FetchOptions,
-	const TReturn = Options['as'] extends FetchAs
-		? FetchResult<TJSON>[Options['as']]
+	TJSON = unknown,
+	TOptions extends FetchOptions = FetchOptions,
+	TReturn = TOptions['as'] extends FetchAs
+		? FetchResult<TJSON>[TOptions['as']]
 		: TJSON,
->(url: string | URL, allOptions: Options = {} as Options) {
+>(url: string | URL, allOptions: TOptions & FetchOptions = {} as TOptions) {
 	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
 	allOptions.method ??= 'get'
@@ -62,23 +63,21 @@ export default function PromisE_fetch<
 			options,
 		)
 		const { as: parseAs, errMsgs, timeout } = options
-		abortCtrl = options.abortCtrl
 		if (isPositiveNumber(timeout)) {
 			options.abortCtrl ??= new AbortController()
 			timeoutId = setTimeout(() => options.abortCtrl?.abort(), timeout)
 		}
-
+		abortCtrl = options.abortCtrl
 		if (options.abortCtrl) options.signal = options.abortCtrl.signal
 		let errResponse: Response | undefined
 		try {
-			if (!isValidURL(url, false)) throw new Error(errMsgs.invalidUrl)
+			if (!isValidURL(url, false)) throw errMsgs.invalidUrl
 			// make the fetch call
 			let response = await getResponse(url, options)
 			// invoke global and local request interceptors to intercept and/or transform `response`
 			response = await executeInterceptors(
 				response,
 				options.interceptors.response,
-				response,
 				url,
 				options,
 			)
@@ -93,26 +92,25 @@ export default function PromisE_fetch<
 				throw error
 			}
 			let result: any = response
-			const parseResult = (response as any)[parseAs || '']
-			if (isFn(parseResult)) {
-				const handleErr = (err: any) =>
-					Promise.reject(
-						new Error(
-							[
-								errMsgs.parseFailed,
-								parseAs + '.',
-								err.message?.replace('Error: ', ''),
-							].join(' '),
-							{ cause: err },
-						),
+			const parseFunc = (response as any)[parseAs]
+			if (isFn(parseFunc)) {
+				const handleErr = (err: any) => {
+					err = new Error(
+						[
+							errMsgs.parseFailed,
+							parseAs + '.',
+							`${err.message ?? err}`?.replace('Error: ', ''),
+						].join(' '),
+						{ cause: err },
 					)
-				result = await parseResult().catch(handleErr)
+					return ThePromise.reject(err)
+				}
+				result = await parseFunc().catch(handleErr)
 
 				// invoke global and local request interceptors to intercept and/or transform parsed `result`
 				result = await executeInterceptors(
 					result,
 					options.interceptors.result,
-					result,
 					url,
 					options,
 				)
@@ -136,7 +134,6 @@ export default function PromisE_fetch<
 			error = await executeInterceptors(
 				error,
 				options.interceptors.error,
-				error,
 				url,
 				options,
 			)
@@ -147,18 +144,23 @@ export default function PromisE_fetch<
 	}) as IPromisE<TReturn>
 
 	// Abort fetch, in case, if fetch promise is finalized early using non-static resolve/reject methods
-	abortCtrl && promise.onEarlyFinalize.push(() => abortCtrl?.abort())
+	promise.onEarlyFinalize.push(() => abortCtrl?.abort())
 	return promise
 }
 
 /** Executor interceptors and return un-/modified value */
-const executeInterceptors = async <T, TArgs extends any[]>(
+const executeInterceptors = async <
+	T,
+	TArgs extends any[],
+	TArgs2 extends any[] = [value: T, ...TArgs],
+>(
 	value: T,
-	interceptors: Interceptor<T, TArgs>[],
+	interceptors: Interceptor<T, TArgs, TArgs2>[],
 	...args: TArgs
 ) => {
-	for (const interceptor of interceptors) {
-		value = (await fallbackIfFails(interceptor, args, undefined)) ?? value
+	for (const interceptor of interceptors.filter(isFn)) {
+		const _args = [interceptor, [value, args] as TArgs2, value] as const
+		value = (await fallbackIfFails(..._args)) ?? value
 	}
 	return value
 }
@@ -173,16 +175,18 @@ export const getResponse = async (...[url, options]: FetchArgsInterceptor) => {
 						status: 0,
 						statusText: 'Network Error',
 					})
-				: Promise.reject(err),
+				: ThePromise.reject(err),
 		)
 	let { retry, retryBackOff, retryDelayMs, retryDelayJitter } = options
+	let _retry = retry
 	let response = await doFetch()
-	while (retry > 0 && (response.status < 200 || response.status >= 300)) {
-		if (retryBackOff === 'exponential') retryDelayMs *= 2
+	while (_retry > 0 && (response.status < 200 || response.status >= 300)) {
+		if (retryBackOff === 'exponential' && retry !== _retry)
+			retryDelayMs *= 2
 		if (retryDelayJitter) retryDelayMs += Math.floor(Math.random() * 100)
 		await PromisE_delay(retryDelayMs)
 		response = await doFetch()
-		retry--
+		_retry--
 	}
 	return response
 }

@@ -24,23 +24,14 @@ export type FetchConf = {
 	interceptors?: FetchInterceptors
 	/** Request timeout in milliseconds. */
 	timeout?: number
-} & FetchRetryConf
-
-export type FetchInterceptors = {
-	error?: Interceptor<
-		FetchError,
-		[error: FetchError, ...FetchArgsInterceptor]
-	>[]
-	request?: Interceptor<FetchArgs[0], FetchArgsInterceptor>[]
-	response?: Interceptor<
-		Response,
-		[response: Response, ...FetchArgsInterceptor]
-	>[]
-	result?: Interceptor<unknown, [result: unknown, ...FetchArgsInterceptor]>[]
 }
 
-/** FetchConf without abort controller */
-export type FetchConfWOAbort = Omit<FetchConf, 'abortCtrl'>
+export type FetchInterceptors = {
+	error?: Array<Interceptor<FetchError, FetchArgsInterceptor>>
+	request?: Array<Interceptor<FetchArgs[0], FetchArgsInterceptor>>
+	response?: Array<Interceptor<Response, FetchArgsInterceptor>>
+	result?: Array<Interceptor<unknown, FetchArgsInterceptor>>
+}
 
 /** Default args */
 export type FetchDeferredArgs = [
@@ -77,7 +68,7 @@ export class FetchError extends Error {
 	}
 }
 
-export type FetchOptions = RequestInit & FetchConf
+export type FetchOptions = RequestInit & FetchConf & FetchRetryConf
 
 export type FetchOptionsInterceptor = Omit<
 	FetchOptions,
@@ -102,15 +93,25 @@ export type FetchRetryConf = {
 	/** Default: 0 */
 	retry?: number
 	retryDelayMs?: number
-	/** Default: 'exponential' */
+	/**
+	 * Accepted values:
+	 * - exponential: each subsequent retry delay will be doubled from the last
+	 * - linear: fixed delay between retries
+	 * Default: 'exponential'
+	 */
 	retryBackOff?: 'exponential' | 'linear'
-	/** Default: true */
+	/**
+	 * Add random delay between 0ms and 100ms to the retry delay
+	 * Default: true
+	 */
 	retryDelayJitter?: boolean
 }
 
-export type Interceptor<T, TArgs extends any[]> = (
-	...args: TArgs
-) => ValueOrPromise<void> | ValueOrPromise<T>
+export type Interceptor<
+	T,
+	TArgs extends any[],
+	TArgs2 extends any[] = [value: T, ...TArgs],
+> = (...args: TArgs2) => ValueOrPromise<void> | ValueOrPromise<T>
 
 export type PostBody = Record<string, unknown> | BodyInit | null
 

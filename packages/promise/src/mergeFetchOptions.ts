@@ -1,4 +1,4 @@
-import { arrUnique, asAny, forceCast } from '@utiils/core'
+import { asAny } from '@utiils/core'
 import config from './config'
 import { FetchArgsInterceptor, FetchOptions } from './types'
 

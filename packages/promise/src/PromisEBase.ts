@@ -1,5 +1,5 @@
 import { fallbackIfFails, isPromise } from '@utiils/core'
-import { OnEarlyFinalize, PromiseParams, IPromisE } from './types'
+import { OnEarlyFinalize, PromiseParams, IPromisE, ThePromise } from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
@@ -41,7 +41,7 @@ export class PromisEBase<T = unknown>
 				;(this as any).state = 1
 				resolve(value)
 			}
-			const promise = isPromise(input) ? input : new Promise<T>(input)
+			const promise = isPromise(input) ? input : new ThePromise<T>(input)
 			promise.then(_resolve, _reject)
 		})
 
@@ -108,23 +108,23 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.all(...))` */
 	static all = <T extends readonly unknown[] | []>(values: T) =>
-		new PromisEBase(Promise.all<T>(values)) as IPromisE<{
+		new PromisEBase(ThePromise.all<T>(values)) as IPromisE<{
 			-readonly [P in keyof T]: Awaited<T[P]>
 		}>
 
 	/** Sugar for `new PromisE(Promise.allSettled(...))` */
 	static allSettled = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.allSettled<T>(values)) as IPromisE<
+		new PromisEBase(ThePromise.allSettled<T>(values)) as IPromisE<
 			PromiseSettledResult<Awaited<T[number]>>[]
 		>
 
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.any<T>(values)) as IPromisE<T[number]>
+		new PromisEBase(ThePromise.any<T>(values)) as IPromisE<T[number]>
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
 	static race = <T>(values: T[]) =>
-		new PromisEBase(Promise.race(values)) as IPromisE<Awaited<T>>
+		new PromisEBase(ThePromise.race(values)) as IPromisE<Awaited<T>>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: any) => {
@@ -135,7 +135,7 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.resolve(...))` */
 	static resolve = <T>(value?: T) =>
-		new PromisEBase<T>(Promise.resolve<T>(value as T)) as IPromisE<T>
+		new PromisEBase<T>(ThePromise.resolve<T>(value as T)) as IPromisE<T>
 
 	/** Sugar for `new PromisE(Promise.try(...))` */
 	static try = <T, U extends unknown[]>(
@@ -149,7 +149,7 @@ export class PromisEBase<T = unknown>
 					callbackFn,
 					args,
 					// rethrow error to ensure the returned promise is rejected
-					err => Promise.reject(err),
+					err => ThePromise.reject(err),
 				),
 			),
 		) as IPromisE<Awaited<T>>
@@ -175,7 +175,7 @@ export class PromisEBase<T = unknown>
 	 * ```
 	 */
 	static withResolvers = <T = unknown>() => {
-		const pwr = Promise.withResolvers<T>()
+		const pwr = ThePromise.withResolvers<T>()
 		const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
 		return { ...pwr, promise }
 	}

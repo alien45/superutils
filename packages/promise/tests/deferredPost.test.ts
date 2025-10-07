@@ -10,7 +10,7 @@ describe('deferredPost & post', () => {
 		productId: number,
 		options: Record<string, any> = {},
 		success = true,
-		withSignal = false,
+		withSignal = true,
 	) => ({
 		success,
 		args: [
@@ -58,7 +58,7 @@ describe('deferredPost & post', () => {
 		vi.useRealTimers()
 	})
 
-	it('should debounce post calls and only execute trailing calls', async () => {
+	it('should debounce post requests and only execute trailing calls', async () => {
 		// This test will now use the mocked fetch.
 		// 1. First 3 calls are made within 100ms. The first 2 are ignored. The 3rd is queued.
 		// 2. runAllTimersAsync executes the 3rd call.
@@ -66,6 +66,31 @@ describe('deferredPost & post', () => {
 		const context = getDeferredContext()
 		const saveProduct = PromisE.deferredPost(context, `${fetchBaseUrl}/1`)
 		saveProduct(undefined, { name: 'Product 1' })
+		let delay = PromisE.delay(100)
+		await vi.runAllTimersAsync()
+		await delay
+		expect(mockPost200).toHaveBeenCalledTimes(1)
+		expect(context.data.results).toHaveLength(1)
+		saveProduct(`${fetchBaseUrl}/2`, { name: 'Product 2' })
+		saveProduct(`${fetchBaseUrl}/2a`, { name: 'Product 2a' })
+		saveProduct(`${fetchBaseUrl}/2b`, { name: 'Product 2b' })
+		saveProduct(`${fetchBaseUrl}/3`, 'Product 3')
+		delay = PromisE.delay(100)
+		vi.runAllTimersAsync()
+		await delay
+		expect(mockPost200).toHaveBeenCalledTimes(2)
+		expect(context.data.results).toHaveLength(2)
+		const result1 = getMockedPostResult(1, { body: { name: 'Product 1' } })
+		const result2 = getMockedPostResult(3, { body: 'Product 3' })
+		expect(context.data.results).toEqual([result1, result2])
+	})
+
+	it('should debounce post requests and only execute trailing calls', async () => {
+		const context = getDeferredContext()
+		const saveProduct = PromisE.deferredPost(context, `${fetchBaseUrl}/1`, {
+			name: 'Product 1',
+		})
+		saveProduct()
 		let delay = PromisE.delay(100)
 		await vi.runAllTimersAsync()
 		await delay
