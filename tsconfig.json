@@ -1,10 +1,11 @@
 {
-  "files": [],
-  "references": [
-    { "path": "packages/core" },
-    { "path": "packages/promise" },
-    { "path": "packages/rx" },
-    { "path": "packages/react" },
-    { "path": "packages/demo" },
-  ]
+	"files": [],
+	"references": [
+		{ "path": "packages/core" },
+		{ "path": "packages/promise" },
+		{ "path": "packages/rx" },
+		{ "path": "packages/ai-orchestrator" },
+		{ "path": "packages/react" },
+		{ "path": "packages/demo" }
+	]
 }

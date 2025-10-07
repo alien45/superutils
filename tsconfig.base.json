@@ -8,6 +8,14 @@
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"module": "CommonJS",
 		"moduleResolution": "node",
+		"paths": {
+			"@utiils/core": ["./packages/core/src/*"],
+			"@utiils/promise": ["./packages/promise/src/*"],
+			"@utiils/react": ["./packages/react/src/*"],
+			"@utiils/rx": ["./packages/rx/src/*"],
+			"@utiils/ai-orchestrator": ["./packages/ai-orchestrator/src/*"],
+			"@utiils/demo": ["./packages/demo/src/*"]
+		},
 		"outDir": "./dist",
 		"resolveJsonModule": true,
 		"rootDir": "./src",

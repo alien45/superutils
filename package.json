@@ -4,6 +4,7 @@
 	"devDependencies": {
 		"@eslint/js": "^9.37.0",
 		"@types/eslint": "^9.6.1",
+		"@typescript/native-preview": "^7.0.0-dev.20251007.1",
 		"@vitest/coverage-v8": "^3.2.4",
 		"@vitest/ui": "^3.2.4",
 		"eslint": "^8.57.1",
@@ -24,9 +25,12 @@
 	"license": "ISC",
 	"private": true,
 	"scripts": {
+		"tsc": "tsc",
+		"tsgo": "tsgo",
+		"tsgosh": "bash scripts/tsgo.sh",
 		"clean": "tsc --build --clean",
 		"rmdist": "rm -rf packages/*/dist/*",
-		"build": "tsc --build",
+		"build": "tsc --build --verbose",
 		"lint": "eslint . --ext .ts,.tsx",
 		"publish:packages": "lerna publish",
 		"start": "npm run rmdist && npm run clean && npm run watch",
