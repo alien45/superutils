@@ -6,3 +6,7 @@ packages/*/*.tsbuildinfo
 coverage
 credentials.json
 *credentials*.json
+
+#vitepress/docs
+docs/.vitepress/dist
+docs/.vitepress/cache

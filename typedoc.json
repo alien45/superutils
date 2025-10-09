@@ -1,0 +1,24 @@
+// {
+// 	"entryPoints": ["packages/*/src/index.ts"],
+// 	"exclude": ["packages/template/**", "packages/demo/**"],
+// 	"out": "docs/packages/",
+// 	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+// 	"basePath": "../",
+// 	"vitepressBasePath": "/packages/",
+// 	"vitepressNav": {
+// 		"text": "API Reference",
+// 		"link": "/packages/"
+// 	}
+// }
+
+{
+	"entryPoints": ["packages/*/src/index.ts"],
+	"exclude": ["packages/template/**", "packages/demo/**"],
+	"out": "docs/packages/",
+	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+	"readme": "none",
+	"githubPages": false,
+	"hidePageHeader": true,
+	"hideBreadcrumbs": true,
+	"docsRoot": "./docs"
+}
