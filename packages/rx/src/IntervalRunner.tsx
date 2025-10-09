@@ -35,7 +35,7 @@ export type onBeforeExecType = (
  *
  * @param	preExecute	(optional) if true, will pre-execute task before starting the timer.
  *
- * @example ```javascript
+ * @example ```typescript
  *
  * const runner = new IntervalRunner(
  *     PromisE.fetch,

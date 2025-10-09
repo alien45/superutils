@@ -13,7 +13,7 @@ import { IPromisE_Delay } from './types'
  *
  * @returns See {@link IPromisE_Delay}
  *
- * @example ```javascript
+ * @example ```typescript
  * console.log('Waiting for app initialization or something else to be ready')
  * // wait 3 seconds before proceeding
  * await PromisE.delay(3000)

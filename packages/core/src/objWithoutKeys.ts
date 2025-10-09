@@ -1,8 +1,7 @@
 import { isArr, isObj } from './is'
 
-type Key = keyof any
 /**
- * @name	objWithoutKeys
+ * @function	objWithoutKeys
  * @summary constructs a new object excluding specific properties
  *
  * @param	{Object}	input
@@ -15,7 +14,7 @@ type Key = keyof any
 export const objWithoutKeys = (
 	input: unknown,
 	keys: string[],
-	output?: Record<Key, unknown>,
+	output?: Record<keyof any, unknown>,
 ) => {
 	if (!isObj(input, false)) return {}
 	if (!isArr(keys) || !keys.length) return input

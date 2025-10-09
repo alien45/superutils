@@ -14,28 +14,21 @@ import {
 	FetchAs,
 	FetchResult,
 	FetchArgsInterceptor,
-	FetchOptionsInterceptor,
+	FetchInterceptors,
 	ThePromise,
 } from './types'
-import config from './config'
 import PromisE_delay from './delay'
 import mergeFetchOptions from './mergeFetchOptions'
 
 /**
- * @name    PromisE.fetchRaw
- * @summary makes a fetch request and returns Response.
- * This DOES NOT return an instance of {@link IPromisE}.
- *
- * To set global fetch interceptors use `PromisE.config`. See {@link config} for more details.
- */
-/**
- * @name    PromisE.fetch
+ * @function    PromisE.fetch
  * @summary makes a fetch request and returns JSON.
  * Default options.headers["content-type"] is 'application/json'.
  * Will reject promise if response status code is 2xx (200 <= status < 300).
  *
  * @param	url
  * @param	o.abortCtrl (optional)
+ * @param	o.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
  * @param	o.method  (optional) Default: `"get"`
  * @param	o.timeout (optional) duration in milliseconds to abort the request if it takes longer.
  * @param	o.parse   (optional) specify how to parse the result.
@@ -48,13 +41,13 @@ export default function PromisE_fetch<
 	TReturn = TOptions['as'] extends FetchAs
 		? FetchResult<TJSON>[TOptions['as']]
 		: TJSON,
->(url: string | URL, allOptions: TOptions & FetchOptions = {} as TOptions) {
+>(url: string | URL, fetchOptions: TOptions & FetchOptions = {} as TOptions) {
 	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
-	allOptions.method ??= 'get'
+	fetchOptions.method ??= 'get'
 	const promise = new PromisEBase(async (resolve, reject) => {
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-		const options = mergeFetchOptions(allOptions) as FetchOptionsInterceptor
+		const options = mergeFetchOptions(fetchOptions)
 		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
 		url = await executeInterceptors(
 			url,

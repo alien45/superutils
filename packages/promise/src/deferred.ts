@@ -31,7 +31,7 @@ import config from './config'
  * Requires `defer`.
  * Default: `false`
  *
- * @returns a callback that is invoked in one of the followin 3 methods:
+ * @returns {Function} a callback that is invoked in one of the followin 3 methods:
  * - sequential: when `delayMs` is not a positive number.
  * - debounced: when `delayMs > 0` and `throttle = false`
  * - throttled: when `delayMs > 0` and `throttle = true`
@@ -61,8 +61,7 @@ import config from './config'
  * ---
  *
  * @example Explanation & example usage:
- * <BR>
- * ```javascript
+ * ```typescript
  * const example = throttle => {
  *     const df = PromisE.deferred(throttle)
  *     df(() => PromisE.delay(5000)).then(console.log)

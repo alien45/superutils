@@ -9,6 +9,7 @@ import {
 
 /** Global configuration */
 export const config = {
+	/** Global default values */
 	defaults: {
 		/** Default value for `options` used by `PromisE.*deferred*` functions */
 		deferOptions: {
@@ -28,9 +29,14 @@ export const config = {
 				requestFailed: 'Request failed with status code:',
 			} as Required<FetchErrMsgs>,
 			headers: new Headers([['content-type', 'application/json']]),
-			/** Global interceptors */
+			/** Global interceptors for fetch requests */
 			interceptors: {
+				/**
+				 * Global error interceptors to be invoked whenever an exception occurs
+				 * Returning an
+				 */
 				error: [],
+				/** Interceptors to be invoked before making fetch requests */
 				request: [],
 				response: [],
 				result: [],

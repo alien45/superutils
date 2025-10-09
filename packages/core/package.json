@@ -1,23 +1,32 @@
 {
-  "author": "Toufiqur Rahaman Chowdhury",
-  "description": "Utilities for TS/JS/Node.js environments.",
-  "devDependencies": {
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": ["javascript", "rxjs", "utilities", "utils", "typescript", "TS", "JS", "Node.js", "node"],
-  "license": "MIT",
-  "main": "dist/index.js",
-  "name": "@utiils/core",
-  "peerDependencies": {},
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest",
-    "watch": "tsc -p tsconfig.json --watch"
-  },
-  "types": "dist/index.d.ts",
-  "version": "0.1.0"
+	"author": "Toufiqur Rahaman Chowdhury",
+	"description": "Utilities for TS/JS/Node.js environments.",
+	"devDependencies": {},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"javascript",
+		"rxjs",
+		"utilities",
+		"utils",
+		"typescript",
+		"TS",
+		"JS",
+		"Node.js",
+		"node"
+	],
+	"license": "MIT",
+	"main": "dist/index.js",
+	"name": "@utiils/core",
+	"peerDependencies": {},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"test": "vitest",
+		"watch": "tsc -p tsconfig.json --watch"
+	},
+	"types": "dist/index.d.ts",
+	"version": "0.1.0"
 }

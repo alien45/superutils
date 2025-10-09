@@ -8,12 +8,14 @@ export type AsyncFn<TOut = unknown, TArgs extends any[] = []> = (
 /**
  * Create a tuple of specific type with given length
  * ---
+ * @example Create a new tuple
  * ```typescript
- * // Create a new tuple
  * type CreatedTuple =  CreateTuple<number, 3>
  * // Result: [number, number, number]
+ * ```
  *
- * // Create a new tuple by extending an existing tuple
+ * @example Create a new tuple by extending an existing tuple
+ * ```typescript
  * type ExtendedTuple = CreateTuple<string, 6, CreatedTuple>
  * // Result: [number, number, number, string, string, string]
  * ```
@@ -44,7 +46,8 @@ DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
 /**
  * Drop the first item from an array/tuple and keep the rest
  * ---
- * @example ```javascript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWOFirst = DropFirst<MyTuple> // result: [second: number, third: boolean]
  * ```
@@ -56,7 +59,8 @@ export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
 /**
  * Drop first N items from an array/tuple and keep the rest
  * ---
- * @example ```javascript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWO2 = DropFirstN<MyTuple, 2> // result: [third: boolean]
  * ```
@@ -74,7 +78,8 @@ export type DropFirstN<
 /**
  * Drop the last item from an array/tuple and keep the rest
  * ---
- * @example ```javascript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
  * ```
@@ -93,7 +98,8 @@ export type IsOptional<T, K extends keyof T> =
 /**
  * Keep the first item from an array/tuple and drop the rest
  * ---
- * @example ```javascript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
  * ```
@@ -108,7 +114,8 @@ export type KeepFirst<T extends any[]> = T extends readonly [
 /**
  * Keep first N items from an array/tuple and drop the rest
  * ---
- * @example ```javascript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWith1st2 = KeepFirstN<MyTuple, 2> // result: [first: string, second: number]
  * ```
@@ -128,7 +135,8 @@ export type KeepFirstN<T extends readonly any[], N extends number = 1> =
  * Defaults to `false`
  * @template TAlt   (optional) Defaults to `undefined`
  *
- * @example ```typescript
+ * @example usage
+ * ```typescript
  * import { KeepOptionals } from '@utiils/core
  * type MyTuple = [first: string, second?: number, third?: boolean]
  * type Optionals = KeepOptionals<MyTuple>
@@ -189,7 +197,8 @@ export type MakeOptional<
 /**
  * Create a new slices tuple from an existing tuple
  * ---
- * @example ```typescript
+ * @example usage
+ * ```typescript
  * type MyTuple = [a: string, b: boolean, c: number, d: Record<string, unknown>]
  * type FirstHalf = Slice<MyTuple, 0, 2>
  * type LastHalf = Slice<MyTuple, 2>
@@ -217,7 +226,8 @@ export type TimeoutId = Parameters<typeof clearTimeout>[0]
  * This is particularly useful when a tuple (or function paramenters) contains optional members.
  *
  * ---
- * @example ```typescript
+ * @example usage
+ * ```typescript
  * type MyTuple = [string, number?, boolean?]
  * type Lengths = MyTuple['length'] // 1 | 2 | 3 // union because of optional parameters
  * type MaxLength = TupleMaxLength<MyTuple> // 3
@@ -229,7 +239,8 @@ export type TupleMaxLength<T extends readonly any[]> = Required<T>['length']
  * Add alt type to all members of a tuple.
  *
  * ---
- * @example ```typescript
+ * @example usage
+ * ```typescript
  * type MyTuple = [first: boolean, second: string]
  * type MyTupleWithUndefined = TupleWithAlt<MyTuple>
  * // Result: [first: boolean | undefined, second: string | undefined]
@@ -246,7 +257,8 @@ export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
  *
  * Examples:
  * ---
- * @example ```typescript
+ * @example usage
+ * ```typescript
  * import { isFn, ValueOrFunc } from '@utiils/core'
  * const print = (value: ValueOrFunc<string>) => isFn(value)
  *  ? value()

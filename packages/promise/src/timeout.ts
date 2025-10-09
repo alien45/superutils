@@ -11,7 +11,7 @@ import { IPromisE_Timeout } from './types'
  * @param   values  promise/function: one or more promises as individual arguments
  *
  * @example Example 1: single promise - resolved
- * ```javascript
+ * ```typescript
  * PromisE.timeout(
  *   5000, // timeout after 5000ms
  *   PromisE.delay(1000), // resolves after 1000ms with value 1000
@@ -21,7 +21,7 @@ import { IPromisE_Timeout } from './types'
  *
  * @example Example 2: multiple promises - resolved
  *
- * ```javascript
+ * ```typescript
  * PromisE.timeout(
  *     5000, // timeout after 5000ms
  *     PromisE.delay(1000), // resolves after 1000ms with value 1000
@@ -32,7 +32,7 @@ import { IPromisE_Timeout } from './types'
  * ```
  *
  * @example Example 3: timed out & rejected
- * ```javascript
+ * ```typescript
  * PromisE.timeout(
  *     5000, // timeout after 5000ms
  *     PromisE.delay(20000), // resolves after 20000ms with value 20000
@@ -42,7 +42,7 @@ import { IPromisE_Timeout } from './types'
  *
  * @example Example 4: timed out & but not rejected.
  * // Eg: when API request is taking longer than expected, print a message but not reject the promise.
- * ```javascript
+ * ```typescript
  * const promise = PromisE.timeout(
  *     5000, // timeout after 5000ms
  *     PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000

@@ -5,7 +5,7 @@ import { IPromisE, DeferredOptions } from './types'
  * @returns deferred/throttled callback function
  *
  *
- * @example ```javascript
+ * @example ```typescript
  * const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
  *     delayMs: 300,

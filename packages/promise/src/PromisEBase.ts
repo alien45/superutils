@@ -160,15 +160,20 @@ export class PromisEBase<T = unknown>
 	 * NB: this function is technically no longer needed because the `PromisE` class already comes with the resolvers.
 	 *
 	 * ---
+	 * @example
+	 * Using `PromisE` directly: simply provide an empty function as the executor
 	 *
-	 *
-	 * @example ```typescript
-	 * // Using `PromisE` directly: simply provide an empty function as the executor
+	 * ```typescript
+	 * import PromisE from '@utiils/promise'
 	 * const promisE = new PromisE<number>(() => {})
 	 * setTimeout(() => promisE.resolve(1), 1000)
 	 * promisE.then(console.log)
+	 * ```
 	 *
-	 * // Using `withResolvers`
+	 * @example
+	 * Using `withResolvers`
+	 * ```typescript
+	 * import PromisE from '@utiils/promise'
 	 * const pwr = PromisE.withResolvers<number>()
 	 * setTimeout(() => pwr.resolve(1), 1000)
 	 * pwr.promise.then(console.log)

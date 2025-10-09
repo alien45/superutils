@@ -4,7 +4,7 @@ import PromisE_delay from './delay'
  * @name    PromisE.delayReject
  * @summary Creates a promise that rejects after given delay/duration.
  *
- * @example ```javascript
+ * @example ```typescript
  * // Example 1: Will reject after 3 seconds
  * const rejectPromise = PromisE.delayReject(
  *     3000, // duration in milliseconds
@@ -16,7 +16,7 @@ import PromisE_delay from './delay'
  *
  * ---
  *
- * @example ```javascript
+ * @example ```typescript
  * // Example 2: Cancel the rejectPromise by forcing it to resolve
  * const rejectPromise = PromisE.delayReject(
  *     3000,

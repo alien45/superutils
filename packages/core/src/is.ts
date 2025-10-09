@@ -3,9 +3,18 @@ import { AsyncFn } from './types'
 export const isArr = <T = any>(x: any): x is Array<T> => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) =>
 	Array.from(new Set<T>(arr))
+
 /**
+ * @function isAsyncFn
  * Check if `x` is an Async function.
  * Caution: May not work at runtime when Babel/Webpack is used due to code compilation.
+ *
+ * ---
+ * @example usage
+ * ```typescript
+ * isAsyncFn(async () => {}) // result: true
+ * isAsyncFn(() => {}) // result: false
+ * ```
  */
 export const isAsyncFn = <TData = unknown, TArgs extends any[] = unknown[]>(
 	x: any,
@@ -35,7 +44,7 @@ export const isSet = <T = any>(x: any): x is Set<T> => x instanceof Set
 export const isStr = (x: any): x is string => typeof x === 'string'
 export const isUrl = (x: any): x is URL => x instanceof URL
 /**
- * @name    isValidDate
+ * @function    isValidDate
  * @summary Checks if a value is a valid date.
  *
  * @param   date The value to check. Can be a Date object or a string.

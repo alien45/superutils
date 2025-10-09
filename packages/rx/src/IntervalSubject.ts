@@ -3,10 +3,10 @@ import { BehaviorSubject } from './BehaviorSubject'
 /**
  * @name	IntervalSubject
  * @summary	Extention of a BehaviorSubject with interval function
- * 
+ *
  * -----------------------------------------------
- * 
- * @example ```javascript
+ *
+ * @example ```typescript
  * // Example 1: Fetch data from API server every minute
  * const initialValue = 0
  * const rxInterval = new IntervalSubject(
@@ -15,7 +15,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  *  initialValue, // initial counter value
  * 	1, // increment by 1 at each interval
  * )
- * 
+ *
  * const onChange = (counter: number) => {
  * 	counter === initialValue && console.log('Counter started')
  * 	const { PromisE } = require('@utiils/core')
@@ -24,7 +24,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  *         (err: Error) => console.log('Ping failed.', err)
  *     )
  * }
- *  
+ *
  * // BehaviorSubject automatically resolves with the initial value if subscribed immediately.
  * // subscribe to the subject and execute `onChange`: first time immediately and then every 60 seconds
  * rxInterval.subscribe(onChange)
@@ -51,20 +51,20 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		return this
 	}
 
-    resume = () => this.start()
+	resume = () => this.start()
 
 	start = () => {
 		if (!this.running) {
 			this.setRunning(true)
 			this.intervalId = setInterval(
 				() => this.next(this.value + this.incrementBy),
-				this.delay
+				this.delay,
 			)
 		}
 		return this
 	}
 
-	private setRunning = (value = false) => (this as any).running = value
+	private setRunning = (value = false) => ((this as any).running = value)
 
 	stop = () => {
 		this.pause()

@@ -9,7 +9,7 @@ import { DeferredOptions, FetchArgs, FetchDeferredArgs } from './types'
  * @name    PromisE.deferredFetch
  * @summary {@link PromisE_fetch} with the advantages of {@link PromisE_deferred} and auto-abort feature
  *
- * @example ```javascript
+ * @example ```typescript
  * ---
  * // Example: Fetch paginated products
  * const getProducts = PromisE.deferredFetch({
