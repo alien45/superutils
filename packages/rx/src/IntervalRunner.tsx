@@ -1,4 +1,4 @@
-import { TimeoutId } from '@superutils/core'
+import { fallbackIfFails, TimeoutId } from '@superutils/core'
 import { BehaviorSubject, Subscription } from 'rxjs'
 
 export type OnResultType<TResult = unknown> = (
@@ -102,11 +102,11 @@ export default class IntervalRunner<
 		} catch (_err) {
 			err = _err
 		}
-		this.onResult?.(
-			!err ? null : (err as Error),
-			result,
-			this.runCount,
-			once,
+
+		fallbackIfFails(
+			this.onResult,
+			[(err as Error) ?? null, result, this.runCount, once],
+			undefined,
 		)
 
 		if (this.sequential && this.rxIntervalMs.value > this.minIntervalMs) {
@@ -175,7 +175,10 @@ export default class IntervalRunner<
 
 			const exit = delayMs <= this.minIntervalMs
 			const preExec = this.lastResult === undefined && this.preExecute
-			preExec && this.executeTask(exit)
+			preExec
+				&& this.executeTask(exit).catch(() => {
+					/* nothing to do */
+				})
 			// turn off the runner and execute task only once
 			if (exit) return
 
