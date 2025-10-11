@@ -1,7 +1,7 @@
 import { isValidDate } from './is'
 
 /**
- * Convert timestamp to HTML `datetime-local` compatible format.
+ * Convert timestamp to `input["datetime-local"]` compatible format.
  *
  * ---
  * @example Convert ISO datetime string

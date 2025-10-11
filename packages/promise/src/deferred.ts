@@ -4,7 +4,7 @@ import {
 	isFn,
 	isPositiveNumber,
 	throttled,
-} from '@utiils/core'
+} from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import {
 	IPromisE,

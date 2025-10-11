@@ -1,4 +1,4 @@
-import { deferred, isArr, isFn } from '@utiils/core'
+import { deferred, isArr, isFn } from '@superutils/core'
 import { BehaviorSubject } from './BehaviorSubject'
 import { isSubjectLike } from './isSubjectLike'
 import { SubjectLike } from './types'

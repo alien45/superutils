@@ -1,0 +1,71 @@
+# Function: subjectAsPromise()
+
+> **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): \[[`PromisE`](../../promise/classes/PromisE.md)\<`T`\>, () => `void`\]
+
+Defined in: [packages/rx/src/subjectAsPromise.ts:34](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/subjectAsPromise.ts#L34)
+
+## Type Parameters
+
+### T
+
+`T` = `unknown`
+
+## Parameters
+
+### subject
+
+[`SubjectLike`](../interfaces/SubjectLike.md)\<`T`\>
+
+RxJS subject or similar subscribable
+
+### expectedValue?
+
+(optional) if undefined, will resolve as soon as any value is received.
+                     If function, it should return true or false to indicate whether the value should be resolved.
+
+`T` | (`value`) => `boolean`
+
+### timeout?
+
+`number`
+
+(optional) will reject if no value received within given time
+
+### timeoutMsg?
+
+`string` = `'request timed out before an expected value is received'`
+
+(optional) error message to use when times out.
+                                             Default: 'Request timed out before an expected value is received'
+
+## Returns
+
+\[[`PromisE`](../../promise/classes/PromisE.md)\<`T`\>, () => `void`\]
+
+will reject with:
+                                 - `null` if times out
+                                 - `undefined` if
+
+## Name
+
+subjectAsPromise
+
+## Subject
+
+is not a valid RxJS subject like subscribable
+
+----------------------------------------
+
+## Example
+
+```ts
+```typescript
+
+// Create an interval runner subject that triggers incremental value every second.
+const rxInterval = new IntervalSubject(true, 1000, 1, 1)
+
+// create a promise that only resolves when expected value is received
+const [promise, unsubscribe] = subjectAsPromise(rxInterval, 10)
+promise.then(value => console.log('Value should be 10', value))
+```
+```

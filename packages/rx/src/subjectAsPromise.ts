@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isFn } from '@utiils/core'
-import PromisE from '@utiils/promise'
+import { isFn, TimeoutId } from '@superutils/core'
+import PromisE from '@superutils/promise'
 import { SubjectLike, SubscriptionLike } from './types'
 
 export const ANY_VALUE_SYMBOL = Symbol('any-value')
@@ -45,7 +45,7 @@ export const subjectAsPromise = <T = unknown>(
 	}
 
 	let subscription: SubscriptionLike
-	let timeoutId: NodeJS.Timeout
+	let timeoutId: TimeoutId
 	let unsubscribed: boolean
 	const unsubscribe = () =>
 		setTimeout(() => {

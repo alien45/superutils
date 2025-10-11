@@ -1,4 +1,4 @@
-import { DeferredConfig, ThrottleConfig } from '@utiils/core'
+import { DeferredConfig, ThrottleConfig } from '@superutils/core'
 
 export type DeferredOptions<ThisArg = unknown> = {
 	/** Delay in milliseconds, used for `debounce` and `throttle` modes. */

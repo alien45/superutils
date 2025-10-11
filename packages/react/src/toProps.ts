@@ -1,5 +1,5 @@
 import { HTMLProps, isValidElement, ReactNode } from 'react'
-import { isObj } from '@utiils/core'
+import { isObj } from '@superutils/core'
 
 /**
  * @name    toProps
@@ -12,19 +12,19 @@ import { isObj } from '@utiils/core'
  * @returns {Object}
  */
 export const toProps = (
-    elOrProps: string | ReactNode | object = {},
-    childrenProp: string = 'children',
-    extractElementProps: boolean = true
+	elOrProps: string | ReactNode | object = {},
+	childrenProp: string = 'children',
+	extractElementProps: boolean = true,
 ): null | HTMLProps<any> => {
-    if (elOrProps === null) return elOrProps
+	if (elOrProps === null) return elOrProps
 
-    childrenProp ??= 'children'
-    const props = isValidElement(elOrProps)
-        ? extractElementProps
-            ? elOrProps.props // react element
-            : { [childrenProp]: elOrProps }
-        : isObj(elOrProps)
-            ? elOrProps // plain object
-            : { [childrenProp]: elOrProps } // assume string or element
-    return { ...props || {} }
+	childrenProp ??= 'children'
+	const props = isValidElement(elOrProps)
+		? extractElementProps
+			? elOrProps.props // react element
+			: { [childrenProp]: elOrProps }
+		: isObj(elOrProps)
+			? elOrProps // plain object
+			: { [childrenProp]: elOrProps } // assume string or element
+	return { ...(props || {}) }
 }

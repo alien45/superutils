@@ -44,6 +44,16 @@ DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
 		TData
 
 /**
+ * Deferred function config
+ */
+export interface DeferredConfig<ThisArg = unknown> {
+	leading?: boolean | 'global'
+	onError?: (err: unknown) => ValueOrPromise<unknown>
+	thisArg?: ThisArg
+	tid?: TimeoutId
+}
+
+/**
  * Drop the first item from an array/tuple and keep the rest
  * ---
  * @example usage
@@ -84,7 +94,7 @@ export type DropFirstN<
  * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
  * ```
  */
-export type DropLast<T extends Array<any>> = T extends [...infer Rest, any]
+export type DropLast<T extends any[]> = T extends [...infer Rest, any]
 	? Rest
 	: []
 
@@ -137,7 +147,7 @@ export type KeepFirstN<T extends readonly any[], N extends number = 1> =
  *
  * @example usage
  * ```typescript
- * import { KeepOptionals } from '@utiils/core
+ * import { KeepOptionals } from '@superutils/core
  * type MyTuple = [first: string, second?: number, third?: boolean]
  * type Optionals = KeepOptionals<MyTuple>
  * // Result: [second?: number, third?: boolean]
@@ -259,7 +269,7 @@ export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
  * ---
  * @example usage
  * ```typescript
- * import { isFn, ValueOrFunc } from '@utiils/core'
+ * import { isFn, ValueOrFunc } from '@superutils/core'
  * const print = (value: ValueOrFunc<string>) => isFn(value)
  *  ? value()
  *  : value

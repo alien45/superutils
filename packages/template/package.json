@@ -1,24 +1,28 @@
 {
-  "author": "Toufiqur Rahaman Chowdhury",
-  "description": "Examples",
-  "devDependencies": {
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": ["javascript", "rxjs", "utils", "typescript", "node"],
-  "license": "MIT",
-  "main": "dist/index.js",
-  "name": "@utiils/template",
-  "peerDependencies": {
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "watch": "tsc -p tsconfig.json --watch"
-  },
-  "types": "dist/index.d.ts",
-  "version": "0.1.0"
+	"author": "Toufiqur Rahaman Chowdhury",
+	"description": "Examples",
+	"devDependencies": {},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"javascript",
+		"rxjs",
+		"utils",
+		"typescript",
+		"node"
+	],
+	"license": "MIT",
+	"main": "dist/index.js",
+	"name": "@superutils/template",
+	"peerDependencies": {},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"test": "jest",
+		"watch": "tsc -p tsconfig.json --watch"
+	},
+	"types": "dist/index.d.ts",
+	"version": "0.1.0"
 }

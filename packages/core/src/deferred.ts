@@ -1,13 +1,6 @@
 import fallbackIfFails from './fallbackIfFails'
 import { asAny } from './forceCast'
-import { TimeoutId } from './types'
-
-export type DeferredConfig<ThisArg = unknown> = {
-	leading?: boolean | 'global'
-	onError?: (err: any) => any | Promise<any>
-	thisArg?: ThisArg
-	tid?: TimeoutId
-}
+import { DeferredConfig, ValueOrPromise } from './types'
 
 /**
  * @function deferred AKA debounce
@@ -20,10 +13,26 @@ export type DeferredConfig<ThisArg = unknown> = {
  * @param   config.leading (optional) if true, will enable leading-edge debounce mechanism.
  * @param   config.thisArg (optional) the special `thisArgs` to be used when invoking the callback.
  * @param	config.tid	   (optional) Timeout Id. If provided, will clear the timeout on first invocation.
+ *
+ * @exmaple Debounce function calls
+ * ```typescript
+ * import { deferred } from '@superutils/core'
+ *
+ * const handleChange = deferred(
+ *     event => console.log(event.target.value),
+ *     300 // debounce delay in milliseconds
+ * )
+ *
+ * handleChange({ target: { value 1 } }) // will be ignored
+ * handleChange({ target: { value 2 } }) // will be ingored
+ * handleChange({ target: { value 3 } }) // will be invoked
+ * ```
+ *
+ *
  */
 export const deferred = <TArgs extends unknown[], ThisArg>(
-	callback: (this: ThisArg, ...args: TArgs) => any | Promise<any>,
-	delay: number = 50,
+	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
+	delay = 50,
 	config: DeferredConfig<ThisArg> = {},
 ) => {
 	const {

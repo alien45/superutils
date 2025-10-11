@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "An extended Promise class with extra features and utilities.",
 	"devDependencies": {
-		"@utiils/core": "^0.1.0"
+		"@superutils/core": "^0.1.0"
 	},
 	"files": [
 		"dist",
@@ -17,9 +17,9 @@
 	],
 	"license": "MIT",
 	"main": "dist/index.js",
-	"name": "@utiils/promise",
+	"name": "@superutils/promise",
 	"peerDependencies": {
-		"@utiils/core": "^0.1.0"
+		"@superutils/core": "^0.1.0"
 	},
 	"scripts": {
 		"build": "tsc -p tsconfig.json",

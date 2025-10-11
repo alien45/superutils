@@ -1,4 +1,4 @@
-import { asAny } from '@utiils/core'
+import { asAny } from '@superutils/core'
 import config from './config'
 import { FetchArgsInterceptor, FetchOptions } from './types'
 

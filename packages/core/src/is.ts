@@ -1,6 +1,6 @@
 import { AsyncFn } from './types'
 
-export const isArr = <T = any>(x: any): x is Array<T> => Array.isArray(x)
+export const isArr = <T = any>(x: any): x is T[] => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) =>
 	Array.from(new Set<T>(arr))
 
@@ -29,13 +29,13 @@ export const isInteger = (x: any): x is number => Number.isInteger(x)
 export const isMap = <TKey = any, TValue = any>(
 	x: any,
 ): x is Map<TKey, TValue> => x instanceof Map
-export const isObj = (x: any, strict = true): x is Object =>
+export const isObj = (x: any, strict = true): x is object =>
 	!!x // excludes null, NaN, Infinity....
 	&& typeof x === 'object'
 	&& (!strict
 		// excludes Array, Map, Set
 		|| (!isArr(x) && !isMap(x) && !isSet(x)))
-export const isPositiveInteger = (x: any): x is Number => isInteger(x) && x > 0
+export const isPositiveInteger = (x: any): x is number => isInteger(x) && x > 0
 export const isPositiveNumber = (x: any): x is number =>
 	isValidNumber(x) && x > 0
 export const isPromise = <T = any>(x: any): x is Promise<T> =>
@@ -113,9 +113,7 @@ export const isValidURL = (
 }
 
 /**
- *
- * Compile & runtime type etc checking utilities functions
- *
+ * Combination of all the compile-time & runtime utilities functions above
  */
 export const is = {
 	arr: isArr,

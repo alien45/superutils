@@ -1,5 +1,7 @@
-import deferred, { DeferredConfig } from './deferred'
+import deferred from './deferred'
 
-export const debounce = deferred
-export type DebounceConfig = DeferredConfig
+/** Super for `deferred()` function */
+export function debounce(...args: Parameters<typeof deferred>) {
+	return deferred(...args)
+}
 export default debounce

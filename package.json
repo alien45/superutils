@@ -24,28 +24,24 @@
 	},
 	"keywords": [],
 	"main": "",
-	"name": "utiils",
+	"name": "superutils",
 	"license": "ISC",
 	"private": true,
 	"scripts": {
 		"build": "tsc --build",
+		"build:watch": "tsc --build --watch",
 		"clean": "tsc --build --clean",
+		"clean:purge": "rm -rf packages/*/dist/* && npm run clean",
 		"docs:dev": "npm run doc:build-packages && vitepress dev docs",
 		"docs:build": "npm run doc:build-packages && vitepress build docs",
 		"doc:build-packages": "typedoc",
 		"docs:preview": "vitepress preview docs",
 		"lint": "eslint . --ext .ts,.tsx",
 		"publish:packages": "lerna publish",
-		"rmdist": "rm -rf packages/*/dist/*",
-		"start": "npm run rmdist && npm run clean && npm run watch",
+		"start": "npm run clean:purge && npm run build:watch",
 		"test": "bash scripts/test.sh",
-		"test:ui": "npm test :ui",
-		"test:core:ui": "npm test core:ui",
-		"test:coverage": "npm test :%",
 		"vitest": "vitest",
-		"vitest:ui": "vitest --ui",
-		"vitest:coverage": "vitest --coverage",
-		"watch": "tsc --build --watch"
+		"vitest:coverage": "vitest --coverage"
 	},
 	"workspaces": [
 		"packages/*"

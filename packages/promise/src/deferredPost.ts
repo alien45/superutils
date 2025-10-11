@@ -1,4 +1,4 @@
-import { forceCast } from '@utiils/core'
+import { forceCast } from '@superutils/core'
 import PromisE_deferredCallback from './deferredCallback'
 import mergeFetchOptions from './mergeFetchOptions'
 import PromisE_post from './post'
@@ -38,7 +38,7 @@ import { DeferredOptions, PostArgs } from './types'
  *
  * @example HTTP PUT: auto update a product on change
  * ```typescript
- * import PromisE from '@utiils/promise
+ * import PromisE from '@superutils/promise
  * type Result = { name: string }
  * const updateProduct = PromisE.deferredPost(
  *     {

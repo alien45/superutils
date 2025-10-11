@@ -1,4 +1,4 @@
-import { ValueOrPromise } from '@utiils/core'
+import { ValueOrPromise } from '@superutils/core'
 
 export type FetchArgs = [url: string | URL, options?: FetchOptions]
 
@@ -40,7 +40,7 @@ export type FetchConf = {
  * ---
  * @example	intercept fetch errors to log errors
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  *
  * // not returning anything or returning undefined will avoid transforming the error.
  * const logError = fetchErr => console.log(fetchErr)
@@ -53,7 +53,7 @@ export type FetchConf = {
  *
  * @example	intercept & transform fetch errors
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  *
  * // Interceptors can be async functions or just return a promise that resolves to the error.
  * // If the execution of the interceptor fails or promise rejects, it will be ignored.
@@ -82,7 +82,7 @@ export type FetchInterceptorError = Interceptor<FetchError, []>
  * ---
  * @example intercept and transform fetch request
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  *
  * // update API version number
  * const apiV1ToV2 = url => `${url}`.replace('api/v1', 'api/v2')
@@ -110,7 +110,7 @@ export type FetchInterceptorRequest = Interceptor<
  * ---
  * @example intercept and transform response:
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  *
  * // After successful login, retrieve user balance.
  * // This is probably better suited as a result transformer but play along as this is
@@ -148,7 +148,7 @@ export type FetchInterceptorResponse = Interceptor<
  * ---
  * @example intercept and transform fetch result
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  *
  * // first transform result by extracting result.data
  * const extractData = result => result?.data ?? result

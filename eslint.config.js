@@ -1,4 +1,3 @@
-import globals from 'globals'
 import js from '@eslint/js'
 import prettierConfig from 'eslint-config-prettier'
 import tseslint from 'typescript-eslint'
@@ -11,17 +10,20 @@ export default tseslint.config(
 	js.configs.recommended,
 
 	// TypeScript specific rules for TS files
+	...tseslint.configs.recommendedTypeChecked,
+	...tseslint.configs.stylisticTypeChecked,
 	{
 		files: ['**/*.{ts,tsx}'],
-		extends: [...tseslint.configs.recommendedTypeChecked, ...tseslint.configs.stylisticTypeChecked],
 		languageOptions: {
-			parser: tseslint.parser,
 			parserOptions: {
 				project: true,
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
-		rules: {},
+		rules: {
+			// Allow `type` and `interface`
+			'@typescript-eslint/consistent-type-definitions': 'off',
+		},
 	},
 	// This must be the last config to override other configs
 	prettierConfig,

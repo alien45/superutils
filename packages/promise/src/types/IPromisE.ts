@@ -1,4 +1,4 @@
-import { TimeoutId } from '@utiils/core'
+import { TimeoutId } from '@superutils/core'
 
 export interface IPromisE<T = unknown> extends Promise<T> {
 	/** 0: pending, 1: resolved, 2: rejected */

@@ -19,7 +19,7 @@ import PromisE_timeout from './timeout'
  *
  * @example Example 1: As a drop-in replacement for `Promise` class
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  * const p = new PromisE((resolve, reject) => resolve('done'))
  * console.log(
  *  p.pending, // Indicates if promise has finalized (resolved/rejected)
@@ -30,7 +30,7 @@ import PromisE_timeout from './timeout'
  *
  * @example Example 2: Extend an existing `Proimse` instance to check status
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  * const instance = new Promise((resolve) => setTimeout(() => resolve(1), 1000))
  * const p = new PromisE(instance)
  * console.log(p.pending)
@@ -38,7 +38,7 @@ import PromisE_timeout from './timeout'
  *
  * @example Example 3: Create a promise to be finalized externally (an alternative to `PromisE.withResolvers()`)
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  * const p = new PromisE<number>()
  * setTimeout(() => p.resolve(1))
  * p.then(console.log)
@@ -46,7 +46,7 @@ import PromisE_timeout from './timeout'
  *
  * @example Example 4. Invoke functions catching any error and wrapping the result in a PromisE instance
  * ```typescript
- * import PromisE from '@utiils/promise'
+ * import PromisE from '@superutils/promise'
  * const p = PromisE.try(() => { throw new Error('I am a naughty function' ) })
  * p.catch(console.error)
  * ```

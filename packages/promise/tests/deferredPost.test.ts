@@ -1,4 +1,4 @@
-import { isStr, objSort } from '@utiils/core'
+import { isStr, objSort } from '@superutils/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDeferredContext } from './deferred.test'
 import PromisE, { mergeFetchOptions } from '../src'

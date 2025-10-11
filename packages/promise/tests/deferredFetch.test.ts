@@ -1,4 +1,4 @@
-import { objSort } from '@utiils/core'
+import { objSort } from '@superutils/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PromisE, {
 	config,

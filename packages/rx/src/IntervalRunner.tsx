@@ -1,3 +1,4 @@
+import { TimeoutId } from '@superutils/core'
 import { BehaviorSubject, Subscription } from 'rxjs'
 
 export type OnResultType<TResult = unknown> = (
@@ -51,7 +52,7 @@ export default class IntervalRunner<
 	TResult = unknown,
 	TArgs extends unknown[] = unknown[],
 > {
-	private idInterval: NodeJS.Timeout | undefined
+	private idInterval: TimeoutId | undefined
 	public lastResult: TResult | undefined
 	public minIntervalMs = 1000
 	private onBeforeExec?: onBeforeExecType

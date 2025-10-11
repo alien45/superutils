@@ -4,13 +4,13 @@ import {
 	isValidURL,
 	toDatetimeLocal,
 	TupleMaxLength,
-} from '@utiils/core'
+} from '@superutils/core'
 import {
 	PromisE,
 	ResolveIgnored,
 	PromisE_deferredPost,
 	IPromisE,
-} from '@utiils/promise'
+} from '@superutils/promise'
 
 import {
 	BehaviorSubject,
@@ -18,43 +18,43 @@ import {
 	IntervalSubject,
 	subjectAsPromise,
 	SubjectLike,
-} from '@utiils/rx'
+} from '@superutils/rx'
 import { distinctUntilChanged } from 'rxjs'
 
 console.log('Started')
-console.log(toDatetimeLocal('2000-01-01T01:01:01.001Z'))
-;(async () => {
-	const count = 1_000_000
-	const getPromises = (Promise: any, arg?: any) =>
-		new Array(count)
-			.fill(0)
-			.map((_, i) => new Promise(arg ?? ((resolve: any) => resolve(i))))
 
-	// console.time('Promise')
-	// await Promise.all(getPromises(Promise))
-	// console.timeEnd('Promise')
+// ;(async () => {
+// 	const count = 1_000_000
+// 	const getPromises = (Promise: any, arg?: any) =>
+// 		new Array(count)
+// 			.fill(0)
+// 			.map((_, i) => new Promise(arg ?? ((resolve: any) => resolve(i))))
 
-	console.time('PromisE with promise')
-	await Promise.all(getPromises(PromisE, new Promise(r => r(1))))
-	console.timeEnd('PromisE with promise')
+// 	// console.time('Promise')
+// 	// await Promise.all(getPromises(Promise))
+// 	// console.timeEnd('Promise')
 
-	// console.time('PromisE with funtion')
-	// await Promise.all(getPromises(PromisE))
-	// console.timeEnd('PromisE with funtion')
+// 	console.time('PromisE with promise')
+// 	await Promise.all(getPromises(PromisE, new Promise(r => r(1))))
+// 	console.timeEnd('PromisE with promise')
 
-	// console.time('PromisE: manual')
-	// const promises = getPromises(Promise<number>) as IPromisE<number>[]
+// 	// console.time('PromisE with funtion')
+// 	// await Promise.all(getPromises(PromisE))
+// 	// console.timeEnd('PromisE with funtion')
 
-	// await Promise.all(promises.map(promise => {
-	//     promise.then(
-	//         () => asAny(promise).resolved = true,
-	//         () => asAny(promise).rejected = true,
-	//     ).finally(() => asAny(promise).pending = false)
-	// }))
-	// const allResolved = promises.every(promise => promise.resolved)
-	// console.log({allResolved})
-	// console.timeEnd('PromisE: manual')
-})().then(() => console.log('Done'))
+// 	// console.time('PromisE: manual')
+// 	// const promises = getPromises(Promise<number>) as IPromisE<number>[]
+
+// 	// await Promise.all(promises.map(promise => {
+// 	//     promise.then(
+// 	//         () => asAny(promise).resolved = true,
+// 	//         () => asAny(promise).rejected = true,
+// 	//     ).finally(() => asAny(promise).pending = false)
+// 	// }))
+// 	// const allResolved = promises.every(promise => promise.resolved)
+// 	// console.log({allResolved})
+// 	// console.timeEnd('PromisE: manual')
+// })().then(() => console.log('Done'))
 
 // const context: Parameters<typeof PromisE.deferredCallback>[1] & Record<string, any> = {
 //     delayMs: 100,
@@ -349,7 +349,7 @@ console.log(toDatetimeLocal('2000-01-01T01:01:01.001Z'))
 // )
 // const onChange = (counter: number) => {
 // 	if (counter === initialValue) return console.log('Counter started')
-// 	const { PromisE } = require('@utiils/core')
+// 	const { PromisE } = require('@superutils/core')
 // 	PromisE.fetch('https://jsonplaceholder.typicode.com/todos/100').then(
 //         () => console.log(new Date().toISOString(), 'Successful ping'),
 //         (err: Error) => console.log('Ping failed.', err)

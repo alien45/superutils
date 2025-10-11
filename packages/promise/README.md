@@ -1,4 +1,4 @@
-# @utiils/promise
+# @superutils/promise
 
 An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
 
@@ -16,17 +16,17 @@ This package offers a drop-in replacement for the native `Promise` that includes
 ## Installation
 
 ```bash
-npm install @utiils/promise @utiils/core
+npm install @superutils/core @superutils/promise
 ```
 
-## Basic Usage
+## Usage
 
 ### `new PromisE(executor)`
 
 The `PromisE` class can be used just like the native `Promise`. The key difference is the addition of status properties:
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 
 const p = new PromisE(resolve => setTimeout(() => resolve('done'), 1000))
 
@@ -42,7 +42,7 @@ p.then(result => {
 and the ability to early finalize a promise:
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
 p.then(result => console.log(result))
 // resolve the promise early
@@ -54,7 +54,7 @@ setTimeout(() => p.resolve('finished early'), 500)
 Check status of an existing promise.
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 const x = Promise.resolve(1)
 const p = new PromisE(x)
 console.log(p.pending) // false
@@ -67,7 +67,7 @@ console.log(p.rejected) // false
 Safely execute a function that might throw an error and wrap it in a `PromisE`.
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 
 const p = PromisE.try(() => {
 	throw new Error('Something went wrong')
@@ -84,7 +84,7 @@ p.catch(error => {
 Creates a promise that resolves after a specified duration, essentially a promise-based `setTimeout`.
 
 ```typescript
-import PromisE from '@utiils/promise'
+import PromisE from '@superutils/promise'
 // Wait until `appReady` becomes truthy but
 while (!appReady) {
 	await PromisE.delay(100)
@@ -98,7 +98,7 @@ while (!appReady) {
 Create a function that debounces or throttles promise-returning function calls. This is useful for scenarios like auto-saving user input or preventing multiple rapid API calls.
 
 ```typescript
-import PromisE, { ResolveIgnored } from '@utiils/promise'
+import PromisE, { ResolveIgnored } from '@superutils/promise'
 
 // Create a deferred function that waits 300ms after the last call
 const deferredSave = PromisE.deferred({
@@ -130,7 +130,7 @@ deferredSave(() => api.save({ text: 'third' })).then(response =>
 A powerful utility that combines `deferred` execution with `fetch`. It's perfect for implementing cancellable, debounced search inputs.
 
 ```typescript
-import { PromisE, ResolveIgnored } from '@utiils/promise'
+import { PromisE, ResolveIgnored } from '@superutils/promise'
 
 const searchProducts = PromisE.deferredFetch({
 	defer: 300, // Debounce for 300ms
@@ -155,7 +155,7 @@ searchProducts('https://api.example.com/products?q=applesauce').then(
 #### Reject stuck or unexpectedly lenghthy promise(s) after a specified timeout:
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 
 PromisE.timeout(
 	5000, // timeout after 5000ms
@@ -167,7 +167,7 @@ PromisE.timeout(
 #### Show a message when loading is too long:
 
 ```typescript
-import { PromisE } from '@utiils/promise'
+import { PromisE } from '@superutils/promise'
 const loadUserNProducts = () => {
 	const promise = PromisE.timeout(
 		5000, // timeout after 5000ms

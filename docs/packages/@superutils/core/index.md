@@ -1,0 +1,93 @@
+# @superutils/core
+
+Core utilities and types used by other `@superutils` packages.
+
+## Installation
+
+```bash
+npm install @superutils/core
+```
+
+## Usage
+
+### `deferred(fn)`
+
+```typescript
+
+import { deferred } from '@superutils/core'
+
+const handleChange = deferred(
+    event => console.log(event.target.value),
+    300 // debounce delay in milliseconds
+)
+handleChange({ target: { value 1 } }) // will be ignored
+handleChange({ target: { value 2 } }) // will be ignored
+handleChange({ target: { value 3 } }) // will be executed
+```
+
+## Interfaces
+
+- [DeferredConfig](interfaces/DeferredConfig.md)
+
+## Type Aliases
+
+- [AsyncFn](type-aliases/AsyncFn.md)
+- [CreateTuple](type-aliases/CreateTuple.md)
+- [Curry](type-aliases/Curry.md)
+- [DropFirst](type-aliases/DropFirst.md)
+- [DropFirstN](type-aliases/DropFirstN.md)
+- [DropLast](type-aliases/DropLast.md)
+- [IfPromiseAddValue](type-aliases/IfPromiseAddValue.md)
+- [IsFiniteTuple](type-aliases/IsFiniteTuple.md)
+- [IsOptional](type-aliases/IsOptional.md)
+- [KeepFirst](type-aliases/KeepFirst.md)
+- [KeepFirstN](type-aliases/KeepFirstN.md)
+- [KeepOptionals](type-aliases/KeepOptionals.md)
+- [KeepRequired](type-aliases/KeepRequired.md)
+- [MakeOptional](type-aliases/MakeOptional.md)
+- [MinLength](type-aliases/MinLength.md)
+- [OptionalIf](type-aliases/OptionalIf.md)
+- [Slice](type-aliases/Slice.md)
+- [ThrottleConfig](type-aliases/ThrottleConfig.md)
+- [TimeoutId](type-aliases/TimeoutId.md)
+- [TupleMaxLength](type-aliases/TupleMaxLength.md)
+- [TupleWithAlt](type-aliases/TupleWithAlt.md)
+- [ValueOrFunc](type-aliases/ValueOrFunc.md)
+- [ValueOrPromise](type-aliases/ValueOrPromise.md)
+
+## Variables
+
+- [is](variables/is.md)
+
+## Functions
+
+- [arrUnique](functions/arrUnique.md)
+- [asAny](functions/asAny.md)
+- [curry](functions/curry.md)
+- [debounce](functions/debounce.md)
+- [deferred](functions/deferred.md)
+- [fallbackIfFails](functions/fallbackIfFails.md)
+- [forceCast](functions/forceCast.md)
+- [isArr](functions/isArr.md)
+- [isArrUnique](functions/isArrUnique.md)
+- [isAsyncFn](functions/isAsyncFn.md)
+- [isBool](functions/isBool.md)
+- [isDate](functions/isDate.md)
+- [isError](functions/isError.md)
+- [isFn](functions/isFn.md)
+- [isInteger](functions/isInteger.md)
+- [isMap](functions/isMap.md)
+- [isObj](functions/isObj.md)
+- [isPositiveInteger](functions/isPositiveInteger.md)
+- [isPositiveNumber](functions/isPositiveNumber.md)
+- [isPromise](functions/isPromise.md)
+- [isSet](functions/isSet.md)
+- [isStr](functions/isStr.md)
+- [isUrl](functions/isUrl.md)
+- [isValidDate](functions/isValidDate.md)
+- [isValidNumber](functions/isValidNumber.md)
+- [isValidURL](functions/isValidURL.md)
+- [objSort](functions/objSort.md)
+- [objWithoutKeys](functions/objWithoutKeys.md)
+- [throttled](functions/throttled.md)
+- [toDatetimeLocal](functions/toDatetimeLocal.md)

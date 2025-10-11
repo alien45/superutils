@@ -1,4 +1,4 @@
-import { fallbackIfFails, isPromise } from '@utiils/core'
+import { fallbackIfFails, isPromise } from '@superutils/core'
 import { OnEarlyFinalize, PromiseParams, IPromisE, ThePromise } from './types'
 
 export class PromisEBase<T = unknown>
@@ -164,7 +164,7 @@ export class PromisEBase<T = unknown>
 	 * Using `PromisE` directly: simply provide an empty function as the executor
 	 *
 	 * ```typescript
-	 * import PromisE from '@utiils/promise'
+	 * import PromisE from '@superutils/promise'
 	 * const promisE = new PromisE<number>(() => {})
 	 * setTimeout(() => promisE.resolve(1), 1000)
 	 * promisE.then(console.log)
@@ -173,7 +173,7 @@ export class PromisEBase<T = unknown>
 	 * @example
 	 * Using `withResolvers`
 	 * ```typescript
-	 * import PromisE from '@utiils/promise'
+	 * import PromisE from '@superutils/promise'
 	 * const pwr = PromisE.withResolvers<number>()
 	 * setTimeout(() => pwr.resolve(1), 1000)
 	 * pwr.promise.then(console.log)

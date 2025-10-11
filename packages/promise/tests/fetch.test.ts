@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PromisE, { config, FetchError, FetchInterceptors } from '../src'
-import { forceCast } from '@utiils/core'
+import { forceCast } from '@superutils/core'
 
 describe('fetch', () => {
 	const fetchBaseUrl = 'https://dummyjson.com/products'

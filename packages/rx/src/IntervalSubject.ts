@@ -18,7 +18,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  *
  * const onChange = (counter: number) => {
  * 	counter === initialValue && console.log('Counter started')
- * 	const { PromisE } = require('@utiils/core')
+ * 	const { PromisE } = require('@superutils/core')
  * 	PromisE.fetch('https://jsonplaceholder.typicode.com/todos/100').then(
  *         () => console.log(new Date().toISOString(), 'Successful ping'),
  *         (err: Error) => console.log('Ping failed.', err)

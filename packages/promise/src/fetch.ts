@@ -4,7 +4,7 @@ import {
 	isPositiveNumber,
 	isValidURL,
 	TimeoutId,
-} from '@utiils/core'
+} from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import {
 	FetchError,

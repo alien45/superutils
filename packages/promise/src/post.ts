@@ -1,4 +1,4 @@
-import { isStr } from '@utiils/core'
+import { isStr } from '@superutils/core'
 import mergeFetchOptions from './mergeFetchOptions'
 import { PostArgs } from './types'
 import PromisE_fetch from './fetch'

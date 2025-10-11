@@ -4,26 +4,30 @@ layout: home
 
 hero:
     name: 'Superutils'
-    text: 'A set of utilities for Typescript/Javascript, RxJS and ReactJS'
-    tagline: My great project tagline
+    text: 'Code, Supercharged.'
+    tagline: A suite of powerful, opinionated, and modular utilities for TypeScript, React, and RxJS.
     actions:
         - theme: brand
-          text: Markdown Examples
-          link: /markdown-examples
+          text: What is Superutils?
+          link: /api-reference#superutils
         - theme: alt
-          text: API Examples
-          link: /api-examples
+          text: Quickstart
+          link: /api-reference#getting-started
         - theme: alt
-          text: Packages
-          link: /packages/
+          text: Github
+          link: https://github.com/alien45/superutils
 
 features:
-    - title: Core Utilities
-      details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-    - title: Promise Utilities
-      details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-    - title: React Utilities
-      details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-    - title: RxJS Utilities
-      details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    - title: '@superutils/core'
+      link: /packages/@superutils/core/
+      details: A collection of lightweight, dependency-free utility functions and types.
+    - title: '@superutils/promise'
+      link: /packages/@superutils/promise/
+      details: An extended Promise with status tracking, deferred execution, and cancellable fetch.
+    - title: '@superutils/react'
+      link: /packages/@superutils/react/
+      details: A collection of React hooks and components for common UI patterns and state management.
+    - title: '@superutils/rx'
+      link: /packages/@superutils/rx/
+      details: A suite of powerful operators and utilities for working with RxJS observables.
 ---

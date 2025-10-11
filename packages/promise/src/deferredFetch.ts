@@ -1,4 +1,4 @@
-import { forceCast } from '@utiils/core'
+import { forceCast } from '@superutils/core'
 import PromisE_deferred from './deferred'
 import PromisE_deferredCallback from './deferredCallback'
 import PromisE_fetch from './fetch'
