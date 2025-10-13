@@ -1,7 +1,7 @@
 /**
  * Defines an async function
  */
-export type AsyncFn<TOut = unknown, TArgs extends any[] = []> = (
+export type AsyncFn<TOut = unknown, TArgs extends unknown[] = []> = (
 	...args: TArgs
 ) => Promise<Awaited<TOut>>
 
@@ -21,9 +21,9 @@ export type AsyncFn<TOut = unknown, TArgs extends any[] = []> = (
  * ```
  */
 export type CreateTuple<
-	T extends any,
+	T,
 	Length extends number,
-	Output extends readonly any[] = [],
+	Output extends readonly unknown[] = [],
 > = Output['length'] extends Length
 	? Output
 	: CreateTuple<T, Length, [...Output, T]>
@@ -33,11 +33,11 @@ export type CreateTuple<
  * @template TParams The tuple of remaining parameters.
  * @template TData The final return type.
  */
-export type Curry<TData, TParams extends any[]> = <TArgs extends any[]>(
+export type Curry<TData, TParams extends unknown[]> = <TArgs extends unknown[]>(
 	// Ensure the provided arguments `TArgs` match the types of the expected parameters `TParams`.
 	...args: TArgs & KeepFirstN<TParams, TArgs['length']>
 ) => // Check if there are any parameters left to be supplied.
-DropFirstN<TParams, TArgs['length']> extends [any, ...any[]]
+DropFirstN<TParams, TArgs['length']> extends [unknown, ...unknown[]]
 	? // If yes, return a new curried function expecting the remaining parameters.
 		Curry<TData, DropFirstN<TParams, TArgs['length']>>
 	: // If no, all parameters have been supplied, so return the final result.
@@ -62,7 +62,7 @@ export interface DeferredConfig<ThisArg = unknown> {
  * type MyTupleWOFirst = DropFirst<MyTuple> // result: [second: number, third: boolean]
  * ```
  */
-export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
+export type DropFirst<T extends unknown[]> = T extends [unknown, ...infer Rest]
 	? Rest
 	: []
 
@@ -76,9 +76,9 @@ export type DropFirst<T extends any[]> = T extends [any, ...infer Rest]
  * ```
  */
 export type DropFirstN<
-	T extends any[],
+	T extends unknown[],
 	N extends number,
-	Dropped extends any[] = [],
+	Dropped extends unknown[] = [],
 > =
 	TupleMaxLength<Dropped> extends N
 		? T
@@ -94,15 +94,16 @@ export type DropFirstN<
  * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
  * ```
  */
-export type DropLast<T extends any[]> = T extends [...infer Rest, any]
+export type DropLast<T extends unknown[]> = T extends [...infer Rest, unknown]
 	? Rest
 	: []
 
-export type IsFiniteTuple<T extends any[]> = number extends T['length']
+export type IsFiniteTuple<T extends unknown[]> = number extends T['length']
 	? false
 	: true
 
 export type IsOptional<T, K extends keyof T> =
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	{} extends Pick<T, K> ? true : false
 
 /**
@@ -114,7 +115,7 @@ export type IsOptional<T, K extends keyof T> =
  * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
  * ```
  */
-export type KeepFirst<T extends any[]> = T extends readonly [
+export type KeepFirst<T extends unknown[]> = T extends readonly [
 	infer First,
 	...DropFirst<T>,
 ]
@@ -130,10 +131,10 @@ export type KeepFirst<T extends any[]> = T extends readonly [
  * type MyTupleWith1st2 = KeepFirstN<MyTuple, 2> // result: [first: string, second: number]
  * ```
  */
-export type KeepFirstN<T extends readonly any[], N extends number = 1> =
+export type KeepFirstN<T extends readonly unknown[], N extends number = 1> =
 	TupleMaxLength<T> extends N
 		? T
-		: T extends readonly [...infer TWithoutLast, any]
+		: T extends readonly [...infer TWithoutLast, unknown]
 			? KeepFirstN<TWithoutLast, N>
 			: never
 
@@ -158,7 +159,7 @@ export type KeepFirstN<T extends readonly any[], N extends number = 1> =
  * ```
  */
 export type KeepOptionals<
-	Tuple extends any[],
+	Tuple extends unknown[],
 	Require extends true | false = false,
 	TAlt = undefined,
 > = Require extends true
@@ -175,13 +176,13 @@ export type KeepRequired<T extends unknown[]> = KeepFirstN<
 	MinLength<T>
 >
 
-export type MinLength<T extends any[], Count extends any[] = []> = T extends [
-	infer F,
-	...infer R,
-]
+export type MinLength<
+	T extends unknown[],
+	Count extends unknown[] = [],
+> = T extends [infer F, ...infer R]
 	? undefined extends F // optional param?
 		? MinLength<R, Count> // skip
-		: MinLength<R, [...Count, any]> // increment
+		: MinLength<R, [...Count, unknown]> // increment
 	: Count['length']
 
 /** Make T1 optional if T2 is undefined */
@@ -193,7 +194,7 @@ export type OptionalIf<
 > = T2 extends T2IF ? T1 : T1 | T1Alt
 
 export type MakeOptional<
-	Tuple extends any[],
+	Tuple extends unknown[],
 	IndexStart extends number,
 	IndexEnd extends number = TupleMaxLength<Tuple>,
 > = Tuple extends readonly [
@@ -215,7 +216,7 @@ export type MakeOptional<
  * ```
  */
 export type Slice<
-	Tuple extends any[],
+	Tuple extends unknown[],
 	IndexStart extends number,
 	IndexEnd extends number = TupleMaxLength<Tuple>,
 > = [...KeepRequired<Tuple>, ...KeepOptionals<Tuple, true>] extends [
@@ -243,7 +244,7 @@ export type TimeoutId = Parameters<typeof clearTimeout>[0]
  * type MaxLength = TupleMaxLength<MyTuple> // 3
  * ```
  */
-export type TupleMaxLength<T extends readonly any[]> = Required<T>['length']
+export type TupleMaxLength<T extends readonly unknown[]> = Required<T>['length']
 
 /**
  * Add alt type to all members of a tuple.
@@ -258,7 +259,7 @@ export type TupleMaxLength<T extends readonly any[]> = Required<T>['length']
  * // Result: [first: boolean | null, second: string | null]
  * ```
  */
-export type TupleWithAlt<Tuple extends any[], TAlt = undefined> = {
+export type TupleWithAlt<Tuple extends unknown[], TAlt = undefined> = {
 	-readonly [K in keyof Tuple]: Tuple[K] | TAlt
 }
 

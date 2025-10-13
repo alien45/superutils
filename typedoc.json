@@ -1,13 +1,13 @@
 {
+	"docsRoot": "./docs",
 	"entryPoints": ["packages/*/"],
 	"exclude": ["packages/template/", "packages/demo/"],
 	"entryPointStrategy": "packages",
+	"githubPages": true,
+	"hideBreadcrumbs": true,
+	"hidePageHeader": true,
 	"out": "docs/packages/",
 	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
 	// "readme": "packages/README.md",
-	"githubPages": false,
-	"hidePageHeader": true,
-	"hideBreadcrumbs": true,
-	// "pretty": true,
-	"docsRoot": "./docs"
+	"pretty": true
 }

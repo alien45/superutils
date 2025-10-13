@@ -2,7 +2,11 @@
 
 > **PromisE\_deferredFetch**\<`TArgs`, `ThisArg`\>(`deferOptions`, ...`defaultArgs`): \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-Defined in: [packages/promise/src/deferredFetch.ts:33](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/deferredFetch.ts#L33)
+Defined in: [packages/promise/src/deferredFetch.ts:38](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/deferredFetch.ts#L38)
+
+**`Function`**
+
+PromisE.deferredFetch
 
 ## Type Parameters
 
@@ -44,31 +48,28 @@ Defined in: [packages/promise/src/deferredFetch.ts:33](https://github.com/alien4
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-## Name
-
-PromisE.deferredFetch
-
 ## Example
 
-```ts
 ```typescript
----
-// Example: Fetch paginated products
+import PromisE from '@superutils/promise'
+
 const getProducts = PromisE.deferredFetch({
     delayMs: 300, // used for both "throttle" and "deferred" modes
-    resolveIgnored: ResolveIgnored.WITH_ACTIVE,
+    resolveIgnored: ResolveIgnored.WITH_LAST,
     throttle: true,
 })
+
+// first call
 getProducts('https://dummyjson.com/products/1').then(console.log)
+// seconds call after delay
 setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log), 200)
-// result (throttle = true): only product 1 retrieved
 
-// result (throttle = false): only product 2 retrieved
-
-// result (ResolveIgnored.WITH_ACTIVE): only product retrieved but both request will resolve the same result
-
-// result (ResolveIgnored.WITH_UNDEFINED): only one product retrieved & resolved but the other will resolve with undefined
-
-// result (ResolveIgnored.NEVER): only one product retrieved & resolved but the other will NEVER resolve
-```
+// Possible outcomes using different options:
+// - `throttle = true`: only product 1 retrieved
+// - `throttle = false`: only product 2 retrieved
+// - `resolveIgnored = ResolveIgnored.WITH_LAST`:
+// 	only product retrieved but both request will resolve the same result
+// - `resolveIgnored = ResolveIgnored.WITH_UNDEFINED`:
+// only product 1 retrieved & resolved but the other will resolve with undefined
+// - `resolveIgnored = ResolveIgnored.NEVER`: only one product retrieved & resolved but the other will NEVER resolve
 ```

@@ -1,5 +1,4 @@
 import fallbackIfFails from './fallbackIfFails'
-import { asAny } from './forceCast'
 import { DeferredConfig, ValueOrPromise } from './types'
 
 /**
@@ -14,7 +13,7 @@ import { DeferredConfig, ValueOrPromise } from './types'
  * @param   config.thisArg (optional) the special `thisArgs` to be used when invoking the callback.
  * @param	config.tid	   (optional) Timeout Id. If provided, will clear the timeout on first invocation.
  *
- * @exmaple Debounce function calls
+ * @example Debounce function calls
  * ```typescript
  * import { deferred } from '@superutils/core'
  *
@@ -41,9 +40,9 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
 		thisArg,
 	} = config
 	let { tid } = config
-	if (thisArg !== undefined) callback = callback.bind(thisArg)
-	const _callback = callback
-	callback = (...args: TArgs) => fallbackIfFails(_callback, args, onError)
+	if (thisArg !== undefined) callback = callback.bind(thisArg as ThisArg)
+	const _callback = (...args: TArgs) =>
+		fallbackIfFails(callback, args, onError)
 
 	let firstArgs: TArgs | true | null = null // true => global leading already executed
 	const leadingGlobal = leading === 'global'
@@ -51,7 +50,7 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
 		clearTimeout(tid)
 		tid = setTimeout(() => {
 			// prevent redundant callback when leading is enabled
-			firstArgs !== args && asAny(callback)(...args)
+			firstArgs !== args && _callback(...args)
 			firstArgs = leadingGlobal ? true : null
 		}, delay)
 
@@ -59,7 +58,7 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
 		if (!leading || firstArgs) return
 
 		firstArgs = args
-		asAny(callback)(...args)
+		_callback(...args)
 	}
 }
 deferred.defaults = {

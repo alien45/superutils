@@ -2,7 +2,11 @@
 
 > **PromisE\_deferred**\<`T`\>(`options`): \<`TResult`\>(`promise`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-Defined in: [packages/promise/src/deferred.ts:89](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/deferred.ts#L89)
+Defined in: [packages/promise/src/deferred.ts:91](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/deferred.ts#L91)
+
+**`Function`**
+
+PromisE.deferred
 
 ## Type Parameters
 
@@ -21,35 +25,11 @@ Defined in: [packages/promise/src/deferred.ts:89](https://github.com/alien45/uti
 ## Returns
 
 a callback that is invoked in one of the followin 3 methods:
-- sequential: when `delayMs` is not a positive number.
+- sequential: when `delayMs <= 0` or `delayMs = undefined`
 - debounced: when `delayMs > 0` and `throttle = false`
 - throttled: when `delayMs > 0` and `throttle = true`
 
 ---
-
-> \<`TResult`\>(`promise`): [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
-
-### Type Parameters
-
-#### TResult
-
-`TResult` = `T`
-
-### Parameters
-
-#### promise
-
-`Promise`\<`TResult`\> | () => `Promise`\<`TResult`\>
-
-### Returns
-
-[`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
-
-## Name
-
-PromisE.deferred
-
-## Description
 
 The main difference is that:
  - Notes:
@@ -72,6 +52,24 @@ The main difference is that:
  - If throttled and `strict` is truthy, all subsequent request while a request is being handled will be ignored.
 
 ---
+
+> \<`TResult`\>(`promise`): [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
+
+### Type Parameters
+
+#### TResult
+
+`TResult` = `T`
+
+### Parameters
+
+#### promise
+
+`Promise`\<`TResult`\> | () => `Promise`\<`TResult`\>
+
+### Returns
+
+[`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
 ## Example
 

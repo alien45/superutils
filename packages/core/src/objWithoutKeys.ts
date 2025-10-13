@@ -14,6 +14,7 @@ import { isArr, isObj } from './is'
 export const objWithoutKeys = (
 	input: unknown,
 	keys: string[],
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	output?: Record<keyof any, unknown>,
 ) => {
 	if (!isObj(input, false)) return {}
@@ -23,9 +24,7 @@ export const objWithoutKeys = (
 		...(isObj(output, false) && output),
 		...input,
 	}
-	for (let i = 0; i < keys.length; i++) {
-		delete output[keys[i]]
-	}
+	for (const key of keys) delete output[key]
 	return output
 }
 export default objWithoutKeys

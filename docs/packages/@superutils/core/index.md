@@ -87,6 +87,7 @@ handleChange({ target: { value 3 } }) // will be executed
 - [isValidDate](functions/isValidDate.md)
 - [isValidNumber](functions/isValidNumber.md)
 - [isValidURL](functions/isValidURL.md)
+- [noop](functions/noop.md)
 - [objSort](functions/objSort.md)
 - [objWithoutKeys](functions/objWithoutKeys.md)
 - [throttled](functions/throttled.md)

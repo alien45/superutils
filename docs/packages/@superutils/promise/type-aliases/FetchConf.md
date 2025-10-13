@@ -2,7 +2,7 @@
 
 > **FetchConf** = `object`
 
-Defined in: [packages/promise/src/types/fetch.ts:19](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L19)
+Defined in: [packages/promise/src/types/fetch.ts:19](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L19)
 
 ## Properties
 
@@ -10,7 +10,7 @@ Defined in: [packages/promise/src/types/fetch.ts:19](https://github.com/alien45/
 
 > `optional` **abortCtrl**: `AbortController`
 
-Defined in: [packages/promise/src/types/fetch.ts:25](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L25)
+Defined in: [packages/promise/src/types/fetch.ts:25](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L25)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: [packages/promise/src/types/fetch.ts:25](https://github.com/alien45/
 
 > `optional` **as**: [`FetchAs`](../enumerations/FetchAs.md)
 
-Defined in: [packages/promise/src/types/fetch.ts:24](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L24)
+Defined in: [packages/promise/src/types/fetch.ts:24](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L24)
 
 Specify how the parse the result. To get raw response use [FetchAs.response](../enumerations/FetchAs.md#response).
 Default: 'json'
@@ -29,7 +29,7 @@ Default: 'json'
 
 > `optional` **errMsgs**: [`FetchErrMsgs`](FetchErrMsgs.md)
 
-Defined in: [packages/promise/src/types/fetch.ts:26](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L26)
+Defined in: [packages/promise/src/types/fetch.ts:26](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L26)
 
 ***
 
@@ -37,7 +37,7 @@ Defined in: [packages/promise/src/types/fetch.ts:26](https://github.com/alien45/
 
 > `optional` **interceptors**: [`FetchInterceptors`](FetchInterceptors.md)
 
-Defined in: [packages/promise/src/types/fetch.ts:27](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L27)
+Defined in: [packages/promise/src/types/fetch.ts:27](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L27)
 
 ***
 
@@ -45,6 +45,6 @@ Defined in: [packages/promise/src/types/fetch.ts:27](https://github.com/alien45/
 
 > `optional` **timeout**: `number`
 
-Defined in: [packages/promise/src/types/fetch.ts:29](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L29)
+Defined in: [packages/promise/src/types/fetch.ts:29](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L29)
 
 Request timeout in milliseconds.

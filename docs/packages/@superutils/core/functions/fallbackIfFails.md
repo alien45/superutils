@@ -2,7 +2,7 @@
 
 > **fallbackIfFails**\<`T`, `TArgs`\>(`target`, `args`, `fallbackValue`): `T`
 
-Defined in: [fallbackIfFails.ts:82](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/fallbackIfFails.ts#L82)
+Defined in: [fallbackIfFails.ts:82](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/fallbackIfFails.ts#L82)
 
 fallbackIfFails
 
@@ -14,7 +14,7 @@ fallbackIfFails
 
 ### TArgs
 
-`TArgs` *extends* `any`[] = `any`[]
+`TArgs` *extends* `unknown`[] = `unknown`[]
 
 ## Parameters
 

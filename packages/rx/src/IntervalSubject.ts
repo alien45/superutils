@@ -1,13 +1,13 @@
+import { asAny, TimeoutId } from '@superutils/core'
 import { BehaviorSubject } from './BehaviorSubject'
 
 /**
- * @name	IntervalSubject
  * @summary	Extention of a BehaviorSubject with interval function
  *
  * -----------------------------------------------
  *
- * @example ```typescript
- * // Example 1: Fetch data from API server every minute
+ * @example Fetch data from API server every minute
+ * ```typescript
  * const initialValue = 0
  * const rxInterval = new IntervalSubject(
  * 	true, // auto-start
@@ -31,13 +31,13 @@ import { BehaviorSubject } from './BehaviorSubject'
  * ```
  */
 export class IntervalSubject extends BehaviorSubject<number> {
-	private intervalId: any
+	private intervalId: TimeoutId
 	readonly running: boolean = false
 
 	constructor(
 		public autoStart: boolean,
-		public delay: number = 1000,
-		readonly initialValue: number = 0,
+		public delay = 1000,
+		readonly initialValue = 0,
 		public incrementBy = 1,
 	) {
 		super(initialValue)
@@ -64,7 +64,8 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		return this
 	}
 
-	private setRunning = (value = false) => ((this as any).running = value)
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	private setRunning = (value = false) => (asAny(this).running = value)
 
 	stop = () => {
 		this.pause()

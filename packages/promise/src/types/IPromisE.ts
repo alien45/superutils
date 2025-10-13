@@ -1,4 +1,4 @@
-import { TimeoutId } from '@superutils/core'
+import { TimeoutId, ValueOrPromise } from '@superutils/core'
 
 export interface IPromisE<T = unknown> extends Promise<T> {
 	/** 0: pending, 1: resolved, 2: rejected */
@@ -11,7 +11,7 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	readonly pending: boolean
 
 	/** Reject pending promise early. */
-	reject: (reason: any) => IPromisE<T>
+	reject: (reason: unknown) => IPromisE<T>
 
 	/** Indicates if the promise has been rejected */
 	readonly rejected: boolean
@@ -35,7 +35,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 *
 	 * ---
 	 *
-	 * @example ```
+	 * @example
+	 * ```typescript
 	 * // Example 1: SAFE => no memory leak, because no reference to the promise is stored and no suspended code
 	 * <button onClick={() => {
 	 *     const promise = PromisE.delay(1000).then(... do stuff ....)
@@ -45,8 +46,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 *
 	 * ---
 	 *
-	 * @example ```
-	 * // Example 2: UNSAFE => potential memory leak, because of suspended code
+	 * @example UNSAFE => potential memory leak, because of suspended code
+	 * ```typescript
 	 * <button onClick={() => {
 	 *     const promise = PromisE.delay(1000)
 	 *     setTimeout(() => promise.pause(), 300)
@@ -57,8 +58,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 *
 	 * ---
 	 *
-	 * @example ```
-	 * // Example 3: UNSAFE => potential memory leak, because of preserved reference.
+	 * @example UNSAFE => potential memory leak, because of preserved reference.
+	 * ```typescript
 	 * // Until the reference to promises is collected by the garbage collector,
 	 * // reference to the unfinished promise will remain in memory.
 	 * const promises = []
@@ -93,7 +94,7 @@ export type OnEarlyFinalize<T> = <
 >(
 	resolved: TResolved,
 	resultOrReason: TValue,
-) => unknown | Promise<unknown>
+) => ValueOrPromise<unknown>
 
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>

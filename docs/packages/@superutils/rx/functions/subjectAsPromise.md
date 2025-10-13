@@ -1,8 +1,10 @@
 # Function: subjectAsPromise()
 
-> **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): \[[`PromisE`](../../promise/classes/PromisE.md)\<`T`\>, () => `void`\]
+> **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `number`)[]
 
-Defined in: [packages/rx/src/subjectAsPromise.ts:34](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/subjectAsPromise.ts#L34)
+Defined in: [packages/rx/src/subjectAsPromise.ts:33](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/subjectAsPromise.ts#L33)
+
+subjectAsPromise
 
 ## Type Parameters
 
@@ -40,32 +42,20 @@ RxJS subject or similar subscribable
 
 ## Returns
 
-\[[`PromisE`](../../promise/classes/PromisE.md)\<`T`\>, () => `void`\]
+readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `number`)[]
 
 will reject with:
                                  - `null` if times out
-                                 - `undefined` if
-
-## Name
-
-subjectAsPromise
-
-## Subject
-
-is not a valid RxJS subject like subscribable
+                                 - `undefined` if `subject` is not a valid RxJS subject like subscribable
 
 ----------------------------------------
 
 ## Example
 
-```ts
 ```typescript
-
-// Create an interval runner subject that triggers incremental value every second.
 const rxInterval = new IntervalSubject(true, 1000, 1, 1)
 
 // create a promise that only resolves when expected value is received
 const [promise, unsubscribe] = subjectAsPromise(rxInterval, 10)
 promise.then(value => console.log('Value should be 10', value))
-```
 ```

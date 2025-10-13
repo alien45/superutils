@@ -2,13 +2,17 @@
 
 > **PromisE\_timeout**\<`T`, `TOut`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
 
-Defined in: [packages/promise/src/timeout.ts:61](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/timeout.ts#L61)
+Defined in: [packages/promise/src/timeout.ts:61](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/timeout.ts#L61)
+
+**`Function`**
+
+PromisE.timeout
 
 ## Type Parameters
 
 ### T
 
-`T` *extends* `any`[] \| \[\]
+`T` *extends* `unknown`[] \| \[\]
 
 ### TOut
 
@@ -32,10 +36,6 @@ promise/function: one or more promises as individual arguments
 ## Returns
 
 [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
-
-## Name
-
-PromisE.timeout
 
 ## Examples
 

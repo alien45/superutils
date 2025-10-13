@@ -4,7 +4,7 @@ import { PostArgs } from './types'
 import PromisE_fetch from './fetch'
 
 /**
- * @name    PromisE.post
+ * @function    PromisE.post
  * @summary make a HTTP 'POST' request and return result as JSON.
  * Default 'content-type' is 'application/json'.
  * Will reject promise if response status code is 2xx (200 <= status < 300).

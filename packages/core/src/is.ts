@@ -1,6 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AsyncFn } from './types'
 
-export const isArr = <T = any>(x: any): x is T[] => Array.isArray(x)
+export const isArr = <T = unknown>(x: any): x is T[] => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) =>
 	Array.from(new Set<T>(arr))
 

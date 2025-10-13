@@ -2,7 +2,7 @@
 
 > **DropFirstN**\<`T`, `N`, `Dropped`\> = [`TupleMaxLength`](TupleMaxLength.md)\<`Dropped`\> *extends* `N` ? `T` : `T` *extends* \[infer First, `...(infer Rest)`\] ? `DropFirstN`\<`Rest`, `N`, \[`...Dropped`, `First`\]\> : `never`
 
-Defined in: [types.ts:78](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L78)
+Defined in: [types.ts:78](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L78)
 
 Drop first N items from an array/tuple and keep the rest
 ---
@@ -11,7 +11,7 @@ Drop first N items from an array/tuple and keep the rest
 
 ### T
 
-`T` *extends* `any`[]
+`T` *extends* `unknown`[]
 
 ### N
 
@@ -19,7 +19,7 @@ Drop first N items from an array/tuple and keep the rest
 
 ### Dropped
 
-`Dropped` *extends* `any`[] = \[\]
+`Dropped` *extends* `unknown`[] = \[\]
 
 ## Example
 

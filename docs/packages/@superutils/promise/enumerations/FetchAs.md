@@ -1,6 +1,6 @@
 # Enumeration: FetchAs
 
-Defined in: [packages/promise/src/types/fetch.ts:10](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L10)
+Defined in: [packages/promise/src/types/fetch.ts:10](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L10)
 
 ## Enumeration Members
 
@@ -8,7 +8,7 @@ Defined in: [packages/promise/src/types/fetch.ts:10](https://github.com/alien45/
 
 > **arrayBuffer**: `"arrayBuffer"`
 
-Defined in: [packages/promise/src/types/fetch.ts:11](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L11)
+Defined in: [packages/promise/src/types/fetch.ts:11](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L11)
 
 ***
 
@@ -16,7 +16,7 @@ Defined in: [packages/promise/src/types/fetch.ts:11](https://github.com/alien45/
 
 > **blob**: `"blob"`
 
-Defined in: [packages/promise/src/types/fetch.ts:12](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L12)
+Defined in: [packages/promise/src/types/fetch.ts:12](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [packages/promise/src/types/fetch.ts:12](https://github.com/alien45/
 
 > **formData**: `"formData"`
 
-Defined in: [packages/promise/src/types/fetch.ts:13](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L13)
+Defined in: [packages/promise/src/types/fetch.ts:13](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L13)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [packages/promise/src/types/fetch.ts:13](https://github.com/alien45/
 
 > **json**: `"json"`
 
-Defined in: [packages/promise/src/types/fetch.ts:14](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L14)
+Defined in: [packages/promise/src/types/fetch.ts:14](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L14)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [packages/promise/src/types/fetch.ts:14](https://github.com/alien45/
 
 > **response**: `"response"`
 
-Defined in: [packages/promise/src/types/fetch.ts:15](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L15)
+Defined in: [packages/promise/src/types/fetch.ts:15](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L15)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [packages/promise/src/types/fetch.ts:15](https://github.com/alien45/
 
 > **text**: `"text"`
 
-Defined in: [packages/promise/src/types/fetch.ts:16](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L16)
+Defined in: [packages/promise/src/types/fetch.ts:16](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L16)

@@ -24,10 +24,11 @@ export default tseslint.config(
 			// Allow `type` and `interface`
 			'@typescript-eslint/consistent-type-definitions': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
+			'@typescript-eslint/no-floating-promises': 'off',
 
-			// ToDo: remove
-			'@typescript-eslint/no-inferrable-types': 'off',
-			'@typescript-eslint/no-explicit-any': 'off',
+			// // ToDo: remove
+			// '@typescript-eslint/no-inferrable-types': 'off',
+			// '@typescript-eslint/no-explicit-any': 'off',
 		},
 	},
 	// This must be the last config to override other configs

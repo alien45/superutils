@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { isArr, isFn } from '@superutils/core'
 import { UnsubscribeCandidates } from './types'
 
 /**
- * @name    unsubscribeAll
+ * @function    unsubscribeAll
  * @summary unsubscribe to multiple RxJS subscriptions
  * @param   {Function|Unsubscribable|Array} unsub
  */
@@ -17,8 +19,14 @@ export const unsubscribeAll = (unsub: UnsubscribeCandidates = {}) => {
 	Object.values(unsub).forEach(x => {
 		try {
 			if (!x) return
-			const fn = isFn(x) ? x : isFn(x.unsubscribe) ? x.unsubscribe : null
-			fn && fn()
-		} catch (e) {} // ignore
+			const fn: null | ((...args: unknown[]) => unknown) = isFn(x)
+				? x
+				: isFn(x.unsubscribe)
+					? x.unsubscribe
+					: null
+			fn?.()
+		} catch (e) {
+			e
+		}
 	})
 }

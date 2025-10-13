@@ -1,8 +1,8 @@
 # Function: curry()
 
-> **curry**\<`TData`, `TArgs`, `TArgsIsFinite`, `TArity`\>(`fn`, ...`__namedParameters`): [`Curry`](../type-aliases/Curry.md)\<`TData`, `TCurriedArgs`\>
+> **curry**\<`TData`, `TArgs`, `TArgsIsFinite`, `TArity`\>(`func`, ...`__namedParameters`): [`Curry`](../type-aliases/Curry.md)\<`TData`, `TCurriedArgs`\>
 
-Defined in: [curry.ts:66](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/curry.ts#L66)
+Defined in: [curry.ts:71](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/curry.ts#L71)
 
 Creates a curried version of a function. The curried function can be
 called with one or more or all arguments at a time. Once all arguments have been
@@ -37,7 +37,7 @@ turned required and unioned with `undefined`.
 
 ## Parameters
 
-### fn
+### func
 
 (...`args`) => `TData`
 
@@ -53,14 +53,9 @@ The function to curry.
 
 A new, curried function that is fully type-safe.
 
-## Example
+## Examples
 
-```ts
 ```typescript
-
-// Example usages of the `curry()` function.
-
-// A regular function
 const func = (
     first: string,
     second: number,
@@ -80,16 +75,20 @@ const fnWith2 = fnWith1(2)
 const fnWith3 = fnWith2(false)
 // All args are now provided, the original function is called and result is returned.
 const result = fnWith3('last')
+```
 
-// Example 2: flexible curry.
+```typescript
 // Provide as many arguments as you wish. Upto the limit of the original function.
-// Returns a function expecting only the last remaining argument
+// Returns a function expecting only the remaining argument(s)
 const fnWith3 = curriedFunc('first', 2, false)
 // All args provided, returns the result
 const result = fnWith3('last')
+```
 
-// Example 3: early invokation using `arity`
+Useful when a function has
+ - non-finite arguments (eg: number[])
+ - optional arguments and you do not want to avoid one or more optional arguments
+```typescript
 const curriedWArity3 = curry(func, 3)
 const result = curriedWArity3('first', 2, false)
-```
 ```

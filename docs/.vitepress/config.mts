@@ -7,15 +7,27 @@ export default defineConfig({
 	description:
 		'A suite of powerful, opinionated, and modular utilities for TypeScript, React, and RxJS.',
 	themeConfig: {
+		footer: {
+			message: 'Released under the MIT License.',
+			copyright:
+				'Copyright © 2025 <a href="https://alien45.github.io/cv">Toufiqur Rahaman Chowdhury</a>',
+		},
 		nav: [
 			{ text: 'Home', link: '/' },
 			{ text: 'API Reference', link: '/api-reference' },
 		],
+		search: {
+			provider: 'local',
+		},
 		sidebar: [
 			{
 				text: 'Introduction',
+				collapsed: false,
 				items: [
-					{ text: 'What is Superutils?', link: '/api-reference#' },
+					{
+						text: 'What is Superutils?',
+						link: '/api-reference#superutils',
+					},
 					{ text: 'Packages', link: '/api-reference#packages' },
 					{
 						text: 'Getting Started',
@@ -52,7 +64,10 @@ export default defineConfig({
 					pkgItem.items = [
 						{
 							text: 'About',
-							link: pkgItem.link + '#',
+							link:
+								pkgItem.link
+								+ '#'
+								+ pkgItem.link.split('@')[1].replace('/', '-'),
 						},
 						{
 							text: 'Installation',
@@ -76,10 +91,9 @@ export default defineConfig({
 				}),
 			},
 		],
-		footer: {
-			message: 'Released under the MIT License.',
-			copyright:
-				'Copyright © 2025 <a href="https://alien45.github.io/cv">Toufiqur Rahaman Chowdhury</a>',
-		},
+		socialLinks: [
+			{ icon: 'github', link: 'https://github.com/alien45/superutils' },
+			{ icon: 'linkedin', link: 'https://linkedin.com/in/toufiq' },
+		],
 	},
 })

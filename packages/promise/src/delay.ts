@@ -3,7 +3,7 @@ import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
 /**
- * @name    PromisE.delay
+ * @function    PromisE.delay
  * @summary Creates a promise that completes after given delay/duration.
  *
  * @param {Number}    duration   duration in milliseconds
@@ -13,17 +13,22 @@ import { IPromisE_Delay } from './types'
  *
  * @returns See {@link IPromisE_Delay}
  *
- * @example ```typescript
+ * @example Delay execution
+ * ```typescript
  * console.log('Waiting for app initialization or something else to be ready')
  * // wait 3 seconds before proceeding
  * await PromisE.delay(3000)
  * console.log('App ready')
  * ```
  */
-export function PromisE_delay<T = number>(
-	duration: number = 100,
-	result: T = duration as T,
-	asRejected: boolean = false,
+export function PromisE_delay<
+	T = number,
+	TReject extends boolean = boolean,
+	TResultOrErr = TReject extends true ? unknown : T,
+>(
+	duration = 100,
+	result: TResultOrErr = duration as TResultOrErr,
+	asRejected: TReject = false as TReject,
 	timeoutErrMsg?: string,
 ) {
 	const {
@@ -32,17 +37,24 @@ export function PromisE_delay<T = number>(
 		resolve,
 	} = PromisEBase.withResolvers<T>()
 	const promise = _promise as IPromisE_Delay<T>
-	const finalize = (result?: T | Error, doReject = false) => {
+	const finalize = (result?: TResultOrErr, doReject = false) => {
 		if (!doReject) return resolve(result as T)
 
-		result ??= new Error(
-			timeoutErrMsg ?? `${config.defaults.delayTimeoutMsg} ${duration}ms`,
+		reject(
+			result
+				?? new Error(
+					timeoutErrMsg
+						?? `${config.defaults.delayTimeoutMsg} ${duration}ms`,
+				),
 		)
-		reject(result)
 	}
 	promise.timeoutId = setTimeout(() => finalize(result, asRejected), duration)
 	promise.pause = () => clearTimeout(promise.timeoutId)
-	promise.catch(() => {}).finally(() => promise.pause())
+	promise
+		.catch(() => {
+			/* avoid unhandled rejections here */
+		})
+		.finally(() => promise.pause())
 	return promise
 }
 export default PromisE_delay

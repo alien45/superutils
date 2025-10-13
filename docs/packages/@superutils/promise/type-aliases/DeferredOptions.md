@@ -2,7 +2,7 @@
 
 > **DeferredOptions**\<`ThisArg`\> = `object` & `object` & [`ThrottleConfig`](../../core/type-aliases/ThrottleConfig.md)\<`ThisArg`\> \| `object` & [`DeferredConfig`](../../core/interfaces/DeferredConfig.md)\<`ThisArg`\>
 
-Defined in: [packages/promise/src/types/deferred.ts:3](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/deferred.ts#L3)
+Defined in: [packages/promise/src/types/deferred.ts:7](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/deferred.ts#L7)
 
 ## Type Declaration
 
@@ -14,7 +14,7 @@ Delay in milliseconds, used for `debounce` and `throttle` modes.
 
 ### onError()?
 
-> `optional` **onError**: (`err`) => `any` \| `Promise`\<`any`\>
+> `optional` **onError**: (`err`) => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 Callback invoked whenever promise/function throws error
 
@@ -22,15 +22,15 @@ Callback invoked whenever promise/function throws error
 
 ##### err
 
-`any`
+`unknown`
 
 #### Returns
 
-`any` \| `Promise`\<`any`\>
+[`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 ### onIgnore()?
 
-> `optional` **onIgnore**: (`ignored`) => `any` \| `Promise`\<`any`\>
+> `optional` **onIgnore**: (`ignored`) => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 Whenever a promise/function is ignored when in debource/throttle mode, `onIgnored` wil be invoked.
 The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
@@ -40,15 +40,15 @@ Use for debugging or logging purposes.
 
 ##### ignored
 
-() => `Promise`\<`any`\>
+() => `Promise`\<`unknown`\>
 
 #### Returns
 
-`any` \| `Promise`\<`any`\>
+[`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 ### onResult()?
 
-> `optional` **onResult**: (`result?`) => `any` \| `Promise`\<`any`\>
+> `optional` **onResult**: (`result?`) => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 Whenever a promise/function is executed successfully `onResult` will be called.
 Those that are ignored but resolve with last will not cause `onResult` to be invoked.
@@ -59,11 +59,11 @@ Result can be `undefined` if `ResolveIgnored.WITH_UNDEFINED` is used.
 
 ##### result?
 
-`any`
+`unknown`
 
 #### Returns
 
-`any` \| `Promise`\<`any`\>
+[`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
 ### resolveError?
 

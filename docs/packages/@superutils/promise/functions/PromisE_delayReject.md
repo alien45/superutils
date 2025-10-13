@@ -2,7 +2,11 @@
 
 > **PromisE\_delayReject**\<`T`\>(`delay`, `reason?`): [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
 
-Defined in: [packages/promise/src/delayReject.ts:34](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/delayReject.ts#L34)
+Defined in: [packages/promise/src/delayReject.ts:35](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/delayReject.ts#L35)
+
+**`Function`**
+
+PromisE.delayReject
 
 ## Type Parameters
 
@@ -18,16 +22,36 @@ Defined in: [packages/promise/src/delayReject.ts:34](https://github.com/alien45/
 
 ### reason?
 
-`any`
+`unknown`
 
 ## Returns
 
 [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
 
-## Name
-
-PromisE.delayReject
-
 ## Examples
 
----
+```typescript
+const rejectPromise = PromisE.delayReject(
+    3000, // duration in milliseconds
+    new Error('App did not initialization on time'), // reason to reject with
+)
+await rejectPromise // throws error message after 3 seconds
+codeThatWillNotExecute()
+```
+
+```typescript
+
+const rejectPromise = PromisE.delayReject<string>(
+    3000,
+    new Error('App did not initialization on time'),
+)
+let count = 0
+const appReady = () => ++count >= 2 // return true on second call
+const intervalId = setInterval(() => {
+    if (!appReady()) return
+    rejectPromise.resolve('force resolves rejectPromise and execution continues')
+    clearInterval(intervalId)
+}, 100)
+await rejectPromise
+console.log('App is now ready')
+```

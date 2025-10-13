@@ -1,8 +1,8 @@
 # Type Alias: OnEarlyFinalize()\<T\>
 
-> **OnEarlyFinalize**\<`T`\> = \<`TResolved`, `TValue`\>(`resolved`, `resultOrReason`) => `unknown` \| `Promise`\<`unknown`\>
+> **OnEarlyFinalize**\<`T`\> = \<`TResolved`, `TValue`\>(`resolved`, `resultOrReason`) => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>
 
-Defined in: [packages/promise/src/types/IPromisE.ts:90](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L90)
+Defined in: [packages/promise/src/types/IPromisE.ts:91](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L91)
 
 ## Type Parameters
 
@@ -32,4 +32,4 @@ Defined in: [packages/promise/src/types/IPromisE.ts:90](https://github.com/alien
 
 ## Returns
 
-`unknown` \| `Promise`\<`unknown`\>
+[`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`unknown`\>

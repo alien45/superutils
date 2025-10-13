@@ -6,12 +6,11 @@ import { unsubscribeAll } from './unsubscribeAll'
 
 export const IGNORE_UPDATE_SYMBOL = Symbol('ignore-rx-subject-update')
 export type IgnoreUpdate = typeof IGNORE_UPDATE_SYMBOL
-type SubjectsNValuesArray<T = unknown> = Array<T | SubjectLike<T>>
-type RxSourceType = SubjectLike<any> | SubjectsNValuesArray<any>
-type UnwrapRxSourceValue<T> =
-	T extends ReadonlyArray<any>
-		? { -readonly [K in keyof T]: SubjectToValue<T[K]> }
-		: SubjectToValue<T>
+type SubjectsNValuesArray<T = unknown> = (T | SubjectLike<T>)[]
+type RxSourceType = SubjectLike<unknown> | SubjectsNValuesArray<unknown>
+type UnwrapRxSourceValue<T> = T extends readonly unknown[]
+	? { -readonly [K in keyof T]: SubjectToValue<T[K]> }
+	: SubjectToValue<T>
 type SubjectToValue<T> = T extends SubjectLike<infer V> ? V : T
 type ValueModifier<T = unknown, TCopy = T> = (
 	newValue: T,
@@ -20,10 +19,10 @@ type ValueModifier<T = unknown, TCopy = T> = (
 ) => TCopy | IgnoreUpdate
 
 /**
- * @name    copyRxSubject
+ * @function    copyRxSubject
  * @summary returns a subject that automatically copies the value(s) of the source subject(s).
  *
- * @description The the changes are applied unidirectionally from the source subject to the destination subject.
+ * The the changes are applied unidirectionally from the source subject to the destination subject.
  * Changes on the destination subject is NOT applied back into the source subject.
  *
  * @param rxSource  RxJS source subject(s). If Array provied, value of `rxCopy` will also be an Array by default,
@@ -44,10 +43,8 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * ----------------------------------------------
  *
- * @example ```typescript
- * //
- * // Example 1: copy a single subject
- * //
+ * @example copy a single subject
+ * ```typescript
  * const rxNumber = new BehaviorSubject(1)
  * const rxEven = copyRxSubject(
  *     rxNumber,
@@ -66,11 +63,9 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * ----------------------------------------------
  *
- * @example ```typescript
- * //
- * // Example 2: copy an array of subjects & non-subjects that automatically
- * // reduces to a single array with original values and their respective types.
- * //
+ * @example copy an array of subjects & non-subjects
+ * Automatically reduces to a single array with original values and their respective types
+ * ```typescript
  *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
  *  const rxUserId = new BehaviorSubject('username')
  *  const rxUserSettings = copyRxSubject(
@@ -82,10 +77,8 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * ----------------------------------------------
  *
- * @example ```typescript
- * //
- * // Example 3: copy an array of subjects and reduce to some other value
- * //
+ * @example copy an array of subjects and reduce to some other value
+ * ```typescript
  *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
  *  const rxUserId = new BehaviorSubject('username')
  *  const rxUserSettings = copyRxSubject(
@@ -101,11 +94,9 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * ----------------------------------------------
  *
- * @example ```typescript
- * //
- * // Example 4: copy an array of subjects & non-subjects and reduce to some other value.
- * // Non-subjects will act as unobserved values to be included in the final value.
- * //
+ * @example copy an array of subjects & non-subjects and reduce to some other value.
+ * Non-subjects will act as unobserved values to be included in the final value.
+ * ```typescript
  *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
  *  const rxUser = new BehaviorSubject({ balance: 1000, currency: 'usd', userId: 'username' })
  *  const rxProfileProps = copyRxSubject(
@@ -183,10 +174,12 @@ export function copyRxSubject<
 		return result as T
 	}
 	if (!isSubjectLike(rxCopy)) {
-		let initialValue = getCopiedValue()
+		const initialValue = getCopiedValue()
 		rxCopy ??= new BehaviorSubject<TCopy>(
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			gotModifier
-				? (undefined as any) // for type consistency
+				? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+					(undefined as any) // for type consistency
 				: initialValue,
 		)
 		if (gotModifier) {
@@ -204,7 +197,8 @@ export function copyRxSubject<
 			try {
 				const value = !gotModifier
 					? getCopiedValue()
-					: await valueModifier(
+					: // eslint-disable-next-line @typescript-eslint/await-thenable
+						await valueModifier(
 							getCopiedValue(),
 							rxCopy.value,
 							rxCopy,
@@ -212,7 +206,9 @@ export function copyRxSubject<
 				value != IGNORE_UPDATE_SYMBOL
 					&& value !== rxCopy.value
 					&& rxCopy.next(value as TCopy)
-			} catch (_) {} //ignore if valueModifier threw exception
+			} catch (err) {
+				err
+			} // ignore if valueModifier threw exception
 		}
 		const handleChange =
 			defer > 0 ? deferred(updateRxCopy, defer) : updateRxCopy

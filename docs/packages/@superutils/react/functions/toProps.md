@@ -1,8 +1,10 @@
 # Function: toProps()
 
-> **toProps**(`elOrProps`, `childrenProp`, `extractElementProps`): `null` \| `HTMLProps`\<`any`\>
+> **toProps**(`elOrProps`, `childrenProp`, `extractElementProps`): `null` \| `HTMLProps`\<`unknown`\>
 
-Defined in: [toProps.ts:14](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/react/src/toProps.ts#L14)
+Defined in: [toProps.ts:14](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/react/src/toProps.ts#L14)
+
+toProps
 
 ## Parameters
 
@@ -22,8 +24,4 @@ Defined in: [toProps.ts:14](https://github.com/alien45/utiils/blob/4bd65f5269ee7
 
 ## Returns
 
-`null` \| `HTMLProps`\<`any`\>
-
-## Name
-
-toProps
+`null` \| `HTMLProps`\<`unknown`\>

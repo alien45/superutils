@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isFn, TimeoutId } from '@superutils/core'
+import { isFn, noop, TimeoutId } from '@superutils/core'
 import PromisE from '@superutils/promise'
 import { SubjectLike, SubscriptionLike } from './types'
 
 export const ANY_VALUE_SYMBOL = Symbol('any-value')
 /**
- * @name    subjectAsPromise
+ * @function    subjectAsPromise
  * @summary sugar for RxJS subject as promise and, optionally, wait until an expected value is received
  *
  * @param   {Subject}           subject         RxJS subject or similar subscribable
@@ -17,13 +17,12 @@ export const ANY_VALUE_SYMBOL = Symbol('any-value')
  *
  * @returns {[PromisE<T>, Function]}   will reject with:
  *                                  - `null` if times out
- *                                  - `undefined` if @subject is not a valid RxJS subject like subscribable
+ *                                  - `undefined` if `subject` is not a valid RxJS subject like subscribable
  *
  * ----------------------------------------
  *
- * @example ```typescript
- *
- * // Create an interval runner subject that triggers incremental value every second.
+ * @example Create an interval runner subject that triggers incremental value every second.
+ * ```typescript
  * const rxInterval = new IntervalSubject(true, 1000, 1, 1)
  *
  * // create a promise that only resolves when expected value is received
@@ -36,12 +35,12 @@ export const subjectAsPromise = <T = unknown>(
 	expectedValue?: T | ((value: T) => boolean),
 	timeout?: number,
 	timeoutMsg: string = 'request timed out before an expected value is received', // eslint-disable-line @typescript-eslint/no-inferrable-types
-): [PromisE<T>, () => void] => {
+) => {
 	if (!subject) {
 		const r = PromisE.reject<T>(
-			'subject must be an instance of BehaviorSubject.',
+			new Error('subject must be an instance of BehaviorSubject.'),
 		)
-		return [r, () => {}]
+		return [r, noop] as const
 	}
 
 	let subscription: SubscriptionLike

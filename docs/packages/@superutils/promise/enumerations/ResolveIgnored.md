@@ -1,6 +1,6 @@
 # Enumeration: ResolveIgnored
 
-Defined in: [packages/promise/src/types/deferred.ts:53](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/deferred.ts#L53)
+Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/deferred.ts#L57)
 
 Options for what to do when a promise/callback is ignored, either because of being deferred, throttled or another been prioritized.
 
@@ -10,7 +10,7 @@ Options for what to do when a promise/callback is ignored, either because of bei
 
 > **NEVER**: `"NEVER"`
 
-Defined in: [packages/promise/src/types/deferred.ts:55](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/deferred.ts#L55)
+Defined in: [packages/promise/src/types/deferred.ts:59](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/deferred.ts#L59)
 
 Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks.
 
@@ -20,7 +20,7 @@ Never resolve ignored promises. Caution: make sure this doesn't cause any memory
 
 > **WITH\_LAST**: `"WITH_LAST"`
 
-Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/deferred.ts#L57)
+Defined in: [packages/promise/src/types/deferred.ts:61](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/deferred.ts#L61)
 
 (default) resolve with active promise result, the one that caused the current promise/callback to be ignored).
 
@@ -30,6 +30,6 @@ Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien
 
 > **WITH\_UNDEFINED**: `"WITH_UNDEFINED"`
 
-Defined in: [packages/promise/src/types/deferred.ts:59](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/deferred.ts#L59)
+Defined in: [packages/promise/src/types/deferred.ts:63](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/deferred.ts#L63)
 
 resolve with `undefined` value

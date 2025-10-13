@@ -1,6 +1,6 @@
 # Interface: IPromisE\_Delay\<T\>
 
-Defined in: [packages/promise/src/types/IPromisE.ts:27](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L27)
+Defined in: [packages/promise/src/types/IPromisE.ts:27](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L27)
 
 ## Extends
 
@@ -30,7 +30,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:176
 
 > **onEarlyFinalize**: [`OnEarlyFinalize`](../type-aliases/OnEarlyFinalize.md)\<`T`\>[]
 
-Defined in: [packages/promise/src/types/IPromisE.ts:8](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L8)
+Defined in: [packages/promise/src/types/IPromisE.ts:8](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L8)
 
 callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods
 
@@ -44,7 +44,7 @@ callbacks to be invoked whenever PromisE instance is finalized early using non-s
 
 > **pause**: () => `void`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:72](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L72)
+Defined in: [packages/promise/src/types/IPromisE.ts:73](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L73)
 
 Caution: pausing will prevent the promise from resolving/rejeting automatically.
 
@@ -61,9 +61,37 @@ Use `pause()` only if you are sure.
 
 #### Examples
 
----
+```typescript
+// Example 1: SAFE => no memory leak, because no reference to the promise is stored and no suspended code
+<button onClick={() => {
+    const promise = PromisE.delay(1000).then(... do stuff ....)
+    setTimeout(() => promise.pause(), 300)
+}}>Click Me</button>
+```
 
 ---
+
+```typescript
+<button onClick={() => {
+    const promise = PromisE.delay(1000)
+    setTimeout(() => promise.pause(), 300)
+    await promise // suspended code
+    //... do stuff ....
+}}>Click Me</button>
+```
+
+---
+
+```typescript
+// Until the reference to promises is collected by the garbage collector,
+// reference to the unfinished promise will remain in memory.
+const promises = []
+<button onClick={() => {
+    const promise = PromisE.delay(1000)
+    setTimeout(() => promise.pause(), 300)
+    promises.push(promise)
+}}>Click Me</button>
+```
 
 ***
 
@@ -71,7 +99,7 @@ Use `pause()` only if you are sure.
 
 > `readonly` **pending**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:11](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L11)
+Defined in: [packages/promise/src/types/IPromisE.ts:11](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L11)
 
 Indicates if the promise is still pending/unfinalized
 
@@ -85,7 +113,7 @@ Indicates if the promise is still pending/unfinalized
 
 > **reject**: (`reason`) => [`IPromisE`](IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/types/IPromisE.ts:14](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L14)
+Defined in: [packages/promise/src/types/IPromisE.ts:14](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L14)
 
 Reject pending promise early.
 
@@ -93,7 +121,7 @@ Reject pending promise early.
 
 ##### reason
 
-`any`
+`unknown`
 
 #### Returns
 
@@ -109,7 +137,7 @@ Reject pending promise early.
 
 > `readonly` **rejected**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:17](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L17)
+Defined in: [packages/promise/src/types/IPromisE.ts:17](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L17)
 
 Indicates if the promise has been rejected
 
@@ -123,7 +151,7 @@ Indicates if the promise has been rejected
 
 > **resolve**: (`value`) => [`IPromisE`](IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/types/IPromisE.ts:20](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L20)
+Defined in: [packages/promise/src/types/IPromisE.ts:20](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L20)
 
 Resovle pending promise early.
 
@@ -147,7 +175,7 @@ Resovle pending promise early.
 
 > `readonly` **resolved**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:23](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L23)
+Defined in: [packages/promise/src/types/IPromisE.ts:23](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L23)
 
 Indicates if the promise has been resolved
 
@@ -161,7 +189,7 @@ Indicates if the promise has been resolved
 
 > `readonly` **state**: `0` \| `1` \| `2`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:5](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L5)
+Defined in: [packages/promise/src/types/IPromisE.ts:5](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L5)
 
 0: pending, 1: resolved, 2: rejected
 
@@ -175,7 +203,7 @@ Defined in: [packages/promise/src/types/IPromisE.ts:5](https://github.com/alien4
 
 > **timeoutId**: `undefined` \| `number`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:73](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/IPromisE.ts#L73)
+Defined in: [packages/promise/src/types/IPromisE.ts:74](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L74)
 
 ## Methods
 

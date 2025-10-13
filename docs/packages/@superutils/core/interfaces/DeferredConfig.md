@@ -1,6 +1,6 @@
 # Interface: DeferredConfig\<ThisArg\>
 
-Defined in: [types.ts:49](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L49)
+Defined in: [types.ts:49](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L49)
 
 Deferred function config
 
@@ -16,7 +16,7 @@ Deferred function config
 
 > `optional` **leading**: `boolean` \| `"global"`
 
-Defined in: [types.ts:50](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L50)
+Defined in: [types.ts:50](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L50)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types.ts:50](https://github.com/alien45/utiils/blob/4bd65f5269ee75c
 
 > `optional` **onError**: (`err`) => `unknown`
 
-Defined in: [types.ts:51](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L51)
+Defined in: [types.ts:51](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L51)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [types.ts:51](https://github.com/alien45/utiils/blob/4bd65f5269ee75c
 
 > `optional` **thisArg**: `ThisArg`
 
-Defined in: [types.ts:52](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L52)
+Defined in: [types.ts:52](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L52)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [types.ts:52](https://github.com/alien45/utiils/blob/4bd65f5269ee75c
 
 > `optional` **tid**: `number`
 
-Defined in: [types.ts:53](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L53)
+Defined in: [types.ts:53](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L53)

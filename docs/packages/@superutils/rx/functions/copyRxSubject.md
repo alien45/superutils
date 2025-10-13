@@ -4,7 +4,11 @@
 
 > **copyRxSubject**\<`TCopy`, `TRxSource`, `T`\>(`rxSource`, `rxCopy?`, `valueModifier?`, `defer?`): [`SubjectLike`](../interfaces/SubjectLike.md)\<`TCopy`\>
 
-Defined in: [packages/rx/src/copyRxSubject.ts:126](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/copyRxSubject.ts#L126)
+Defined in: [packages/rx/src/copyRxSubject.ts:117](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/copyRxSubject.ts#L117)
+
+**`Function`**
+
+copyRxSubject
 
 ### Type Parameters
 
@@ -62,28 +66,80 @@ rxCopy
 
 ----------------------------------------------
 
-### Name
-
-copyRxSubject
-
-### Description
-
-The the changes are applied unidirectionally from the source subject to the destination subject.
-Changes on the destination subject is NOT applied back into the source subject.
-
 ### Examples
 
-----------------------------------------------
+```typescript
+const rxNumber = new BehaviorSubject(1)
+const rxEven = copyRxSubject(
+    rxNumber,
+    // If not provided, rxEven will be created and returned: `new BehaviorSubject<boolean>(false),`
+    // Type will be inferred from `valueModifier` if available, otherwise, `rxNumber`.
+    undefined,
+    // whenever a new value is received from rxNumber, reduce it to the appropriate value for the rxEven.
+    (newValue) => newValue % 2 === 0,
+)
+// subscribe to changes
+// will immediately print false from the initial value of rxNumber
+rxEven.subscribe(console.log)
+rxNumber.next(2) // prints: true
+rxNumber.next(3) // print: false
+```
 
 ----------------------------------------------
 
+Automatically reduces to a single array with original values and their respective types
+```typescript
+ const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ const rxUserId = new BehaviorSubject('username')
+ const rxUserSettings = copyRxSubject(
+     [rxTheme, rxUser, 'my-fancy-app' ] as const
+ )
+ // subscribe to the subject with reduced array values
+ rxUserSettings.subscribe(([theme, user, appName]) => {})
+```
+
 ----------------------------------------------
+
+```typescript
+ const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ const rxUserId = new BehaviorSubject('username')
+ const rxUserSettings = copyRxSubject(
+     [rxTheme, rxUserId] as const,
+     // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
+     undefined,
+     ([theme, userId]) => ({ theme, userId }),
+     100, // delay before updating rxCopy
+ )
+ // save settings to local storage whenever any of the values changes
+ rxUserSettings.subscribe(settings => localStorage.setItem(settings.userId, JSON.stringify(settings)))
+```
+
+----------------------------------------------
+
+Non-subjects will act as unobserved values to be included in the final value.
+```typescript
+ const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ const rxUser = new BehaviorSubject({ balance: 1000, currency: 'usd', userId: 'username' })
+ const rxProfileProps = copyRxSubject(
+     [rxTheme, rxUser, 'my-fancy-app' ] as const,
+     // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
+     undefined,
+     ([theme, userId, appName]) => ({ appName, theme, userId }),
+     100, // delay before updating rxCopy
+ )
+ const userProfileView = (
+     <RxSubjectView
+         subject={rxProfileProps}
+         render={props => <UserProfile {...props} />}
+     />
+ )
+```
 
 ## Call Signature
 
 > **copyRxSubject**\<`TCopy`, `TRxSource`, `T`\>(`rxSource`, `rxCopy`, `valueModifier`, `defer?`): [`SubjectLike`](../interfaces/SubjectLike.md)\<`TCopy`\>
 
-Defined in: [packages/rx/src/copyRxSubject.ts:140](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/copyRxSubject.ts#L140)
+Defined in: [packages/rx/src/copyRxSubject.ts:131](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/copyRxSubject.ts#L131)
 
 Overload for when TCopy doesn't extend T (modifier required)
 

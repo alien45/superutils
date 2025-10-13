@@ -3,7 +3,7 @@ import PromisEBase from './PromisEBase'
 import { IPromisE_Timeout } from './types'
 
 /**
- * @name    PromisE.timeout
+ * @function    PromisE.timeout
  * @summary times out a promise after specified timeout duration.
  *
  * @param   timeout (optional) timeout duration in milliseconds.
@@ -59,9 +59,9 @@ import { IPromisE_Timeout } from './types'
  *```
  */
 export function PromisE_timeout<
-	T extends any[] | [],
+	T extends unknown[] | [],
 	TOut = T['length'] extends 1 ? T[0] : T,
->(timeout: number = 10_000, ...values: Promise<TOut>[]) {
+>(timeout = 10_000, ...values: Promise<TOut>[]) {
 	const dataPromise = (
 		values.length === 1
 			? new PromisEBase<T[0]>(values[0]) // single promise resolves to a single result
@@ -79,12 +79,15 @@ export function PromisE_timeout<
 	promise.data = dataPromise
 	promise.timeout = timeoutPromise
 	// add a short hand `promise.timedout` to access whether promise has timed out
+	// eslint-disable-next-line @typescript-eslint/no-floating-promises
 	Object.defineProperty(promise, 'timedout', {
 		get: () => promise.timeout.rejected,
 	})
 	// clear timeout after finalization
 	dataPromise
-		.catch(e => e) // prevents unhandled rejection here
+		.catch(() => {
+			/* avoid unhandled rejection here */
+		})
 		.finally(promise.clearTimeout)
 	return promise
 }

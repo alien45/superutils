@@ -2,7 +2,7 @@
 
 > **throttled**\<`TArgs`, `ThisArg`\>(`callback`, `delay`, `config`): (...`args`) => `void`
 
-Defined in: [throttled.ts:23](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/throttled.ts#L23)
+Defined in: [throttled.ts:22](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/throttled.ts#L22)
 
 throttle
 
@@ -20,7 +20,7 @@ throttle
 
 ### callback
 
-(`this`, ...`args`) => `any`
+(`this`, ...`args`) => `unknown`
 
 function to be invoked after timeout
 

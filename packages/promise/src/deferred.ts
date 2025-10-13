@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import {
 	deferred,
+	fallbackIfFails,
 	forceCast,
 	isFn,
 	isPositiveNumber,
@@ -15,12 +17,12 @@ import {
 import config from './config'
 
 /**
- * @name PromisE.deferred
+ * @function PromisE.deferred
  * @summary the adaptation of the `deferred()` function tailored for Promises.
  *
  *
  * @param options           (optional) options
- * @param options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes.
+ * @param options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
  * @param options.onError   (optional)
  * @param options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
  * @param options.onResult  (optional)
@@ -32,13 +34,13 @@ import config from './config'
  * Default: `false`
  *
  * @returns {Function} a callback that is invoked in one of the followin 3 methods:
- * - sequential: when `delayMs` is not a positive number.
+ * - sequential: when `delayMs <= 0` or `delayMs = undefined`
  * - debounced: when `delayMs > 0` and `throttle = false`
  * - throttled: when `delayMs > 0` and `throttle = true`
  *
  * ---
  *
- * @description The main difference is that:
+ * The main difference is that:
  *  - Notes:
  *      1. A "request" simply means invokation of the returned callback function
  *      2. By "handled" it means a "request" will be resolved or rejected.
@@ -88,11 +90,9 @@ import config from './config'
  */
 export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 	const defaults = config.defaults.deferOptions
-	let {
+	let { onError, onIgnore, onResult } = options
+	const {
 		delayMs = defaults.delayMs,
-		onError,
-		onIgnore,
-		onResult,
 		resolveError = defaults.resolveError, // by default reject on error
 		resolveIgnored = defaults.resolveIgnored,
 		thisArg,
@@ -103,14 +103,14 @@ export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 		callback: () => Promise<unknown>
 		started?: boolean
 	}
-	const queue: Map<Symbol, QueueItem> = new Map()
+	const queue = new Map<symbol, QueueItem>()
 	const gotDelay = isPositiveNumber(delayMs)
 	if (thisArg !== undefined) {
 		onError = onError?.bind(thisArg)
 		onIgnore = onIgnore?.bind(thisArg)
 		onResult = onResult?.bind(thisArg)
 	}
-	const ignoreOrProceed = (currentId: Symbol, qItem?: QueueItem) => {
+	const ignoreOrProceed = (currentId: symbol, qItem?: QueueItem) => {
 		lastPromisE = null
 		if (!gotDelay) {
 			queue.delete(currentId)
@@ -123,9 +123,9 @@ export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 		for (let i = 0; i <= currentIndex; i++) {
 			const [iId, iItem] = items[i]
 			queue.delete(iId)
-			if (!iItem || iItem.started) continue
+			if (iItem == undefined || iItem.started) continue
 
-			onIgnore && PromisEBase.try(onIgnore, iItem.callback)
+			onIgnore && fallbackIfFails(onIgnore, [iItem.callback], undefined)
 
 			// Options for ignored
 			// 0. resolve with undefined
@@ -136,8 +136,15 @@ export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 					iItem.resolve(undefined as T)
 					break
 				case ResolveIgnored.WITH_LAST:
-					// error will not be passed down to ignored ones
-					iItem.resolve(qItem?.catch(() => {}))
+					fallbackIfFails(() => qItem, [], undefined)?.then(
+						result => {
+							// error will not be passed down to ignored ones
+							result !== undefined && iItem.resolve(result)
+						},
+						() => {
+							/* ignore exceptions */
+						},
+					)
 					break
 				case ResolveIgnored.NEVER:
 					// just ignore
@@ -149,10 +156,10 @@ export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 		const finalize =
 			<TResolve extends true | false = true>(
 				resolve: TResolve,
-				id: Symbol,
+				id: symbol,
 				qItem: QueueItem,
 			) =>
-			(resultOrErr: TResolve extends true ? unknown : any) => {
+			(resultOrErr: unknown) => {
 				ignoreOrProceed(id, qItem)
 				if (resolve) {
 					qItem.resolve(resultOrErr)
@@ -160,22 +167,22 @@ export function PromisE_deferred<T>(options: DeferredOptions = {}) {
 					return
 				}
 
-				onError && PromisEBase.try(onError, resultOrErr)
+				onError && fallbackIfFails(onError, [resultOrErr], undefined)
 				switch (resolveError) {
+					case ResolveError.REJECT:
+						qItem.reject(resultOrErr as Error)
+					// eslint-disable-next-line no-fallthrough
 					case ResolveError.NEVER:
 						break
-					case ResolveError.REJECT:
-						qItem.reject(resultOrErr)
-						break
+					case ResolveError.WITH_UNDEFINED:
+						resultOrErr = undefined
+					// eslint-disable-next-line no-fallthrough
 					case ResolveError.WITH_ERROR:
 						qItem.resolve(resultOrErr)
 						break
-					case ResolveError.WITH_UNDEFINED:
-						qItem.resolve(undefined)
-						break
 				}
 			}
-		const execute = (id: Symbol, qItem: QueueItem) => {
+		const execute = (id: symbol, qItem: QueueItem) => {
 			qItem.started = true
 			lastPromisE = new PromisEBase(qItem.callback())
 			lastPromisE.then(

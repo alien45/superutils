@@ -1,4 +1,5 @@
 import { forceCast } from '@superutils/core'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PromisE_deferred from './deferred'
 import PromisE_deferredCallback from './deferredCallback'
 import PromisE_fetch from './fetch'
@@ -6,28 +7,32 @@ import mergeFetchOptions from './mergeFetchOptions'
 import { DeferredOptions, FetchArgs, FetchDeferredArgs } from './types'
 
 /**
- * @name    PromisE.deferredFetch
+ * @function    PromisE.deferredFetch
  * @summary {@link PromisE_fetch} with the advantages of {@link PromisE_deferred} and auto-abort feature
  *
- * @example ```typescript
- * ---
- * // Example: Fetch paginated products
+ * @example Fetch paginated products using deferred/throttle mechanism
+ * ```typescript
+ * import PromisE from '@superutils/promise'
+ *
  * const getProducts = PromisE.deferredFetch({
  *     delayMs: 300, // used for both "throttle" and "deferred" modes
- *     resolveIgnored: ResolveIgnored.WITH_ACTIVE,
+ *     resolveIgnored: ResolveIgnored.WITH_LAST,
  *     throttle: true,
  * })
+ *
+ * // first call
  * getProducts('https://dummyjson.com/products/1').then(console.log)
+ * // seconds call after delay
  * setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log), 200)
- * // result (throttle = true): only product 1 retrieved
  *
- * // result (throttle = false): only product 2 retrieved
- *
- * // result (ResolveIgnored.WITH_ACTIVE): only product retrieved but both request will resolve the same result
- *
- * // result (ResolveIgnored.WITH_UNDEFINED): only one product retrieved & resolved but the other will resolve with undefined
- *
- * // result (ResolveIgnored.NEVER): only one product retrieved & resolved but the other will NEVER resolve
+ * // Possible outcomes using different options:
+ * // - `throttle = true`: only product 1 retrieved
+ * // - `throttle = false`: only product 2 retrieved
+ * // - `resolveIgnored = ResolveIgnored.WITH_LAST`:
+ * // 	only product retrieved but both request will resolve the same result
+ * // - `resolveIgnored = ResolveIgnored.WITH_UNDEFINED`:
+ * // only product 1 retrieved & resolved but the other will resolve with undefined
+ * // - `resolveIgnored = ResolveIgnored.NEVER`: only one product retrieved & resolved but the other will NEVER resolve
  * ```
  */
 export function PromisE_deferredFetch<
@@ -45,7 +50,7 @@ export function PromisE_deferredFetch<
 		const { abortCtrl } = options
 		// abort any previous fetch
 		_abortCtrl?.abort()
-		_abortCtrl = abortCtrl as AbortController
+		_abortCtrl = abortCtrl
 		const promise = PromisE_fetch<TCbData>(
 			...forceCast<FetchArgs>([
 				url ?? defaultUrl,

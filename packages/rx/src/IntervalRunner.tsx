@@ -13,10 +13,9 @@ export type onBeforeExecType = (
 ) => void | Promise<unknown>
 
 /**
- * @name	IntervalRunner
  * @summary	a simple runner to execute a task periodically.
  *
- * @description When to use `IntervalRunner` instead of `IntervalSubject`?
+ * When to use `IntervalRunner` instead of `IntervalSubject`?
  *
  * `IntervalRunner` is useful when the execution of the `onResult` time must be on the clock and/or must be excluded
  * from the interval delay duration.
@@ -36,14 +35,25 @@ export type onBeforeExecType = (
  *
  * @param	preExecute	(optional) if true, will pre-execute task before starting the timer.
  *
- * @example ```typescript
- *
+ * @example Execute a function sequentially
+ * Will not start counting time until function execution ends, maintaining the delay betweeen execution consistent.
+ * ```typescript
  * const runner = new IntervalRunner(
  *     PromisE.fetch,
  * 	   ['https://my-api-url.com/get-data'],
  *     2000,
- *     true,
- *     true,
+ *  )
+ * runner.start(result => console.log({ result }))
+ * ```
+ *
+ * @example Execute a function at without enforcing sequential execution.
+ * Will start counting time even if function execution is unfinied, maintaining the delay betweeen execution START-TIME consistent.
+ * ```typescript
+ * const runner = new IntervalRunner(
+ *     PromisE.fetch,
+ * 	   ['https://my-api-url.com/get-data'],
+ *     2000,
+ *     false,
  *  )
  * runner.start(result => console.log({ result }))
  * ```
@@ -58,7 +68,6 @@ export default class IntervalRunner<
 	private onBeforeExec?: onBeforeExecType
 	private onResult: OnResultType<TResult> | undefined
 	/**
-	 * @name	rxIntervalMs
 	 * @summary RxJS BehaviorSubject to change timer delay and restart the timer
 	 */
 	readonly rxIntervalMs: BehaviorSubject<number>
@@ -72,7 +81,7 @@ export default class IntervalRunner<
 		intervalMs: BehaviorSubject<number> | number,
 		readonly sequential = true, // if true, timer will start start only after execution is finished
 		readonly preExecute = true, // false = delay >> execute, true = execute >> delay
-		readonly deferStartMs = 100,
+		// readonly deferStartMs = 100, // unused?
 	) {
 		this.rxIntervalMs =
 			intervalMs instanceof BehaviorSubject
@@ -88,7 +97,7 @@ export default class IntervalRunner<
 	}
 
 	private executeTask = async (
-		once: boolean = false,
+		once = false,
 	): Promise<TResult | undefined> => {
 		let err: unknown
 		let result: TResult | undefined
@@ -141,10 +150,8 @@ export default class IntervalRunner<
 	}
 
 	/**
-	 * @name	start
 	 * @summary set `onResult` & `onBeforeExec` callbacks and start execution.
 	 *
-	 * @description
 	 * If it's already running, the callbacks will be used on the next execution.
 	 *
 	 * In order to start using callbacks immediately, invoke the `intervalRunner.stop()` function first.

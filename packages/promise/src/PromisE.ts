@@ -17,7 +17,7 @@ import PromisE_timeout from './timeout'
  *
  * ---
  *
- * @example Example 1: As a drop-in replacement for `Promise` class
+ * @example Example 1: As a drop-in replacement for Promise class
  * ```typescript
  * import PromisE from '@superutils/promise'
  * const p = new PromisE((resolve, reject) => resolve('done'))
@@ -28,7 +28,7 @@ import PromisE_timeout from './timeout'
  * )
  * ```
  *
- * @example Example 2: Extend an existing `Proimse` instance to check status
+ * @example Example 2: Extend an existing "Proimse" instance to check status
  * ```typescript
  * import PromisE from '@superutils/promise'
  * const instance = new Promise((resolve) => setTimeout(() => resolve(1), 1000))
@@ -36,7 +36,7 @@ import PromisE_timeout from './timeout'
  * console.log(p.pending)
  * ```
  *
- * @example Example 3: Create a promise to be finalized externally (an alternative to `PromisE.withResolvers()`)
+ * @example Example 3: Create a promise to be finalized externally (an alternative to "PromisE.withResolvers()")
  * ```typescript
  * import PromisE from '@superutils/promise'
  * const p = new PromisE<number>()

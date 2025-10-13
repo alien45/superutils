@@ -2,7 +2,7 @@
 
 > **FetchInterceptors** = `object`
 
-Defined in: [packages/promise/src/types/fetch.ts:216](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L216)
+Defined in: [packages/promise/src/types/fetch.ts:216](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L216)
 
 All valid interceptors for fetch requests are:
 ---
@@ -44,7 +44,7 @@ See the following for more details and examples:
 
 > `optional` **error**: [`FetchInterceptorError`](FetchInterceptorError.md)[]
 
-Defined in: [packages/promise/src/types/fetch.ts:217](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L217)
+Defined in: [packages/promise/src/types/fetch.ts:217](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L217)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [packages/promise/src/types/fetch.ts:217](https://github.com/alien45
 
 > `optional` **request**: [`FetchInterceptorRequest`](FetchInterceptorRequest.md)[]
 
-Defined in: [packages/promise/src/types/fetch.ts:218](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L218)
+Defined in: [packages/promise/src/types/fetch.ts:218](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L218)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [packages/promise/src/types/fetch.ts:218](https://github.com/alien45
 
 > `optional` **response**: [`FetchInterceptorResponse`](FetchInterceptorResponse.md)[]
 
-Defined in: [packages/promise/src/types/fetch.ts:219](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L219)
+Defined in: [packages/promise/src/types/fetch.ts:219](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L219)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: [packages/promise/src/types/fetch.ts:219](https://github.com/alien45
 
 > `optional` **result**: [`FetchInterceptorResult`](FetchInterceptorResult.md)[]
 
-Defined in: [packages/promise/src/types/fetch.ts:220](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L220)
+Defined in: [packages/promise/src/types/fetch.ts:220](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L220)

@@ -1,8 +1,8 @@
 # Type Alias: DropLast\<T\>
 
-> **DropLast**\<`T`\> = `T` *extends* \[`...(infer Rest)`, `any`\] ? `Rest` : \[\]
+> **DropLast**\<`T`\> = `T` *extends* \[`...(infer Rest)`, `unknown`\] ? `Rest` : \[\]
 
-Defined in: [types.ts:97](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L97)
+Defined in: [types.ts:97](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L97)
 
 Drop the last item from an array/tuple and keep the rest
 ---
@@ -11,7 +11,7 @@ Drop the last item from an array/tuple and keep the rest
 
 ### T
 
-`T` *extends* `any`[]
+`T` *extends* `unknown`[]
 
 ## Example
 

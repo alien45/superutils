@@ -1,14 +1,26 @@
 # Function: PromisE\_delay()
 
-> **PromisE\_delay**\<`T`\>(`duration`, `result`, `asRejected`, `timeoutErrMsg?`): [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
+> **PromisE\_delay**\<`T`, `TReject`, `TResultOrErr`\>(`duration`, `result`, `asRejected`, `timeoutErrMsg?`): [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
 
-Defined in: [packages/promise/src/delay.ts:23](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/delay.ts#L23)
+Defined in: [packages/promise/src/delay.ts:24](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/delay.ts#L24)
+
+**`Function`**
+
+PromisE.delay
 
 ## Type Parameters
 
 ### T
 
 `T` = `number`
+
+### TReject
+
+`TReject` *extends* `boolean` = `boolean`
+
+### TResultOrErr
+
+`TResultOrErr` = `TReject` *extends* `true` ? `unknown` : `T`
 
 ## Parameters
 
@@ -20,14 +32,14 @@ duration in milliseconds
 
 ### result
 
-`T` = `...`
+`TResultOrErr` = `...`
 
 (optional) specify a value to resolve or reject with.
                              Default: `delayMs` when resolved or timed out error when rejected
 
 ### asRejected
 
-`boolean` = `false`
+`TReject` = `...`
 
 (optional) if `true`, will reject the promise after the delay.
 
@@ -41,8 +53,11 @@ duration in milliseconds
 
 See [IPromisE\_Delay](../interfaces/IPromisE_Delay.md)
 
-## Name
-
-PromisE.delay
-
 ## Example
+
+```typescript
+console.log('Waiting for app initialization or something else to be ready')
+// wait 3 seconds before proceeding
+await PromisE.delay(3000)
+console.log('App ready')
+```

@@ -1,6 +1,6 @@
 # Class: FetchError
 
-Defined in: [packages/promise/src/types/fetch.ts:236](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L236)
+Defined in: [packages/promise/src/types/fetch.ts:236](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L236)
 
 ## Extends
 
@@ -12,7 +12,7 @@ Defined in: [packages/promise/src/types/fetch.ts:236](https://github.com/alien45
 
 > **new FetchError**(`message`, `options`): `FetchError`
 
-Defined in: [packages/promise/src/types/fetch.ts:241](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L241)
+Defined in: [packages/promise/src/types/fetch.ts:241](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L241)
 
 #### Parameters
 
@@ -88,7 +88,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `optional` **options**: [`FetchOptions`](../type-aliases/FetchOptions.md)
 
-Defined in: [packages/promise/src/types/fetch.ts:237](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L237)
+Defined in: [packages/promise/src/types/fetch.ts:237](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L237)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [packages/promise/src/types/fetch.ts:237](https://github.com/alien45
 
 > `optional` **response**: `Response`
 
-Defined in: [packages/promise/src/types/fetch.ts:238](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L238)
+Defined in: [packages/promise/src/types/fetch.ts:238](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L238)
 
 ***
 
@@ -116,7 +116,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 > **url**: `string` \| `URL`
 
-Defined in: [packages/promise/src/types/fetch.ts:239](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L239)
+Defined in: [packages/promise/src/types/fetch.ts:239](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L239)
 
 ## Methods
 

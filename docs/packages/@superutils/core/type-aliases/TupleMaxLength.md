@@ -2,7 +2,7 @@
 
 > **TupleMaxLength**\<`T`\> = `Required`\<`T`\>\[`"length"`\]
 
-Defined in: [types.ts:246](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L246)
+Defined in: [types.ts:247](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L247)
 
 Get the maximum possible length of a tuple
 
@@ -14,7 +14,7 @@ This is particularly useful when a tuple (or function paramenters) contains opti
 
 ### T
 
-`T` *extends* readonly `any`[]
+`T` *extends* readonly `unknown`[]
 
 ## Example
 

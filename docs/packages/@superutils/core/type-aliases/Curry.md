@@ -1,8 +1,8 @@
 # Type Alias: Curry()\<TData, TParams\>
 
-> **Curry**\<`TData`, `TParams`\> = \<`TArgs`\>(...`args`) => [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\> *extends* \[`any`, `...any[]`\] ? `Curry`\<`TData`, [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\>\> : `TData`
+> **Curry**\<`TData`, `TParams`\> = \<`TArgs`\>(...`args`) => [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\> *extends* \[`unknown`, `...unknown[]`\] ? `Curry`\<`TData`, [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\>\> : `TData`
 
-Defined in: [types.ts:36](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L36)
+Defined in: [types.ts:36](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L36)
 
 A recursive helper type that defines the signature of the curry function.
 
@@ -16,7 +16,7 @@ The final return type.
 
 ### TParams
 
-`TParams` *extends* `any`[]
+`TParams` *extends* `unknown`[]
 
 The tuple of remaining parameters.
 
@@ -24,7 +24,7 @@ The tuple of remaining parameters.
 
 ### TArgs
 
-`TArgs` *extends* `any`[]
+`TArgs` *extends* `unknown`[]
 
 ## Parameters
 
@@ -34,4 +34,4 @@ The tuple of remaining parameters.
 
 ## Returns
 
-[`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\> *extends* \[`any`, `...any[]`\] ? `Curry`\<`TData`, [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\>\> : `TData`
+[`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\> *extends* \[`unknown`, `...unknown[]`\] ? `Curry`\<`TData`, [`DropFirstN`](DropFirstN.md)\<`TParams`, `TArgs`\[`"length"`\]\>\> : `TData`

@@ -20,7 +20,6 @@
 // // export const IGNORE_UPDATE_SYMBOL = IUS
 
 // /**
-//  * @name    useRxSubject
 //  * @summary custom React hook for use with RxJS subject and auto update when value changes
 //  *
 //  * @param   {SubjectLike} subject             (optional) RxJS subject to observe, collect & update value from.

@@ -1,16 +1,10 @@
 # Class: IntervalSubject
 
-Defined in: [packages/rx/src/IntervalSubject.ts:33](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L33)
-
-## Name
-
-IntervalSubject
+Defined in: [packages/rx/src/IntervalSubject.ts:33](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L33)
 
 ## Example
 
-```ts
 ```typescript
-// Example 1: Fetch data from API server every minute
 const initialValue = 0
 const rxInterval = new IntervalSubject(
 	true, // auto-start
@@ -32,7 +26,6 @@ const onChange = (counter: number) => {
 // subscribe to the subject and execute `onChange`: first time immediately and then every 60 seconds
 rxInterval.subscribe(onChange)
 ```
-```
 
 ## Extends
 
@@ -44,7 +37,7 @@ rxInterval.subscribe(onChange)
 
 > **new IntervalSubject**(`autoStart`, `delay`, `initialValue`, `incrementBy`): `IntervalSubject`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:37](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L37)
+Defined in: [packages/rx/src/IntervalSubject.ts:37](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L37)
 
 #### Parameters
 
@@ -78,7 +71,7 @@ Defined in: [packages/rx/src/IntervalSubject.ts:37](https://github.com/alien45/u
 
 > **autoStart**: `boolean`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:38](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L38)
+Defined in: [packages/rx/src/IntervalSubject.ts:38](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L38)
 
 ***
 
@@ -98,7 +91,7 @@ Defined in: node\_modules/rxjs/dist/types/internal/Subject.d.ts:12
 
 > **delay**: `number` = `1000`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:39](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L39)
+Defined in: [packages/rx/src/IntervalSubject.ts:39](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L39)
 
 ***
 
@@ -122,7 +115,7 @@ Internal implementation detail, do not use directly. Will be made internal in v8
 
 > **incrementBy**: `number` = `1`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:41](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L41)
+Defined in: [packages/rx/src/IntervalSubject.ts:41](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L41)
 
 ***
 
@@ -130,7 +123,7 @@ Defined in: [packages/rx/src/IntervalSubject.ts:41](https://github.com/alien45/u
 
 > `readonly` **initialValue**: `number` = `0`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:40](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L40)
+Defined in: [packages/rx/src/IntervalSubject.ts:40](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L40)
 
 ***
 
@@ -186,7 +179,7 @@ Internal implementation detail, do not use directly. Will be made internal in v8
 
 > `readonly` **running**: `boolean` = `false`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:35](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L35)
+Defined in: [packages/rx/src/IntervalSubject.ts:35](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L35)
 
 ***
 
@@ -527,7 +520,7 @@ Defined in: node\_modules/rxjs/dist/types/internal/BehaviorSubject.d.ts:11
 
 > **pause**(): `IntervalSubject`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:47](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L47)
+Defined in: [packages/rx/src/IntervalSubject.ts:47](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L47)
 
 #### Returns
 
@@ -1173,7 +1166,7 @@ Defined in: node\_modules/rxjs/dist/types/internal/Observable.d.ts:113
 
 > **resume**(): `IntervalSubject`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:54](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L54)
+Defined in: [packages/rx/src/IntervalSubject.ts:54](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L54)
 
 #### Returns
 
@@ -1185,7 +1178,7 @@ Defined in: [packages/rx/src/IntervalSubject.ts:54](https://github.com/alien45/u
 
 > **start**(): `IntervalSubject`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:56](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L56)
+Defined in: [packages/rx/src/IntervalSubject.ts:56](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L56)
 
 #### Returns
 
@@ -1197,7 +1190,7 @@ Defined in: [packages/rx/src/IntervalSubject.ts:56](https://github.com/alien45/u
 
 > **stop**(): `IntervalSubject`
 
-Defined in: [packages/rx/src/IntervalSubject.ts:69](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/rx/src/IntervalSubject.ts#L69)
+Defined in: [packages/rx/src/IntervalSubject.ts:70](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/IntervalSubject.ts#L70)
 
 #### Returns
 

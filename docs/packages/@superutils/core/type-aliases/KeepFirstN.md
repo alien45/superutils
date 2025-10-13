@@ -1,8 +1,8 @@
 # Type Alias: KeepFirstN\<T, N\>
 
-> **KeepFirstN**\<`T`, `N`\> = [`TupleMaxLength`](TupleMaxLength.md)\<`T`\> *extends* `N` ? `T` : `T` *extends* readonly \[`...(infer TWithoutLast)`, `any`\] ? `KeepFirstN`\<`TWithoutLast`, `N`\> : `never`
+> **KeepFirstN**\<`T`, `N`\> = [`TupleMaxLength`](TupleMaxLength.md)\<`T`\> *extends* `N` ? `T` : `T` *extends* readonly \[`...(infer TWithoutLast)`, `unknown`\] ? `KeepFirstN`\<`TWithoutLast`, `N`\> : `never`
 
-Defined in: [types.ts:133](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/core/src/types.ts#L133)
+Defined in: [types.ts:134](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L134)
 
 Keep first N items from an array/tuple and drop the rest
 ---
@@ -11,7 +11,7 @@ Keep first N items from an array/tuple and drop the rest
 
 ### T
 
-`T` *extends* readonly `any`[]
+`T` *extends* readonly `unknown`[]
 
 ### N
 

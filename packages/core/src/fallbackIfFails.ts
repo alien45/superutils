@@ -79,14 +79,14 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  * const second = fallbackIfFails(getData, [true], {})
  * ```
  */
-export const fallbackIfFails = <T, TArgs extends any[] = any[]>(
+export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
 	target: T | ((...args: TArgs) => T),
 	args: TArgs | (() => TArgs),
 	fallbackValue:
 		| IfPromiseAddValue<T>
-		| ((reason: any) => IfPromiseAddValue<T>),
+		| ((reason: unknown) => IfPromiseAddValue<T>),
 ) => {
-	const getAltVal = (reason: any) =>
+	const getAltVal = (reason: unknown) =>
 		isFn(fallbackValue) ? fallbackValue(reason) : fallbackValue
 	let result: unknown
 	try {

@@ -1,6 +1,6 @@
 # Class: PromisE\<T\>
 
-Defined in: [packages/promise/src/PromisE.ts:54](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L54)
+Defined in: [packages/promise/src/PromisE.ts:54](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L54)
 
 An attempt to solve the problem of Promise status (pending/resolved/rejected) not being easily accessible externally.
 
@@ -56,7 +56,7 @@ p.catch(console.error)
 
 > **new PromisE**\<`T`\>(...`args`): `PromisE`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:17](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L17)
+Defined in: [packages/promise/src/PromisEBase.ts:19](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L19)
 
 Create a PromisE instance as a drop-in replacement for Promise
 
@@ -78,7 +78,7 @@ Create a PromisE instance as a drop-in replacement for Promise
 
 > **new PromisE**\<`T`\>(`promise`): `PromisE`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:19](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L19)
+Defined in: [packages/promise/src/PromisEBase.ts:21](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L21)
 
 Extend an existing Promise instance to check status or finalize early
 
@@ -100,7 +100,7 @@ Extend an existing Promise instance to check status or finalize early
 
 > **new PromisE**\<`T`\>(): `PromisE`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:30](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L30)
+Defined in: [packages/promise/src/PromisEBase.ts:35](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L35)
 
 If executor function is not provided, the promise must be resolved/rejected externally.
 
@@ -111,6 +111,14 @@ If executor function is not provided, the promise must be resolved/rejected exte
 `PromisE`\<`T`\>
 
 #### Example
+
+```typescript
+// create a promise that will NEVER finalize automatically
+const p = new PromisE<number>()
+// resolve it manually
+setTimeout(() => p.resolve(1), 1000)
+p.then(console.log)
+```
 
 #### Inherited from
 
@@ -134,7 +142,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:176
 
 > **onEarlyFinalize**: [`OnEarlyFinalize`](../type-aliases/OnEarlyFinalize.md)\<`T`\>[] = `[]`
 
-Defined in: [packages/promise/src/PromisEBase.ts:14](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L14)
+Defined in: [packages/promise/src/PromisEBase.ts:16](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L16)
 
 callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods
 
@@ -148,7 +156,7 @@ callbacks to be invoked whenever PromisE instance is finalized early using non-s
 
 > `readonly` **state**: `0` \| `1` \| `2` = `0`
 
-Defined in: [packages/promise/src/PromisEBase.ts:8](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L8)
+Defined in: [packages/promise/src/PromisEBase.ts:10](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L10)
 
 0: pending, 1: resolved, 2: rejected
 
@@ -174,7 +182,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:180
 
 > `static` **config**: `object`
 
-Defined in: [packages/promise/src/PromisE.ts:56](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L56)
+Defined in: [packages/promise/src/PromisE.ts:56](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L56)
 
 Global configuration
 
@@ -206,7 +214,11 @@ Global defalut values for fetch (get, post....) requests and global interceptors
 
 > `static` **deferred**: \<`T`\>(`options`) => \<`TResult`\>(`promise`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\> = `PromisE_deferred`
 
-Defined in: [packages/promise/src/PromisE.ts:58](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L58)
+Defined in: [packages/promise/src/PromisE.ts:58](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L58)
+
+**`Function`**
+
+PromisE.deferred
 
 #### Type Parameters
 
@@ -225,35 +237,11 @@ Defined in: [packages/promise/src/PromisE.ts:58](https://github.com/alien45/utii
 #### Returns
 
 a callback that is invoked in one of the followin 3 methods:
-- sequential: when `delayMs` is not a positive number.
+- sequential: when `delayMs <= 0` or `delayMs = undefined`
 - debounced: when `delayMs > 0` and `throttle = false`
 - throttled: when `delayMs > 0` and `throttle = true`
 
 ---
-
-> \<`TResult`\>(`promise`): [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
-
-##### Type Parameters
-
-###### TResult
-
-`TResult` = `T`
-
-##### Parameters
-
-###### promise
-
-`Promise`\<`TResult`\> | () => `Promise`\<`TResult`\>
-
-##### Returns
-
-[`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
-
-#### Name
-
-PromisE.deferred
-
-#### Description
 
 The main difference is that:
  - Notes:
@@ -276,6 +264,24 @@ The main difference is that:
  - If throttled and `strict` is truthy, all subsequent request while a request is being handled will be ignored.
 
 ---
+
+> \<`TResult`\>(`promise`): [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
+
+##### Type Parameters
+
+###### TResult
+
+`TResult` = `T`
+
+##### Parameters
+
+###### promise
+
+`Promise`\<`TResult`\> | () => `Promise`\<`TResult`\>
+
+##### Returns
+
+[`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
 #### Example
 
@@ -310,7 +316,7 @@ example(true)
 
 > `static` **deferredCallback**: \<`TDefault`, `CbArgs`\>(`callback`, `options`) => \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\> = `PromisE_deferredCallback`
 
-Defined in: [packages/promise/src/PromisE.ts:60](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L60)
+Defined in: [packages/promise/src/PromisE.ts:60](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L60)
 
 #### Type Parameters
 
@@ -320,7 +326,7 @@ Defined in: [packages/promise/src/PromisE.ts:60](https://github.com/alien45/utii
 
 ##### CbArgs
 
-`CbArgs` *extends* `any`[] = `any`[]
+`CbArgs` *extends* `unknown`[] = `unknown`[]
 
 #### Parameters
 
@@ -354,16 +360,15 @@ deferred/throttled callback function
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-#### Example
+#### Examples
 
-```ts
 ```typescript
 const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
 const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
     delayMs: 300,
-    throttle: false, // throttle with delay duration set in `defer`
+    throttle: false,
 })
-// simulate click event
+// simulate click events call after prespecified delay
 const delays = [
     100,
     150,
@@ -380,12 +385,33 @@ delays.forEach(timeout =>
     }), timeout)
 )
 
-// Result (defer: 300, throttle: true): uses throttled()
-// 100, 550, 1100
-
-// Result (defer: 300, throttle: false): uses deferred()
+// Prints:
 // 200, 600, 1100
 ```
+
+```typescript
+const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
+const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
+    delayMs: 300,
+    throttle: true,
+})
+// simulate click events call after prespecified delay
+const delays = [
+    100,
+    150,
+    200,
+    550,
+    580,
+    600,
+    1000,
+    1100,
+]
+delays.forEach(timeout =>
+    setTimeout(() => handleChangeDeferred({
+       target: { value: timeout }
+    }), timeout)
+)
+// Prints: 100, 550, 1100
 ```
 
 ***
@@ -394,7 +420,11 @@ delays.forEach(timeout =>
 
 > `static` **deferredFetch**: \<`TArgs`, `ThisArg`\>(`deferOptions`, ...`defaultArgs`) => \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\> = `PromisE_deferredFetch`
 
-Defined in: [packages/promise/src/PromisE.ts:62](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L62)
+Defined in: [packages/promise/src/PromisE.ts:62](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L62)
+
+**`Function`**
+
+PromisE.deferredFetch
 
 #### Type Parameters
 
@@ -436,33 +466,30 @@ Defined in: [packages/promise/src/PromisE.ts:62](https://github.com/alien45/utii
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-#### Name
-
-PromisE.deferredFetch
-
 #### Example
 
-```ts
 ```typescript
----
-// Example: Fetch paginated products
+import PromisE from '@superutils/promise'
+
 const getProducts = PromisE.deferredFetch({
     delayMs: 300, // used for both "throttle" and "deferred" modes
-    resolveIgnored: ResolveIgnored.WITH_ACTIVE,
+    resolveIgnored: ResolveIgnored.WITH_LAST,
     throttle: true,
 })
+
+// first call
 getProducts('https://dummyjson.com/products/1').then(console.log)
+// seconds call after delay
 setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log), 200)
-// result (throttle = true): only product 1 retrieved
 
-// result (throttle = false): only product 2 retrieved
-
-// result (ResolveIgnored.WITH_ACTIVE): only product retrieved but both request will resolve the same result
-
-// result (ResolveIgnored.WITH_UNDEFINED): only one product retrieved & resolved but the other will resolve with undefined
-
-// result (ResolveIgnored.NEVER): only one product retrieved & resolved but the other will NEVER resolve
-```
+// Possible outcomes using different options:
+// - `throttle = true`: only product 1 retrieved
+// - `throttle = false`: only product 2 retrieved
+// - `resolveIgnored = ResolveIgnored.WITH_LAST`:
+// 	only product retrieved but both request will resolve the same result
+// - `resolveIgnored = ResolveIgnored.WITH_UNDEFINED`:
+// only product 1 retrieved & resolved but the other will resolve with undefined
+// - `resolveIgnored = ResolveIgnored.NEVER`: only one product retrieved & resolved but the other will NEVER resolve
 ```
 
 ***
@@ -471,7 +498,7 @@ setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log
 
 > `static` **deferredPost**: \<`ThisArg`\>(`deferOptions`, ...`__namedParameters`) => \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\> = `PromisE_deferredPost`
 
-Defined in: [packages/promise/src/PromisE.ts:64](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L64)
+Defined in: [packages/promise/src/PromisE.ts:64](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L64)
 
 #### Type Parameters
 
@@ -566,15 +593,27 @@ updateProduct<Result>(undefined, { name: 'Product Name Updated' }).then(console.
 
 ### delay()
 
-> `static` **delay**: \<`T`\>(`duration`, `result`, `asRejected`, `timeoutErrMsg?`) => [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\> = `PromisE_delay`
+> `static` **delay**: \<`T`, `TReject`, `TResultOrErr`\>(`duration`, `result`, `asRejected`, `timeoutErrMsg?`) => [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\> = `PromisE_delay`
 
-Defined in: [packages/promise/src/PromisE.ts:66](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L66)
+Defined in: [packages/promise/src/PromisE.ts:66](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L66)
+
+**`Function`**
+
+PromisE.delay
 
 #### Type Parameters
 
 ##### T
 
 `T` = `number`
+
+##### TReject
+
+`TReject` *extends* `boolean` = `boolean`
+
+##### TResultOrErr
+
+`TResultOrErr` = `TReject` *extends* `true` ? `unknown` : `T`
 
 #### Parameters
 
@@ -586,14 +625,14 @@ duration in milliseconds
 
 ##### result
 
-`T` = `...`
+`TResultOrErr` = `...`
 
 (optional) specify a value to resolve or reject with.
                              Default: `delayMs` when resolved or timed out error when rejected
 
 ##### asRejected
 
-`boolean` = `false`
+`TReject` = `...`
 
 (optional) if `true`, will reject the promise after the delay.
 
@@ -607,11 +646,14 @@ duration in milliseconds
 
 See [IPromisE\_Delay](../interfaces/IPromisE_Delay.md)
 
-#### Name
-
-PromisE.delay
-
 #### Example
+
+```typescript
+console.log('Waiting for app initialization or something else to be ready')
+// wait 3 seconds before proceeding
+await PromisE.delay(3000)
+console.log('App ready')
+```
 
 ***
 
@@ -619,7 +661,11 @@ PromisE.delay
 
 > `static` **delayReject**: \<`T`\>(`delay`, `reason?`) => [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\> = `PromisE_delayReject`
 
-Defined in: [packages/promise/src/PromisE.ts:68](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L68)
+Defined in: [packages/promise/src/PromisE.ts:68](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L68)
+
+**`Function`**
+
+PromisE.delayReject
 
 #### Type Parameters
 
@@ -635,19 +681,39 @@ Defined in: [packages/promise/src/PromisE.ts:68](https://github.com/alien45/utii
 
 ##### reason?
 
-`any`
+`unknown`
 
 #### Returns
 
 [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
 
-#### Name
-
-PromisE.delayReject
-
 #### Examples
 
----
+```typescript
+const rejectPromise = PromisE.delayReject(
+    3000, // duration in milliseconds
+    new Error('App did not initialization on time'), // reason to reject with
+)
+await rejectPromise // throws error message after 3 seconds
+codeThatWillNotExecute()
+```
+
+```typescript
+
+const rejectPromise = PromisE.delayReject<string>(
+    3000,
+    new Error('App did not initialization on time'),
+)
+let count = 0
+const appReady = () => ++count >= 2 // return true on second call
+const intervalId = setInterval(() => {
+    if (!appReady()) return
+    rejectPromise.resolve('force resolves rejectPromise and execution continues')
+    clearInterval(intervalId)
+}, 100)
+await rejectPromise
+console.log('App is now ready')
+```
 
 ***
 
@@ -655,7 +721,7 @@ PromisE.delayReject
 
 > `static` **fetch**: \<`TJSON`, `TOptions`, `TReturn`\>(`url`, `fetchOptions`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TReturn`\> = `PromisE_fetch`
 
-Defined in: [packages/promise/src/PromisE.ts:72](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L72)
+Defined in: [packages/promise/src/PromisE.ts:72](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L72)
 
 **`Function`**
 
@@ -695,7 +761,11 @@ PromisE.fetch
 
 > `static` **fetchDeferred**: \<`TArgs`, `ThisArg`\>(`deferOptions`, ...`defaultArgs`) => \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-Defined in: [packages/promise/src/PromisE.ts:70](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L70)
+Defined in: [packages/promise/src/PromisE.ts:70](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L70)
+
+**`Function`**
+
+PromisE.deferredFetch
 
 #### Type Parameters
 
@@ -737,33 +807,30 @@ Defined in: [packages/promise/src/PromisE.ts:70](https://github.com/alien45/utii
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-#### Name
-
-PromisE.deferredFetch
-
 #### Example
 
-```ts
 ```typescript
----
-// Example: Fetch paginated products
+import PromisE from '@superutils/promise'
+
 const getProducts = PromisE.deferredFetch({
     delayMs: 300, // used for both "throttle" and "deferred" modes
-    resolveIgnored: ResolveIgnored.WITH_ACTIVE,
+    resolveIgnored: ResolveIgnored.WITH_LAST,
     throttle: true,
 })
+
+// first call
 getProducts('https://dummyjson.com/products/1').then(console.log)
+// seconds call after delay
 setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log), 200)
-// result (throttle = true): only product 1 retrieved
 
-// result (throttle = false): only product 2 retrieved
-
-// result (ResolveIgnored.WITH_ACTIVE): only product retrieved but both request will resolve the same result
-
-// result (ResolveIgnored.WITH_UNDEFINED): only one product retrieved & resolved but the other will resolve with undefined
-
-// result (ResolveIgnored.NEVER): only one product retrieved & resolved but the other will NEVER resolve
-```
+// Possible outcomes using different options:
+// - `throttle = true`: only product 1 retrieved
+// - `throttle = false`: only product 2 retrieved
+// - `resolveIgnored = ResolveIgnored.WITH_LAST`:
+// 	only product retrieved but both request will resolve the same result
+// - `resolveIgnored = ResolveIgnored.WITH_UNDEFINED`:
+// only product 1 retrieved & resolved but the other will resolve with undefined
+// - `resolveIgnored = ResolveIgnored.NEVER`: only one product retrieved & resolved but the other will NEVER resolve
 ```
 
 ***
@@ -772,7 +839,11 @@ setTimeout(()=> getProducts('https://dummyjson.com/products/2').then(console.log
 
 > `static` **post**: \<`T`\>(...`__namedParameters`) => [`IPromisE`](../interfaces/IPromisE.md)\<`T`\> = `PromisE_post`
 
-Defined in: [packages/promise/src/PromisE.ts:74](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L74)
+Defined in: [packages/promise/src/PromisE.ts:74](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L74)
+
+**`Function`**
+
+PromisE.post
 
 #### Type Parameters
 
@@ -790,17 +861,13 @@ Defined in: [packages/promise/src/PromisE.ts:74](https://github.com/alien45/utii
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-#### Name
-
-PromisE.post
-
 ***
 
 ### postDeferred()
 
 > `static` **postDeferred**: \<`ThisArg`\>(`deferOptions`, ...`__namedParameters`) => \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-Defined in: [packages/promise/src/PromisE.ts:76](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L76)
+Defined in: [packages/promise/src/PromisE.ts:76](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L76)
 
 #### Type Parameters
 
@@ -897,13 +964,17 @@ updateProduct<Result>(undefined, { name: 'Product Name Updated' }).then(console.
 
 > `static` **timeout**: \<`T`, `TOut`\>(`timeout`, ...`values`) => [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\> = `PromisE_timeout`
 
-Defined in: [packages/promise/src/PromisE.ts:78](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisE.ts#L78)
+Defined in: [packages/promise/src/PromisE.ts:78](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisE.ts#L78)
+
+**`Function`**
+
+PromisE.timeout
 
 #### Type Parameters
 
 ##### T
 
-`T` *extends* `any`[] \| \[\]
+`T` *extends* `unknown`[] \| \[\]
 
 ##### TOut
 
@@ -927,10 +998,6 @@ promise/function: one or more promises as individual arguments
 #### Returns
 
 [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
-
-#### Name
-
-PromisE.timeout
 
 #### Examples
 
@@ -985,7 +1052,7 @@ const data = await promise.catch(err => {
 
 > **get** **pending**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:59](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L59)
+Defined in: [packages/promise/src/PromisEBase.ts:68](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L68)
 
 Indicates if the promise is still pending/unfinalized
 
@@ -1007,7 +1074,7 @@ Indicates if the promise is still pending/unfinalized
 
 > **get** **rejected**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:64](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L64)
+Defined in: [packages/promise/src/PromisEBase.ts:73](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L73)
 
 Indicates if the promise has been rejected
 
@@ -1029,7 +1096,7 @@ Indicates if the promise has been rejected
 
 > **get** **resolved**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:69](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L69)
+Defined in: [packages/promise/src/PromisEBase.ts:78](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L78)
 
 Indicates if the promise has been resolved
 
@@ -1112,7 +1179,7 @@ A Promise for the completion of the callback.
 
 > **reject**(`reason`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:92](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L92)
+Defined in: [packages/promise/src/PromisEBase.ts:101](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L101)
 
 Reject pending promise early.
 
@@ -1120,7 +1187,7 @@ Reject pending promise early.
 
 ##### reason
 
-`any`
+`unknown`
 
 #### Returns
 
@@ -1136,7 +1203,7 @@ Reject pending promise early.
 
 > **resolve**(`value`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:80](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L80)
+Defined in: [packages/promise/src/PromisEBase.ts:89](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L89)
 
 Resovle pending promise early.
 
@@ -1204,7 +1271,7 @@ A Promise for the completion of which ever callback is executed.
 
 > `static` **all**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<\{ -readonly \[P in string \| number \| symbol\]: Awaited\<T\[P\<P\>\]\> \}\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:110](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L110)
+Defined in: [packages/promise/src/PromisEBase.ts:119](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L119)
 
 Sugar for `new PromisE(Promise.all(...))`
 
@@ -1234,7 +1301,7 @@ Sugar for `new PromisE(Promise.all(...))`
 
 > `static` **allSettled**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`PromiseSettledResult`\<`Awaited`\<`T`\[`number`\]\>\>[]\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:116](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L116)
+Defined in: [packages/promise/src/PromisEBase.ts:125](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L125)
 
 Sugar for `new PromisE(Promise.allSettled(...))`
 
@@ -1264,7 +1331,7 @@ Sugar for `new PromisE(Promise.allSettled(...))`
 
 > `static` **any**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\[`number`\]\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:122](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L122)
+Defined in: [packages/promise/src/PromisEBase.ts:131](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L131)
 
 Sugar for `new PromisE(Promise.any(...))`
 
@@ -1294,7 +1361,7 @@ Sugar for `new PromisE(Promise.any(...))`
 
 > `static` **race**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`Awaited`\<`T`\>\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:126](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L126)
+Defined in: [packages/promise/src/PromisEBase.ts:135](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L135)
 
 Sugar for `new PromisE(Promise.race(..))`
 
@@ -1324,7 +1391,7 @@ Sugar for `new PromisE(Promise.race(..))`
 
 > `static` **reject**\<`T`\>(`reason`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:130](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L130)
+Defined in: [packages/promise/src/PromisEBase.ts:139](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L139)
 
 Extends Promise.reject
 
@@ -1354,7 +1421,7 @@ Extends Promise.reject
 
 > `static` **resolve**\<`T`\>(`value?`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:137](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L137)
+Defined in: [packages/promise/src/PromisEBase.ts:146](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L146)
 
 Sugar for `new PromisE(Promise.resolve(...))`
 
@@ -1384,7 +1451,7 @@ Sugar for `new PromisE(Promise.resolve(...))`
 
 > `static` **try**\<`T`, `U`\>(`callbackFn`, ...`args`): [`IPromisE`](../interfaces/IPromisE.md)\<`Awaited`\<`T`\>\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:141](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L141)
+Defined in: [packages/promise/src/PromisEBase.ts:150](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L150)
 
 Sugar for `new PromisE(Promise.try(...))`
 
@@ -1422,7 +1489,7 @@ Sugar for `new PromisE(Promise.try(...))`
 
 > `static` **withResolvers**\<`T`\>(): `object`
 
-Defined in: [packages/promise/src/PromisEBase.ts:182](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/PromisEBase.ts#L182)
+Defined in: [packages/promise/src/PromisEBase.ts:191](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L191)
 
 Creates a `PromisE` instance and returns it in an object, along with its `resolve` and `reject` functions.
 

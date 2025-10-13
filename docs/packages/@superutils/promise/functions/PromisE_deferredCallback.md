@@ -2,7 +2,7 @@
 
 > **PromisE\_deferredCallback**\<`TDefault`, `CbArgs`\>(`callback`, `options`): \<`TResult`\>(...`args`) => [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-Defined in: [packages/promise/src/deferredCallback.ts:38](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/deferredCallback.ts#L38)
+Defined in: [packages/promise/src/deferredCallback.ts:63](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/deferredCallback.ts#L63)
 
 ## Type Parameters
 
@@ -12,7 +12,7 @@ Defined in: [packages/promise/src/deferredCallback.ts:38](https://github.com/ali
 
 ### CbArgs
 
-`CbArgs` *extends* `any`[] = `any`[]
+`CbArgs` *extends* `unknown`[] = `unknown`[]
 
 ## Parameters
 
@@ -46,16 +46,15 @@ deferred/throttled callback function
 
 [`IPromisE`](../interfaces/IPromisE.md)\<`TResult`\>
 
-## Example
+## Examples
 
-```ts
 ```typescript
 const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
 const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
     delayMs: 300,
-    throttle: false, // throttle with delay duration set in `defer`
+    throttle: false,
 })
-// simulate click event
+// simulate click events call after prespecified delay
 const delays = [
     100,
     150,
@@ -72,10 +71,31 @@ delays.forEach(timeout =>
     }), timeout)
 )
 
-// Result (defer: 300, throttle: true): uses throttled()
-// 100, 550, 1100
-
-// Result (defer: 300, throttle: false): uses deferred()
+// Prints:
 // 200, 600, 1100
 ```
+
+```typescript
+const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
+const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
+    delayMs: 300,
+    throttle: true,
+})
+// simulate click events call after prespecified delay
+const delays = [
+    100,
+    150,
+    200,
+    550,
+    580,
+    600,
+    1000,
+    1100,
+]
+delays.forEach(timeout =>
+    setTimeout(() => handleChangeDeferred({
+       target: { value: timeout }
+    }), timeout)
+)
+// Prints: 100, 550, 1100
 ```

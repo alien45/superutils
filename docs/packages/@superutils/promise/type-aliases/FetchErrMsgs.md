@@ -2,7 +2,7 @@
 
 > **FetchErrMsgs** = `object`
 
-Defined in: [packages/promise/src/types/fetch.ts:229](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L229)
+Defined in: [packages/promise/src/types/fetch.ts:229](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L229)
 
 ## Properties
 
@@ -10,7 +10,7 @@ Defined in: [packages/promise/src/types/fetch.ts:229](https://github.com/alien45
 
 > `optional` **invalidUrl**: `string`
 
-Defined in: [packages/promise/src/types/fetch.ts:230](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L230)
+Defined in: [packages/promise/src/types/fetch.ts:230](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L230)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: [packages/promise/src/types/fetch.ts:230](https://github.com/alien45
 
 > `optional` **parseFailed**: `string`
 
-Defined in: [packages/promise/src/types/fetch.ts:231](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L231)
+Defined in: [packages/promise/src/types/fetch.ts:231](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L231)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/promise/src/types/fetch.ts:231](https://github.com/alien45
 
 > `optional` **reqTimedout**: `string`
 
-Defined in: [packages/promise/src/types/fetch.ts:232](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L232)
+Defined in: [packages/promise/src/types/fetch.ts:232](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L232)
 
 ***
 
@@ -34,4 +34,4 @@ Defined in: [packages/promise/src/types/fetch.ts:232](https://github.com/alien45
 
 > `optional` **requestFailed**: `string`
 
-Defined in: [packages/promise/src/types/fetch.ts:233](https://github.com/alien45/utiils/blob/4bd65f5269ee75c06903804f521f23674607b3bf/packages/promise/src/types/fetch.ts#L233)
+Defined in: [packages/promise/src/types/fetch.ts:233](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/fetch.ts#L233)
