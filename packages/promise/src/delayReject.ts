@@ -1,11 +1,11 @@
-import PromisE_delay from './delay'
+import delay from './delay'
 
 /**
- * @name    PromisE.delayReject
+ * @function    PromisE.delayReject
  * @summary Creates a promise that rejects after given delay/duration.
  *
- * @example ```javascript
- * // Example 1: Will reject after 3 seconds
+ * @example Create a promise that will rejectafter 3 seconds
+ * ```typescript
  * const rejectPromise = PromisE.delayReject(
  *     3000, // duration in milliseconds
  *     new Error('App did not initialization on time'), // reason to reject with
@@ -14,24 +14,25 @@ import PromisE_delay from './delay'
  * codeThatWillNotExecute()
  * ```
  *
- * ---
+ * @example Prevent automated promise rejection by forcing it to resolve before timeout
+ * ```typescript
  *
- * @example ```javascript
- * // Example 2: Cancel the rejectPromise by forcing it to resolve
- * const rejectPromise = PromisE.delayReject(
+ * const rejectPromise = PromisE.delayReject<string>(
  *     3000,
  *     new Error('App did not initialization on time'),
  * )
+ * let count = 0
+ * const appReady = () => ++count >= 2 // return true on second call
  * const intervalId = setInterval(() => {
  *     if (!appReady()) return
- *     rejectPromise.cancel('force resolves rejectPromise and execution continues')
+ *     rejectPromise.resolve('force resolves rejectPromise and execution continues')
  *     clearInterval(intervalId)
  * }, 100)
  * await rejectPromise
- * doMoreStuff()
+ * console.log('App is now ready')
  * ```
  */
-export function PromisE_delayReject<T = never>(delay: number, reason?: any) {
-	return PromisE_delay<T>(delay, reason, true)
+export function delayReject<T = never>(duration: number, reason?: unknown) {
+	return delay<T>(duration, reason as T, true)
 }
-export default PromisE_delayReject
+export default delayReject

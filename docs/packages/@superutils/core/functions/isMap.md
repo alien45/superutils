@@ -1,0 +1,25 @@
+# Function: isMap()
+
+> **isMap**\<`TKey`, `TValue`\>(`x`): `x is Map<TKey, TValue>`
+
+Defined in: [is.ts:35](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/is.ts#L35)
+
+## Type Parameters
+
+### TKey
+
+`TKey` = `any`
+
+### TValue
+
+`TValue` = `any`
+
+## Parameters
+
+### x
+
+`any`
+
+## Returns
+
+`x is Map<TKey, TValue>`

@@ -1,18 +1,30 @@
-import { DeferredConfig, ThrottleConfig } from '@utiils/core'
+import {
+	DeferredConfig,
+	ThrottleConfig,
+	ValueOrPromise,
+} from '@superutils/core'
+import { IPromisE } from './IPromisE'
+
+/** Return type of `PromisE.deferred()` */
+export type DeferredReturn<TArgs extends unknown[] | [] = []> = <
+	TResult = unknown,
+>(
+	promise: Promise<TResult> | ((...args: TArgs) => Promise<TResult>),
+) => IPromisE<TResult>
 
 export type DeferredOptions<ThisArg = unknown> = {
 	/** Delay in milliseconds, used for `debounce` and `throttle` modes. */
 	delayMs?: number
 
 	/** Callback invoked whenever promise/function throws error */
-	onError?: (err: any) => any | Promise<any>
+	onError?: (err: unknown) => ValueOrPromise<unknown>
 
 	/**
 	 * Whenever a promise/function is ignored when in debource/throttle mode, `onIgnored` wil be invoked.
 	 * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
 	 * Use for debugging or logging purposes.
 	 */
-	onIgnore?: (ignored: () => Promise<any>) => any | Promise<any>
+	onIgnore?: (ignored: () => Promise<unknown>) => ValueOrPromise<unknown>
 
 	/**
 	 * Whenever a promise/function is executed successfully `onResult` will be called.
@@ -20,7 +32,7 @@ export type DeferredOptions<ThisArg = unknown> = {
 	 *
 	 * Result can be `undefined` if `ResolveIgnored.WITH_UNDEFINED` is used.
 	 */
-	onResult?: (result?: any) => any | Promise<any>
+	onResult?: (result?: unknown) => ValueOrPromise<unknown>
 
 	/**
 	 * Indicates what to do when a promise in the queue is ignored.
@@ -34,7 +46,7 @@ export type DeferredOptions<ThisArg = unknown> = {
 	throttle?: boolean
 } & (
 	| ({ delayMs: number; throttle: true } & ThrottleConfig<ThisArg>)
-	| ({ delayMs?: number; throttle?: false | never } & DeferredConfig<ThisArg>)
+	| ({ delayMs?: number; throttle?: false } & DeferredConfig<ThisArg>)
 )
 
 /** Options for what to do when deferred promise/function fails */

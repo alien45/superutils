@@ -43,12 +43,15 @@ describe('PromisE.deferredCallback', () => {
 		}
 
 		const deferredCb = PromisE.deferredCallback(callback, context)
-		deferredCb(1)
-		deferredCb(2)
+		/* 1 & 2 will be ignored, but will reject because `last` will reject when `ResolveIgnored.WITH_LAST` is used */
+		const first = deferredCb(1)
+		const second = deferredCb(2)
 		vi.runAllTimersAsync()
 		const last = deferredCb(3)
 		vi.runAllTimersAsync()
 
+		await expect(first).rejects.toThrow('error')
+		await expect(second).rejects.toThrow('error')
 		await expect(last).rejects.toThrow('error')
 		expect(context.error).toBe('error')
 		expect(context.ignored).toBe(true)
@@ -76,15 +79,20 @@ describe('PromisE.deferredCallback', () => {
 			1000, 1100,
 		]
 		delays.forEach(value =>
-			setTimeout(
-				() =>
-					handleChangeDeferred({
-						target: { value },
-					}),
-				value,
-			),
+			setTimeout(() => {
+				handleChangeDeferred({
+					target: { value },
+				})
+			}, value),
 		)
 		await vi.runAllTimersAsync()
-		expect(values).toEqual([200, 600, 1100])
+		expect(values).toEqual([
+			// series 1 result
+			200,
+			// series 2 result
+			600,
+			// series 3 result
+			1100,
+		])
 	})
 })

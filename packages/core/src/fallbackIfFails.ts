@@ -1,8 +1,12 @@
 import { isFn, isPromise } from './is'
 
-type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
 /**
- * @name	fallbackIfFails
+ * If `T` is a promise turn it into an union type by adding the value type
+ */
+export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
+
+/**
+ * @function fallbackIfFails
  * @summary a flexible try-catch wrapper for invoking functions and ignore errors gracefully.
  * Yes, the goal of `fallbackIfFails` is to ignore all runtime errors
  * and ensure there's always a value returned.
@@ -23,8 +27,11 @@ type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  *
  * @returns if func is a promise the return a promise
  *
- * @example ```javascript
- * // Working with async functions returns a promise
+ * Examples:
+ * ---
+ * @example Async functions
+ * Working with async functions or functions that returns a promise
+ * ```typescript
  * const args = ['some value', true] as const
  * const ensureValue = async (value: string, criteria?: boolean) => {
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
@@ -38,10 +45,9 @@ type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  * )
  * ```
  *
- * ---
- *
- * @example ```javascript
- * // Working synchronous function just returns the value
+ * @example Non-async functions
+ * Working synchronous function that returns value synchronously
+ * ```typescript
  * const args = ['some value', true] as const
  * const ensureValue = (value: string, criteria?: boolean) => {
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
@@ -54,15 +60,33 @@ type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  *     () => 'fallback value'
  * )
  * ```
+ *
+ * @example Hybrid functions
+ * Working with function that returns value sync/async circumstantially
+ * ```typescript
+ * const getData = (useCache = true, cacheKey = 'data-cache') => {
+ *     if (useCache && localStorage[cacheKey]) return localStorage[cacheKey]
+ *     return fetch('https://my.domain.com/api')
+ *         .then(r => r.json())
+ *         .then(data => {
+ * 		       if(cacheKey) localStorage[cacheKey] = data
+ *             return data
+ *         })
+ * }
+ * // First call: no cache, will execute fetch and return a promise
+ * const first = await fallbackIfFails(getData, [false], {})
+ * // Second call: cache available and will return data synchronously
+ * const second = fallbackIfFails(getData, [true], {})
+ * ```
  */
-export const fallbackIfFails = <T, TArgs extends any[] = any[]>(
+export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
 	target: T | ((...args: TArgs) => T),
 	args: TArgs | (() => TArgs),
 	fallbackValue:
 		| IfPromiseAddValue<T>
-		| ((reason: any) => IfPromiseAddValue<T>),
+		| ((reason: unknown) => IfPromiseAddValue<T>),
 ) => {
-	const getAltVal = (reason: any) =>
+	const getAltVal = (reason: unknown) =>
 		isFn(fallbackValue) ? fallbackValue(reason) : fallbackValue
 	let result: unknown
 	try {

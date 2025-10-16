@@ -1,4 +1,4 @@
-import { TimeoutId } from '@utiils/core'
+import { TimeoutId, ValueOrPromise } from '@superutils/core'
 
 export interface IPromisE<T = unknown> extends Promise<T> {
 	/** 0: pending, 1: resolved, 2: rejected */
@@ -11,13 +11,13 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	readonly pending: boolean
 
 	/** Reject pending promise early. */
-	reject: (reason: any) => IPromisE<T>
+	reject: (reason: unknown) => void
 
 	/** Indicates if the promise has been rejected */
 	readonly rejected: boolean
 
 	/** Resovle pending promise early. */
-	resolve: (value: T) => IPromisE<T>
+	resolve: (value: T) => void
 
 	/** Indicates if the promise has been resolved */
 	readonly resolved: boolean
@@ -33,9 +33,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 * An never-finalized promise may cause memory leak and will leave it at the mercry of the garbage collector.
 	 * Use `pause()` only if you are sure.
 	 *
-	 * ---
-	 *
-	 * @example ```
+	 * @example
+	 * ```typescript
 	 * // Example 1: SAFE => no memory leak, because no reference to the promise is stored and no suspended code
 	 * <button onClick={() => {
 	 *     const promise = PromisE.delay(1000).then(... do stuff ....)
@@ -43,10 +42,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 * }}>Click Me</button>
 	 * ```
 	 *
-	 * ---
-	 *
-	 * @example ```
-	 * // Example 2: UNSAFE => potential memory leak, because of suspended code
+	 * @example UNSAFE => potential memory leak, because of suspended code
+	 * ```typescript
 	 * <button onClick={() => {
 	 *     const promise = PromisE.delay(1000)
 	 *     setTimeout(() => promise.pause(), 300)
@@ -55,10 +52,8 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 * }}>Click Me</button>
 	 * ```
 	 *
-	 * ---
-	 *
-	 * @example ```
-	 * // Example 3: UNSAFE => potential memory leak, because of preserved reference.
+	 * @example UNSAFE => potential memory leak, because of preserved reference.
+	 * ```typescript
 	 * // Until the reference to promises is collected by the garbage collector,
 	 * // reference to the unfinished promise will remain in memory.
 	 * const promises = []
@@ -89,12 +84,15 @@ export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
 
 export type OnEarlyFinalize<T> = <
 	TResolved extends boolean,
-	TValue = TResolved extends true ? T : any,
+	TValue = TResolved extends true ? T : unknown,
 >(
 	resolved: TResolved,
 	resultOrReason: TValue,
-) => any | Promise<any>
+) => ValueOrPromise<unknown>
 
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>
 >
+
+/** Original `Promise` */
+export const ThePromise = Promise

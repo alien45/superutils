@@ -1,11 +1,26 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AsyncFn } from './types'
 
-export const isArr = <T = any>(x: any): x is Array<T> => Array.isArray(x)
+export const isArr = <T = unknown>(x: any): x is T[] => Array.isArray(x)
 export const isArrUnique = <T = unknown>(arr: T[]) =>
 	Array.from(new Set<T>(arr))
+
 /**
+ * @function isAsyncFn
  * Check if `x` is an Async function.
  * Caution: May not work at runtime when Babel/Webpack is used due to code compilation.
+ *
+ * ---
+ * @example usage
+ * ```typescript
+ * isAsyncFn(async () => {}) // result: true
+ * isAsyncFn(() => {}) // result: false
+ * ```
  */
 export const isAsyncFn = <TData = unknown, TArgs extends any[] = unknown[]>(
 	x: any,
@@ -20,13 +35,13 @@ export const isInteger = (x: any): x is number => Number.isInteger(x)
 export const isMap = <TKey = any, TValue = any>(
 	x: any,
 ): x is Map<TKey, TValue> => x instanceof Map
-export const isObj = (x: any, strict = true): x is Object =>
+export const isObj = (x: any, strict = true): x is object =>
 	!!x // excludes null, NaN, Infinity....
 	&& typeof x === 'object'
 	&& (!strict
 		// excludes Array, Map, Set
 		|| (!isArr(x) && !isMap(x) && !isSet(x)))
-export const isPositiveInteger = (x: any): x is Number => isInteger(x) && x > 0
+export const isPositiveInteger = (x: any): x is number => isInteger(x) && x > 0
 export const isPositiveNumber = (x: any): x is number =>
 	isValidNumber(x) && x > 0
 export const isPromise = <T = any>(x: any): x is Promise<T> =>
@@ -35,7 +50,7 @@ export const isSet = <T = any>(x: any): x is Set<T> => x instanceof Set
 export const isStr = (x: any): x is string => typeof x === 'string'
 export const isUrl = (x: any): x is URL => x instanceof URL
 /**
- * @name    isValidDate
+ * @function    isValidDate
  * @summary Checks if a value is a valid date.
  *
  * @param   date The value to check. Can be a Date object or a string.
@@ -80,11 +95,13 @@ export const isValidURL = (
 ) => {
 	if (!x) return false
 	try {
+		const isAnUrl = isUrl(x)
 		const isAStr = isStr(x)
-		const url = isUrl(x) ? x : new URL(x)
+		if (!isAStr && !isAnUrl) return false
+		const url = isAnUrl ? (x as URL) : new URL(x as string)
 		// If strict mode is set to `true` and if a string value provided, it must match resulting value of new URL(x).
 		// This can be used to ensure that a URL can be queried without altering.
-		if (!isAStr || !strict) return true
+		if (!strict) return true
 
 		// require domain name & extension when not using localhost
 		const gotTld =
@@ -104,9 +121,7 @@ export const isValidURL = (
 }
 
 /**
- *
- * Compile & runtime type etc checking utilities functions
- *
+ * Combination of all the compile-time & runtime utilities functions above
  */
 export const is = {
 	arr: isArr,

@@ -1,7 +1,7 @@
 import forceCast, { asAny } from './forceCast'
 import {
 	CreateTuple,
-	Curry as Curried,
+	Curry,
 	IsFiniteTuple,
 	KeepFirstN,
 	KeepOptionals,
@@ -23,14 +23,12 @@ import {
  *
  * ---
  *
- * @param fn The function to curry.
+ * @param func The function to curry.
  * @returns A new, curried function that is fully type-safe.
+
  *
- * @example ```javascript
- *
- * // Example usages of the `curry()` function.
- *
- * // A regular function
+ * @example Convert any function into a curried function
+ * ```typescript
  * const func = (
  *     first: string,
  *     second: number,
@@ -50,15 +48,22 @@ import {
  * const fnWith3 = fnWith2(false)
  * // All args are now provided, the original function is called and result is returned.
  * const result = fnWith3('last')
- *
- * // Example 2: flexible curry.
+ * ```
+ * 
+ * @example Flexible curried function arguments
+ * ```typescript
  * // Provide as many arguments as you wish. Upto the limit of the original function.
- * // Returns a function expecting only the last remaining argument
+ * // Returns a function expecting only the remaining argument(s)
  * const fnWith3 = curriedFunc('first', 2, false)
  * // All args provided, returns the result
  * const result = fnWith3('last')
- *
- * // Example 3: early invokation using `arity`
+ * ```
+ * 
+ * @example Early invocation using "arity".
+ * Useful when a function has
+ *  - non-finite arguments (eg: number[])
+ *  - optional arguments and you do not want to avoid one or more optional arguments
+ * ```typescript
  * const curriedWArity3 = curry(func, 3)
  * const result = curriedWArity3('first', 2, false)
  * ```
@@ -71,13 +76,16 @@ export function curry<
 		? TupleMaxLength<TArgs>
 		: number,
 >(
-	fn: (...args: TArgs) => TData,
-	...[arity = fn.length as TArity]: TArgsIsFinite extends true
+	func: (...args: TArgs) => TData,
+	...[arity = func.length as TArity]: TArgsIsFinite extends true
 		? [arity?: TArity]
-		: [arity: TArity] // force require arity when TArgs is limitless (eg: number[] as opposed to [a: number, b: number])
+		: // force require arity when TArgs length is limitless
+			// (eg: number[] as opposed to a tuple like [a: number, b: number])
+			[arity: TArity]
 ) {
-	type TCurryArgs = TArgsIsFinite extends false
-		? CreateTuple<Parameters<typeof fn>[number], TArity>
+	/**  Conditionally based on TArgs length and arity */
+	type TCurriedArgs = TArgsIsFinite extends false
+		? CreateTuple<Parameters<typeof func>[number], TArity>
 		: KeepFirstN<
 				[
 					...KeepRequired<TArgs>,
@@ -87,12 +95,16 @@ export function curry<
 			>
 
 	// The runtime implementation of the curried function.
-	const curriedFn = (...args: TCurryArgs): any => {
+	const curriedFn = (...args: TCurriedArgs): unknown => {
+		const _args = args as unknown[]
 		// If we have received enough arguments, call the original function.
-		if (asAny(args).length >= arity) return fn(...forceCast<TArgs>(args))
+		if (_args.length >= arity) return func(...forceCast<TArgs>(args))
 		// Otherwise, return a new function that waits for the rest of the arguments.
-		return (...nextArgs: any[]) =>
-			asAny(curriedFn)(...asAny(args), ...nextArgs)
+		return (...nextArgs: unknown[]) =>
+			asAny<(...args: unknown[]) => unknown>(curriedFn)(
+				..._args,
+				...nextArgs,
+			)
 	}
-	return curriedFn as Curried<TData, TCurryArgs>
+	return curriedFn as Curry<TData, TCurriedArgs>
 }

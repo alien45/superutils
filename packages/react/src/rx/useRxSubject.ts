@@ -1,11 +1,11 @@
-// import { BehaviorSubject, SubjectLike } from '@utiils/rx'
+// import { BehaviorSubject, SubjectLike } from '@superutils/rx'
 // import {
 //     useCallback,
 //     useEffect,
 //     useMemo,
 //     useState,
 // } from 'react'
-// import { copyRxSubject, IGNORE_UPDATE_SYMBOL } from '@utiils/rx'
+// import { copyRxSubject, IGNORE_UPDATE_SYMBOL } from '@superutils/rx'
 // import {
 //     deferred,
 //     isFn,
@@ -13,14 +13,13 @@
 //     isPositiveInteger,
 //     isPromise,
 //     isSubjectLike,
-// } from '@utiils/core'
+// } from '@superutils/core'
 // import { useUnmount } from './useMount'
 
 // // returning this symbol in the valueModifier will skip the state update
 // // export const IGNORE_UPDATE_SYMBOL = IUS
 
 // /**
-//  * @name    useRxSubject
 //  * @summary custom React hook for use with RxJS subject and auto update when value changes
 //  *
 //  * @param   {SubjectLike} subject             (optional) RxJS subject to observe, collect & update value from.
@@ -142,7 +141,7 @@
 //             && firstValue?.$$typeof?.toString?.() !== 'Symbol(react.element)'
 
 //         if (allowMerge) {
-//             // make sure value of the subject is always merged 
+//             // make sure value of the subject is always merged
 //             const nextOrg = _subject.next.bind(_subject)
 //             _subject.next = newValue => {
 //                 newValue = {
@@ -220,3 +219,6 @@
 //     ]
 // }
 // export default useRxSubject
+export default function useRxSubject() {
+	/* To be implemented */
+}

@@ -1,0 +1,33 @@
+{
+	"author": "Toufiqur Rahaman Chowdhury",
+	"description": "Fetch utilities",
+	"devDependencies": {
+		"@superutils/core": "^0.1.0",
+		"@superutils/promise": "^0.1.0"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"promise",
+		"async",
+		"util",
+		"typescript"
+	],
+	"license": "MIT",
+	"main": "dist/index.js",
+	"name": "@superutils/fetch",
+	"peerDependencies": {
+		"@superutils/core": "^0.1.0",
+		"@superutils/promise": "^0.1.0"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"test": "jest",
+		"watch": "tsc -p tsconfig.json --watch"
+	},
+	"types": "dist/index.d.ts",
+	"version": "0.1.0"
+}

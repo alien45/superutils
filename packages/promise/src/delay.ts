@@ -1,8 +1,9 @@
+import config from './config'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
 /**
- * @name    PromisE.delay
+ * @function    PromisE.delay
  * @summary Creates a promise that completes after given delay/duration.
  *
  * @param {Number}    duration   duration in milliseconds
@@ -12,40 +13,35 @@ import { IPromisE_Delay } from './types'
  *
  * @returns See {@link IPromisE_Delay}
  *
- * @example ```javascript
+ * @example Delay execution
+ * ```typescript
  * console.log('Waiting for app initialization or something else to be ready')
  * // wait 3 seconds before proceeding
  * await PromisE.delay(3000)
  * console.log('App ready')
  * ```
  */
-export function PromisE_delay<T = number>(
-	duration: number,
+export function delay<T = number, TReject extends boolean = boolean>(
+	duration = 100,
 	result: T = duration as T,
-	asRejected: boolean = false,
-	timeoutErrMsg?: string,
+	asRejected: TReject = false as TReject,
 ) {
-	const {
-		promise: _promise,
-		reject,
-		resolve,
-	} = PromisEBase.withResolvers<T>()
-	const promise = _promise as IPromisE_Delay<T>
-	const finalize = (result?: T | Error, doReject = false) => {
-		if (!promise.pending) return
+	const promise = new PromisEBase() as IPromisE_Delay<T>
+	const finalize = (result?: T) => {
+		if (!asRejected) return promise.resolve(result as T)
 
-		!doReject
-			? resolve((result ?? duration) as T)
-			: reject(
-					result
-						?? new Error(
-							timeoutErrMsg ?? `Timed out after ${duration}ms`,
-						),
-				)
+		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+		promise.reject(
+			result ?? new Error(`${config.delayTimeoutMsg} ${duration}ms`),
+		)
 	}
-	promise.timeoutId = setTimeout(() => finalize(result, asRejected), duration)
+	promise.timeoutId = setTimeout(() => finalize(result), duration)
 	promise.pause = () => clearTimeout(promise.timeoutId)
-	promise.catch(() => {}).finally(() => promise.pause())
+	promise
+		.catch(() => {
+			/* avoid unhandled rejections here when asRejected is true */
+		})
+		.finally(() => promise.pause())
 	return promise
 }
-export default PromisE_delay
+export default delay

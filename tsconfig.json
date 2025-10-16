@@ -1,10 +1,11 @@
 {
-  "files": [],
-  "references": [
-    { "path": "packages/core" },
-    { "path": "packages/promise" },
-    { "path": "packages/rx" },
-    { "path": "packages/react" },
-    { "path": "packages/demo" },
-  ]
+	"files": [],
+	"references": [
+		{ "path": "packages/core" },
+		{ "path": "packages/promise" }, // requires: core
+		{ "path": "packages/fetch" }, // requires: core & promise
+		{ "path": "packages/rx" }, // requires: core & promise
+		{ "path": "packages/react" }, // requires: core & rx
+		{ "path": "packages/demo" }
+	]
 }

@@ -1,9 +1,8 @@
 import fallbackIfFails from './fallbackIfFails'
-import { asAny } from './forceCast'
-import { TimeoutId } from './types'
+import { TimeoutId, ValueOrPromise } from './types'
 
 export type ThrottleConfig<ThisArg = unknown> = {
-	onError?: (err: any) => any | Promise<any>
+	onError?: (err: unknown) => ValueOrPromise<unknown>
 	thisArg?: ThisArg
 	trailing?: boolean
 	tid?: TimeoutId
@@ -21,16 +20,16 @@ export type ThrottleConfig<ThisArg = unknown> = {
  * @param   config.trailing (optional) whether to enable trailing edge execution. Default: `true`
  */
 export const throttled = <TArgs extends unknown[], ThisArg>(
-	callback: (this: ThisArg, ...args: TArgs) => any | Promise<any>,
-	delay: number = 50,
+	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
+	delay = 50,
 	config: ThrottleConfig<ThisArg> = {},
 ) => {
 	const { defaults: d } = throttled
 	const { onError = d.onError, trailing = d.trailing, thisArg } = config
 	let { tid } = config
 	if (thisArg !== undefined) callback = callback.bind(thisArg)
-	const _callback = callback
-	callback = (...args: TArgs) => fallbackIfFails(_callback, args, onError)
+	const _callback = (...args: TArgs) =>
+		fallbackIfFails(callback, args, onError)
 
 	let trailArgs: TArgs | null = null
 	return (...args: TArgs) => {
@@ -45,9 +44,9 @@ export const throttled = <TArgs extends unknown[], ThisArg>(
 
 			const cbArgs = trailArgs
 			trailArgs = null
-			cbArgs && cbArgs !== args && asAny(callback)(...cbArgs)
+			cbArgs && cbArgs !== args && _callback(...cbArgs)
 		}, delay)
-		asAny(callback)(...args)
+		_callback(...args)
 	}
 }
 /**

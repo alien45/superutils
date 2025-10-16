@@ -1,57 +1,55 @@
-import { asAny, fallbackIfFails, isValidURL, TupleMaxLength,} from '@utiils/core'
 import {
-    PromisE,
-    ResolveIgnored,
-    PromisE_deferredPost,
-    PromisE_PostArgs,
-    IPromisE,
-} from '@utiils/promise'
+	asAny,
+	fallbackIfFails,
+	isValidURL,
+	toDatetimeLocal,
+	TupleMaxLength,
+} from '@superutils/core'
+import { PromisE, ResolveIgnored, IPromisE } from '@superutils/promise'
 
 import {
-    BehaviorSubject,
-    copyRxSubject,
-    IntervalSubject,
-    subjectAsPromise,
-    SubjectLike,
-} from '@utiils/rx'
+	BehaviorSubject,
+	copyRxSubject,
+	IntervalSubject,
+	subjectAsPromise,
+	SubjectLike,
+} from '@superutils/rx'
 import { distinctUntilChanged } from 'rxjs'
 
 console.log('Started')
 
-;(async () => {
-    const count = 1_000_000
-    const getPromises = (Promise: any, arg?: any) => new Array(count)
-        .fill(0)
-        .map((_, i) => new Promise(arg ?? ((resolve: any) => resolve(i))))
+// ;(async () => {
+// 	const count = 1_000_000
+// 	const getPromises = (Promise: any, arg?: any) =>
+// 		new Array(count)
+// 			.fill(0)
+// 			.map((_, i) => new Promise(arg ?? ((resolve: any) => resolve(i))))
 
-    // console.time('Promise')
-    // await Promise.all(getPromises(Promise))
-    // console.timeEnd('Promise')
+// 	// console.time('Promise')
+// 	// await Promise.all(getPromises(Promise))
+// 	// console.timeEnd('Promise')
 
+// 	console.time('PromisE with promise')
+// 	await Promise.all(getPromises(PromisE, new Promise(r => r(1))))
+// 	console.timeEnd('PromisE with promise')
 
-    console.time('PromisE with promise')
-    await Promise.all(getPromises(PromisE, new Promise(r => r(1))))
-    console.timeEnd('PromisE with promise')
+// 	// console.time('PromisE with funtion')
+// 	// await Promise.all(getPromises(PromisE))
+// 	// console.timeEnd('PromisE with funtion')
 
-    // console.time('PromisE with funtion')
-    // await Promise.all(getPromises(PromisE))
-    // console.timeEnd('PromisE with funtion')
+// 	// console.time('PromisE: manual')
+// 	// const promises = getPromises(Promise<number>) as IPromisE<number>[]
 
-
-    // console.time('PromisE: manual')
-    // const promises = getPromises(Promise<number>) as IPromisE<number>[]
-    
-    // await Promise.all(promises.map(promise => {
-    //     promise.then(
-    //         () => asAny(promise).resolved = true,
-    //         () => asAny(promise).rejected = true,
-    //     ).finally(() => asAny(promise).pending = false)
-    // })) 
-    // const allResolved = promises.every(promise => promise.resolved)
-    // console.log({allResolved})
-    // console.timeEnd('PromisE: manual')
-})().then(() => console.log('Done'))
-
+// 	// await Promise.all(promises.map(promise => {
+// 	//     promise.then(
+// 	//         () => asAny(promise).resolved = true,
+// 	//         () => asAny(promise).rejected = true,
+// 	//     ).finally(() => asAny(promise).pending = false)
+// 	// }))
+// 	// const allResolved = promises.every(promise => promise.resolved)
+// 	// console.log({allResolved})
+// 	// console.timeEnd('PromisE: manual')
+// })().then(() => console.log('Done'))
 
 // const context: Parameters<typeof PromisE.deferredCallback>[1] & Record<string, any> = {
 //     delayMs: 100,
@@ -90,8 +88,6 @@ console.log('Started')
 // console.log({z})
 // z?.then?.(console.log, console.trace)
 
-
-
 // keep the app alive
 // setInterval(() => { }, 1000 * 60 * 60 * 24)
 // console.log('testing post')
@@ -114,7 +110,6 @@ console.log('Started')
 
 // ).then(result => console.log('then', result))
 
-
 // const df = PromisE_deferred<number>()
 // df(() => PromisEBase.delay(5000)).then()
 // addProduct()
@@ -127,9 +122,8 @@ console.log('Started')
 //     // addProduct({ title: 'second'}).then(console.log)
 //  })()
 
-
 // const saveDeferred = PromisE.deferredPost(
-//     { 
+//     {
 //         defer: 100,
 //         resolveIgnored: ResolveIgnored.NEVER,
 //         // throttle: true,
@@ -141,14 +135,13 @@ console.log('Started')
 //     //     expiresInMins: 30,
 //     // },
 // );
-// 
+//
 
 // saveDeferred(undefined, undefined, { credentials: 'include' }, 5000 )
 // const saveWOUrl = (...args: DropFirstN<Parameters<typeof saveDeferred>, 3>) => saveDeferred(undefined, undefined, ...args)
-// new Array(10).fill(0).map((_, i) => 
+// new Array(10).fill(0).map((_, i) =>
 //     saveDeferred(undefined).then(post => console.log(i + 1, {post}))
 // )
-
 
 // const deferredCb = PromisE.deferredCallback(
 //     <A = string, B = number, C = boolean>(a: A, b: B,  c: C) => `${a}: ${b}: ${c}`,
@@ -158,7 +151,6 @@ console.log('Started')
 // const withA = curryCb('a')
 // const withB = withA(2)
 // const res = withB(false)
-
 
 // const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
 // const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
@@ -202,7 +194,7 @@ console.log('Started')
 //         throttle: true,
 //     },
 //     undefined,
-//     { 
+//     {
 //         headers: {'content-type': 'application/json'}
 //     },
 //     // 5000
@@ -238,10 +230,10 @@ console.log('Started')
 //     const title = ++count === 1 ? 'defer' : 'throttle'
 //     console.log(`\n----------  Running ${title}  ------------`);
 //     [
-//         [100], 
-//         [150], 
-//         [200], 
-        
+//         [100],
+//         [150],
+//         [200],
+
 //         [1500],
 //         [1550],
 //         [1600],
@@ -250,13 +242,12 @@ console.log('Started')
 //         [1750],
 //         [1800],
 //         [1850],
-        
+
 //         [3000],
 //         [3000],
 //         [3000],
 //         // ...new Array(100).fill(0).map((_, i) => [i * 200 + 200])
 
-        
 //     ].forEach(([timeout, delay = timeout], i) => {
 //         const fn = PromisE.delay(i)
 //         setTimeout(
@@ -270,7 +261,6 @@ console.log('Started')
 //         )
 //     })
 // }
-
 
 // const any = PromisE.any([
 //     PromisE.delay(2000, 'first'),
@@ -312,15 +302,15 @@ console.log('Started')
 //     console.log('Will reject after 3 seconds')
 //     function* simpleGenerator() {
 //         console.log('Yield 1')
-        
+
 //         yield 1
-        
+
 //         console.log('Yield 2')
 //         yield 2
-        
+
 //         console.log('Yield 3')
 //         yield 3
-        
+
 //         return 4
 //     }
 //     const checkReady = simpleGenerator()
@@ -343,8 +333,7 @@ console.log('Started')
 //     ensureValue,
 //     () => args,
 //     () => 'fallback value'
-// ) 
-
+// )
 
 // const initialValue = 0
 // const rxInterval = new IntervalSubject(
@@ -355,7 +344,7 @@ console.log('Started')
 // )
 // const onChange = (counter: number) => {
 // 	if (counter === initialValue) return console.log('Counter started')
-// 	const { PromisE } = require('@utiils/core')
+// 	const { PromisE } = require('@superutils/core')
 // 	PromisE.fetch('https://jsonplaceholder.typicode.com/todos/100').then(
 //         () => console.log(new Date().toISOString(), 'Successful ping'),
 //         (err: Error) => console.log('Ping failed.', err)
@@ -364,7 +353,6 @@ console.log('Started')
 // // BehaviorSubject automatically resolves with the initial value if subscribed immediately.
 // // subscribe to the subject and execute `onChange`: first time immediately and then every 60 seconds
 // rxInterval.subscribe(onChange)
-
 
 // PromisE
 //     .fetch(
@@ -377,7 +365,7 @@ console.log('Started')
 //     .then(html => console.log('\n\nPage contents: \n', html))
 
 /**
- * Example 
+ * Example
  */
 // // Create an interval runner subject that triggers incremental value every second.
 // const rxInterval = new IntervalSubject(true, 1000, 1, 1)
@@ -410,7 +398,7 @@ console.log('Started')
 //     1, // increment by 1 at each interval
 // )
 // // subscribe to the subject and do whatever at each interval
-// rxInterval.subscribe(counter => 
+// rxInterval.subscribe(counter =>
 //     // Ignore at initial value.
 //  // The BehaviorSubject automatically resolves with the initial value if subscribed immediately
 //     counter > 0 && console.log(
