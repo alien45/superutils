@@ -1,6 +1,6 @@
 # Interface: SubscriptionLike
 
-Defined in: [packages/rx/src/types.ts:9](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/types.ts#L9)
+Defined in: [packages/rx/src/types.ts:11](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/rx/src/types.ts#L11)
 
 ## Properties
 
@@ -8,7 +8,7 @@ Defined in: [packages/rx/src/types.ts:9](https://github.com/alien45/utiils/blob/
 
 > `optional` **closed**: `boolean`
 
-Defined in: [packages/rx/src/types.ts:10](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/types.ts#L10)
+Defined in: [packages/rx/src/types.ts:12](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/rx/src/types.ts#L12)
 
 ***
 
@@ -16,4 +16,4 @@ Defined in: [packages/rx/src/types.ts:10](https://github.com/alien45/utiils/blob
 
 > **unsubscribe**: [`Unsubscribe`](../type-aliases/Unsubscribe.md)
 
-Defined in: [packages/rx/src/types.ts:11](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/types.ts#L11)
+Defined in: [packages/rx/src/types.ts:13](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/rx/src/types.ts#L13)

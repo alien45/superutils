@@ -95,11 +95,13 @@ export const isValidURL = (
 ) => {
 	if (!x) return false
 	try {
+		const isAnUrl = isUrl(x)
 		const isAStr = isStr(x)
-		const url = isUrl(x) ? x : new URL(x)
+		if (!isAStr && !isAnUrl) return false
+		const url = isAnUrl ? (x as URL) : new URL(x as string)
 		// If strict mode is set to `true` and if a string value provided, it must match resulting value of new URL(x).
 		// This can be used to ensure that a URL can be queried without altering.
-		if (!isAStr || !strict) return true
+		if (!strict) return true
 
 		// require domain name & extension when not using localhost
 		const gotTld =

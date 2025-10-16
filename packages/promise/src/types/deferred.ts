@@ -3,6 +3,14 @@ import {
 	ThrottleConfig,
 	ValueOrPromise,
 } from '@superutils/core'
+import { IPromisE } from './IPromisE'
+
+/** Return type of `PromisE.deferred()` */
+export type DeferredReturn<TArgs extends unknown[] | [] = []> = <
+	TResult = unknown,
+>(
+	promise: Promise<TResult> | ((...args: TArgs) => Promise<TResult>),
+) => IPromisE<TResult>
 
 export type DeferredOptions<ThisArg = unknown> = {
 	/** Delay in milliseconds, used for `debounce` and `throttle` modes. */

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { deferred } from '../src'
+import { debounce, deferred } from '../src'
 
 describe('deferred', () => {
 	const delayMs = 100
@@ -17,7 +17,7 @@ describe('deferred', () => {
 		const bad = vi.fn(() => {
 			throw new Error('boom')
 		})
-		const dfn = deferred(bad, delayMs)
+		const dfn = debounce(bad, delayMs)
 		expect(() => dfn()).not.toThrow()
 	})
 

@@ -1,8 +1,8 @@
 # Function: subjectAsPromise()
 
-> **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `number`)[]
+> **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `Timeout`)[]
 
-Defined in: [packages/rx/src/subjectAsPromise.ts:33](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/rx/src/subjectAsPromise.ts#L33)
+Defined in: [packages/rx/src/subjectAsPromise.ts:32](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/rx/src/subjectAsPromise.ts#L32)
 
 subjectAsPromise
 
@@ -42,7 +42,7 @@ RxJS subject or similar subscribable
 
 ## Returns
 
-readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `number`)[]
+readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `Timeout`)[]
 
 will reject with:
                                  - `null` if times out

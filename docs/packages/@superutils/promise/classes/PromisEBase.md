@@ -1,6 +1,6 @@
 # Class: PromisEBase\<T\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:6](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L6)
+Defined in: [packages/promise/src/PromisEBase.ts:5](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L5)
 
 ## Extends
 
@@ -26,7 +26,7 @@ Defined in: [packages/promise/src/PromisEBase.ts:6](https://github.com/alien45/u
 
 > **new PromisEBase**\<`T`\>(...`args`): `PromisEBase`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:19](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L19)
+Defined in: [packages/promise/src/PromisEBase.ts:18](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L18)
 
 Create a PromisE instance as a drop-in replacement for Promise
 
@@ -48,7 +48,7 @@ Create a PromisE instance as a drop-in replacement for Promise
 
 > **new PromisEBase**\<`T`\>(`promise`): `PromisEBase`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:21](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L21)
+Defined in: [packages/promise/src/PromisEBase.ts:20](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L20)
 
 Extend an existing Promise instance to check status or finalize early
 
@@ -68,13 +68,33 @@ Extend an existing Promise instance to check status or finalize early
 
 ### Constructor
 
+> **new PromisEBase**\<`T`\>(`value`): `PromisEBase`\<`T`\>
+
+Defined in: [packages/promise/src/PromisEBase.ts:22](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L22)
+
+Create a resolved promise with value
+
+#### Parameters
+
+##### value
+
+`T`
+
+#### Returns
+
+`PromisEBase`\<`T`\>
+
+#### Overrides
+
+`Promise<T>.constructor`
+
+### Constructor
+
 > **new PromisEBase**\<`T`\>(): `PromisEBase`\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:35](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L35)
+Defined in: [packages/promise/src/PromisEBase.ts:35](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L35)
 
 If executor function is not provided, the promise must be resolved/rejected externally.
-
----
 
 #### Returns
 
@@ -116,7 +136,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:176
 
 > **onEarlyFinalize**: [`OnEarlyFinalize`](../type-aliases/OnEarlyFinalize.md)\<`T`\>[] = `[]`
 
-Defined in: [packages/promise/src/PromisEBase.ts:16](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L16)
+Defined in: [packages/promise/src/PromisEBase.ts:15](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L15)
 
 callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods
 
@@ -130,7 +150,7 @@ callbacks to be invoked whenever PromisE instance is finalized early using non-s
 
 > `readonly` **state**: `0` \| `1` \| `2` = `0`
 
-Defined in: [packages/promise/src/PromisEBase.ts:10](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L10)
+Defined in: [packages/promise/src/PromisEBase.ts:9](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L9)
 
 0: pending, 1: resolved, 2: rejected
 
@@ -158,7 +178,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:180
 
 > **get** **pending**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:68](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L68)
+Defined in: [packages/promise/src/PromisEBase.ts:72](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L72)
 
 Indicates if the promise is still pending/unfinalized
 
@@ -180,7 +200,7 @@ Indicates if the promise is still pending/unfinalized
 
 > **get** **rejected**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:73](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L73)
+Defined in: [packages/promise/src/PromisEBase.ts:77](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L77)
 
 Indicates if the promise has been rejected
 
@@ -202,7 +222,7 @@ Indicates if the promise has been rejected
 
 > **get** **resolved**(): `boolean`
 
-Defined in: [packages/promise/src/PromisEBase.ts:78](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L78)
+Defined in: [packages/promise/src/PromisEBase.ts:82](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L82)
 
 Indicates if the promise has been resolved
 
@@ -291,9 +311,9 @@ A Promise for the completion of the callback.
 
 ### reject()
 
-> **reject**(`reason`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
+> **reject**(`reason`): `void`
 
-Defined in: [packages/promise/src/PromisEBase.ts:101](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L101)
+Defined in: [packages/promise/src/PromisEBase.ts:103](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L103)
 
 Reject pending promise early.
 
@@ -305,7 +325,7 @@ Reject pending promise early.
 
 #### Returns
 
-[`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
+`void`
 
 #### Implementation of
 
@@ -315,9 +335,9 @@ Reject pending promise early.
 
 ### resolve()
 
-> **resolve**(`value`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
+> **resolve**(`value`): `void`
 
-Defined in: [packages/promise/src/PromisEBase.ts:89](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L89)
+Defined in: [packages/promise/src/PromisEBase.ts:93](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L93)
 
 Resovle pending promise early.
 
@@ -329,7 +349,7 @@ Resovle pending promise early.
 
 #### Returns
 
-[`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
+`void`
 
 #### Implementation of
 
@@ -389,7 +409,7 @@ A Promise for the completion of which ever callback is executed.
 
 > `static` **all**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<\{ -readonly \[P in string \| number \| symbol\]: Awaited\<T\[P\<P\>\]\> \}\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:119](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L119)
+Defined in: [packages/promise/src/PromisEBase.ts:121](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L121)
 
 Sugar for `new PromisE(Promise.all(...))`
 
@@ -419,7 +439,7 @@ Sugar for `new PromisE(Promise.all(...))`
 
 > `static` **allSettled**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`PromiseSettledResult`\<`Awaited`\<`T`\[`number`\]\>\>[]\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:125](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L125)
+Defined in: [packages/promise/src/PromisEBase.ts:127](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L127)
 
 Sugar for `new PromisE(Promise.allSettled(...))`
 
@@ -449,7 +469,7 @@ Sugar for `new PromisE(Promise.allSettled(...))`
 
 > `static` **any**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\[`number`\]\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:131](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L131)
+Defined in: [packages/promise/src/PromisEBase.ts:133](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L133)
 
 Sugar for `new PromisE(Promise.any(...))`
 
@@ -479,7 +499,7 @@ Sugar for `new PromisE(Promise.any(...))`
 
 > `static` **race**\<`T`\>(`values`): [`IPromisE`](../interfaces/IPromisE.md)\<`Awaited`\<`T`\>\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:135](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L135)
+Defined in: [packages/promise/src/PromisEBase.ts:137](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L137)
 
 Sugar for `new PromisE(Promise.race(..))`
 
@@ -509,7 +529,7 @@ Sugar for `new PromisE(Promise.race(..))`
 
 > `static` **reject**\<`T`\>(`reason`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:139](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L139)
+Defined in: [packages/promise/src/PromisEBase.ts:141](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L141)
 
 Extends Promise.reject
 
@@ -523,7 +543,7 @@ Extends Promise.reject
 
 ##### reason
 
-`any`
+`unknown`
 
 #### Returns
 
@@ -539,7 +559,7 @@ Extends Promise.reject
 
 > `static` **resolve**\<`T`\>(`value?`): [`IPromisE`](../interfaces/IPromisE.md)\<`T`\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:146](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L146)
+Defined in: [packages/promise/src/PromisEBase.ts:148](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L148)
 
 Sugar for `new PromisE(Promise.resolve(...))`
 
@@ -569,7 +589,7 @@ Sugar for `new PromisE(Promise.resolve(...))`
 
 > `static` **try**\<`T`, `U`\>(`callbackFn`, ...`args`): [`IPromisE`](../interfaces/IPromisE.md)\<`Awaited`\<`T`\>\>
 
-Defined in: [packages/promise/src/PromisEBase.ts:150](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L150)
+Defined in: [packages/promise/src/PromisEBase.ts:152](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L152)
 
 Sugar for `new PromisE(Promise.try(...))`
 
@@ -607,7 +627,7 @@ Sugar for `new PromisE(Promise.try(...))`
 
 > `static` **withResolvers**\<`T`\>(): `object`
 
-Defined in: [packages/promise/src/PromisEBase.ts:191](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/PromisEBase.ts#L191)
+Defined in: [packages/promise/src/PromisEBase.ts:193](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/PromisEBase.ts#L193)
 
 Creates a `PromisE` instance and returns it in an object, along with its `resolve` and `reject` functions.
 

@@ -31,10 +31,19 @@ describe('PromisE.delay', () => {
 		await vi.advanceTimersByTimeAsync(5_000)
 		expect(promise.pending).toBe(true)
 		promise.resolve('changed value')
-		await vi.advanceTimersByTimeAsync(1)
 		expect(promise.pending).toBe(false)
 		expect(promise.resolved).toBe(true)
 		await expect(promise).resolves.toBe('changed value')
+	})
+
+	it('should reject delayed promise earlier than the duration provided', async () => {
+		const promise = PromisE.delay(10_000, 'original value')
+		await vi.advanceTimersByTimeAsync(5_000)
+		expect(promise.pending).toBe(true)
+		promise.reject('changed value')
+		expect(promise.pending).toBe(false)
+		expect(promise.rejected).toBe(true)
+		await expect(promise).rejects.toBe('changed value')
 	})
 
 	it('should ignore .resolve() call if promise is already finalized', async () => {

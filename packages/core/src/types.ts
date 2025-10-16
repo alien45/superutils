@@ -278,7 +278,7 @@ export type TupleWithAlt<Tuple extends unknown[], TAlt = undefined> = {
  * print(() => 'Print me too!')
  * ```
  */
-export type ValueOrFunc<Value, Args extends unknown[]> =
+export type ValueOrFunc<Value, Args extends unknown[] = []> =
 	| Value
 	| ((...args: Args) => Value)
 

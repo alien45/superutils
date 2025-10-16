@@ -5,12 +5,7 @@ import {
 	toDatetimeLocal,
 	TupleMaxLength,
 } from '@superutils/core'
-import {
-	PromisE,
-	ResolveIgnored,
-	PromisE_deferredPost,
-	IPromisE,
-} from '@superutils/promise'
+import { PromisE, ResolveIgnored, IPromisE } from '@superutils/promise'
 
 import {
 	BehaviorSubject,

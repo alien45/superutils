@@ -1,11 +1,15 @@
-import PromisE_deferred from './deferred'
+import deferred from './deferred'
 import { IPromisE, DeferredOptions } from './types'
 
 /**
- * @returns deferred/throttled callback function
+ * @function PromisE.deferredCallback
+ *
+ * @summary a `PromisE.deferred()` wrapper for callbacks and event handlers.
+ *
+ * @returns deferred/throttled function
  *
  *
- * @example Debounce/deferred callback
+ * @example Debounce/deferred event handler
  * ```typescript
  * const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
@@ -34,7 +38,7 @@ import { IPromisE, DeferredOptions } from './types'
  * // 200, 600, 1100
  * ```
  *
- * @example  Throttled callback
+ * @example  Throttled event handler
  * ```typescript
  * const handleChange = (e: { target: { value: number }}) => console.log(e.target.value)
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
@@ -60,7 +64,7 @@ import { IPromisE, DeferredOptions } from './types'
  * // Prints: 100, 550, 1100
  * ```
  */
-export function PromisE_deferredCallback<
+export function deferredCallback<
 	TDefault,
 	CbArgs extends unknown[] = unknown[],
 >(
@@ -69,9 +73,9 @@ export function PromisE_deferredCallback<
 ) {
 	const { thisArg } = options
 	if (thisArg !== undefined) callback = callback.bind(thisArg)
-	const deferPromise = PromisE_deferred<TDefault>(options)
+	const deferPromise = deferred<TDefault>(options)
 
 	return <TResult = TDefault>(...args: CbArgs) =>
 		deferPromise(() => callback(...args) as IPromisE<TResult>)
 }
-export default PromisE_deferredCallback
+export default deferredCallback

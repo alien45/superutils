@@ -219,4 +219,6 @@
 //     ]
 // }
 // export default useRxSubject
-export default function useRxSubject() {}
+export default function useRxSubject() {
+	/* To be implemented */
+}

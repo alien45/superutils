@@ -1,6 +1,6 @@
 # Interface: IPromisE\<T\>
 
-Defined in: [packages/promise/src/types/IPromisE.ts:3](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L3)
+Defined in: [packages/promise/src/types/IPromisE.ts:3](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L3)
 
 ## Extends
 
@@ -34,7 +34,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:176
 
 > **onEarlyFinalize**: [`OnEarlyFinalize`](../type-aliases/OnEarlyFinalize.md)\<`T`\>[]
 
-Defined in: [packages/promise/src/types/IPromisE.ts:8](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L8)
+Defined in: [packages/promise/src/types/IPromisE.ts:8](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L8)
 
 callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods
 
@@ -44,7 +44,7 @@ callbacks to be invoked whenever PromisE instance is finalized early using non-s
 
 > `readonly` **pending**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:11](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L11)
+Defined in: [packages/promise/src/types/IPromisE.ts:11](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L11)
 
 Indicates if the promise is still pending/unfinalized
 
@@ -52,9 +52,9 @@ Indicates if the promise is still pending/unfinalized
 
 ### reject()
 
-> **reject**: (`reason`) => `IPromisE`\<`T`\>
+> **reject**: (`reason`) => `void`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:14](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L14)
+Defined in: [packages/promise/src/types/IPromisE.ts:14](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L14)
 
 Reject pending promise early.
 
@@ -66,7 +66,7 @@ Reject pending promise early.
 
 #### Returns
 
-`IPromisE`\<`T`\>
+`void`
 
 ***
 
@@ -74,7 +74,7 @@ Reject pending promise early.
 
 > `readonly` **rejected**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:17](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L17)
+Defined in: [packages/promise/src/types/IPromisE.ts:17](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L17)
 
 Indicates if the promise has been rejected
 
@@ -82,9 +82,9 @@ Indicates if the promise has been rejected
 
 ### resolve()
 
-> **resolve**: (`value`) => `IPromisE`\<`T`\>
+> **resolve**: (`value`) => `void`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:20](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L20)
+Defined in: [packages/promise/src/types/IPromisE.ts:20](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L20)
 
 Resovle pending promise early.
 
@@ -96,7 +96,7 @@ Resovle pending promise early.
 
 #### Returns
 
-`IPromisE`\<`T`\>
+`void`
 
 ***
 
@@ -104,7 +104,7 @@ Resovle pending promise early.
 
 > `readonly` **resolved**: `boolean`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:23](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L23)
+Defined in: [packages/promise/src/types/IPromisE.ts:23](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L23)
 
 Indicates if the promise has been resolved
 
@@ -114,7 +114,7 @@ Indicates if the promise has been resolved
 
 > `readonly` **state**: `0` \| `1` \| `2`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:5](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/types/IPromisE.ts#L5)
+Defined in: [packages/promise/src/types/IPromisE.ts:5](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/types/IPromisE.ts#L5)
 
 0: pending, 1: resolved, 2: rejected
 

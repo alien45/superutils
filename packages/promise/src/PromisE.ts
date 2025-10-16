@@ -1,21 +1,17 @@
 import config from './config'
-import PromisE_deferred from './deferred'
-import PromisE_deferredCallback from './deferredCallback'
-import PromisE_deferredFetch from './deferredFetch'
-import PromisE_deferredPost from './deferredPost'
-import PromisE_delay from './delay'
-import PromisE_delayReject from './delayReject'
-import PromisE_fetch from './fetch'
-import PromisE_post from './post'
+import deferred from './deferred'
+import deferredCallback from './deferredCallback'
+import delay from './delay'
+import delayReject from './delayReject'
 import PromisEBase from './PromisEBase'
-import PromisE_timeout from './timeout'
+import retry from './retry'
+import timeout from './timeout'
 
 /**
  * An attempt to solve the problem of Promise status (pending/resolved/rejected) not being easily accessible externally.
  *
  * For more example see static functions like `PromisE.deferred}, `PromisE.fetch}, `PromisE.timeout} etc.
  *
- * ---
  *
  * @example Example 1: As a drop-in replacement for Promise class
  * ```typescript
@@ -52,29 +48,19 @@ import PromisE_timeout from './timeout'
  * ```
  */
 export class PromisE<T = unknown> extends PromisEBase<T> {
-	/** Global configuration */
+	/** Global configuration & default values */
 	static config = config
 
-	static deferred = PromisE_deferred
+	static deferred = deferred
 
-	static deferredCallback = PromisE_deferredCallback
+	static deferredCallback = deferredCallback
 
-	static deferredFetch = PromisE_deferredFetch
+	static delay = delay
 
-	static deferredPost = PromisE_deferredPost
+	static delayReject = delayReject
 
-	static delay = PromisE_delay
+	static retry = retry
 
-	static delayReject = PromisE_delayReject
-
-	static fetchDeferred = this.deferredFetch
-
-	static fetch = PromisE_fetch
-
-	static post = PromisE_post
-
-	static postDeferred = this.deferredPost
-
-	static timeout = PromisE_timeout
+	static timeout = timeout
 }
 export default PromisE

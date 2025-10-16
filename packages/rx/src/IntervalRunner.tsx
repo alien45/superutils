@@ -190,9 +190,9 @@ export default class IntervalRunner<
 			if (exit) return
 
 			this.idInterval = !this.sequential
-				? setInterval(() => this.executeTask(), delayMs)
+				? setInterval(this.executeTask, delayMs)
 				: !preExec
-					? setTimeout(() => this.executeTask(), delayMs)
+					? setTimeout(this.executeTask, delayMs)
 					: undefined
 		})
 

@@ -2,30 +2,46 @@
 
 > `const` **config**: `object`
 
-Defined in: [packages/promise/src/config.ts:11](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/promise/src/config.ts#L11)
+Defined in: [packages/promise/src/config.ts:5](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/promise/src/config.ts#L5)
 
 Global configuration
 
 ## Type Declaration
 
-### defaults
-
-> **defaults**: `object`
-
-Global default values
-
-#### defaults.deferOptions
+### deferOptions
 
 > **deferOptions**: [`DeferredOptions`](../type-aliases/DeferredOptions.md)
 
 Default value for `options` used by `PromisE.*deferred*` functions
 
-#### defaults.delayTimeoutMsg
+### delayTimeoutMsg
 
 > **delayTimeoutMsg**: `string` = `'Timed out after'`
 
-#### defaults.fetchOptions
+### retryOptions
 
-> **fetchOptions**: [`FetchOptionsInterceptor`](../type-aliases/FetchOptionsInterceptor.md)
+> **retryOptions**: `object`
 
-Global defalut values for fetch (get, post....) requests and global interceptors
+#### retryOptions.retry
+
+> **retry**: `number` = `1`
+
+#### retryOptions.retryBackOff
+
+> **retryBackOff**: `"exponential"` = `'exponential'`
+
+#### retryOptions.retryDelay
+
+> **retryDelay**: `number` = `300`
+
+#### retryOptions.retryDelayJitter
+
+> **retryDelayJitter**: `true` = `true`
+
+#### retryOptions.retryDelayJitterMax
+
+> **retryDelayJitterMax**: `number` = `100`
+
+#### retryOptions.retryIf
+
+> **retryIf**: `null` = `null`

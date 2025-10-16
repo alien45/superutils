@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { asAny, fallbackIfFails, isPromise } from '@superutils/core'
+import { asAny, fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { OnEarlyFinalize, PromiseParams, IPromisE, ThePromise } from './types'
 
 export class PromisEBase<T = unknown>
@@ -19,10 +18,11 @@ export class PromisEBase<T = unknown>
 	constructor(...args: PromiseParams<T>)
 	/** Extend an existing Promise instance to check status or finalize early */
 	constructor(promise: Promise<T>)
+	/** Create a resolved promise with value */
+	constructor(value: T)
 	/**
 	 * If executor function is not provided, the promise must be resolved/rejected externally.
 	 *
-	 * ---
 	 * @example An alternative to "Promise.withResolvers()"
 	 * ```typescript
 	 * // create a promise that will NEVER finalize automatically
@@ -33,7 +33,7 @@ export class PromisEBase<T = unknown>
 	 * ```
 	 */
 	constructor()
-	constructor(input?: Promise<T> | PromiseParams<T>[0]) {
+	constructor(input?: T | Promise<T> | PromiseParams<T>[0]) {
 		if (input instanceof PromisEBase) return input
 
 		let _resolve: undefined | ((resolve: T) => void)
@@ -50,7 +50,11 @@ export class PromisEBase<T = unknown>
 			input ??= () => {
 				/* to be finalized manually using .resolve()/.reject() */
 			}
-			const promise = isPromise(input) ? input : new ThePromise<T>(input)
+			const promise = isPromise(input)
+				? input
+				: isFn(input)
+					? new ThePromise<T>(input)
+					: Promise.resolve(input)
 			promise.then(_resolve, _reject)
 		})
 
@@ -87,26 +91,24 @@ export class PromisEBase<T = unknown>
 
 	/** Resovle pending promise early. */
 	public resolve = (value: T) => {
-		this.pending
-			&& queueMicrotask(() => {
-				this._resolve?.(value)
-				this.onEarlyFinalize?.forEach(fn => {
-					PromisEBase.try(fn, true, value)
-				})
-			})
-		return this as IPromisE<T>
+		if (!this.pending) return
+
+		this._resolve?.(value)
+		this.onEarlyFinalize?.forEach(fn => {
+			fallbackIfFails(fn, [true, value], undefined)
+		})
 	}
 
 	/** Reject pending promise early. */
 	public reject = (reason: unknown) => {
-		this.pending
-			&& queueMicrotask(() => {
-				this._reject?.(reason)
-				this.onEarlyFinalize?.forEach(fn => {
-					PromisEBase.try(fn, false, reason)
-				})
-			})
-		return this as IPromisE<T>
+		if (!this.pending) return
+
+		// queueMicrotask(() => {
+		this._reject?.(reason)
+		this.onEarlyFinalize?.forEach(fn => {
+			fallbackIfFails(fn, [false, reason], undefined)
+		})
+		// })
 	}
 
 	//
@@ -136,7 +138,7 @@ export class PromisEBase<T = unknown>
 		new PromisEBase(ThePromise.race(values)) as IPromisE<Awaited<T>>
 
 	/** Extends Promise.reject */
-	static reject = <T = never>(reason: any) => {
+	static reject = <T = never>(reason: unknown) => {
 		const { promise, reject } = PromisEBase.withResolvers<T>()
 		queueMicrotask(() => reject(reason)) // required to avoid unhandled rejection
 		return promise

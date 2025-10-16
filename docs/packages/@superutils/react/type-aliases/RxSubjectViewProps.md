@@ -2,7 +2,7 @@
 
 > **RxSubjectViewProps**\<`T`\> = `object` & [`RenderOrChildren`](RenderOrChildren.md)\<`T`\>
 
-Defined in: [rx/RxSubjectView.tsx:15](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/react/src/rx/RxSubjectView.tsx#L15)
+Defined in: [rx/RxSubjectView.tsx:20](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/react/src/rx/RxSubjectView.tsx#L20)
 
 ## Type Declaration
 

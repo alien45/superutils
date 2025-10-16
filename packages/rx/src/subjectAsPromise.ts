@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isFn, noop, TimeoutId } from '@superutils/core'
 import PromisE from '@superutils/promise'
 import { SubjectLike, SubscriptionLike } from './types'
@@ -34,7 +33,7 @@ export const subjectAsPromise = <T = unknown>(
 	subject: SubjectLike<T>,
 	expectedValue?: T | ((value: T) => boolean),
 	timeout?: number,
-	timeoutMsg: string = 'request timed out before an expected value is received', // eslint-disable-line @typescript-eslint/no-inferrable-types
+	timeoutMsg = 'request timed out before an expected value is received',
 ) => {
 	if (!subject) {
 		const r = PromisE.reject<T>(

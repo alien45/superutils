@@ -1,4 +1,4 @@
-import PromisE_delayReject from './delayReject'
+import delayReject from './delayReject'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Timeout } from './types'
 
@@ -58,7 +58,7 @@ import { IPromisE_Timeout } from './types'
  * })
  *```
  */
-export function PromisE_timeout<
+export function timeout<
 	T extends unknown[] | [],
 	TOut = T['length'] extends 1 ? T[0] : T,
 >(timeout = 10_000, ...values: Promise<TOut>[]) {
@@ -67,7 +67,7 @@ export function PromisE_timeout<
 			? new PromisEBase<T[0]>(values[0]) // single promise resolves to a single result
 			: PromisEBase.all(values)
 	) as PromisEBase<TOut> // array of promises resolves to an array of results
-	const timeoutPromise = PromisE_delayReject<TOut>(
+	const timeoutPromise = delayReject<TOut>(
 		timeout,
 		new Error(`Timed out after ${timeout}ms`),
 	)
@@ -91,4 +91,4 @@ export function PromisE_timeout<
 		.finally(promise.clearTimeout)
 	return promise
 }
-export default PromisE_timeout
+export default timeout

@@ -1,4 +1,4 @@
-import PromisE_delay from './delay'
+import delay from './delay'
 
 /**
  * @function    PromisE.delayReject
@@ -32,10 +32,7 @@ import PromisE_delay from './delay'
  * console.log('App is now ready')
  * ```
  */
-export function PromisE_delayReject<T = never>(
-	delay: number,
-	reason?: unknown,
-) {
-	return PromisE_delay<T>(delay, reason, true)
+export function delayReject<T = never>(duration: number, reason?: unknown) {
+	return delay<T>(duration, reason as T, true)
 }
-export default PromisE_delayReject
+export default delayReject

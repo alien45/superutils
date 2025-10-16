@@ -2,7 +2,7 @@
 
 > **KeepOptionals**\<`Tuple`, `Require`, `TAlt`\> = `Require` *extends* `true` ? `Required`\<[`DropFirstN`](DropFirstN.md)\<`Tuple`, `Tuple`\[`"length"`\]\>\> *extends* \[`...(infer Optionals)`\] ? [`TupleWithAlt`](TupleWithAlt.md)\<`Optionals`, `TAlt`\> : `never` : [`DropFirstN`](DropFirstN.md)\<`Tuple`, `Tuple`\[`"length"`\]\>
 
-Defined in: [types.ts:161](https://github.com/alien45/utiils/blob/4f8c9f11b4207d2ca8ad6a0057e2e74ff3a15365/packages/core/src/types.ts#L161)
+Defined in: [types.ts:161](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/types.ts#L161)
 
 Extract optional members of a tuple.
 

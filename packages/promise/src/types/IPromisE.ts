@@ -11,13 +11,13 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	readonly pending: boolean
 
 	/** Reject pending promise early. */
-	reject: (reason: unknown) => IPromisE<T>
+	reject: (reason: unknown) => void
 
 	/** Indicates if the promise has been rejected */
 	readonly rejected: boolean
 
 	/** Resovle pending promise early. */
-	resolve: (value: T) => IPromisE<T>
+	resolve: (value: T) => void
 
 	/** Indicates if the promise has been resolved */
 	readonly resolved: boolean
@@ -33,8 +33,6 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 * An never-finalized promise may cause memory leak and will leave it at the mercry of the garbage collector.
 	 * Use `pause()` only if you are sure.
 	 *
-	 * ---
-	 *
 	 * @example
 	 * ```typescript
 	 * // Example 1: SAFE => no memory leak, because no reference to the promise is stored and no suspended code
@@ -43,8 +41,6 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 *     setTimeout(() => promise.pause(), 300)
 	 * }}>Click Me</button>
 	 * ```
-	 *
-	 * ---
 	 *
 	 * @example UNSAFE => potential memory leak, because of suspended code
 	 * ```typescript
@@ -55,8 +51,6 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 *     //... do stuff ....
 	 * }}>Click Me</button>
 	 * ```
-	 *
-	 * ---
 	 *
 	 * @example UNSAFE => potential memory leak, because of preserved reference.
 	 * ```typescript
@@ -99,3 +93,6 @@ export type OnEarlyFinalize<T> = <
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>
 >
+
+/** Original `Promise` */
+export const ThePromise = Promise

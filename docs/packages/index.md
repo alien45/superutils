@@ -160,7 +160,7 @@ The following scripts are available at the root level to help with development:
   Removes all `dist/*` files before cleaning all build artifacts.
 
     > [!warning]
-    > _This script uses `rm -rf` for cleaning. While `npm` often provides cross-platform compatibility for such commands, users on Windows might need a Unix-like environment (e.g., Git Bash or WSL) for it to function correctly._
+    > _This script uses `rm -rf` for cleaning `dist` files. While `npm` often provides cross-platform compatibility for such commands, users on Windows might need a Unix-like environment (e.g., Git Bash or WSL) for it to function correctly._
 
 - `npm run docs:dev`
   Builds the API documentation and starts the VitePress development server, accessible at `http://localhost:5173`.

@@ -21,40 +21,27 @@ import { IPromisE_Delay } from './types'
  * console.log('App ready')
  * ```
  */
-export function PromisE_delay<
-	T = number,
-	TReject extends boolean = boolean,
-	TResultOrErr = TReject extends true ? unknown : T,
->(
+export function delay<T = number, TReject extends boolean = boolean>(
 	duration = 100,
-	result: TResultOrErr = duration as TResultOrErr,
+	result: T = duration as T,
 	asRejected: TReject = false as TReject,
-	timeoutErrMsg?: string,
 ) {
-	const {
-		promise: _promise,
-		reject,
-		resolve,
-	} = PromisEBase.withResolvers<T>()
-	const promise = _promise as IPromisE_Delay<T>
-	const finalize = (result?: TResultOrErr, doReject = false) => {
-		if (!doReject) return resolve(result as T)
+	const promise = new PromisEBase() as IPromisE_Delay<T>
+	const finalize = (result?: T) => {
+		if (!asRejected) return promise.resolve(result as T)
 
-		reject(
-			result
-				?? new Error(
-					timeoutErrMsg
-						?? `${config.defaults.delayTimeoutMsg} ${duration}ms`,
-				),
+		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+		promise.reject(
+			result ?? new Error(`${config.delayTimeoutMsg} ${duration}ms`),
 		)
 	}
-	promise.timeoutId = setTimeout(() => finalize(result, asRejected), duration)
+	promise.timeoutId = setTimeout(() => finalize(result), duration)
 	promise.pause = () => clearTimeout(promise.timeoutId)
 	promise
 		.catch(() => {
-			/* avoid unhandled rejections here */
+			/* avoid unhandled rejections here when asRejected is true */
 		})
 		.finally(() => promise.pause())
 	return promise
 }
-export default PromisE_delay
+export default delay
