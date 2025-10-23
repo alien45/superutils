@@ -16,6 +16,7 @@
 	],
 	"license": "MIT",
 	"main": "dist/index.js",
+	"type": "module",
 	"name": "@superutils/demo",
 	"peerDependencies": {},
 	"scripts": {
