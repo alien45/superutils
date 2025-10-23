@@ -2,7 +2,7 @@
 
 > **FetchInterceptorRequest** = [`Interceptor`](Interceptor.md)\<[`FetchArgs`](FetchArgs.md)\[`0`\], [`FetchArgsInterceptor`](FetchArgsInterceptor.md)\>
 
-Defined in: packages/fetch/src/types.ts:133
+Defined in: [packages/fetch/src/types.ts:133](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L133)
 
 Fetch request interceptor to be invoked before making a fetch request.
 This interceptor can also be used as a transformer:

@@ -1,6 +1,6 @@
 # Class: FetchError
 
-Defined in: packages/fetch/src/types.ts:47
+Defined in: [packages/fetch/src/types.ts:47](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L47)
 
 Custom error message for fetch requests with more detailed info about the request URL, fetch options and response
 
@@ -14,7 +14,7 @@ Custom error message for fetch requests with more detailed info about the reques
 
 > **new FetchError**(`message`, `options`): `FetchError`
 
-Defined in: packages/fetch/src/types.ts:52
+Defined in: [packages/fetch/src/types.ts:52](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L52)
 
 #### Parameters
 
@@ -90,7 +90,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `optional` **options**: [`FetchOptions`](../type-aliases/FetchOptions.md)
 
-Defined in: packages/fetch/src/types.ts:48
+Defined in: [packages/fetch/src/types.ts:48](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L48)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: packages/fetch/src/types.ts:48
 
 > `optional` **response**: `Response`
 
-Defined in: packages/fetch/src/types.ts:49
+Defined in: [packages/fetch/src/types.ts:49](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L49)
 
 ***
 
@@ -118,7 +118,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 > **url**: `string` \| `URL`
 
-Defined in: packages/fetch/src/types.ts:50
+Defined in: [packages/fetch/src/types.ts:50](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L50)
 
 ***
 

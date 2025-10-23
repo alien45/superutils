@@ -2,7 +2,7 @@
 
 > **FetchErrMsgs** = `object`
 
-Defined in: packages/fetch/src/types.ts:39
+Defined in: [packages/fetch/src/types.ts:39](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L39)
 
 ## Properties
 
@@ -10,7 +10,7 @@ Defined in: packages/fetch/src/types.ts:39
 
 > `optional` **invalidUrl**: `string`
 
-Defined in: packages/fetch/src/types.ts:40
+Defined in: [packages/fetch/src/types.ts:40](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L40)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: packages/fetch/src/types.ts:40
 
 > `optional` **parseFailed**: `string`
 
-Defined in: packages/fetch/src/types.ts:41
+Defined in: [packages/fetch/src/types.ts:41](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L41)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: packages/fetch/src/types.ts:41
 
 > `optional` **reqTimedout**: `string`
 
-Defined in: packages/fetch/src/types.ts:42
+Defined in: [packages/fetch/src/types.ts:42](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L42)
 
 ***
 
@@ -34,4 +34,4 @@ Defined in: packages/fetch/src/types.ts:42
 
 > `optional` **requestFailed**: `string`
 
-Defined in: packages/fetch/src/types.ts:43
+Defined in: [packages/fetch/src/types.ts:43](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L43)

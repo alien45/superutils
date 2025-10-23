@@ -2,7 +2,7 @@
 
 > **postDeferred**\<`ThisArg`\>(`deferOptions`, ...`__namedParameters`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: packages/fetch/src/postDeferred.ts:66
+Defined in: [packages/fetch/src/postDeferred.ts:66](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/postDeferred.ts#L66)
 
 ## Type Parameters
 

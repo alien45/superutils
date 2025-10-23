@@ -1,6 +1,6 @@
 # Enumeration: FetchAs
 
-Defined in: packages/fetch/src/types.ts:11
+Defined in: [packages/fetch/src/types.ts:11](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L11)
 
 ## Enumeration Members
 
@@ -8,7 +8,7 @@ Defined in: packages/fetch/src/types.ts:11
 
 > **arrayBuffer**: `"arrayBuffer"`
 
-Defined in: packages/fetch/src/types.ts:12
+Defined in: [packages/fetch/src/types.ts:12](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L12)
 
 ***
 
@@ -16,7 +16,7 @@ Defined in: packages/fetch/src/types.ts:12
 
 > **blob**: `"blob"`
 
-Defined in: packages/fetch/src/types.ts:13
+Defined in: [packages/fetch/src/types.ts:13](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: packages/fetch/src/types.ts:13
 
 > **formData**: `"formData"`
 
-Defined in: packages/fetch/src/types.ts:14
+Defined in: [packages/fetch/src/types.ts:14](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L14)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: packages/fetch/src/types.ts:14
 
 > **json**: `"json"`
 
-Defined in: packages/fetch/src/types.ts:15
+Defined in: [packages/fetch/src/types.ts:15](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L15)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: packages/fetch/src/types.ts:15
 
 > **response**: `"response"`
 
-Defined in: packages/fetch/src/types.ts:16
+Defined in: [packages/fetch/src/types.ts:16](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L16)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: packages/fetch/src/types.ts:16
 
 > **text**: `"text"`
 
-Defined in: packages/fetch/src/types.ts:17
+Defined in: [packages/fetch/src/types.ts:17](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L17)

@@ -2,7 +2,7 @@
 
 > **FetchInterceptorResult** = [`Interceptor`](Interceptor.md)\<`unknown`, [`FetchArgsInterceptor`](FetchArgsInterceptor.md)\>
 
-Defined in: packages/fetch/src/types.ts:209
+Defined in: [packages/fetch/src/types.ts:209](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L209)
 
 Fetch result interceptor to be invoked before returning parsed fetch result.
 

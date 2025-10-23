@@ -192,10 +192,10 @@ The following scripts are available at the root level to help with development:
     `npm test [package][:option1][:option2]...`
 
     | Option     | Alias | Description                                | Default |
-    | :--------- | :---- | :----------------------------------------- | :------ |
-    | `ui`       |       | Opens the interactive Vitest UI.           | `""`    |
-    | `run`      | `1`   | Runs tests once and exits (no watch mode). | `""`    |
-    | `coverage` | `%`   | Generates a code coverage report.          | `""`    |
+    | :--------- | :---: | :----------------------------------------- | :-----: |
+    | `ui`       |       | Opens the interactive Vitest UI.           |  `""`   |
+    | `run`      |  `1`  | Runs tests once and exits (no watch mode). |  `""`   |
+    | `coverage` |  `%`  | Generates a code coverage report.          |  `""`   |
 
     **Note:**
     - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.

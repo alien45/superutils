@@ -2,7 +2,7 @@
 
 > **ThrottleConfig**\<`ThisArg`\> = `object`
 
-Defined in: [throttled.ts:4](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/throttled.ts#L4)
+Defined in: [throttled.ts:4](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/throttled.ts#L4)
 
 ## Type Parameters
 
@@ -16,7 +16,7 @@ Defined in: [throttled.ts:4](https://github.com/alien45/utiils/blob/1eb281bb287b
 
 > `optional` **onError**: (`err`) => [`ValueOrPromise`](ValueOrPromise.md)\<`unknown`\>
 
-Defined in: [throttled.ts:5](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/throttled.ts#L5)
+Defined in: [throttled.ts:5](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/throttled.ts#L5)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [throttled.ts:5](https://github.com/alien45/utiils/blob/1eb281bb287b
 
 > `optional` **thisArg**: `ThisArg`
 
-Defined in: [throttled.ts:6](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/throttled.ts#L6)
+Defined in: [throttled.ts:6](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/throttled.ts#L6)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [throttled.ts:6](https://github.com/alien45/utiils/blob/1eb281bb287b
 
 > `optional` **tid**: [`TimeoutId`](TimeoutId.md)
 
-Defined in: [throttled.ts:8](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/throttled.ts#L8)
+Defined in: [throttled.ts:8](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/throttled.ts#L8)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [throttled.ts:8](https://github.com/alien45/utiils/blob/1eb281bb287b
 
 > `optional` **trailing**: `boolean`
 
-Defined in: [throttled.ts:7](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/throttled.ts#L7)
+Defined in: [throttled.ts:7](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/throttled.ts#L7)

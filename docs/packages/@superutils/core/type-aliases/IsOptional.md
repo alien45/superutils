@@ -2,7 +2,7 @@
 
 > **IsOptional**\<`T`, `K`\> = `object` *extends* `Pick`\<`T`, `K`\> ? `true` : `false`
 
-Defined in: [types.ts:105](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/types.ts#L105)
+Defined in: [types.ts:105](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/types.ts#L105)
 
 ## Type Parameters
 

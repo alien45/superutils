@@ -2,7 +2,7 @@
 
 > **FetchConf** = `object`
 
-Defined in: packages/fetch/src/types.ts:20
+Defined in: [packages/fetch/src/types.ts:20](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L20)
 
 ## Properties
 
@@ -10,7 +10,7 @@ Defined in: packages/fetch/src/types.ts:20
 
 > `optional` **abortCtrl**: `AbortController`
 
-Defined in: packages/fetch/src/types.ts:26
+Defined in: [packages/fetch/src/types.ts:26](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L26)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: packages/fetch/src/types.ts:26
 
 > `optional` **as**: [`FetchAs`](../enumerations/FetchAs.md)
 
-Defined in: packages/fetch/src/types.ts:25
+Defined in: [packages/fetch/src/types.ts:25](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L25)
 
 Specify how the parse the result. To get raw response use [FetchAs.response](../enumerations/FetchAs.md#response).
 Default: 'json'
@@ -29,7 +29,7 @@ Default: 'json'
 
 > `optional` **errMsgs**: [`FetchErrMsgs`](FetchErrMsgs.md)
 
-Defined in: packages/fetch/src/types.ts:27
+Defined in: [packages/fetch/src/types.ts:27](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L27)
 
 ***
 
@@ -37,7 +37,7 @@ Defined in: packages/fetch/src/types.ts:27
 
 > `optional` **interceptors**: [`FetchInterceptors`](FetchInterceptors.md)
 
-Defined in: packages/fetch/src/types.ts:28
+Defined in: [packages/fetch/src/types.ts:28](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L28)
 
 ***
 
@@ -45,6 +45,6 @@ Defined in: packages/fetch/src/types.ts:28
 
 > `optional` **timeout**: `number`
 
-Defined in: packages/fetch/src/types.ts:30
+Defined in: [packages/fetch/src/types.ts:30](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/fetch/src/types.ts#L30)
 
 Request timeout in milliseconds.
