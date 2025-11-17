@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { objWithoutKeys } from '../src'
+import { objWithoutKeys } from '../../src'
 
 describe('objWithoutKeys', () => {
 	it('should remove specified properties from object', () => {
