@@ -85,18 +85,23 @@ export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
 	fallbackValue:
 		| IfPromiseAddValue<T>
 		| ((reason: unknown) => IfPromiseAddValue<T>),
-) => {
-	const getAltVal = (reason: unknown) =>
-		isFn(fallbackValue) ? fallbackValue(reason) : fallbackValue
+): T => {
 	let result: unknown
 	try {
 		result = !isFn(target)
-			? target // value or promise received
+			? target // assume value or promise received
 			: target(...(isFn(args) ? args() : args))
-		result = !isPromise(result) ? result : result.catch(getAltVal)
+		if (!isPromise(result)) return result as T
+
+		result = result.catch(getAltValCb(fallbackValue))
 	} catch (error) {
-		result = getAltVal(error)
+		result = getAltValCb(fallbackValue)(error)
 	}
 	return result as T
 }
 export default fallbackIfFails
+
+const getAltValCb =
+	<T>(fallbackValue: T | ((error: unknown) => T)) =>
+	(error: unknown) =>
+		isFn(fallbackValue) ? fallbackValue(error) : fallbackValue

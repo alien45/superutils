@@ -1,4 +1,4 @@
-import { isArr, isObj } from './is'
+import { isArr, isObj } from '../is'
 
 /**
  * @function	objWithoutKeys
@@ -14,7 +14,6 @@ import { isArr, isObj } from './is'
 export const objWithoutKeys = (
 	input: unknown,
 	keys: string[],
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	output?: Record<keyof any, unknown>,
 ) => {
 	if (!isObj(input, false)) return {}

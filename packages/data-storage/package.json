@@ -1,31 +1,26 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "RxJS utilities and hooks for React applications.",
-	"devDependencies": {
-		"@superutils/core": "^0.1.0",
-		"@superutils/promise": "^0.1.0",
-		"@types/react": "^18.0.0"
+	"dependencies": {
+		"@superutils/core": "^0.1.0"
 	},
+	"description": "JSON data storage helper for LocalStorage",
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
 	"keywords": [
+		"javascript",
 		"rxjs",
 		"utils",
 		"typescript",
-		"react",
-		"hooks"
+		"node"
 	],
 	"license": "MIT",
 	"main": "dist/index.js",
-	"name": "@superutils/rx",
+	"name": "@superutils/data-storage",
 	"peerDependencies": {
-		"@superutils/core": "^0.1.0",
-		"@superutils/promise": "^0.1.0",
-		"react": ">=16.8.0",
-		"rxjs": "^7.0.0"
+		"@superutils/core": "^0.1.0"
 	},
 	"scripts": {
 		"build": "tsc -p tsconfig.json",

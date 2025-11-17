@@ -2,6 +2,7 @@
 	"files": [],
 	"references": [
 		{ "path": "packages/core" },
+		{ "path": "packages/data-storage" },
 		{ "path": "packages/promise" }, // requires: core
 		{ "path": "packages/fetch" }, // requires: core & promise
 		{ "path": "packages/rx" }, // requires: core & promise

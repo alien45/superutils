@@ -37,6 +37,11 @@ export default defineConfig(
 		files: ['./packages/**/*.{ts,tsx}'],
 		// languageOptions,
 		rules: {
+			'no-unused-vars': [
+				'error',
+				'_',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+			],
 			// Allow `type` and `interface`
 			'@typescript-eslint/consistent-type-definitions': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
