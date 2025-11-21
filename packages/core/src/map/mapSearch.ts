@@ -28,7 +28,6 @@ export const mapSearch = <
 	map: T,
 	conf: SearchConfig<K, V, AsMap>,
 ): Result => {
-	conf = (isObj(conf) && conf) || {}
 	const {
 		asMap = true as AsMap,
 		ignoreCase = true,
@@ -36,19 +35,19 @@ export const mapSearch = <
 		matchAll = false,
 		matchExact = false,
 	} = conf
-	let { query, result } = conf
-	if (!isObj(query)) query = {}
+	let { query, result } = conf || {}
+	const entries = isMap(map)
+		? mapEntries(map)
+		: isArr(map)
+			? (map.map((x, i) => [i, x]) as [K, V][])
+			: []
+
+	if (!isObj(query)) {
+		const firstValue = entries?.[0]?.[1]
+		query = !isStr(query) || !isObj(isObj(firstValue)) ? {} : {} //objCreate()
+	}
 	if (!isMap(result)) result = new Map<K, V>()
 	const qKeys = Object.keys(query)
-	const entries =
-		qKeys.length === 0
-			? []
-			: isMap(map)
-				? mapEntries(map)
-				: isArr(map)
-					? (map.map((x, i) => [i, x]) as [K, V][])
-					: []
-
 	if (!qKeys.length || !entries.length)
 		return (asMap ? result : mapValues(result)) as Result
 

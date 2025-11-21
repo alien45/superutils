@@ -24,6 +24,12 @@ import {
 	isDefined,
 	isEnvBrowser,
 	isEnvNode,
+	isEmpty,
+	isNotEmpty,
+	isSubjectLike,
+	isSymbol,
+	isTouchable,
+	noop,
 } from '../src'
 
 describe('isArr', () => {
@@ -122,6 +128,30 @@ describe('isDefined', () => {
 	})
 })
 
+describe('isEmpty', () => {
+	it('should return true for empty values', () => {
+		const results = [
+			null,
+			undefined,
+			NaN,
+			Infinity,
+			'',
+			'      ',
+			// multi-line string with only whitespaces & tabs
+			`   
+
+
+			`,
+			[],
+			new Map(),
+			new Set(),
+			{},
+			Object.create(null),
+		].map(isEmpty)
+		expect(results.every(r => r === true)).toBe(true)
+	})
+})
+
 describe('isEnvBrowser', () => {
 	it('should return true when in browser', () => {
 		vi.stubGlobal('window', { document: {} })
@@ -133,7 +163,7 @@ describe('isEnvBrowser', () => {
 	})
 })
 
-describe('isEnvBrowser', () => {
+describe('isEnvNode', () => {
 	it('should return false when not in node or equivalent', () => {
 		vi.stubGlobal('process', undefined)
 		expect(isEnvNode()).toBe(false)
@@ -182,6 +212,20 @@ describe('isMap', () => {
 	it('should return false for non-Map objects', () => {
 		expect(isMap(new WeakMap())).toBe(false)
 		expect(isMap({})).toBe(false)
+	})
+})
+
+describe('isNotEmpty', () => {
+	it('should return true for non-empty values', () => {
+		const results = [
+			false,
+			true,
+			'string',
+			[1],
+			new Map([[1, 1]]),
+			new Set([1, 2, 3]),
+		].map(isNotEmpty)
+		expect(results.every(r => r === true)).toBe(true)
 	})
 })
 
@@ -255,6 +299,64 @@ describe('isStr', () => {
 	})
 	it('should return false for non-strings', () => {
 		expect(isStr(123)).toBe(false)
+	})
+})
+
+describe('isSubjectLike', () => {
+	it('should return true for RxJS subject-like objects', () => {
+		const subjectLike = {
+			subscribe: noop,
+			next: noop,
+		}
+		expect(isSubjectLike(subjectLike)).toBe(true)
+		expect(isSubjectLike({ ...subjectLike, value: 42 }, true)).toBe(true)
+	})
+	it('should return false for non-subject-like objects when withValue is true', () => {
+		expect(
+			isSubjectLike(
+				{
+					subscribe: noop,
+					next: noop,
+				},
+				true,
+			),
+		).toBe(false)
+	})
+
+	it('should return false for non-subject-like objects', () => {
+		expect(isSubjectLike({ subscribe: noop })).toBe(false)
+		expect(isSubjectLike({ next: noop })).toBe(false)
+		expect(isSubjectLike({})).toBe(false)
+		expect(isSubjectLike(null)).toBe(false)
+	})
+})
+
+describe('isSymbol', () => {
+	it('should return true for symbols', () => {
+		expect(isSymbol(Symbol('test'))).toBe(true)
+	})
+	it('should return false for non-symbols', () => {
+		expect(isSymbol('test')).toBe(false)
+		expect(isSymbol(123)).toBe(false)
+	})
+})
+
+describe('isTouchable', () => {
+	it('should return false when not in browser', () => {
+		vi.stubGlobal('window', undefined)
+		expect(isTouchable()).toBe(false)
+		vi.unstubAllGlobals()
+	})
+	it('should return true when in browser with touch support', () => {
+		vi.stubGlobal('window', {
+			document: {
+				documentElement: {
+					ontouchstart: true,
+				},
+			},
+		})
+		expect(isTouchable()).toBe(true)
+		vi.unstubAllGlobals()
 	})
 })
 

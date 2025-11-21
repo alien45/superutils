@@ -91,27 +91,24 @@ export const isDefined = <T = unknown>(x: T | undefined | null): x is T =>
  * ```
  */
 export const isEmpty = (x: any) => {
-	try {
-		if (!isDefined(x)) return true
-		switch (typeof x) {
-			case 'string':
-				return !x.split('\n').join('').trim()
-			case 'number':
-				return !isValidNumber(x)
-			// for both array and object
-			case 'object':
-				const len = isArr(x)
-					? x.length
-					: isMap(x) || isSet(x)
-						? x.size
-						: Object.keys(x).length
-				return len === 0
-			case 'boolean':
-			default:
-				return false // value is defined => not empty
-		}
-	} catch (_) {
-		return true
+	if (!isDefined(x)) return true
+
+	switch (Object.getPrototypeOf(x)) {
+		case String.prototype:
+			return !x.trim().length
+		case Number.prototype:
+			return !isValidNumber(x)
+		case Array.prototype:
+			return x.length === 0
+		case Map.prototype:
+		case Set.prototype:
+			return x.size === 0
+		case null: // when an object is created using `Object.create(null)`
+		case Object.prototype:
+			return Object.keys(x).length === 0
+		case Boolean.prototype:
+		default:
+			return false // value is defined, therefore, is not empty
 	}
 }
 
@@ -145,7 +142,7 @@ export const isNotEmpty = (x: any) => !isEmpty(x)
  * Checks if value is a valid object.
  *
  * @param x
- * @param strict (optional) `true` will exclude Array, Map, RegExp, Set etc.
+ * @param strict (optional) whether to exclude anything other than plain object. Eg: Array, Map, RegExp, Set etc.
  * Default: `true`
  */
 export const isObj = <T = object>(x: any, strict = true): x is T =>
@@ -178,20 +175,27 @@ export const isSet = <T = any>(x: any): x is Set<T> => x instanceof Set
 /** Checks if value is string */
 export const isStr = (x: any): x is string => typeof x === 'string'
 
-/** Checks if value is similar to a RxJS subject with .subscribe & .next functions */
-export const isSubjectLike = (x: unknown) =>
+/**
+ * Checks if value is similar to a RxJS subject with .subscribe & .next functions
+ *
+ * @param x The value to check
+ * @param withValue When `true`, also checks if `value` property exists in `x`
+ *
+ * @returns `true` if the value is subject-like, `false` otherwise.
+ */
+export const isSubjectLike = (x: unknown, withValue = false) =>
 	isObj<{ subscribe: any; next: any }>(x, false)
 	&& isFn(x.subscribe)
 	&& isFn(x.next)
+	&& (!withValue || 'value' in x)
 
 /** Check if value is a Symbol */
 export const isSymbol = (x: any): x is symbol => typeof x === 'symbol'
 
 /** Check if page is loaded on a touchscreen device */
 export const isTouchable = () => {
-	if (!isEnvBrowser()) return false
 	try {
-		return 'ontouchstart' in document?.documentElement
+		return 'ontouchstart' in window?.document?.documentElement
 	} catch (_) {
 		return false
 	}

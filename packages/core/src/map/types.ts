@@ -21,7 +21,7 @@ export type SortConfig = {
 export type SearchConfig<K, V, AsMap extends boolean = false> = {
 	asMap?: AsMap
 	/** key-value pairs */
-	query?: Record<string, unknown>
+	query?: Record<string, unknown> | string
 	/** case-insensitive search for strings. Default: `false` */
 	ignoreCase?: boolean
 	/** limit number of results. Default: `Infinity` */

@@ -3,6 +3,6 @@ import noop from '../src/noop'
 
 describe('noop', () => {
 	it('should do nothing', () => {
-		expect(noop())
+		expect(noop()).toBeUndefined()
 	})
 })
