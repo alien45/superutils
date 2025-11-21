@@ -58,7 +58,7 @@ export const getUrlParamRegex = (
 	const params: Record<string, string | string[]> = {}
 	const regex = /[?&]+([^=&]+)=([^&]*)/gi
 
-	url.replace(regex, (_, name, value) => {
+	url.replace(regex, (_, name: string, value: string) => {
 		value = decodeURIComponent(value)
 		if (arrayNames.includes(name)) params[name] ??= []
 		if (params[name] === undefined) {

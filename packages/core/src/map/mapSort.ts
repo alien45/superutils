@@ -1,5 +1,6 @@
 import { arrReverse } from '../arr'
 import { isFn, isMap, isObj } from '../is'
+import { RecordKey } from '../types'
 import { SortConfig } from './types'
 
 /**
@@ -44,11 +45,7 @@ import { SortConfig } from './types'
  * // }
  * ```
  */
-export function mapSort<K, V extends string | boolean | number>(
-	map: Map<K, V>,
-	config?: SortConfig,
-): Map<K, V>
-export function mapSort<K, V extends Record<keyof any, unknown>>(
+export function mapSort<K, V extends Record<RecordKey, unknown>>(
 	map: Map<K, V>,
 	propertyName: keyof V & string,
 	config?: SortConfig,
@@ -64,9 +61,17 @@ export function mapSort<K, V>(
 	comparator: (a: [K, V], b: [K, V]) => number,
 	config?: SortConfig,
 ): Map<K, V>
-export function mapSort<K, V = Record<keyof any, unknown>>(
+export function mapSort<K, V extends string | boolean | number>(
 	map: Map<K, V>,
-	keyOrFn: unknown | true | SortConfig,
+	config?: SortConfig,
+): Map<K, V>
+export function mapSort<K, V = Record<RecordKey, unknown>>(
+	map: Map<K, V>,
+	keyOrFn?:
+		| true
+		| (keyof V & string)
+		| ((a: [K, V], b: [K, V]) => number)
+		| SortConfig,
 	config?: SortConfig,
 ) {
 	if (!isMap(map)) return new Map()
@@ -80,16 +85,13 @@ export function mapSort<K, V = Record<keyof any, unknown>>(
 		reverse = dc.reverse,
 		undefinedFirst = dc.undefinedFirst,
 	} = config
-	const placeholder = undefinedFirst ? '' : 'Z'.repeat(10)
+	const alt = undefinedFirst ? '' : 'Z'.repeat(10)
 	const sorted = isFn(keyOrFn)
 		? Array.from(map).sort(keyOrFn) // use provided comparator function
 		: (() => {
 				const key = keyOrFn as keyof V
 				const getVal = (obj: unknown) => {
-					const v =
-						(isObj(obj) && key ? obj[key as keyof typeof obj] : obj)
-						?? placeholder
-					const value = `${v}`
+					const value = `${((isObj(obj) && key ? obj[key as keyof typeof obj] : obj) as string) ?? alt}`
 					return ignoreCase ? value.toLowerCase() : value
 				}
 				// 0 => sort by map-key, 1 => sort by map-value

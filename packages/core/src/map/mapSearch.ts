@@ -1,4 +1,4 @@
-import { isArr, isMap, isObj, isRegExp, isStr } from '../is'
+import { isArr, isMap, isObj, isRegExp, isSet, isStr } from '../is'
 import mapEntries from './mapEntries'
 import { mapValues } from './mapValues'
 import { SearchConfig } from './types'
@@ -64,7 +64,12 @@ export const mapSearch = <
 		if (!isObj(item)) return false
 
 		const keyword = query[key]
-		let value = `${item[key] ?? ''}`
+		const kv = item[key] ?? ''
+		let value = isObj(kv, false)
+			? JSON.stringify(
+					isMap(kv) ? mapValues(kv) : isSet(kv) ? [...kv] : kv,
+				)
+			: `${(kv as string) ?? ''}`
 
 		if (ignoreCase) value = value.toLowerCase()
 		if (isRegExp(keyword)) return keyword.test(`${value}`)

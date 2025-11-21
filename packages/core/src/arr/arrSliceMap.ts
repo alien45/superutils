@@ -19,7 +19,7 @@ import { mapValues } from '../map'
  */
 export const arrSliceMap = <
 	T extends unknown[] | Map<unknown, unknown>,
-	TValue = T extends Array<infer TA>
+	TValue = T extends (infer TA)[]
 		? TA
 		: T extends Map<unknown, infer TM>
 			? TM
@@ -39,7 +39,7 @@ export const arrSliceMap = <
 	start = start >= 0 && start < len ? start : 0
 	end = end >= start && end < len ? end : len - 1
 	const result: ReturnValue[] = []
-	for (var i = start; i <= end; i++) {
+	for (let i = start; i <= end; i++) {
 		const value = fallbackIfFails(
 			callback,
 			[arr[i], i, arr as T],

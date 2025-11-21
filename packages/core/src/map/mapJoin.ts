@@ -24,7 +24,7 @@ import { isArr2D, isMap } from '../is'
  * const joined = mapJoin(...maps) // Map(2) {'a' => 1, 'b' => 2}
  * ```
  */
-export const mapJoin = <K, V>(...inputs: Array<Map<K, V> | [K, V][]>) =>
+export const mapJoin = <K, V>(...inputs: Map<K, V>[] | [K, V][][]) =>
 	new Map<K, V>(
 		inputs.flatMap(input =>
 			isMap(input)

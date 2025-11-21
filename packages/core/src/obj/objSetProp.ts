@@ -1,4 +1,5 @@
 import { isFn, isObj } from '../is'
+import { RecordKey } from '../types'
 
 /**
  * Assign value to an object property
@@ -9,7 +10,7 @@ import { isFn, isObj } from '../is'
  * @param condition	(optional)
  * @param truthyValue (optional) value to use if condition is truthy
  */
-export const objSetProp = <K extends keyof any, V, OutKey extends K | string>(
+export const objSetProp = <K extends RecordKey, V, OutKey extends K | string>(
 	obj: Record<K, V>,
 	key: OutKey,
 	falsyValue?: V,

@@ -105,7 +105,7 @@ export const isEmpty = (x: any) => {
 			return x.size === 0
 		case null: // when an object is created using `Object.create(null)`
 		case Object.prototype:
-			return Object.keys(x).length === 0
+			return Object.keys(x as object).length === 0
 		case Boolean.prototype:
 		default:
 			return false // value is defined, therefore, is not empty
@@ -149,10 +149,11 @@ export const isObj = <T = object>(x: any, strict = true): x is T =>
 	!!x // excludes null, NaN, Infinity....
 	&& typeof x === 'object'
 	&& (!strict
-		// excludes Array, Map, Set...
+		// excludes Array, BigInt, Uint8Array, Map, Set...
 		|| [
 			Object.prototype,
 			null, // when an object is created using `Object.create(null)`
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		].includes(Object.getPrototypeOf(x)))
 
 /** Checks if value is a positive integer */
@@ -195,7 +196,7 @@ export const isSymbol = (x: any): x is symbol => typeof x === 'symbol'
 /** Check if page is loaded on a touchscreen device */
 export const isTouchable = () => {
 	try {
-		return 'ontouchstart' in window?.document?.documentElement
+		return 'ontouchstart' in window.document.documentElement
 	} catch (_) {
 		return false
 	}

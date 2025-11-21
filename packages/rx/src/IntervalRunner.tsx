@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { fallbackIfFails, TimeoutId } from '@superutils/core'
 import { BehaviorSubject, Subscription } from 'rxjs'
 
@@ -6,7 +8,7 @@ export type OnResultType<TResult = unknown> = (
 	result: TResult | undefined,
 	runCount: number,
 	once: boolean,
-) => void
+) => void | Promise<void>
 export type onBeforeExecType = (
 	runCount: number,
 	once: boolean,

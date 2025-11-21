@@ -205,6 +205,10 @@ export type MakeOptional<
 	? [...Left, ...Partial<Slice<Tuple, IndexStart>>, ...Right]
 	: never
 
+/** Record key type: string | number | symbol */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RecordKey = keyof any
+
 /**
  * Create a new slices tuple from an existing tuple
  * ---

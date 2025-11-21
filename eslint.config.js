@@ -35,16 +35,24 @@ export default defineConfig(
 	...tseslint.configs.stylisticTypeChecked,
 	{
 		files: ['./packages/**/*.{ts,tsx}'],
-		// languageOptions,
 		rules: {
-			'no-unused-vars': [
-				'error',
-				'_',
-				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					args: 'none', // Ignore all arguments for type definitions
+					argsIgnorePattern: '^_$|^_.*$',
+					caughtErrors: 'none', // Allow unused variables in catch blocks
+					ignoreRestSiblings: true,
+					vars: 'all',
+					varsIgnorePattern: '^_$|^_.*$',
+				},
 			],
+
 			// Allow `type` and `interface`
 			'@typescript-eslint/consistent-type-definitions': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
+			'no-prototype-builtins': 'off', // complains about obj.hasOwnProperty()
 			// '@typescript-eslint/no-floating-promises': 'off',
 			// '@typescript-eslint/no-misused-promises': 'off',
 
