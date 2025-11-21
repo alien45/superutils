@@ -1,8 +1,9 @@
 import { isObj } from '../is'
+import { RecordKey } from '../types'
 import objKeys from './objKeys'
 
 /** create a new object with properties sorted by key */
-export const objSort = <T extends Record<keyof any, unknown>>(
+export const objSort = <T extends Record<RecordKey, unknown>>(
 	obj: T,
 	recursive = true,
 	_done = new Map<unknown, boolean>(),
@@ -18,7 +19,7 @@ export const objSort = <T extends Record<keyof any, unknown>>(
 			!recursive || !isObj(value)
 				? value
 				: (objSort(
-						value as Record<keyof any, unknown>,
+						value as Record<RecordKey, unknown>,
 						recursive,
 						_done,
 					) as T[keyof T])

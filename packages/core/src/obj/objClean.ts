@@ -1,5 +1,6 @@
 import { arrUnique } from '../arr'
 import { isArr, isObj, isStr, isSymbol } from '../is'
+import { RecordKey } from '../types'
 
 /**
  * @name	objClean
@@ -11,7 +12,7 @@ import { isArr, isObj, isStr, isSymbol } from '../is'
  * @param ignoreIfNotExist (optional) if truthy, will ignore non-existent `keys`. Default: `true`
  */
 export const objClean = <
-	T extends Record<keyof any, unknown>,
+	T extends Record<RecordKey, unknown>,
 	Key extends keyof T = keyof T,
 >(
 	obj: T,
@@ -25,14 +26,13 @@ export const objClean = <
 		keys.map(x => (isStr(x) ? `${x}`.split('.')[0] : x)),
 	).sort() as Key[]
 
-	for (let i = 0; i < uniqKeys.length; i++) {
-		const key = uniqKeys[i] as Key
+	for (const key of uniqKeys) {
 		if (ignoreIfNotExist && !obj.hasOwnProperty(key)) continue
 
-		let value = obj[key]
+		const value = obj[key]
 		// recursively clean up child property with object value
 		if (!isObj(value) || isSymbol(key)) {
-			result[key] = value as T[Key]
+			result[key] = value
 			continue
 		}
 
@@ -48,7 +48,7 @@ export const objClean = <
 		}
 
 		result[key] = objClean(
-			value as Record<keyof any, unknown>,
+			value as Record<RecordKey, unknown>,
 			childKeys,
 		) as T[Key]
 	}

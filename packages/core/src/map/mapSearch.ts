@@ -1,4 +1,4 @@
-import { isArr, isMap, isObj, isRegExp, isStr } from '../is'
+import { isArr, isMap, isObj, isRegExp, isSet, isStr } from '../is'
 import mapEntries from './mapEntries'
 import { mapValues } from './mapValues'
 import { SearchConfig } from './types'
@@ -40,14 +40,15 @@ export const mapSearch = <
 	if (!isObj(query)) query = {}
 	if (!isMap(result)) result = new Map<K, V>()
 	const qKeys = Object.keys(query)
-	const entries =
+	const entries = (
 		qKeys.length === 0
 			? []
 			: isMap(map)
 				? mapEntries(map)
 				: isArr(map)
-					? (map.map((x, i) => [i, x]) as [K, V][])
+					? map.map((x, i) => [i, x])
 					: []
+	) as [K, V][]
 
 	if (!qKeys.length || !entries.length)
 		return (asMap ? result : mapValues(result)) as Result
@@ -65,7 +66,12 @@ export const mapSearch = <
 		if (!isObj(item)) return false
 
 		const keyword = query[key]
-		let value = `${item[key] ?? ''}`
+		const kv = item[key] ?? ''
+		let value = isObj(kv, false)
+			? JSON.stringify(
+					isMap(kv) ? mapValues(kv) : isSet(kv) ? [...kv] : kv,
+				)
+			: `${(kv as string) ?? ''}`
 
 		if (ignoreCase) value = value.toLowerCase()
 		if (isRegExp(keyword)) return keyword.test(`${value}`)

@@ -8,4 +8,4 @@ export const arrSearch = <
 >(
 	arr: V[],
 	conf: SearchConfig<number, V, AsMap>,
-) => mapSearch(arr, { asMap: false, ...(isObj(conf) && conf) }) as Result
+): Result => mapSearch(arr, { asMap: false, ...(isObj(conf) && conf) })

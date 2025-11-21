@@ -25,7 +25,7 @@ export const objReadOnly = <
 ): Result => {
 	if (!isObj(obj, false)) obj = {} as T
 
-	const { add, revocable, silent = true } = config || {}
+	const { add, revocable, silent = true } = config ?? {}
 
 	function handleSetProp(obj: T, key: string | symbol, value: unknown) {
 		const isUpdate = obj.hasOwnProperty(key)

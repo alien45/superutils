@@ -1,8 +1,9 @@
 import fallbackIfFails from '../fallbackIfFails'
+import { RecordKey } from '../types'
 
 /** Get object keys */
 export const objKeys = <
-	Key extends keyof any,
+	Key extends RecordKey,
 	Include extends true | false = true,
 >(
 	obj: Record<Key, unknown>,

@@ -1,6 +1,7 @@
 import { arrReverse } from '../arr'
 import { isArr, isFn, isObj } from '../is'
 import { SortConfig } from '../map'
+import { RecordKey } from '../types'
 
 /**
  * @name	arrSort
@@ -44,23 +45,23 @@ import { SortConfig } from '../map'
  * // }
  * ```
  */
-export function arrSort<V extends Record<keyof any, unknown>>(
+export function arrSort<V extends Record<RecordKey, unknown>>(
 	arr: V[],
 	key: keyof V & string,
 	config?: SortConfig,
 ): V[]
-export function arrSort<K, V>(
+export function arrSort<V>(
 	arr: V[],
 	comparator: (a: V, b: V) => number,
 	config?: SortConfig,
 ): V[]
-export function arrSort<K, V extends string | boolean | number>(
+export function arrSort<V extends string | boolean | number>(
 	arr: V[],
 	config?: SortConfig,
 ): V[]
-export function arrSort<K extends keyof any, V = Record<K, unknown>>(
+export function arrSort<K extends RecordKey, V = Record<K, unknown>>(
 	arr: V[],
-	keyOrFn: unknown | SortConfig,
+	keyOrFn: (K & string) | ((a: V, b: V) => number) | SortConfig,
 	config?: SortConfig,
 ) {
 	if (!isArr(arr)) return []
@@ -79,7 +80,7 @@ export function arrSort<K extends keyof any, V = Record<K, unknown>>(
 		: (() => {
 				const key = keyOrFn as keyof V
 				const getVal = (obj: V) => {
-					const value = `${(isObj(obj) && key ? obj[key] : obj) ?? placeholder}`
+					const value = `${((isObj(obj) && key ? obj[key] : obj) as string) ?? placeholder}`
 					return ignoreCase ? value.toLowerCase() : value
 				}
 				return arr.sort((a, b) => (getVal(a) > getVal(b) ? 1 : -1))

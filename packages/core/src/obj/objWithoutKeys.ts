@@ -1,4 +1,5 @@
 import { isArr, isObj } from '../is'
+import { RecordKey } from '../types'
 
 /**
  * @function	objWithoutKeys
@@ -14,7 +15,7 @@ import { isArr, isObj } from '../is'
 export const objWithoutKeys = (
 	input: unknown,
 	keys: string[],
-	output?: Record<keyof any, unknown>,
+	output?: Record<RecordKey, unknown>,
 ) => {
 	if (!isObj(input, false)) return {}
 	if (!isArr(keys) || !keys.length) return input

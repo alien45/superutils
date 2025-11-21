@@ -1,6 +1,7 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { asAny } from '../forceCast'
 import { isEmpty, isObj, isSymbol } from '../is'
+import { RecordKey } from '../types'
 import objKeys from './objKeys'
 
 /** Clone any value by first strinfigying and then parsing back  */
@@ -36,7 +37,7 @@ export const objCopy = <
 	IgnoredKey extends Key | string,
 >(
 	input: T,
-	output?: Record<keyof any, unknown>,
+	output?: Record<RecordKey, unknown>,
 	ignoreKeys?: IgnoredKey[] | Set<IgnoredKey>,
 	override: boolean | 'empty' = false,
 	recursive = true,
@@ -44,12 +45,13 @@ export const objCopy = <
 	if (!isObj(output)) output = {} as T
 	if (!isObj(input)) return output
 
-	const _ignoreKeys = new Set(ignoreKeys || [])
+	const _ignoreKeys = new Set(ignoreKeys ?? [])
 	const inKeys = (objKeys(input, true) as IgnoredKey[]).filter(
 		x => !_ignoreKeys.has(x),
 	)
-	for (let i = 0; i < inKeys.length; i++) {
-		const key = inKeys[i] as Key
+
+	for (const _key of inKeys) {
+		const key = _key as Key
 		const value = input[key]
 
 		const skip =
@@ -58,7 +60,7 @@ export const objCopy = <
 		if (skip) continue
 
 		const isPrimitive =
-			[undefined, null, Infinity, NaN].includes(value as any)
+			[undefined, null, Infinity, NaN].includes(asAny(value))
 			|| !isObj(value, false)
 		if (isPrimitive) {
 			// directly assign any primitive types
@@ -75,15 +77,18 @@ export const objCopy = <
 				case Date.prototype:
 					return new Date(asAny<Date>(value).getTime())
 				case Map.prototype:
-					const arr2d = Array.from(
-						asAny<Map<unknown, unknown>>(value),
+					return new Map(
+						clone(
+							Array.from(asAny<Map<unknown, unknown>>(value)),
+							'[]',
+						),
 					)
-					return new Map(clone(arr2d, '[]'))
 				case RegExp.prototype:
 					return new RegExp(asAny<RegExp>(value))
 				case Set.prototype:
-					const arr = Array.from(asAny<Set<unknown>>(value))
-					return new Set(clone(arr))
+					return new Set(
+						clone(Array.from(asAny<Set<unknown>>(value))),
+					)
 				case Uint8Array.prototype:
 					return new Uint8Array([...asAny<Uint8Array>(value)])
 				case URL.prototype:
@@ -92,14 +97,14 @@ export const objCopy = <
 					break
 			}
 
-			if (!recursive || isSymbol(key)) return clone(value)
+			if (isSymbol(key) || !recursive) return clone(value)
 
 			const ignoreChildKeys = [..._ignoreKeys]
 				.map(
 					x =>
 						!isSymbol(x)
-						&& x.startsWith(`${key as string}.`)
-						&& x.split(`${key as string}.`)[1],
+						&& x.startsWith(key.concat('.'))
+						&& x.split(key.concat('.'))[1],
 				)
 				.filter(Boolean) as Key[]
 			if (!ignoreChildKeys.length) return clone(value)

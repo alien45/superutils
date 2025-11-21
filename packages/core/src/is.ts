@@ -100,11 +100,12 @@ export const isEmpty = (x: any) => {
 				return !isValidNumber(x)
 			// for both array and object
 			case 'object':
+				// eslint-disable-next-line no-case-declarations
 				const len = isArr(x)
 					? x.length
 					: isMap(x) || isSet(x)
 						? x.size
-						: Object.keys(x).length
+						: Object.keys(x as object).length
 				return len === 0
 			case 'boolean':
 			default:
@@ -152,10 +153,11 @@ export const isObj = <T = object>(x: any, strict = true): x is T =>
 	!!x // excludes null, NaN, Infinity....
 	&& typeof x === 'object'
 	&& (!strict
-		// excludes Array, Map, Set...
+		// excludes Array, BigInt, Uint8Array, Map, Set...
 		|| [
 			Object.prototype,
 			null, // when an object is created using `Object.create(null)`
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		].includes(Object.getPrototypeOf(x)))
 
 /** Checks if value is a positive integer */
@@ -191,7 +193,7 @@ export const isSymbol = (x: any): x is symbol => typeof x === 'symbol'
 export const isTouchable = () => {
 	if (!isEnvBrowser()) return false
 	try {
-		return 'ontouchstart' in document?.documentElement
+		return 'ontouchstart' in document.documentElement
 	} catch (_) {
 		return false
 	}

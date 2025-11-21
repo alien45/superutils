@@ -1,5 +1,6 @@
 import { arrReverse } from '../arr'
 import { isFn, isMap, isObj } from '../is'
+import { RecordKey } from '../types'
 import { SortConfig } from './types'
 
 /**
@@ -44,7 +45,7 @@ import { SortConfig } from './types'
  * // }
  * ```
  */
-export function mapSort<K, V extends Record<keyof any, unknown>>(
+export function mapSort<K, V extends Record<RecordKey, unknown>>(
 	map: Map<K, V>,
 	key: keyof V & string,
 	config?: SortConfig,
@@ -58,9 +59,12 @@ export function mapSort<K, V extends string | boolean | number>(
 	map: Map<K, V>,
 	config?: SortConfig,
 ): Map<K, V>
-export function mapSort<K, V = Record<keyof any, unknown>>(
+export function mapSort<K, V = Record<RecordKey, unknown>>(
 	map: Map<K, V>,
-	keyOrFn: unknown | SortConfig,
+	keyOrFn?:
+		| (keyof V & string)
+		| ((a: [K, V], b: [K, V]) => number)
+		| SortConfig,
 	config?: SortConfig,
 ) {
 	if (!isMap(map)) return new Map()
@@ -80,7 +84,7 @@ export function mapSort<K, V = Record<keyof any, unknown>>(
 		: (() => {
 				const key = keyOrFn as keyof V
 				const getVal = (obj: V) => {
-					const value = `${(isObj(obj) && key ? obj[key] : obj) ?? placeholder}`
+					const value = `${((isObj(obj) && key ? obj[key] : obj) as string) ?? placeholder}`
 					return ignoreCase ? value.toLowerCase() : value
 				}
 				return arr2d.sort((a, b) =>

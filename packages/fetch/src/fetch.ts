@@ -158,6 +158,7 @@ const executeInterceptors = async <
 ) => {
 	for (const interceptor of interceptors.filter(isFn)) {
 		const _args = [interceptor, [value, args] as TArgs2, value] as const
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		value = (await fallbackIfFails(..._args)) ?? value
 	}
 	return value
