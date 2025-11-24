@@ -36,11 +36,13 @@ export const mapSearch = <
 		matchExact = false,
 	} = conf
 	let { query, result } = conf || {}
-	const entries = isMap(map)
-		? mapEntries(map)
-		: isArr(map)
-			? (map.map((x, i) => [i, x]) as [K, V][])
-			: []
+	const entries = (
+		isMap(map)
+			? mapEntries(map)
+			: isArr(map)
+				? map.map((x, i) => [i, x])
+				: []
+	) as [K, V][]
 
 	if (!isObj(query)) {
 		const firstValue = entries?.[0]?.[1]

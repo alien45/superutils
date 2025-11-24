@@ -1,5 +1,4 @@
 import { isArr, isDefined, isFn, isObj } from '../is'
-import { RecordKey } from '../types'
 
 /**
  * @name	arrToMap
@@ -64,7 +63,9 @@ export const arrToMap = <
 				(isFn(key)
 					? key(item as MapItem, i, arrFlat, arr)
 					: isObj(item) && isDefined(key) && !isFn(key)
-						? (item as Record<RecordKey, unknown>)[key as RecordKey]
+						? (item as Record<PropertyKey, unknown>)[
+								key as PropertyKey
+							]
 						: i) ?? i,
 				item,
 			]),

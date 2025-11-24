@@ -3,7 +3,7 @@ import {
 	fallbackIfFails,
 	isFn,
 	isPositiveNumber,
-	isValidURL,
+	isUrlValid,
 	type TimeoutId,
 } from '@superutils/core'
 import PromisE, { type IPromisE, ThePromise } from '@superutils/promise'
@@ -64,7 +64,7 @@ export function fetcher<
 		let errResponse: Response | undefined
 		try {
 			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			if (!isValidURL(url, false)) throw errMsgs.invalidUrl //new Error()
+			if (!isUrlValid(url, false)) throw errMsgs.invalidUrl //new Error()
 			// make the fetch call
 			let response = await getResponse(url, options)
 			// invoke global and local request interceptors to intercept and/or transform `response`

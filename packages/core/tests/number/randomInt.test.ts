@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { randomInt } from '../../src/number/randomInt.js'
+import { randomInt } from '../../src'
 
 describe('randomInt', () => {
 	it('generates random integers within the specified range', () => {

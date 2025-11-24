@@ -1,6 +1,4 @@
-import { arrReverse } from '../arr'
 import { isFn, isMap, isObj } from '../is'
-import { RecordKey } from '../types'
 import { SortConfig } from './types'
 
 /**
@@ -45,7 +43,7 @@ import { SortConfig } from './types'
  * // }
  * ```
  */
-export function mapSort<K, V extends Record<RecordKey, unknown>>(
+export function mapSort<K, V extends Record<PropertyKey, unknown>>(
 	map: Map<K, V>,
 	propertyName: keyof V & string,
 	config?: SortConfig,
@@ -65,7 +63,7 @@ export function mapSort<K, V extends string | boolean | number>(
 	map: Map<K, V>,
 	config?: SortConfig,
 ): Map<K, V>
-export function mapSort<K, V = Record<RecordKey, unknown>>(
+export function mapSort<K, V = Record<PropertyKey, unknown>>(
 	map: Map<K, V>,
 	keyOrFn?:
 		| true

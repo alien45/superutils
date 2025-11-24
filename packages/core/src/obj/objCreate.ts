@@ -1,5 +1,4 @@
 // import { isArr, isObj } from '../is'
-// import { RecordKey } from '../types'
 
 // /**
 //  * @name	objCreate
@@ -12,7 +11,7 @@
 //  *
 //  * @returns	{Object}
 //  */
-// export const objCreate = (keys: RecordKey[] = [], values = [], result = {}) => {
+// export const objCreate = (keys: PropertyKey[] = [], values = [], result = {}) => {
 // 	if (!isArr(keys) || !isArr(values) || !isObj(result)) return {}
 // 	for (let i = 0; i < keys.length; i++) {
 // 		const key = keys[i]

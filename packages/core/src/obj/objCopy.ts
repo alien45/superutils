@@ -1,7 +1,6 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { asAny } from '../forceCast'
 import { isEmpty, isObj, isSymbol } from '../is'
-import { RecordKey } from '../types'
 import objKeys from './objKeys'
 
 /** Clone any value by first strinfigying and then parsing back  */
@@ -37,7 +36,7 @@ export const objCopy = <
 	IgnoredKey extends Key | string,
 >(
 	input: T,
-	output?: Record<RecordKey, unknown>,
+	output?: Record<PropertyKey, unknown>,
 	ignoreKeys?: IgnoredKey[] | Set<IgnoredKey>,
 	override: boolean | 'empty' = false,
 	recursive = true,

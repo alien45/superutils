@@ -2,13 +2,19 @@
  * @name	clearClutter
  * @summary clears clutter from strings
  *
- * - removes trailing, leading & unnecessary whitespaces
- * - removes replaces new line characters (`\n`) with whitespaces
+ * - removes trailing & leading whitespaces
+ * - removes empty/whitespace-only lines
+ * - converts multiline strings to single line
+ *
+ * @param	text	string to clear clutter from
+ * @param	lineSeparator	(optional) string to use as line separator. Default: single space `' '`
+ *
+ * @returns cleaned string
  */
-export const clearClutter = (x: string) =>
-	`${x}`
+export const clearClutter = (text: string, lineSeparator = ' ') =>
+	`${text}`
 		.split('\n')
-		.map(y => y.trim())
+		.map(ln => ln.trim())
 		.filter(Boolean)
-		.join(' ')
+		.join(lineSeparator)
 export default clearClutter

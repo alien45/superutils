@@ -1,6 +1,6 @@
 import { arrUnique } from '../arr'
 import fallbackIfFails from '../fallbackIfFails'
-import { isUrl } from '../is'
+import { isArr, isStr, isUrl } from '../is'
 
 /**
  * @name    getUrlParam
@@ -9,64 +9,95 @@ import { isUrl } from '../is'
  * @param name   (optional) name of a specific parameter to get value of.
  * If not provided, will return an object containing all the URL parameters with respective values.
  * @param url (optional) default: `window.location.href`
- * @param arrayNames (optional) parameter names that should be returned as Array.
+ * @param asArray (optional) parameter names that should be returned as Array.
  * By default if a parameter contains multiple values it will be returned as unique Array.
  *
  * @returns {String|Object}
  */
-export const getUrlParam = (
-	name?: string,
+export const getUrlParam = <
+	TName extends string | undefined,
+	TAsArray extends
+		| undefined
+		| string[]
+		| (TName extends undefined ? never : true),
+	TResult = TName extends undefined
+		? Record<string, string>
+		: string | string[],
+>(
+	name?: TName,
 	url?: string | URL,
-	arrayNames: string[] = [],
-) => {
+	asArray?: TAsArray,
+): TResult => {
 	url ??= fallbackIfFails(() => window.location.href, [], '')
+	const _asArray: string[] = isArr<string>(asArray)
+		? asArray
+		: asArray === true && isStr(name)
+			? [name]
+			: []
+	const prepareResult = (value: unknown = '', values: unknown = {}) =>
+		(name
+			? isArr(value) || !_asArray.includes(name)
+				? value
+				: [value]
+			: values) as TResult
 
-	try {
-		const search = isUrl(url)
-			? url.search
-			: '?' + (url.split('?')?.[1] || '')
-		if (!search) return {}
-
-		const params = new URLSearchParams(search)
-
-		if (name) return params.get(name)
-
-		const result: Record<string, string | string[]> = {}
-		const uniqKeys = arrUnique([...params.keys()])
-		for (const key of uniqKeys) {
-			const value = arrUnique(params.getAll(key))
-			result[key] =
-				value.length > 1 || arrayNames.includes(key)
-					? value
-					: (value[0] ?? '')
-		}
-
-		return result
-	} catch (_) {
-		return getUrlParamRegex(name, url, arrayNames)
+	if (!url) return prepareResult()
+	if (typeof URLSearchParams === 'undefined' || !URLSearchParams) {
+		const r = getUrlParamRegex(name, url, _asArray)
+		return prepareResult(r, r)
 	}
+
+	const search = isUrl(url) ? url.search : url.split('?')?.[1] || ''
+	if (search === '?' || !search) return prepareResult()
+
+	const params = new URLSearchParams(search)
+
+	const getValue = (paramName: string) => {
+		const value = arrUnique(params.getAll(paramName))
+		return value.length > 1 || _asArray.includes(paramName)
+			? value
+			: value[0]
+	}
+
+	if (name) return prepareResult(getValue(name))
+
+	const result: Record<string, string | string[]> = {}
+	for (const name of arrUnique([...params.keys()])) {
+		result[name] = getValue(name)
+	}
+
+	return result as TResult
 }
 
-/** Get url params using regex. For older browsers where URLSearchParams is not supported */
-export const getUrlParamRegex = (
+/**
+ * Get url params using regex as a fallback for {@link getUrlParam()}.
+ * For older browsers or environments where `URLSearchParams` is not supported.
+ */
+const getUrlParamRegex = (
 	name?: string,
 	url?: string | URL,
-	arrayNames: string[] = [],
+	asArray: string[] = [],
 ) => {
 	url ??= fallbackIfFails(() => window.location.href, [], '')
+
+	// if (!url) return
 	if (isUrl(url)) url = url.toString()
+
 	const params: Record<string, string | string[]> = {}
 	const regex = /[?&]+([^=&]+)=([^&]*)/gi
 
 	url.replace(regex, (_, name: string, value: string) => {
 		value = decodeURIComponent(value)
-		if (arrayNames.includes(name)) params[name] ??= []
-		if (params[name] === undefined) {
+		if (asArray.includes(name) || params[name] !== undefined) {
+			params[name] = isArr(params[name])
+				? params[name]
+				: [params[name]].filter(x => x !== undefined)
+			params[name] = arrUnique([...params[name], value])
+		} else {
 			params[name] = value
-			return ''
 		}
-		params[name] = arrUnique([...params[name], value])
+
 		return ''
 	})
-	return name ? params[name] || '' : params
+	return name ? params[name] : params
 }

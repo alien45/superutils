@@ -1,6 +1,5 @@
 import { arrUnique } from '../arr'
 import { isArr, isObj, isStr, isSymbol } from '../is'
-import { RecordKey } from '../types'
 
 /**
  * @name	objClean
@@ -12,7 +11,7 @@ import { RecordKey } from '../types'
  * @param ignoreIfNotExist (optional) if truthy, will ignore non-existent `keys`. Default: `true`
  */
 export const objClean = <
-	T extends Record<RecordKey, unknown>,
+	T extends Record<PropertyKey, unknown>,
 	Key extends keyof T = keyof T,
 >(
 	obj: T,
@@ -48,7 +47,7 @@ export const objClean = <
 		}
 
 		result[key] = objClean(
-			value as Record<RecordKey, unknown>,
+			value as Record<PropertyKey, unknown>,
 			childKeys,
 		) as T[Key]
 	}
