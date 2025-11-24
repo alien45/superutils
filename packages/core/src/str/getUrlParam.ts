@@ -38,7 +38,7 @@ export const getUrlParam = <
 		(name
 			? isArr(value) || !_asArray.includes(name)
 				? value
-				: [value]
+				: [value].filter(Boolean)
 			: values) as TResult
 
 	if (!url) return prepareResult()
@@ -89,14 +89,11 @@ const getUrlParamRegex = (
 	url.replace(regex, (_, name: string, value: string) => {
 		value = decodeURIComponent(value)
 		if (asArray.includes(name) || params[name] !== undefined) {
-			params[name] = isArr(params[name])
-				? params[name]
-				: [params[name]].filter(x => x !== undefined)
-			params[name] = arrUnique([...params[name], value])
+			params[name] = isArr(params[name]) ? params[name] : [params[name]]
+			params[name] = arrUnique([...params[name], value]).filter(Boolean)
 		} else {
 			params[name] = value
 		}
-
 		return ''
 	})
 	return name ? params[name] : params

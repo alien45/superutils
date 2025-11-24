@@ -1,23 +1,56 @@
-import { objReadOnly, type ObjReadOnlyConf } from '../obj'
+import { objReadOnly, type ReadOnlyConfig } from '../obj'
 
 /**
- * @name	arrReadOnly
- * @summary sugar for `objReadOnly()` for an Array
+ * Sugar for `objReadOnly()` for an Array
  *
- * @param input
+ * @param arr
  * @param config (optional)
- * @param config.silent
- * @param config.strict
- * @param config.revocable
+ * @param config.add (optional) Whether to allow adding new properties. Default: `false`
+ * @param config.revocable (optional) Default: `false`
+ * @param config.silent (optional) Whether to throw error when a write operation is rejected. Default: `true`
  *
  * @returns Readonly Array or object containing readonly Array and revoke function
  */
-export const arrReadOnly = <
-	T extends unknown[],
-	Revocable extends true | false = false,
->(
-	input: T,
-	config?: ObjReadOnlyConf<T, Revocable>,
-) => objReadOnly(input, config)
+export const arrReadOnly = <T>(
+	input: T[],
+	config: Omit<ReadOnlyConfig<T[]>, 'revoke'> = {},
+) => objReadOnly(new ReadOnlyArrayHelper(config, input) as T[], config)
 
 export default arrReadOnly
+
+/**
+ * Helper class for creating read-only arrays.
+ *
+ * Caution: This class can by itself only make the array partially read-only.
+ * Use {@link arrReadOnly()} instead.
+ */
+export class ReadOnlyArrayHelper<T> extends Array<T> {
+	constructor(
+		readonly config: Omit<ReadOnlyConfig<T[]>, 'revoke'>,
+		arr: T[],
+	) {
+		config.silent ??= true
+		super(...arr)
+	}
+
+	private ignoreOrThrow = <RV>(returnValue: RV): RV => {
+		if (this.config.silent) return returnValue
+
+		throw new Error('Mutation not allowed on read-only array')
+	}
+
+	pop = () => this.ignoreOrThrow(this[this.length - 1])
+
+	push = (...items: T[]) =>
+		!this.config.add
+			? this.ignoreOrThrow(this.length)
+			: super.push(...items)
+
+	reverse = () => this.ignoreOrThrow(this)
+
+	shift = () => this.ignoreOrThrow(this[0])
+
+	splice = (..._ignoredArgs: unknown[]) => this.ignoreOrThrow([])
+
+	unshift = (..._ignoredArgs: T[]) => this.ignoreOrThrow(this.length)
+}

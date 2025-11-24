@@ -7,5 +7,5 @@ export const arrSearch = <
 	Result = AsMap extends true ? Map<number, V> : V[],
 >(
 	arr: V[],
-	conf: SearchConfig<number, V, AsMap>,
-): Result => mapSearch(arr, { asMap: false, ...(isObj(conf) && conf) })
+	config: SearchConfig<number, V, AsMap>,
+): Result => mapSearch(arr, { asMap: false, ...(isObj(config) && config) })

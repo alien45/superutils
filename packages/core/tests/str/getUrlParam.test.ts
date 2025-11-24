@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getUrlParam } from '../../src'
 
-describe('getUrlParam', () => {
-	const runTests = (forceUseRegex = false) => {
+const runTests = (useRegex = false) => {
+	const title = useRegex ? 'getUrlParamRegex' : 'getUrlParam'
+	describe(title, () => {
 		const href =
 			'https://example.com?page=2&sort=asc&filter=one&filter=two&filter=three&filter=four'
 		const params = {
@@ -14,58 +15,52 @@ describe('getUrlParam', () => {
 			location: { href },
 		})
 
+		afterEach(() => {
+			vi.unstubAllGlobals()
+		})
+		beforeEach(() => {
+			vi.stubGlobal('window', mockWindow)
+			if (useRegex) vi.stubGlobal('URLSearchParams', undefined)
+		})
+
 		it('should return URL parameters as an object', () => {
-			if (forceUseRegex) vi.stubGlobal('URLSearchParams', undefined)
+			vi.stubGlobal('window', undefined) // reverse window mock
+			if (useRegex) vi.stubGlobal('URLSearchParams', undefined)
 			expect(getUrlParam()).toEqual({})
 			expect(getUrlParam('', href)).toEqual(params)
 			expect(getUrlParam(null as any, new URL(href))).toEqual(params)
-			vi.unstubAllGlobals()
 		})
 
 		it('should return empty string/object when running on non-browser enviroments', () => {
-			if (forceUseRegex) vi.stubGlobal('URLSearchParams', undefined)
+			vi.stubGlobal('window', undefined)
 			expect(getUrlParam('', href.split('?')[0])).toEqual({}) // URL with no parameters
 			expect(getUrlParam('page')).toEqual('')
-			expect(getUrlParam('filter', undefined, ['filter'])).toEqual([''])
-			vi.unstubAllGlobals()
+			expect(getUrlParam('filter', undefined, ['filter'])).toEqual([])
 		})
 
 		it('should return all URL parameters from browser location', () => {
-			vi.stubGlobal('window', mockWindow)
-			const result = getUrlParam()
-			expect(result).toEqual(params)
-			vi.unstubAllGlobals()
+			expect(getUrlParam()).toEqual(params)
 		})
 
 		it('should return specified parameter by name', () => {
-			if (forceUseRegex) vi.stubGlobal('URLSearchParams', undefined)
-			vi.stubGlobal('window', mockWindow)
 			expect(getUrlParam('page')).toEqual(params.page)
 			expect(getUrlParam('sort')).toEqual(params.sort)
 			expect(getUrlParam('filter')).toEqual(params.filter)
-			vi.unstubAllGlobals()
 		})
 
 		it('should force a parameter value to be array', () => {
-			if (forceUseRegex) vi.stubGlobal('URLSearchParams', undefined)
-			vi.stubGlobal('window', mockWindow)
 			expect(getUrlParam('page', undefined, true)).toEqual(['2'])
-			vi.unstubAllGlobals()
+			expect(getUrlParam('unknown', undefined, true)).toEqual([])
 		})
 
-		it('should handle array values even when name is not specified in asArray argument', () => {
-			if (forceUseRegex) vi.stubGlobal('URLSearchParams', undefined)
-			vi.stubGlobal('window', mockWindow)
-			const result = getUrlParam('filter', undefined, ['page'])
+		it('should handle array values even when specific name is not specified in asArray argument', () => {
+			const result = getUrlParam('filter', undefined, [])
 			expect(result).toEqual(params.filter)
-			vi.unstubAllGlobals()
 		})
-	}
-
-	runTests(false)
-
-	describe('fallback to getUrlParamRegex() when URLSearchParams is not supported', () => {
-		// run the same tests but force use of getUrlParamRegex
-		runTests(true)
 	})
-})
+}
+
+runTests(false)
+
+// run the same tests but force use of getUrlParamRegex
+runTests(true)

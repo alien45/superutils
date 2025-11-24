@@ -56,11 +56,11 @@ describe('copyToClipboard', () => {
 		expect(execCommand).toHaveBeenCalledWith('copy')
 	})
 
-	// it('should return 0 when in non-browser environments and/or both methods fails', async () => {
-	// 	vi.stubGlobal('navigator', {})
-	// 	vi.stubGlobal('document', undefined)
+	it('should return 0 when in non-browser environments and/or both methods fails', async () => {
+		vi.stubGlobal('navigator', {})
+		vi.stubGlobal('document', undefined)
 
-	// 	const result = await copyToClipboard('some text')
-	// 	expect(result).toBe(0)
-	// })
+		const result = await copyToClipboard('some text')
+		expect(result).toBe(0)
+	})
 })

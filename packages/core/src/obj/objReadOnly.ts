@@ -1,5 +1,5 @@
 import { isArr, isFn, isObj } from '../is'
-import { ObjReadOnlyConf } from './types'
+import { ReadOnlyConfig } from './types'
 
 /**
  * @name	objReadOnly
@@ -21,23 +21,36 @@ export const objReadOnly = <
 	Result = Revocable extends true ? ReturnType<typeof Proxy.revocable<T>> : T,
 >(
 	obj: T,
-	config?: ObjReadOnlyConf<T, Revocable>,
+	config?: ReadOnlyConfig<T, Revocable>,
 ): Result => {
 	if (!isObj(obj, false)) obj = {} as T
 
 	const { add, revocable, silent = true } = config ?? {}
 
+	const [typeTitle, keyTitle] = isArr(obj)
+		? ['array', 'index']
+		: ['object', 'property name']
 	function handleSetProp(obj: T, key: string | symbol, value: unknown) {
-		const isUpdate = obj.hasOwnProperty(key)
+		const isUpdate = obj[key as keyof T] !== undefined
+
 		if (isUpdate && silent) return true
 
 		const allowAddition =
 			!isUpdate && (!isFn(add) ? add : add(obj, key, value))
 		// in strict mode, prevents adding or updating properties
 		const shouldThrow = !silent && (isUpdate || !allowAddition)
+		if (Array.isArray(obj))
+			console.log({
+				obj,
+				key,
+				value,
+				isUpdate,
+				allowAddition,
+				shouldThrow,
+			})
 		if (shouldThrow)
 			throw new TypeError(
-				`Assignment to constant ${isArr(obj) ? 'array' : 'object'} key: ${key.toString()}`,
+				`Mutation not allow on read-only ${typeTitle} ${keyTitle}: ${key.toString()}`,
 			)
 		// Ignore attempt to update property
 		if (!allowAddition) return true
@@ -52,9 +65,10 @@ export const objReadOnly = <
 		defineProperty: (obj, key, { value }) => handleSetProp(obj, key, value),
 		// Prevent removal of properties
 		deleteProperty: (obj, key) => {
+			if (Array.isArray(obj)) console.log({ obj, key })
 			if (!silent && obj.hasOwnProperty(key)) {
 				throw new Error(
-					`Deletion of constant ${isArr(obj) ? 'array' : 'object'} key: ${key.toString()}`,
+					`Mutation not allow on read-only ${typeTitle} ${keyTitle}: ${key.toString()}`,
 				)
 			}
 			return true

@@ -19,7 +19,7 @@
 		"node_modules",
 		"dist",
 		// Exclude all possible tests files and directories
-		"packages/*/tests**",
+		"packages/*/tests/**",
 		"**/__tests__",
 		"**/__tests__/**",
 		"**/*.test.ts",

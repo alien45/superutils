@@ -26,7 +26,7 @@ export const mapSearch = <
 	Result = AsMap extends true ? Map<K, V> : V[],
 >(
 	map: T,
-	conf: SearchConfig<K, V, AsMap>,
+	config: SearchConfig<K, V, AsMap>,
 ): Result => {
 	const {
 		asMap = true as AsMap,
@@ -34,8 +34,8 @@ export const mapSearch = <
 		limit = Infinity,
 		matchAll = false,
 		matchExact = false,
-	} = conf
-	let { query, result } = conf || {}
+	} = config
+	let { query, result } = config || {}
 	const entries = (
 		isMap(map)
 			? mapEntries(map)
