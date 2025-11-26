@@ -1,7 +1,6 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Demo",
-	"devDependencies": {},
 	"files": [
 		"dist",
 		"README.md",
@@ -18,14 +17,12 @@
 	"main": "dist/index.js",
 	"type": "module",
 	"name": "@superutils/demo",
-	"peerDependencies": {},
 	"scripts": {
 		"build": "tsc -p tsconfig.json",
 		"start": "node dist/index.js",
 		"test": "jest",
 		"watch": "tsc -p tsconfig.json --watch"
 	},
-	"type": "module",
 	"types": "dist/index.d.ts",
 	"version": "0.1.0"
 }

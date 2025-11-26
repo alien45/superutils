@@ -3,8 +3,7 @@ import fallbackIfFails from '../fallbackIfFails'
 import { isArr, isStr, isUrl } from '../is'
 
 /**
- * @name    getUrlParam
- * @summary read parameters of a given URL
+ * Read parameters of a given URL
  *
  * @param name   (optional) name of a specific parameter to get value of.
  * If not provided, will return an object containing all the URL parameters with respective values.

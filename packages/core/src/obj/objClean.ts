@@ -2,12 +2,10 @@ import { arrUnique } from '../arr'
 import { isArr, isObj, isStr, isSymbol } from '../is'
 
 /**
- * @name	objClean
- * @summary	constructs a new object with only the supplied property names (keys) and their respective values
+ * Constructs a new object with only the supplied property names (keys) and their respective values
  *
  * @param obj
  * @param keys property names to keep
- * @param recursive (optional) Default: `false`
  * @param ignoreIfNotExist (optional) if truthy, will ignore non-existent `keys`. Default: `true`
  */
 export const objClean = <

@@ -1,5 +1,5 @@
 import { isFn } from '../is/'
-import { mapSearch, type SearchOptions } from '../iterable'
+import { search, type SearchOptions } from '../iterable'
 import { mapFilter } from './mapFilter'
 
 export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
@@ -16,7 +16,6 @@ export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
 	includeKey?: IncludeKey
 }
 /**
- * @name	mapFind
  * @summary finds a specific object by supplied object property/key and value within.
  *
  * @returns first item matched or `undefined` if not found
@@ -75,7 +74,7 @@ export function mapFind<
 ): Result {
 	const result = isFn(optsOrCb)
 		? mapFilter(data, optsOrCb, 1)
-		: mapSearch(data, { ...optsOrCb, asMap: true, limit: 1 })
+		: search(data, { ...optsOrCb, asMap: true, limit: 1 })
 
 	return result[
 		(optsOrCb as Record<string, unknown>)?.includeKey

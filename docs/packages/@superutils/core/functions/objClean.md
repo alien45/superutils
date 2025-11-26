@@ -2,7 +2,9 @@
 
 > **objClean**\<`T`, `Key`\>(`obj`, `keys`, `ignoreIfNotExist`): `Record`\<`Key`, `T`\[`Key`\]\>
 
-Defined in: [packages/core/src/obj/objClean.ts:13](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objClean.ts#L13)
+Defined in: [packages/core/src/obj/objClean.ts:11](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objClean.ts#L11)
+
+Constructs a new object with only the supplied property names (keys) and their respective values
 
 ## Type Parameters
 
@@ -35,7 +37,3 @@ property names to keep
 ## Returns
 
 `Record`\<`Key`, `T`\[`Key`\]\>
-
-## Name
-
-objClean

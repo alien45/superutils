@@ -1,6 +1,6 @@
 # Interface: SubjectLike\<T\>
 
-Defined in: [packages/rx/src/types.ts:1](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/rx/src/types.ts#L1)
+Defined in: [packages/rx/src/types.ts:1](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/rx/src/types.ts#L1)
 
 ## Type Parameters
 
@@ -14,7 +14,7 @@ Defined in: [packages/rx/src/types.ts:1](https://github.com/alien45/utiils/blob/
 
 > **next**: (`value`) => `void`
 
-Defined in: [packages/rx/src/types.ts:3](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/rx/src/types.ts#L3)
+Defined in: [packages/rx/src/types.ts:3](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/rx/src/types.ts#L3)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [packages/rx/src/types.ts:3](https://github.com/alien45/utiils/blob/
 
 > **subscribe**: (`next`, ...`args`) => [`SubscriptionLike`](SubscriptionLike.md)
 
-Defined in: [packages/rx/src/types.ts:4](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/rx/src/types.ts#L4)
+Defined in: [packages/rx/src/types.ts:4](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/rx/src/types.ts#L4)
 
 #### Parameters
 
@@ -54,4 +54,4 @@ Defined in: [packages/rx/src/types.ts:4](https://github.com/alien45/utiils/blob/
 
 > **value**: `T`
 
-Defined in: [packages/rx/src/types.ts:8](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/rx/src/types.ts#L8)
+Defined in: [packages/rx/src/types.ts:8](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/rx/src/types.ts#L8)

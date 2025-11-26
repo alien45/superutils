@@ -2,7 +2,7 @@
 
 > **IterableType**\<`T`, `Fallback`\> = `T` *extends* infer V[] ? `V`[] : `T` *extends* `Set`\<infer V\> ? `Set`\<`V`\> : `T` *extends* `Map`\<infer K, infer V\> ? `Map`\<`K`, `V`\> : `Fallback`
 
-Defined in: packages/core/src/iterable/types.ts:10
+Defined in: [packages/core/src/iterable/types.ts:10](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L10)
 
 Return the appropriate type if `Array | Map | Set`
 

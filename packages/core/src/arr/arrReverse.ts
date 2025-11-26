@@ -1,8 +1,7 @@
 import { isArr } from '../is'
 
 /**
- * @name	arrReverse
- * @summary Reverse an array conditionally
+ * Reverse an array conditionally
  *
  * @param   arr
  * @param	reverse	 (optional) condition to reverse the array.

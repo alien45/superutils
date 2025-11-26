@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { asAny, fallbackIfFails, isFn, isPromise } from '@superutils/core'
-import { OnEarlyFinalize, PromiseParams, IPromisE, ThePromise } from './types'
+import { OnEarlyFinalize, PromiseParams, IPromisE } from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
 	implements IPromisE<T>
 {
 	public readonly state: 0 | 1 | 2 = 0
-	private _resolve?: (value: T) => void
+	private _resolve?: (value: T | PromiseLike<T>) => void
 	private _reject?: (reason: unknown) => void
 
 	/**
@@ -36,14 +36,14 @@ export class PromisEBase<T = unknown>
 	constructor(input?: T | Promise<T> | PromiseParams<T>[0]) {
 		if (input instanceof PromisEBase) return input
 
-		let _resolve: undefined | ((resolve: T) => void)
+		let _resolve: undefined | ((resolve: T | PromiseLike<T>) => void)
 		let _reject: undefined | ((reason: unknown) => void)
 		super((resolve, reject) => {
 			_reject = (reason: unknown) => {
 				asAny(this).state = 2
 				reject(reason)
 			}
-			_resolve = (value: T) => {
+			_resolve = (value: T | PromiseLike<T>) => {
 				asAny(this).state = 1
 				resolve(value)
 			}
@@ -53,7 +53,7 @@ export class PromisEBase<T = unknown>
 			const promise = isPromise(input)
 				? input
 				: isFn(input)
-					? new ThePromise<T>(input)
+					? new globalThis.Promise<T>(input)
 					: Promise.resolve(input)
 			promise.then(_resolve, _reject)
 		})
@@ -90,7 +90,7 @@ export class PromisEBase<T = unknown>
 	//
 
 	/** Resovle pending promise early. */
-	public resolve = (value: T) => {
+	public resolve = (value: T | PromiseLike<T>) => {
 		if (!this.pending) return
 
 		this._resolve?.(value)
@@ -119,23 +119,25 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.all(...))` */
 	static all = <T extends readonly unknown[] | []>(values: T) =>
-		new PromisEBase(ThePromise.all<T>(values)) as IPromisE<{
+		new PromisEBase(globalThis.Promise.all<T>(values)) as IPromisE<{
 			-readonly [P in keyof T]: Awaited<T[P]>
 		}>
 
 	/** Sugar for `new PromisE(Promise.allSettled(...))` */
 	static allSettled = <T extends unknown[]>(values: T) =>
-		new PromisEBase(ThePromise.allSettled<T>(values)) as IPromisE<
+		new PromisEBase(globalThis.Promise.allSettled<T>(values)) as IPromisE<
 			PromiseSettledResult<Awaited<T[number]>>[]
 		>
 
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
-		new PromisEBase(ThePromise.any<T>(values)) as IPromisE<T[number]>
+		new PromisEBase(globalThis.Promise.any<T>(values)) as IPromisE<
+			T[number]
+		>
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
 	static race = <T>(values: T[]) =>
-		new PromisEBase(ThePromise.race(values)) as IPromisE<Awaited<T>>
+		new PromisEBase(globalThis.Promise.race(values)) as IPromisE<Awaited<T>>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {
@@ -145,8 +147,10 @@ export class PromisEBase<T = unknown>
 	}
 
 	/** Sugar for `new PromisE(Promise.resolve(...))` */
-	static resolve = <T>(value?: T) =>
-		new PromisEBase<T>(ThePromise.resolve<T>(value as T)) as IPromisE<T>
+	static resolve = <T>(value?: T | PromiseLike<T>) =>
+		new PromisEBase<T>(
+			globalThis.Promise.resolve<T>(value as T),
+		) as IPromisE<T>
 
 	/** Sugar for `new PromisE(Promise.try(...))` */
 	static try = <T, U extends unknown[]>(
@@ -160,7 +164,7 @@ export class PromisEBase<T = unknown>
 					callbackFn,
 					args,
 					// rethrow error to ensure the returned promise is rejected
-					err => ThePromise.reject(err as Error),
+					err => globalThis.Promise.reject(err as Error),
 				),
 			),
 		) as IPromisE<Awaited<T>>
@@ -191,9 +195,14 @@ export class PromisEBase<T = unknown>
 	 * ```
 	 */
 	static withResolvers = <T = unknown>() => {
-		const pwr = ThePromise.withResolvers<T>()
-		const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
-		return { ...pwr, promise }
+		const promise = new PromisEBase<T>() as IPromisE<T>
+
+		return { promise, reject: promise.reject, resolve: promise.resolve }
 	}
+	// static withResolvers = <T = unknown>() => {
+	// 	const pwr = globalThis.Promise.withResolvers<T>()
+	// 	const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
+	// 	return { ...pwr, promise }
+	// }
 }
 export default PromisEBase

@@ -4,7 +4,7 @@
 
 > **sort**\<`K`, `V`, `T`\>(`data`, `propertyName`, `options?`): [`IterableType`](../type-aliases/IterableType.md)\<`T`\>
 
-Defined in: packages/core/src/iterable/sort.ts:57
+Defined in: [packages/core/src/iterable/sort.ts:57](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L57)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -31,6 +31,11 @@ Sort iterable lists (Array/Map/Set).
 #### propertyName
 
 keyof `V` & `string`
+
+Accepted values:
+- `string`: value object property name
+- `function`: comparator function. Recommended for performance.
+- `true`: indicates to sort by Map keys instead of values.
 
 #### options?
 
@@ -76,7 +81,7 @@ sort(map, 'name')
 
 > **sort**\<`K`, `V`\>(`data`, `byKey`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: packages/core/src/iterable/sort.ts:66
+Defined in: [packages/core/src/iterable/sort.ts:66](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L66)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -146,7 +151,7 @@ sort(map, 'name')
 
 > **sort**\<`K`, `V`\>(`map`, `comparator`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: packages/core/src/iterable/sort.ts:72
+Defined in: [packages/core/src/iterable/sort.ts:72](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L72)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -214,7 +219,7 @@ sort(map, 'name')
 
 > **sort**\<`V`, `T`\>(`arrOrSet`, `comparator`, `options?`): `T` *extends* `V`[] ? `V`[] : `Set`\<`V`\>
 
-Defined in: packages/core/src/iterable/sort.ts:77
+Defined in: [packages/core/src/iterable/sort.ts:77](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L77)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -282,7 +287,7 @@ sort(map, 'name')
 
 > **sort**\<`K`, `V`, `T`\>(`data`, `options?`): [`IterableType`](../type-aliases/IterableType.md)\<`T`\>
 
-Defined in: packages/core/src/iterable/sort.ts:82
+Defined in: [packages/core/src/iterable/sort.ts:82](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L82)
 
 Sort iterable lists (Array/Map/Set).
 

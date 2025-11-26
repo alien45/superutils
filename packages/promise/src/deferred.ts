@@ -18,18 +18,17 @@ import config from './config'
 
 /**
  * @function PromisE.deferred
- * @summary the adaptation of the `deferred()` function tailored for Promises.
- *
+ * The adaptation of the `deferred()` function tailored for Promises.
  *
  * @param options           (optional) options
- * @param options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
- * @param options.onError   (optional)
- * @param options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
- * @param options.onResult  (optional)
- * @param options.resolveIgnored  (optional) see {@link ResolveIgnored}.
+ * @property options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
+ * @property options.onError   (optional)
+ * @property options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
+ * @property options.onResult  (optional)
+ * @property options.resolveIgnored  (optional) see {@link ResolveIgnored}.
  * Default: `PromisE.defaultResolveIgnord` (changeable)
  *
- * @param options.throttle  (optional) toggle to switch between debounce/deferred and throttle mode.
+ * @property options.throttle  (optional) toggle to switch between debounce/deferred and throttle mode.
  * Requires `defer`.
  * Default: `false`
  *

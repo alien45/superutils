@@ -2,7 +2,7 @@
 
 > **objSetProp**\<`K`, `V`, `OutKey`\>(`obj`, `key`, `falsyValue?`, `condition?`, `truthyValue?`): `Record`\<`OutKey`, `V`\>
 
-Defined in: [packages/core/src/obj/objSetProp.ts:12](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objSetProp.ts#L12)
+Defined in: [packages/core/src/obj/objSetProp.ts:12](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objSetProp.ts#L12)
 
 Assign value to an object property
 

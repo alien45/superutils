@@ -2,7 +2,9 @@
 
 > **mapJoin**\<`K`, `V`\>(...`inputs`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/map/mapJoin.ts:27](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapJoin.ts#L27)
+Defined in: [packages/core/src/map/mapJoin.ts:26](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapJoin.ts#L26)
+
+Creates a new Map by combining two or more Maps
 
 ## Type Parameters
 
@@ -18,15 +20,15 @@ Defined in: [packages/core/src/map/mapJoin.ts:27](https://github.com/alien45/uti
 
 ### inputs
 
+A rest parameter of Maps and/or array of entries (key-value pair tuples).
+
 `Map`\<`K`, `V`\>[] | \[`K`, `V`\][][]
 
 ## Returns
 
 `Map`\<`K`, `V`\>
 
-## Name
-
-mapJoin
+new combined Map
 
 ## Example
 

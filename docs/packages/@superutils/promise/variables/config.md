@@ -2,7 +2,7 @@
 
 > `const` **config**: `object`
 
-Defined in: [packages/promise/src/config.ts:5](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/promise/src/config.ts#L5)
+Defined in: [packages/promise/src/config.ts:5](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/config.ts#L5)
 
 Global configuration
 

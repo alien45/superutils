@@ -2,7 +2,11 @@
 
 > **objReadOnly**\<`T`, `Revocable`, `Result`\>(`obj`, `config?`): `Result`
 
-Defined in: [packages/core/src/obj/objReadOnly.ts:18](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objReadOnly.ts#L18)
+Defined in: [packages/core/src/obj/objReadOnly.ts:17](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objReadOnly.ts#L17)
+
+Constructs a new read-only object where only new properties can be added.
+
+Applies only to the top-level properties.
 
 ## Type Parameters
 
@@ -37,7 +41,3 @@ input object
 `Result`
 
 Readonly object or object containing readonly object and revoke function
-
-## Name
-
-objReadOnly

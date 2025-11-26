@@ -2,8 +2,7 @@ import fallbackIfFails from '../fallbackIfFails'
 import { isFn, isMap } from '../is'
 
 /**
- * @name	mapFilter
- * @summary Array.filter equivalent for Map.
+ * Array.filter equivalent for Map.
  *
  * @param	map
  * @param	callback

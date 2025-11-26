@@ -2,7 +2,7 @@
 
 > **SearchOptions**\<`K`, `V`, `AsMap`\> = `object`
 
-Defined in: packages/core/src/iterable/types.ts:38
+Defined in: [packages/core/src/iterable/types.ts:38](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L38)
 
 Search criteria for searcheing iterables
 
@@ -26,7 +26,7 @@ Search criteria for searcheing iterables
 
 > `optional` **asMap**: `AsMap`
 
-Defined in: packages/core/src/iterable/types.ts:40
+Defined in: [packages/core/src/iterable/types.ts:40](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L40)
 
 Whethere to return the result as a map (`true`) or array (`false`). Default: `true`
 
@@ -36,7 +36,7 @@ Whethere to return the result as a map (`true`) or array (`false`). Default: `tr
 
 > `optional` **ignoreCase**: `boolean`
 
-Defined in: packages/core/src/iterable/types.ts:53
+Defined in: [packages/core/src/iterable/types.ts:53](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L53)
 
 case-insensitive search for strings. Default: `false`
 
@@ -46,7 +46,7 @@ case-insensitive search for strings. Default: `false`
 
 > `optional` **limit**: `number`
 
-Defined in: packages/core/src/iterable/types.ts:55
+Defined in: [packages/core/src/iterable/types.ts:55](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L55)
 
 limit number of results. Default: `Infinity`
 
@@ -56,7 +56,7 @@ limit number of results. Default: `Infinity`
 
 > `optional` **matchAll**: `boolean`
 
-Defined in: packages/core/src/iterable/types.ts:59
+Defined in: [packages/core/src/iterable/types.ts:59](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L59)
 
 match all supplied key-value pairs. Default: `false`
 
@@ -66,7 +66,7 @@ match all supplied key-value pairs. Default: `false`
 
 > `optional` **matchExact**: `boolean`
 
-Defined in: packages/core/src/iterable/types.ts:57
+Defined in: [packages/core/src/iterable/types.ts:57](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L57)
 
 partial match for values. Default: `false`
 
@@ -76,7 +76,7 @@ partial match for values. Default: `false`
 
 > `optional` **propToStr**: `boolean` \| \<`Item`\>(`item`, `value?`, `key?`) => `string`
 
-Defined in: packages/core/src/iterable/types.ts:42
+Defined in: [packages/core/src/iterable/types.ts:42](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L42)
 
 Whether to convert item property (object, map, array....) to string
 
@@ -86,7 +86,7 @@ Whether to convert item property (object, map, array....) to string
 
 > **query**: `Record`\<`string`, `unknown`\> \| `string`
 
-Defined in: packages/core/src/iterable/types.ts:61
+Defined in: [packages/core/src/iterable/types.ts:61](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L61)
 
 key-value pairs
 
@@ -96,6 +96,6 @@ key-value pairs
 
 > `optional` **result**: `Map`\<`K`, `V`\>
 
-Defined in: packages/core/src/iterable/types.ts:63
+Defined in: [packages/core/src/iterable/types.ts:63](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L63)
 
 Map to store results in. Default: `new Map()`

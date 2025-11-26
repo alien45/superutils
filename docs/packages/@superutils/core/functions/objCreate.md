@@ -2,7 +2,10 @@
 
 > **objCreate**\<`V`, `K`, `RV`, `RK`, `Result`\>(`keys`, `values`, `result?`): `Result`
 
-Defined in: [packages/core/src/obj/objCreate.ts:15](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objCreate.ts#L15)
+Defined in: [packages/core/src/obj/objCreate.ts:29](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objCreate.ts#L29)
+
+Creates an object from an array of keys and a corresponding array of values.
+It pairs each key with the value at the same index.
 
 ## Type Parameters
 
@@ -32,24 +35,39 @@ Defined in: [packages/core/src/obj/objCreate.ts:15](https://github.com/alien45/u
 
 `K`[] = `[]`
 
+An array of property keys (strings or symbols).
+
 ### values
 
 `V`[] = `[]`
 
-(optional)
+(optional) An array of property values. The value at each index corresponds to the key at the same index. If a value is missing for a key, it will be `undefined`.
 
 ### result?
 
 `Result`
 
-(optional)
+(optional) An existing object to add or overwrite properties on. If not provided, a new object is created.
 
 ## Returns
 
 `Result`
 
-created and/or merged
+The newly created object, or the `result` object merged with the new properties.
 
-## Name
+## Examples
 
-objCreate
+```typescript
+const keys = ['a', 'b', 'c'];
+const values = [1, 2, 3];
+const newObj = objCreate(keys, values);
+// newObj is { a: 1, b: 2, c: 3 }
+```
+
+```typescript
+const existingObj = { a: 0, d: 4 };
+const keys = ['b', 'c'];
+const values = [2, 3];
+objCreate(keys, values, existingObj);
+// existingObj is now { a: 0, d: 4, b: 2, c: 3 }
+```

@@ -2,7 +2,7 @@
 
 > **timeout**\<`T`, `TOut`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
 
-Defined in: [packages/promise/src/timeout.ts:61](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/promise/src/timeout.ts#L61)
+Defined in: [packages/promise/src/timeout.ts:61](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/timeout.ts#L61)
 
 **`Function`**
 

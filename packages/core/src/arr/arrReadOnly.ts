@@ -12,9 +12,9 @@ import { objReadOnly, type ReadOnlyConfig } from '../obj'
  * @returns Readonly Array or object containing readonly Array and revoke function
  */
 export const arrReadOnly = <T>(
-	input: T[],
+	arr: T[],
 	config: Omit<ReadOnlyConfig<T[]>, 'revoke'> = {},
-) => objReadOnly(new ReadOnlyArrayHelper(config, input) as T[], config)
+) => objReadOnly(new ReadOnlyArrayHelper(config, arr) as T[], config)
 
 export default arrReadOnly
 
@@ -53,4 +53,10 @@ export class ReadOnlyArrayHelper<T> extends Array<T> {
 	splice = (..._ignoredArgs: unknown[]) => this.ignoreOrThrow([])
 
 	unshift = (..._ignoredArgs: T[]) => this.ignoreOrThrow(this.length)
+
+	// fromAsync = super.fromAsync
+
+	reduce = super.reduce
+
+	reduceRight = super.reduceRight
 }

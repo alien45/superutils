@@ -2,7 +2,9 @@
 
 > **objCopy**\<`Key`, `T`, `IgnoredKey`\>(`input`, `output?`, `ignoreKeys?`, `override?`, `recursive?`): `Record`\<`PropertyKey`, `unknown`\>
 
-Defined in: [packages/core/src/obj/objCopy.ts:33](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objCopy.ts#L33)
+Defined in: [packages/core/src/obj/objCopy.ts:32](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objCopy.ts#L32)
+
+Deep-copy an object to another object
 
 ## Type Parameters
 
@@ -63,7 +65,3 @@ Default: `false`
 `Record`\<`PropertyKey`, `unknown`\>
 
 copied and/or merged object
-
-## Name
-
-objCopy

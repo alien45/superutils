@@ -2,7 +2,9 @@
 
 > **mapFilter**\<`V`, `K`\>(`map`, `callback`, `limit`, `result`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/map/mapFilter.ts:30](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapFilter.ts#L30)
+Defined in: [packages/core/src/map/mapFilter.ts:29](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFilter.ts#L29)
+
+Array.filter equivalent for Map.
 
 ## Type Parameters
 
@@ -37,10 +39,6 @@ Defined in: [packages/core/src/map/mapFilter.ts:30](https://github.com/alien45/u
 `Map`\<`K`, `V`\>
 
 new Map with filtered items
-
-## Name
-
-mapFilter
 
 ## Example
 

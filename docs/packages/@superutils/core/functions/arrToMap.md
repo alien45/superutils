@@ -2,7 +2,9 @@
 
 > **arrToMap**\<`T`, `GetKeyFn`, `FlatDepth`, `MapItem`, `ParamKey`, `MapKey`\>(`arr`, `flatDepth`, `key?`): `Map`\<`MapKey`, `MapItem`\>
 
-Defined in: [packages/core/src/arr/arrToMap.ts:34](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/arr/arrToMap.ts#L34)
+Defined in: [packages/core/src/arr/arrToMap.ts:33](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/arr/arrToMap.ts#L33)
+
+Generate a Map from one or more arrays
 
 ## Type Parameters
 
@@ -53,10 +55,6 @@ Defined in: [packages/core/src/arr/arrToMap.ts:34](https://github.com/alien45/ut
 `Map`\<`MapKey`, `MapItem`\>
 
 Converted Map
-
-## Name
-
-arrToMap
 
 ## Example
 

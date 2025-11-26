@@ -2,7 +2,7 @@
 
 > **sliceMap**\<`Key`, `Value`, `Data`, `AsMap`, `Result`\>(`data`, `first`, `last`, `callback?`, `ignoreUndefined?`, `asMap?`): `Result`
 
-Defined in: packages/core/src/iterable/sliceMap.ts:22
+Defined in: [packages/core/src/iterable/sliceMap.ts:22](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sliceMap.ts#L22)
 
 Slice an iterable list (Array, Map, Set...) and map the values into an Array/Map
 

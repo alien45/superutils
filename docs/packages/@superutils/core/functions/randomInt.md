@@ -2,7 +2,9 @@
 
 > **randomInt**(`min`, `max`): `number`
 
-Defined in: [packages/core/src/number/randomInt.ts:8](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/number/randomInt.ts#L8)
+Defined in: [packages/core/src/number/randomInt.ts:7](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/number/randomInt.ts#L7)
+
+Generates random number within a range
 
 ## Parameters
 
@@ -21,7 +23,3 @@ highest number
 ## Returns
 
 `number`
-
-## Name
-
-randomInt

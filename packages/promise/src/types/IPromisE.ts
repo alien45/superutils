@@ -17,7 +17,7 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	readonly rejected: boolean
 
 	/** Resovle pending promise early. */
-	resolve: (value: T) => void
+	resolve: (value: T | PromiseLike<T>) => void
 
 	/** Indicates if the promise has been resolved */
 	readonly resolved: boolean
@@ -93,6 +93,3 @@ export type OnEarlyFinalize<T> = <
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>
 >
-
-/** Original `Promise` */
-export const ThePromise = Promise

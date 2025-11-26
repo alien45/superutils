@@ -2,7 +2,7 @@
 
 > **isPositiveNumber**(`x`): `x is number`
 
-Defined in: [packages/core/src/is/isNumber.ts:9](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/isNumber.ts#L9)
+Defined in: [packages/core/src/is/isNumber.ts:9](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/isNumber.ts#L9)
 
 Check if value is a positive number
 

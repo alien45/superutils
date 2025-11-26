@@ -2,7 +2,7 @@
 
 > **DeferredOptions**\<`ThisArg`\> = `object` & `object` & [`ThrottleConfig`](../../core/type-aliases/ThrottleConfig.md)\<`ThisArg`\> \| `object` & [`DeferredConfig`](../../core/interfaces/DeferredConfig.md)\<`ThisArg`\>
 
-Defined in: [packages/promise/src/types/deferred.ts:15](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/promise/src/types/deferred.ts#L15)
+Defined in: [packages/promise/src/types/deferred.ts:15](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L15)
 
 ## Type Declaration
 

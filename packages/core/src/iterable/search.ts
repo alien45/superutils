@@ -5,7 +5,8 @@ import { mapValues } from '../map'
 import getSize from './getSize'
 import { IterableList, SearchOptions } from './types'
 
-export const matchItemCb =
+/** Utility for use with {@link search()} function */
+const matchItemCb =
 	<K, V extends Record<string, unknown>>(
 		options: SearchOptions<K, V, boolean>,
 		item: V,
@@ -25,7 +26,11 @@ export const matchItemCb =
 								item,
 								key === undefined ? [] : [propVal, key],
 							)
-						: objToStr(propVal)
+						: JSON.stringify(
+								isArrLike(propVal)
+									? [...propVal.values()]
+									: propVal,
+							)
 					: `${(propVal as string) ?? ''}`,
 			[],
 			'',
@@ -38,25 +43,50 @@ export const matchItemCb =
 		return !matchExact && `${value}`.includes(keyword as string)
 	}
 
-const objToStr = (propVal: unknown) =>
-	JSON.stringify(isArrLike(propVal) ? [...propVal.values()] : propVal)
-
 /**
- * @name	mapSearch
- * @summary search for objects by key-value pairs
+ * A versatile utility for searching through an iterable list (e.g., Array, Map, Set) of objects.
+ * It supports both a simple "fuzzy" search with a string query across all properties and a
+ * detailed, field-specific search using a query object.
  *
- * @param data				Map or Array of objects to search within
- * @param options			search criteria
- * @param search.query		(required) key-value pairs
- * @param search.ignoreCase (optional) case-insensitive search for strings
- * @param search.limit      (optional) limit number of results
- * @param search.matchAll   (optional) match all supplied key-value pairs
- * @param search.partial    (optional) partial match for values
- * @param search.result     (optional) Map to store results in
+ * @param data The list of objects to search within. Compatible types include:
+ * - `Array`
+ * - `Map`
+ * - `Set`
+ * - `NodeList` (in DOM environments)
+ * - `HTMLCollection` (in DOM environments)
+ * @param options The search criteria.
+ * @param options.query The search query. Can be a string to search all fields, or an object for field-specific searches (e.g., `{ name: 'John', city: 'New York' }`).
+ * @param options.asMap (optional) If `true`, returns a `Map`. If `false`, returns an `Array`. Default: `true`.
+ * @param options.ignoreCase (optional) If `true`, performs a case-insensitive search for strings. Default: `true`.
+ * @param options.limit (optional) The maximum number of results to return. Default: `Infinity`.
+ * @param options.matchAll (optional) If `true`, an item must match all key-value pairs in the `query` object. If `false`, it matches if at least one pair is found. Default: `false`.
+ * @param options.matchExact (optional) If `true`, performs an exact match. If `false`, performs a partial match (i.e., `includes()`). Default: `false`.
+ * @param options.result (optional) An optional `Map` to which the results will be added.
+ * @param options.propToStr (optional) A function to customize how object properties are converted to strings for searching.
  *
- * @returns {Map} new map with matched items
+ * @returns A `Map` or an `Array` containing the matched items, based on the `asMap` option.
+ *
+ * @example
+ * ```typescript
+ * const users = [
+ *   { id: 1, name: 'John Doe', city: 'New York' },
+ *   { id: 2, name: 'Jane Doe', city: 'London' },
+ *   { id: 3, name: 'Peter Jones', city: 'New York' },
+ * ];
+ *
+ * // Simple string search (case-insensitive, partial match by default)
+ * const doeUsers = search(users, { query: 'doe' });
+ * // Returns: [{ id: 1, ... }, { id: 2, ... }]
+ *
+ * // Field-specific search, requiring all fields to match
+ * const peterInNY = search(users, {
+ *   query: { name: 'Peter', city: 'New York' },
+ *   matchAll: true,
+ * });
+ * // Returns: [{ id: 3, ... }]
+ * ```
  */
-export const mapSearch = <
+export const search = <
 	K,
 	V extends Record<string, unknown>,
 	AsMap extends boolean = true,
@@ -70,12 +100,9 @@ export const mapSearch = <
 	const asMap = options?.asMap ?? true
 	if (ignore) return (asMap ? result : mapValues(result)) as Result
 
-	options = objCopy(
-		mapSearch.defaultOptions,
-		options,
-		[],
-		'empty',
-	) as Required<SearchOptions<K, V, AsMap>>
+	options = objCopy(search.defaultOptions, options, [], 'empty') as Required<
+		SearchOptions<K, V, AsMap>
+	>
 	const { ignoreCase, limit = Infinity, matchAll, matchExact } = options
 	let { query } = options
 
@@ -108,7 +135,7 @@ export const mapSearch = <
 	}
 	return (asMap ? result : mapValues(result)) as Result
 }
-mapSearch.defaultOptions = {
+search.defaultOptions = {
 	asMap: true,
 	ignoreCase: true,
 	limit: Infinity,
@@ -116,4 +143,4 @@ mapSearch.defaultOptions = {
 	matchExact: false,
 } as Required<SearchOptions<unknown, unknown, true>>
 
-export default mapSearch
+export default search

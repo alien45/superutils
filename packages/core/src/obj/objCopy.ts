@@ -8,8 +8,7 @@ const clone = <T>(value: T, fallback = 'null') =>
 	JSON.parse(fallbackIfFails(JSON.stringify, [value], fallback)) as T
 
 /**
- * @name	objCopy
- * @summary deep-copy an object to another object
+ * Deep-copy an object to another object
  *
  * @param input input object
  * @param ignoreKeys (optional) input peroperties to be ignored. Prevents output's property to be overriden.

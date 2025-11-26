@@ -2,7 +2,7 @@
 
 > **FindOptions**\<`K`, `V`, `IncludeKey`\> = `Omit`\<[`SearchOptions`](SearchOptions.md)\<`K`, `V`\>, `"limit"` \| `"asMap"`\> & `object`
 
-Defined in: [packages/core/src/map/mapFind.ts:5](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapFind.ts#L5)
+Defined in: [packages/core/src/map/mapFind.ts:5](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFind.ts#L5)
 
 ## Type Declaration
 

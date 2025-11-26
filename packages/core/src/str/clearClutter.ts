@@ -1,6 +1,5 @@
 /**
- * @name	clearClutter
- * @summary clears clutter from strings
+ * Clears clutter from strings
  *
  * - removes trailing & leading whitespaces
  * - removes empty/whitespace-only lines

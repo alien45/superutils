@@ -1,12 +1,11 @@
 import { isArr2D, isMap } from '../is'
 
 /**
- * @name	mapJoin
- * @summary creates a new Map by combining two or more Maps
+ * Creates a new Map by combining two or more Maps
  *
- * @param	{Map[]|Array[]} maps...
+ * @param inputs A rest parameter of Maps and/or array of entries (key-value pair tuples).
  *
- * @returns {Map}
+ * @returns new combined Map
  *
  * @example
  * ```typescript

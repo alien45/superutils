@@ -2,7 +2,7 @@
 
 > **debounce**(...`args`): (...`args`) => `void`
 
-Defined in: [packages/core/src/debounce.ts:4](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/debounce.ts#L4)
+Defined in: [packages/core/src/debounce.ts:4](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/debounce.ts#L4)
 
 Super for `deferred()` function
 

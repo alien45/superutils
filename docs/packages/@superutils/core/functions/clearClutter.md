@@ -2,7 +2,13 @@
 
 > **clearClutter**(`text`, `lineSeparator`): `string`
 
-Defined in: [packages/core/src/str/clearClutter.ts:14](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/str/clearClutter.ts#L14)
+Defined in: [packages/core/src/str/clearClutter.ts:13](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/str/clearClutter.ts#L13)
+
+Clears clutter from strings
+
+- removes trailing & leading whitespaces
+- removes empty/whitespace-only lines
+- converts multiline strings to single line
 
 ## Parameters
 
@@ -23,7 +29,3 @@ string to clear clutter from
 `string`
 
 cleaned string
-
-## Name
-
-clearClutter

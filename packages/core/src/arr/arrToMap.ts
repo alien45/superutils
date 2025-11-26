@@ -1,8 +1,7 @@
 import { isArr, isDefined, isFn, isObj } from '../is'
 
 /**
- * @name	arrToMap
- * @summary generate a Map from one or more arrays
+ * Generate a Map from one or more arrays
  *
  * @param arr
  * @param key (optional) Array object-item property name or a function to generate keys for each array items.

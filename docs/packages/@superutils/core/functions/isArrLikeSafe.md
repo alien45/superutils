@@ -2,7 +2,7 @@
 
 > **isArrLikeSafe**\<`T`, `MapKey`\>(`x`): x is Set\<T\> \| Map\<MapKey, T\> \| T\[\]
 
-Defined in: [packages/core/src/is/isArr.ts:37](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/isArr.ts#L37)
+Defined in: [packages/core/src/is/isArr.ts:37](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/isArr.ts#L37)
 
 Check if value is convertible to an array by using `Array.from(x)` even if it comes from a different realm
 (eg: iframe, iframes, worker contexts, node vm contexts, browser extensions).

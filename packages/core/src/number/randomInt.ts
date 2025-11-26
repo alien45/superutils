@@ -1,6 +1,5 @@
 /**
- * @name	randomInt
- * @summary generates random number within a range
+ * Generates random number within a range
  *
  * @param min lowest number
  * @param max highest number

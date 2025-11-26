@@ -10,7 +10,7 @@ npm install @superutils/data-storage
 
 ## Usage
 
-### `deferred(fn)`
+### `DataStorage`
 
 ```typescript
 import DataStorage from '@superutils/data-storage'

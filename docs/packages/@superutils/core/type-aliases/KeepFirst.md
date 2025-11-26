@@ -2,7 +2,7 @@
 
 > **KeepFirst**\<`T`\> = `T` *extends* readonly \[infer First, `...DropFirst<T>`\] ? \[`First`\] : `never`
 
-Defined in: [packages/core/src/types.ts:118](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/types.ts#L118)
+Defined in: [packages/core/src/types.ts:118](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L118)
 
 Keep the first item from an array/tuple and drop the rest
 ---

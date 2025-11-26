@@ -4,7 +4,7 @@
 
 > **mapFind**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `callback`): `Return`
 
-Defined in: [packages/core/src/map/mapFind.ts:53](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapFind.ts#L53)
+Defined in: [packages/core/src/map/mapFind.ts:52](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFind.ts#L52)
 
 ### Type Parameters
 
@@ -40,10 +40,6 @@ Defined in: [packages/core/src/map/mapFind.ts:53](https://github.com/alien45/uti
 
 first item matched or `undefined` if not found
 
-### Name
-
-mapFind
-
 ### Examples
 
 ```typescript
@@ -77,7 +73,7 @@ const map = new Map<number, { name: string; age: number }>([
 
 > **mapFind**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `options`): `Return`
 
-Defined in: [packages/core/src/map/mapFind.ts:59](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapFind.ts#L59)
+Defined in: [packages/core/src/map/mapFind.ts:58](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFind.ts#L58)
 
 ### Type Parameters
 
@@ -112,10 +108,6 @@ Defined in: [packages/core/src/map/mapFind.ts:59](https://github.com/alien45/uti
 `Return`
 
 first item matched or `undefined` if not found
-
-### Name
-
-mapFind
 
 ### Examples
 

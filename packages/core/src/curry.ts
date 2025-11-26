@@ -84,15 +84,16 @@ export function curry<
 			[arity: TArity]
 ) {
 	/**  Conditionally based on TArgs length and arity */
-	type TCurriedArgs = TArgsIsFinite extends false
-		? CreateTuple<Parameters<typeof func>[number], TArity>
-		: KeepFirstN<
-				[
-					...KeepRequired<TArgs>,
-					...KeepOptionals<TArgs, true, undefined>,
-				],
-				TArity
-			>
+	// type TCurriedArgs = TArgsIsFinite extends false
+	// 	? CreateTuple<Parameters<typeof func>[number], TArity>
+	// 	: KeepFirstN<
+	// 			[
+	// 				...KeepRequired<TArgs>,
+	// 				...KeepOptionals<TArgs, true, undefined>,
+	// 			],
+	// 			TArity
+	// 		>
+	type TCurriedArgs = CurriedArgs<TArgs, TArgsIsFinite, typeof func, TArity>
 
 	// The runtime implementation of the curried function.
 	const curriedFn = (...args: TCurriedArgs): unknown => {
@@ -108,3 +109,16 @@ export function curry<
 	}
 	return curriedFn as Curry<TData, TCurriedArgs>
 }
+
+export type CurriedArgs<
+	TArgs extends unknown[],
+	TArgsIsFinite extends boolean,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	TFunc extends (...args: any[]) => unknown,
+	TArity extends number,
+> = TArgsIsFinite extends false
+	? CreateTuple<Parameters<TFunc>[number], TArity>
+	: KeepFirstN<
+			[...KeepRequired<TArgs>, ...KeepOptionals<TArgs, true, undefined>],
+			TArity
+		>

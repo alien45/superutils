@@ -2,8 +2,7 @@ import { isArr, isFn, isObj } from '../is'
 import { ReadOnlyConfig } from './types'
 
 /**
- * @name	objReadOnly
- * @summary constructs a new read-only object where only new properties can be added.
+ * Constructs a new read-only object where only new properties can be added.
  *
  * Applies only to the top-level properties.
  *

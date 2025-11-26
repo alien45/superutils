@@ -2,7 +2,7 @@
 
 > **mapEntries**\<`K`, `V`\>(`map`): \[`K`, `V`\][]
 
-Defined in: [packages/core/src/map/mapEntries.ts:2](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/map/mapEntries.ts#L2)
+Defined in: [packages/core/src/map/mapEntries.ts:2](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapEntries.ts#L2)
 
 Map entries as array
 

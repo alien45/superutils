@@ -2,7 +2,15 @@
 
 > **postDeferred**\<`ThisArg`\>(`deferOptions`, ...`__namedParameters`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: [packages/fetch/src/postDeferred.ts:66](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/fetch/src/postDeferred.ts#L66)
+Defined in: [packages/fetch/src/postDeferred.ts:99](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/postDeferred.ts#L99)
+
+Creates a deferred/throttled function for making `POST`, `PUT`, or `PATCH` requests, powered by
+PromisE.deferred.
+This is ideal for scenarios like auto-saving form data, preventing duplicate submissions on button clicks,
+or throttling API updates.
+
+Like `fetchDeferred`, it automatically aborts pending requests when a new one is initiated, ensuring only
+the most recent or relevant action is executed.
 
 ## Type Parameters
 
@@ -14,7 +22,7 @@ Defined in: [packages/fetch/src/postDeferred.ts:66](https://github.com/alien45/u
 
 ### deferOptions
 
-`DeferredOptions`\<`ThisArg`\> = `{}`
+[`DeferredOptions`](../type-aliases/DeferredOptions.md)\<`ThisArg`\> = `{}`
 
 ### \_\_namedParameters
 
@@ -43,54 +51,76 @@ Defined in: [packages/fetch/src/postDeferred.ts:66](https://github.com/alien45/u
 ## Examples
 
 ```typescript
+import { postDeferred } from '@superutils/fetch'
 import PromisE from '@superutils/promise'
 
-const refreshAuthToken = PromisE.deferredPost(
+// Mock a simple token store
+let currentRefreshToken = 'initial-refresh-token'
+
+// Create a debounced function to refresh the auth token.
+// It waits 300ms after the last call before executing.
+const refreshAuthToken = postDeferred(
 	{
 		delayMs: 300, // debounce delay
-		onResult: () =>
-			console.log('Auth token updated at', new Date().toISOString()),
+		onResult: (result: { token: string }) => {
+			console.log(`Auth token successfully refreshed at ${new Date().toISOString()}`)
+         currentRefreshToken = result.token
+     },
 	},
-	'https://dummyjson.com/auth/refresh',
+	'https://dummyjson.com/auth/refresh', // Default URL
 )
-type TokenRsult = {
-	accessToken: string
-	refreshToken: string
-}
-const handleTokens = ({ accessToken, refreshToken }: TokenRsult) => {
-	   localStorage[accessToken] = accessToken
-	   localStorage[refreshToken] = refreshToken
-}
-cons getBody = () => ({
-	   refreshToken: localStorage.refreshToken,
+
+// This function would be called from various parts of an app,
+// for example, in response to multiple failed API calls.
+function requestNewToken() {
+  const body = {
+	   refreshToken: currentRefreshToken,
 	   expiresInMins: 30,
-})
-refreshAuthToken<TokenRsult>(undefined, getBody()).then(handleTokens)
-refreshAuthToken<TokenRsult>(undefined, getBody()).then(handleTokens)
-refreshAuthToken<TokenRsult>(undefined, getBody()).then(handleTokens)
-// only the last call will be executed. Rest will be ignored/aborted by deferred mechanism.
+  }
+  refreshAuthToken(body)
+}
+
+requestNewToken() // Called at 0ms
+PromisE.delay(50, requestNewToken) // Called at 50ms
+PromisE.delay(100, requestNewToken) // Called at 100ms
+
+// Outcome:
+// The first two calls are aborted by the debounce mechanism.
+// Only the final call executes, 300ms after it was made (at the 400ms mark).
+// The token is refreshed only once, preventing redundant network requests.
 ```
 
 ```typescript
-import PromisE from '@superutils/promise
-type Result = { name: string }
-const updateProduct = PromisE.deferredPost(
+import { postDeferred } from '@superutils/fetch'
+import PromisE from '@superutils/promise'
+
+// Create a throttled function to auto-save product updates.
+const saveProductThrottled = postDeferred(
     {
-        delayMs: 300, // used for both "throttle" and "deferred" modes
-        //   resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored requests
-        onResult: (result: Result) => console.log('Product updated: ', result.name),
+        delayMs: 1000, // Throttle window of 1 second
         throttle: true,
-        trailing: true, // makes sure the last request is always executed
+        trailing: true, // Ensures the very last update is always saved
+        onResult: (product) => console.log(`[Saved] Product: ${product.title}`),
     },
-	   'https://dummyjson.com/products/1',
-	   undefined,
-	   { method: 'put' },
+	   'https://dummyjson.com/products/1', // Default URL
+	   undefined, // No default data
+	   { method: 'put' }, // Default method
 )
-updateProduct<Result>(undefined, { name: 'Product' }).then(console.log)
-await PromisE.delay(300)
-updateProduct<Result>(undefined, { name: 'Product N' }).then(console.log)
-updateProduct<Result>(undefined, { name: 'Product Name' }).then(console.log)
-updateProduct<Result>(undefined, { name: 'Product Name Updated' }).then(console.log)
-// Only the first and trailing/last calls will be executed in this case.
-// Rest will be ignored/aborted by throttle mechanism.
+
+// Simulate a user typing quickly, triggering multiple saves.
+console.log('User starts typing...');
+saveProductThrottled({ title: 'iPhone' }); // Executed immediately (leading edge)
+await PromisE.delay(200);
+saveProductThrottled({ title: 'iPhone 15' }); // Ignored (within 1000ms throttle window)
+await PromisE.delay(300);
+saveProductThrottled({ title: 'iPhone 15 Pro' }); // Ignored
+await PromisE.delay(400);
+saveProductThrottled({ title: 'iPhone 15 Pro Max' }); // Queued to execute on the trailing edge
+
+// Outcome:
+// The first call ('iPhone') is executed immediately.
+// The next two calls are ignored by the throttle.
+// The final call ('iPhone 15 Pro Max') is executed after the 1000ms throttle window closes,
+// thanks to `trailing: true`.
+// This results in only two network requests instead of four.
 ```

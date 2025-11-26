@@ -9,15 +9,15 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  * Sort iterable lists (Array/Map/Set).
  *
  *
- * @param	map
- * @param	keyOrComparator Accepted values:
+ * @param data
+ * @param propertyName Accepted values:
  * - `string`: value object property name
  * - `function`: comparator function. Recommended for performance.
  * - `true`: indicates to sort by Map keys instead of values.
- * @param	options (optional) extra sorting opitons
- * @param	options.ignoreCase	(optional) case-insensitive sort for strings. Default: `true`
- * @param	options.reverse (optional) True: accending sort. False: descending sort. Default: `false`
- * @param	options.undefinedFirst (optional) Where to place undefined/null values.
+ * @param options (optional) extra sorting opitons
+ * @param options.ignoreCase	(optional) case-insensitive sort for strings. Default: `true`
+ * @param options.reverse (optional) True: accending sort. False: descending sort. Default: `false`
+ * @param options.undefinedFirst (optional) Where to place undefined/null values.
  * Not avaible when `comparator` function is used.
  * - `true`: at the beginning
  * - `false`: at the end
