@@ -1,4 +1,4 @@
-# @superutils/fetct
+# @superutils/fetch
 
 An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
 
