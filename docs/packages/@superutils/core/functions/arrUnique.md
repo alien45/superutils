@@ -2,7 +2,7 @@
 
 > **arrUnique**\<`T`\>(`arr`, `flatDepth`): `FlatArray`\<`T`, `-1` \| `0` \| `1` \| `2` \| `3` \| `4` \| `5` \| `6` \| `7` \| `8` \| `9` \| `10` \| `11` \| `12` \| `13` \| `14` \| `15` \| `16` \| `17` \| `18` \| `19` \| `20`\>[]
 
-Defined in: [arrUnique.ts:5](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/arrUnique.ts#L5)
+Defined in: [packages/core/src/arr/arrUnique.ts:7](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/arr/arrUnique.ts#L7)
 
 arrUnique
 

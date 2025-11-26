@@ -14,7 +14,7 @@ import { isArr } from '../is'
 export const arrReverse = <T = unknown>(
 	arr: T[],
 	reverse = true,
-	newArray = true,
+	newArray = false,
 ) => {
 	if (!isArr(arr)) return []
 	if (newArray) arr = [...arr]

@@ -29,7 +29,7 @@ import { isFn, isMap } from '../is'
  */
 export const mapFilter = <V = unknown, K = unknown>(
 	map: Map<K, V>,
-	callback: (item: V, key: K, map: Map<K, V>) => boolean,
+	callback: (value: V, key: K, map: Map<K, V>) => boolean,
 	limit = map.size,
 	result = new Map<K, V>(),
 ): Map<K, V> => {

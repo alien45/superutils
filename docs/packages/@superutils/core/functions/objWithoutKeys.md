@@ -2,7 +2,7 @@
 
 > **objWithoutKeys**(`input`, `keys`, `output?`): `object`
 
-Defined in: [objWithoutKeys.ts:14](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/objWithoutKeys.ts#L14)
+Defined in: [packages/core/src/obj/objWithoutKeys.ts:14](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/obj/objWithoutKeys.ts#L14)
 
 objWithoutKeys
 
@@ -20,7 +20,7 @@ property names to exclude
 
 ### output?
 
-`Record`\<`string` \| `number` \| `symbol`, `unknown`\>
+`Record`\<`PropertyKey`, `unknown`\>
 
 (optional) to delete unwanted props from the original `input` use it here.
 								Default: a copy of the `input` object

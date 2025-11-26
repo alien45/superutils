@@ -2,7 +2,7 @@
 
 > **IsFiniteTuple**\<`T`\> = `number` *extends* `T`\[`"length"`\] ? `false` : `true`
 
-Defined in: [types.ts:101](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/types.ts#L101)
+Defined in: [packages/core/src/types.ts:101](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/types.ts#L101)
 
 ## Type Parameters
 

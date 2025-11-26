@@ -39,15 +39,6 @@ export const objReadOnly = <
 			!isUpdate && (!isFn(add) ? add : add(obj, key, value))
 		// in strict mode, prevents adding or updating properties
 		const shouldThrow = !silent && (isUpdate || !allowAddition)
-		if (Array.isArray(obj))
-			console.log({
-				obj,
-				key,
-				value,
-				isUpdate,
-				allowAddition,
-				shouldThrow,
-			})
 		if (shouldThrow)
 			throw new TypeError(
 				`Mutation not allow on read-only ${typeTitle} ${keyTitle}: ${key.toString()}`,
@@ -65,7 +56,6 @@ export const objReadOnly = <
 		defineProperty: (obj, key, { value }) => handleSetProp(obj, key, value),
 		// Prevent removal of properties
 		deleteProperty: (obj, key) => {
-			if (Array.isArray(obj)) console.log({ obj, key })
 			if (!silent && obj.hasOwnProperty(key)) {
 				throw new Error(
 					`Mutation not allow on read-only ${typeTitle} ${keyTitle}: ${key.toString()}`,

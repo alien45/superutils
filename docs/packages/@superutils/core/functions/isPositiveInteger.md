@@ -2,13 +2,15 @@
 
 > **isPositiveInteger**(`x`): `x is number`
 
-Defined in: [is.ts:44](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/is.ts#L44)
+Defined in: [packages/core/src/is/isNumber.ts:5](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/isNumber.ts#L5)
+
+Check if value is a positive integer
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 

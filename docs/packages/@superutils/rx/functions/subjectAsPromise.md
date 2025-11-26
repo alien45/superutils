@@ -2,7 +2,7 @@
 
 > **subjectAsPromise**\<`T`\>(`subject`, `expectedValue?`, `timeout?`, `timeoutMsg?`): readonly \[[`IPromisE`](../../promise/interfaces/IPromisE.md)\<`T`\>, () => `void`\] \| ([`PromisE`](../../promise/classes/PromisE.md)\<`T`\> \| () => `Timeout`)[]
 
-Defined in: [packages/rx/src/subjectAsPromise.ts:32](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/rx/src/subjectAsPromise.ts#L32)
+Defined in: [packages/rx/src/subjectAsPromise.ts:32](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/rx/src/subjectAsPromise.ts#L32)
 
 subjectAsPromise
 

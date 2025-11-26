@@ -1,15 +1,17 @@
 # Function: isFn()
 
-> **isFn**(`x`): `x is Function`
+> **isFn**(`x`): `x is (args: any[]) => any`
 
-Defined in: [is.ts:33](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/is.ts#L33)
+Defined in: [packages/core/src/is/isFn.ts:6](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/isFn.ts#L6)
+
+Check if value is a function
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 
-`x is Function`
+`x is (args: any[]) => any`

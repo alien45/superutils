@@ -2,19 +2,21 @@
 
 > **isSet**\<`T`\>(`x`): `x is Set<T>`
 
-Defined in: [is.ts:49](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/is.ts#L49)
+Defined in: [packages/core/src/is/index.ts:52](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/index.ts#L52)
+
+Check if value is instance of Set
 
 ## Type Parameters
 
 ### T
 
-`T` = `any`
+`T` = `unknown`
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 

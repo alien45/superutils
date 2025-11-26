@@ -1,7 +1,4 @@
 export * from './arrReadOnly'
 export * from './arrReverse'
-export * from './arrSearch'
-export * from './arrSort'
-export * from './arrSliceMap'
 export * from './arrToMap'
 export * from './arrUnique'

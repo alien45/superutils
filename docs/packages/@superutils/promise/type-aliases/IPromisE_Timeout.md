@@ -2,7 +2,7 @@
 
 > **IPromisE\_Timeout**\<`T`\> = [`IPromisE`](../interfaces/IPromisE.md)\<`T`\> & `object`
 
-Defined in: [packages/promise/src/types/IPromisE.ts:74](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/promise/src/types/IPromisE.ts#L74)
+Defined in: [packages/promise/src/types/IPromisE.ts:74](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/promise/src/types/IPromisE.ts#L74)
 
 Descibes a timeout PromisE and it's additional properties.
 

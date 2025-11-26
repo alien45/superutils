@@ -32,7 +32,10 @@ export default defineConfig(config => {
 			...(coverage && {
 				coverage: {
 					enabled: true,
-					exclude,
+					exclude: [
+						...exclude,
+						pkg && `packages/!(${pkg})/**`,
+					].filter(Boolean),
 					provider: 'v8',
 					reporter: ['text', 'json', 'html'],
 					reportsDirectory: './coverage',

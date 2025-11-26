@@ -2,7 +2,7 @@
 
 > **KeepRequired**\<`T`\> = [`KeepFirstN`](KeepFirstN.md)\<`Required`\<`T`\>, [`MinLength`](MinLength.md)\<`T`\>\>
 
-Defined in: [types.ts:174](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/types.ts#L174)
+Defined in: [packages/core/src/types.ts:174](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/types.ts#L174)
 
 Extract all required members of a tuple
 

@@ -45,7 +45,7 @@ export const objCopy = <
 	if (!isObj(input)) return output
 
 	const _ignoreKeys = new Set(ignoreKeys ?? [])
-	const inKeys = (objKeys(input, true) as IgnoredKey[]).filter(
+	const inKeys = (objKeys(input, true, true) as IgnoredKey[]).filter(
 		x => !_ignoreKeys.has(x),
 	)
 

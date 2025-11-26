@@ -14,7 +14,10 @@ export default defineConfig({
 		},
 		nav: [
 			{ text: 'Home', link: '/' },
-			{ text: 'API Reference', link: '/api-reference' },
+			{
+				text: 'API Reference',
+				link: '/api-reference.html',
+			},
 		],
 		search: {
 			provider: 'local',
@@ -61,6 +64,7 @@ export default defineConfig({
 			{
 				text: 'Packages',
 				items: typedocSidebar.map(pkgItem => {
+					pkgItem.collapsed = true
 					pkgItem.items = [
 						{
 							text: 'About',
@@ -77,7 +81,7 @@ export default defineConfig({
 							text: 'Usage',
 							link: pkgItem.link + '#usage',
 						},
-						{
+						pkgItem.items && {
 							text: 'API Reference',
 							collapsed: true,
 							items: pkgItem.items,
@@ -86,7 +90,7 @@ export default defineConfig({
 							text: 'License',
 							link: '/LICENSE#' + pkgItem.text,
 						},
-					] as any
+					].filter(Boolean) as any
 					return pkgItem
 				}),
 			},

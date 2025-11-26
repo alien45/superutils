@@ -18,7 +18,8 @@ export const isArr2D = <Item = unknown>(x: unknown): x is Item[][] =>
 
 /** Check if value is convertible to an array by using `Array.from(x)` */
 export const isArrLike = (
-	x: unknown,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	x: any,
 ): x is typeof x extends (infer Value)[]
 	? Value[]
 	: typeof x extends Set<infer Value>

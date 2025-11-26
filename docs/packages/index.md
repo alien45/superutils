@@ -192,23 +192,23 @@ The following scripts are available at the root level to help with development:
     `npm test [package][:option1][:option2]...`
 
     | Option     | Alias | Description                                | Default |
-    | :--------- | :---- | :----------------------------------------- | :------ |
-    | `ui`       |       | Opens the interactive Vitest UI.           | `""`    |
-    | `run`      | `1`   | Runs tests once and exits (no watch mode). | `""`    |
-    | `coverage` | `%`   | Generates a code coverage report.          | `""`    |
+    | :--------- | :---: | :----------------------------------------- | :-----: |
+    | `ui`       |       | Opens the interactive Vitest UI.           |  `""`   |
+    | `run`      |  `1`  | Runs tests once and exits (no watch mode). |  `""`   |
+    | `coverage` |  `%`  | Generates a code coverage report.          |  `""`   |
 
     **Note:**
     - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.
     - You can combine both environment variables and the options above. However, if there's a conflict, the options take precedence.
       **Examples:**
 
-    |           Command            | Action                                                                          |
-    | :--------------------------: | :------------------------------------------------------------------------------ |
-    |          `npm test`          | Watch and run all tests for all packages.                                       |
-    |        `npm test :1`         | Run all tests for all packages only once and exit immediately.                  |
+    | Command                      | Action                                                                          |
+    | :--------------------------- | :------------------------------------------------------------------------------ |
+    | `npm test`                   | Watch and run all tests for all packages.                                       |
+    | `npm test :1`                | Run all tests for all packages only once and exit immediately.                  |
     | `UI=true npm test promise:%` | Watch and test only `promise` package with UI and coverage.                     |
-    |       `npm test :%:ui`       | Same as above                                                                   |
-    |   `UI=false npm test :ui`    | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
+    | `npm test :%:ui`             | Same as above                                                                   |
+    | `UI=false npm test :ui`      | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
 
 ## License
 

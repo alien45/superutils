@@ -2,4 +2,4 @@
 
 > **TimeoutId** = `Parameters`\<*typeof* `clearTimeout`\>\[`0`\]
 
-Defined in: [types.ts:232](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/types.ts#L232)
+Defined in: [packages/core/src/types.ts:232](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/types.ts#L232)

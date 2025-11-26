@@ -1,16 +1,16 @@
-# Function: isValidURL()
+# Function: isUrlValid()
 
-> **isValidURL**(`x`, `strict`, `tldExceptions`): `boolean`
+> **isUrlValid**(`x`, `strict`, `tldExceptions`): `boolean`
 
-Defined in: [is.ts:91](https://github.com/alien45/utiils/blob/d8cbf85643193fc38981e916de5a12980a448b2c/packages/core/src/is.ts#L91)
+Defined in: [packages/core/src/is/isUrl.ts:18](https://github.com/alien45/utiils/blob/ebe095ec25dfc5260c77dd301b2fa92fe87fde25/packages/core/src/is/isUrl.ts#L18)
 
-Checks if a value is a valid URL.
+Check if a value is a valid URL/string-URL.
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 The value to check.
 
