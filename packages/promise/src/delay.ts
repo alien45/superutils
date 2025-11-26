@@ -1,3 +1,4 @@
+import { fallbackIfFails, isFn } from '@superutils/core'
 import config from './config'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
@@ -13,21 +14,33 @@ import { IPromisE_Delay } from './types'
  *
  * @returns See {@link IPromisE_Delay}
  *
- * @example Delay execution
+ * @example Delay before continuing execution
  * ```typescript
+ * import PromisE from '@superutils/promise'
+ *
  * console.log('Waiting for app initialization or something else to be ready')
  * // wait 3 seconds before proceeding
  * await PromisE.delay(3000)
  * console.log('App ready')
  * ```
+ *
+ * @example Execute a function after delay.
+ * An awaitable `setTimeout()`.
+ * ```typescript
+ * import PromisE from '@superutils/promise'
+ *
+ * PromisE.delay(1000, () => console.log('Prints after 1 second delay'))
+ * ```
  */
 export function delay<T = number, TReject extends boolean = boolean>(
 	duration = 100,
-	result: T = duration as T,
+	result: T | (() => T) = duration as T,
 	asRejected: TReject = false as TReject,
 ) {
 	const promise = new PromisEBase() as IPromisE_Delay<T>
-	const finalize = (result?: T) => {
+	const finalize = (result?: unknown) => {
+		if (isFn(result))
+			result = fallbackIfFails(result, [], undefined) ?? duration
 		if (!asRejected) return promise.resolve(result as T)
 
 		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors

@@ -1,4 +1,4 @@
-import { isValidDate } from './is'
+import { isDateValid } from './is'
 
 /**
  * Convert timestamp to `input["datetime-local"]` compatible format.
@@ -26,7 +26,7 @@ import { isValidDate } from './is'
  */
 export const toDatetimeLocal = (dateStr: string | Date | number) => {
 	const date = new Date(dateStr)
-	if (!isValidDate(date)) return ''
+	if (!isDateValid(date)) return ''
 
 	const year = date.getFullYear()
 	const month = (date.getMonth() + 1).toString().padStart(2, '0')

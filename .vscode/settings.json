@@ -1,0 +1,44 @@
+{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	// prevent "node:test" from being auto imported in TypeScript test files
+	"typescript.preferences.autoImportFileExcludePatterns": ["node:test"],
+	"vs-code-prettier-eslint.prettierLast": true,
+	"editor.suggestSelection": "first",
+	"editor.minimap.enabled": false,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+	"breadcrumbs.enabled": true,
+	"editor.wordWrap": "wordWrapColumn",
+	"editor.wordWrapColumn": 120,
+	"java.saveActions.organizeImports": true,
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": true,
+	"editor.formatOnType": false,
+	"editor.cursorSmoothCaretAnimation": "on",
+	"files.maxMemoryForLargeFilesMB": 8096,
+	"files.autoSave": "afterDelay",
+	"files.associations": {
+		".env": "shellscript",
+		".env.*": "shellscript"
+	},
+	"files.autoSaveDelay": 5000,
+	"explorer.confirmDelete": false,
+	"explorer.confirmDragAndDrop": false,
+	"terminal.integrated.sendKeybindingsToShell": true,
+	"diffEditor.codeLens": true,
+	"workbench.colorTheme": "Default Dark+",
+	"javascript.format.insertSpaceAfterSemicolonInForStatements": false,
+	"typescript.format.insertSpaceAfterSemicolonInForStatements": false,
+	"eslint.format.enable": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "explicit"
+	},
+	"javascript.preferences.quoteStyle": "single",
+	"typescript.preferences.quoteStyle": "single",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"terminal.integrated.altClickMovesCursor": false,
+	"_editor.multiCursorModifier": "ctrlCmd",
+	"editor.multiCursorModifier": "alt",
+	"editor.tabSize": 4,
+	"geminicodeassist.inlineSuggestions.enableAuto": false
+}

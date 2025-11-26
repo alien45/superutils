@@ -1,22 +1,30 @@
 # Function: objSort()
 
-> **objSort**\<`T`\>(`obj`): `T`
+> **objSort**\<`T`\>(`obj`, `recursive`, `_done`): `T`
 
-Defined in: [objSort.ts:4](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/objSort.ts#L4)
+Defined in: [packages/core/src/obj/objSort.ts:5](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objSort.ts#L5)
 
-Created a new object from source with sorted keys
+create a new object with properties sorted by key
 
 ## Type Parameters
 
 ### T
 
-`T` = `unknown`
+`T` *extends* `Record`\<`PropertyKey`, `unknown`\>
 
 ## Parameters
 
 ### obj
 
 `T`
+
+### recursive
+
+`boolean` = `true`
+
+### \_done
+
+`Map`\<`unknown`, `boolean`\> = `...`
 
 ## Returns
 

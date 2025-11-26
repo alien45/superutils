@@ -2,7 +2,7 @@
 
 > **deferred**\<`TArgs`, `ThisArg`\>(`callback`, `delay`, `config`): (...`args`) => `void`
 
-Defined in: [deferred.ts:32](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/deferred.ts#L32)
+Defined in: [packages/core/src/deferred.ts:32](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/deferred.ts#L32)
 
 deferred AKA debounce
 

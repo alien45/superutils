@@ -1,6 +1,6 @@
 # Interface: FetchResult\<T\>
 
-Defined in: packages/fetch/src/types.ts:276
+Defined in: [packages/fetch/src/types.ts:276](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L276)
 
 Result types for specific parsers ("as": FetchAs)
 
@@ -16,7 +16,7 @@ Result types for specific parsers ("as": FetchAs)
 
 > **arrayBuffer**: `ArrayBuffer`
 
-Defined in: packages/fetch/src/types.ts:277
+Defined in: [packages/fetch/src/types.ts:277](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L277)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: packages/fetch/src/types.ts:277
 
 > **blob**: `Blob`
 
-Defined in: packages/fetch/src/types.ts:278
+Defined in: [packages/fetch/src/types.ts:278](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L278)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: packages/fetch/src/types.ts:278
 
 > **formData**: `FormData`
 
-Defined in: packages/fetch/src/types.ts:279
+Defined in: [packages/fetch/src/types.ts:279](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L279)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: packages/fetch/src/types.ts:279
 
 > **json**: `T`
 
-Defined in: packages/fetch/src/types.ts:280
+Defined in: [packages/fetch/src/types.ts:280](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L280)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: packages/fetch/src/types.ts:280
 
 > **response**: `Response`
 
-Defined in: packages/fetch/src/types.ts:282
+Defined in: [packages/fetch/src/types.ts:282](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L282)
 
 ***
 
@@ -56,4 +56,4 @@ Defined in: packages/fetch/src/types.ts:282
 
 > **text**: `string`
 
-Defined in: packages/fetch/src/types.ts:281
+Defined in: [packages/fetch/src/types.ts:281](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L281)

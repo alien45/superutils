@@ -2,23 +2,25 @@
 
 > **isMap**\<`TKey`, `TValue`\>(`x`): `x is Map<TKey, TValue>`
 
-Defined in: [is.ts:35](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/is.ts#L35)
+Defined in: [packages/core/src/is/isMap.ts:4](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/isMap.ts#L4)
+
+Check if value is instance of Map
 
 ## Type Parameters
 
 ### TKey
 
-`TKey` = `any`
+`TKey` = `unknown`
 
 ### TValue
 
-`TValue` = `any`
+`TValue` = `unknown`
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 

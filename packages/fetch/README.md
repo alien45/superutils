@@ -1,4 +1,4 @@
-# @superutils/promise
+# @superutils/fetch
 
 An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
 
@@ -16,176 +16,97 @@ This package offers a drop-in replacement for the native `Promise` that includes
 ## Installation
 
 ```bash
-npm install @superutils/core @superutils/promise
+npm install @superutils/core @superutils/promise @superutils/fetch
 ```
 
 ## Usage
 
-### `new PromisE(executor)`
+### `fetch(url, options)`
 
-The `PromisE` class can be used just like the native `Promise`. The key difference is the addition of status properties:
+Make a simple GET request. No need for `response.json()` or `result.data.theActualData` drilling.
 
 ```typescript
-import { PromisE } from '@superutils/promise'
+import { fetch } from '@superutils/fetch'
 
-const p = new PromisE(resolve => setTimeout(() => resolve('done'), 1000))
-
-console.log(p.pending) // true
-
-p.then(result => {
-	console.log(result) // 'done'
-	console.log(p.resolved) // true
-	console.log(p.pending) // false
-})
+const theActualData = await fetch('https://dummyjson.com/products/1')
+console.log(theActualData)
 ```
 
-and the ability to early finalize a promise:
+### `fetchDeferred(deferOptions, url, fetchOptions)`
+
+A powerful utility that combines `PromisE.deferred()` from `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced/throttled search inputs.
 
 ```typescript
-import { PromisE } from '@superutils/promise'
-const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
-p.then(result => console.log(result))
-// resolve the promise early
-setTimeout(() => p.resolve('finished early'), 500)
-```
+import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
 
-### `new PromisE(promise)`
-
-Check status of an existing promise.
-
-```typescript
-import { PromisE } from '@superutils/promise'
-const x = Promise.resolve(1)
-const p = new PromisE(x)
-console.log(p.pending) // false
-console.log(p.resolved) // true
-console.log(p.rejected) // false
-```
-
-### `PromisE.try(fn)`
-
-Safely execute a function that might throw an error and wrap it in a `PromisE`.
-
-```typescript
-import { PromisE } from '@superutils/promise'
-
-const p = PromisE.try(() => {
-	throw new Error('Something went wrong')
+// Create a debounced search function with a 300ms delay.
+const searchProducts = fetchDeferred({
+	delayMs: 300, // Debounce delay
+	resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (aborted) promises will resolve with `undefined`
 })
 
-p.catch(error => {
-	console.error(error.message) // 'Something went wrong'
-	console.log(p.rejected) // true
-})
-```
-
-### `PromisE.delay(duration)`
-
-Creates a promise that resolves after a specified duration, essentially a promise-based `setTimeout`.
-
-```typescript
-import PromisE from '@superutils/promise'
-// Wait until `appReady` becomes truthy but
-while (!appReady) {
-	await PromisE.delay(100)
-}
-```
-
-## Advanced Utilities
-
-### `PromisE.deferred(options)`
-
-Create a function that debounces or throttles promise-returning function calls. This is useful for scenarios like auto-saving user input or preventing multiple rapid API calls.
-
-```typescript
-import PromisE, { ResolveIgnored } from '@superutils/promise'
-
-// Create a deferred function that waits 300ms after the last call
-const deferredSave = PromisE.deferred({
-	defer: 300,
-	/** ignored promises will resolve with `undefined` */
-	resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
-
-	/** ignored promises will NEVER be resolved/rejected
-	 * USE WITH CAUTION!
-	 */
-	resolveIgnored: ResolveIgnored.NEVER,
-
-	// ignored promises will resolve with the result of the last call
-	resolveIgnored: ResolveIgnored.WITH_LAST, // (default)
-})
-
-// Simulate rapid calls
-deferredSave(() => api.save({ text: 'first' }))
-deferredSave(() => api.save({ text: 'second' }))
-// Only the 3rd call is executed.
-// But all of them are resolved with the result of the 3rd call when `resolveIgnored` is `ResolveIgnored.WITH_LAST`
-deferredSave(() => api.save({ text: 'third' })).then(response =>
-	console.log('Saved!', response),
-)
-```
-
-### `PromisE.deferredFetch(options, ...defaultFetchArgs)`
-
-A powerful utility that combines `deferred` execution with `fetch`. It's perfect for implementing cancellable, debounced search inputs.
-
-```typescript
-import { PromisE, ResolveIgnored } from '@superutils/promise'
-
-const searchProducts = PromisE.deferredFetch({
-	defer: 300, // Debounce for 300ms
-	throttle: true, // In throttle mode, the first call in a series is executed
-	resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (cancelled) requests will resolve with `undefined`
-})
-
-// User types 'apple'
-searchProducts('https://api.example.com/products?q=apple').then(console.log)
-
-// User quickly types 'applesauce'
-searchProducts('https://api.example.com/products?q=applesauce').then(
-	console.log,
+// User types 'iphone'
+searchProducts('https://dummyjson.com/products/search?q=iphone').then(
+	result => {
+		console.log('Result for "iphone":', result)
+	},
 )
 
-// The first request for 'apple' will be aborted, and its promise will resolve with `undefined`.
-// The second request for 'applesauce' will be executed.
-```
-
-### `PromisE.timeout(timeoutDuration, ...promises)`
-
-#### Reject stuck or unexpectedly lenghthy promise(s) after a specified timeout:
-
-```typescript
-import { PromisE } from '@superutils/promise'
-
-PromisE.timeout(
-	5000, // timeout after 5000ms
-	api.save({ text: 'takes longer than 5s to finish' }),
-).catch(console.log)
-// Error: Error('Timed out after 5000ms')
-```
-
-#### Show a message when loading is too long:
-
-```typescript
-import { PromisE } from '@superutils/promise'
-const loadUserNProducts = () => {
-	const promise = PromisE.timeout(
-		5000, // timeout after 5000ms
-		api.getUser(),
-		api.getProducts(),
+// Before 300ms has passed, the user continues typing 'iphone 9'
+setTimeout(() => {
+	searchProducts('https://dummyjson.com/products/search?q=iphone 9').then(
+		result => {
+			console.log('Result for "iphone 9":', result)
+		},
 	)
-	const [user, products] = await promise.catch(err => {
-		// promise did not time out, but was rejected
-		// because one of the data promises rejected
-		if (!promise.timedout) return Promise.reject(err)
+}, 200)
+// Outcome:
+// The first request for "iphone" is aborted.
+// The first promise resolves with `undefined`.
+// The second request for "iphone 9" is executed after the 300ms debounce delay.
+```
 
-		// promise timed out >> print/update UI
-		console.log('Request is taking longer than expected......')
-		// now return the "data promise", the promise(s) provided in the PromisE.timeout()
-		// If more than one promises provided, then `promise.data` will be the combination of them all: `PromisE.all(...promises)`
-		return promise.data
-	})
-	return [user, products]
-}
-loadUserNProducts()
+**Behavior with different `deferOptions` in the example above:**
+
+- **`throttle: true`**: Switches from debounce to throttle mode. The first request for "iphone" would
+  execute immediately. The second request for "iphone 9", made within the 300ms throttle window, would be ignored.
+- **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Both requests ("iphone"
+  and "iphone 9") would execute, but one after the other, never simultaneously.
+- **`resolveIgnored`**: Controls how the promise for an aborted request (like the first "iphone" call) resolves.
+    1. `ResolveIgnored.WITH_UNDEFINED` (used in the example): The promise for the aborted "iphone"
+       request resolves with `undefined`.
+    2. `ResolveIgnored.WITH_LAST`: The promise for the aborted "iphone" request waits and resolves with the result
+       of the final "iphone 9" request. Both promises resolve to the same value.
+    3. `ResolveIgnored.NEVER`: The promise for the aborted "iphone" request is neither resolved nor rejected.
+       It will remain pending indefinitely.
+    4. `ResolveIgnored.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
+
+Using "defaultFetchArgs" to reduce redundancy
+
+```typescript
+import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
+
+// Create a throttled function to fetch a random quote.
+// The URL and a 3-second timeout are set as defaults, creating a reusable client.
+const getRandomQuote = fetchDeferred(
+	{
+		delayMs: 300, // Throttle window
+		throttle: true,
+		// Ignored calls will resolve with the result of the last successful call.
+		resolveIgnored: ResolveIgnored.WITH_LAST,
+	},
+	'https://dummyjson.com/quotes/random', // Default URL
+	{ timeout: 3000 }, // Default fetch options
+)
+
+// Call the function multiple times in quick succession.
+getRandomQuote().then(quote => console.log('Call 1 resolved:', quote.id))
+getRandomQuote().then(quote => console.log('Call 2 resolved:', quote.id))
+getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
+
+// Outcome:
+// Due to throttling, only one network request is made.
+// Because `resolveIgnored` is `WITH_LAST`, all three promises resolve with the same quote.
+// The promises for the two ignored calls resolve as soon as the first successful call resolves.
+// Console output will show the same quote ID for all three calls.
 ```

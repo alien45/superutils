@@ -18,6 +18,8 @@ export default defineConfig(config => {
 		'packages/*/dist/',
 		'packages/demo',
 		'vitest.config.ts',
+		// Exclude helper/utility files from test directories
+		'**/*/{tests,test}/**/!(*.{test,spec}).{ts,tsx}',
 	]
 	console.log('\nTest Package(s):', pkg !== '*' ? pkg : 'All', '\n')
 	return {
@@ -30,7 +32,10 @@ export default defineConfig(config => {
 			...(coverage && {
 				coverage: {
 					enabled: true,
-					exclude,
+					exclude: [
+						...exclude,
+						pkg && `packages/!(${pkg})/**`,
+					].filter(Boolean),
 					provider: 'v8',
 					reporter: ['text', 'json', 'html'],
 					reportsDirectory: './coverage',

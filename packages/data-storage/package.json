@@ -1,0 +1,33 @@
+{
+	"author": "Toufiqur Rahaman Chowdhury",
+	"dependencies": {
+		"@superutils/core": "^0.1.0"
+	},
+	"description": "JSON data storage helper for LocalStorage",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"javascript",
+		"rxjs",
+		"utils",
+		"typescript",
+		"node"
+	],
+	"license": "MIT",
+	"main": "dist/index.js",
+	"name": "@superutils/data-storage",
+	"peerDependencies": {
+		"@superutils/core": "^0.1.0"
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"test": "jest",
+		"watch": "tsc -p tsconfig.json --watch"
+	},
+	"type": "module",
+	"types": "dist/index.d.ts",
+	"version": "0.1.0"
+}

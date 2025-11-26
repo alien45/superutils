@@ -3,10 +3,10 @@ import {
 	fallbackIfFails,
 	isFn,
 	isPositiveNumber,
-	isValidURL,
+	isUrlValid,
 	type TimeoutId,
 } from '@superutils/core'
-import PromisE, { type IPromisE, ThePromise } from '@superutils/promise'
+import PromisE, { type IPromisE } from '@superutils/promise'
 import mergeFetchOptions from './mergeFetchOptions'
 import {
 	type FetchArgsInterceptor,
@@ -20,59 +20,71 @@ import {
 } from './types'
 
 /**
- * @summary	makes a fetch request and returns JSON.
- * Default options.headers["content-type"] is 'application/json'.
- * Will reject promise if response status code is 2xx (200 <= status < 300).
+ * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
+ * and powerful interceptors. It also includes deferred and throttled request capabilities for complex asynchronous
+ * control flows.
+ *
+ * Will reject promise if response status code is not 2xx (200 <= status < 300).
  *
  * @param	url
- * @param	o.abortCtrl (optional)
- * @param	o.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
- * @param	o.method  (optional) Default: `"get"`
- * @param	o.timeout (optional) duration in milliseconds to abort the request if it takes longer.
- * @param	o.parse   (optional) specify how to parse the result.
+ * @param options (optional) all built-in `fetch()` options such as "method", "headers" and the additionals below.
+ * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
+ * @param options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
+ * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
+ * @param options.method  (optional) Default: `"get"`
+ * @param options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
+ * @param options.parse   (optional) specify how to parse the result.
  * Default: {@link FetchAs.json}
  * For raw `Response` use {@link FetchAs.response}
+ *
+ * @example Make a simple HTTP requests
+ * ```typescript
+ * import { fetch } from '@superutils/fetch'
+ *
+ * // no need for `response.json()` or `result.data.theActualData` drilling
+ * fetch('https://dummyjson.com/products/1').then(theActualData => console.log(theActualData))
+ * ```
  */
-export function fetcher<
+export function fetch<
 	TJSON = unknown,
 	TOptions extends FetchOptions = FetchOptions,
 	TReturn = TOptions['as'] extends FetchAs
 		? FetchResult<TJSON>[TOptions['as']]
 		: TJSON,
->(url: string | URL, fetchOptions: TOptions & FetchOptions = {} as TOptions) {
+>(url: string | URL, options: TOptions & FetchOptions = {} as TOptions) {
 	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
-	fetchOptions.method ??= 'get'
+	options.method ??= 'get'
 	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	const promise = new PromisE(async (resolve, reject) => {
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-		const options = mergeFetchOptions(fetchOptions)
+		const _options = mergeFetchOptions(options)
 		// avoid interceptors' mutations during interceptor calls
-		const errorInterceptors = [...options.interceptors.error]
-		const requestInterceptors = [...options.interceptors.request]
-		const responseInterceptors = [...options.interceptors.response]
-		const resultInterceptors = [...options.interceptors.result]
+		const errorInterceptors = [..._options.interceptors.error]
+		const requestInterceptors = [..._options.interceptors.request]
+		const responseInterceptors = [..._options.interceptors.response]
+		const resultInterceptors = [..._options.interceptors.result]
 		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
-		url = await executeInterceptors(url, requestInterceptors, url, options)
-		const { as: parseAs, errMsgs, timeout } = options
+		url = await executeInterceptors(url, requestInterceptors, url, _options)
+		const { as: parseAs, errMsgs, timeout } = _options
 		if (isPositiveNumber(timeout)) {
-			options.abortCtrl ??= new AbortController()
-			timeoutId = setTimeout(() => options.abortCtrl?.abort(), timeout)
+			_options.abortCtrl ??= new AbortController()
+			timeoutId = setTimeout(() => _options.abortCtrl?.abort(), timeout)
 		}
-		abortCtrl = options.abortCtrl
-		if (options.abortCtrl) options.signal = options.abortCtrl.signal
+		abortCtrl = _options.abortCtrl
+		if (_options.abortCtrl) _options.signal = _options.abortCtrl.signal
 		let errResponse: Response | undefined
 		try {
 			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			if (!isValidURL(url, false)) throw errMsgs.invalidUrl //new Error()
+			if (!isUrlValid(url, false)) throw errMsgs.invalidUrl //new Error()
 			// make the fetch call
-			let response = await getResponse(url, options)
+			let response = await getResponse(url, _options)
 			// invoke global and local request interceptors to intercept and/or transform `response`
 			response = await executeInterceptors(
 				response,
 				responseInterceptors,
 				url,
-				options,
+				_options,
 			)
 			errResponse = response
 			const { status = 0 } = response
@@ -97,7 +109,7 @@ export function fetcher<
 						].join(' '),
 						{ cause: err },
 					)
-					return ThePromise.reject(err)
+					return globalThis.Promise.reject(err)
 				}
 				result = await (parseFunc() as Promise<TReturn>)?.catch(
 					handleErr,
@@ -108,7 +120,7 @@ export function fetcher<
 					result,
 					resultInterceptors,
 					url,
-					options,
+					_options,
 				)
 			}
 			resolve((await result) as TReturn)
@@ -123,7 +135,7 @@ export function fetcher<
 				{
 					cause: errX?.cause ?? err,
 					response: errResponse,
-					options,
+					options: _options,
 					url,
 				},
 			)
@@ -132,7 +144,7 @@ export function fetcher<
 				error,
 				errorInterceptors,
 				url,
-				options,
+				_options,
 			)
 
 			reject(error)
@@ -144,7 +156,7 @@ export function fetcher<
 	promise.onEarlyFinalize.push(() => abortCtrl?.abort())
 	return promise as IPromisE<TReturn>
 }
-export default fetcher
+export default fetch
 
 /** Gracefully execute interceptors and return un-/modified value */
 const executeInterceptors = async <
@@ -158,6 +170,7 @@ const executeInterceptors = async <
 ) => {
 	for (const interceptor of interceptors.filter(isFn)) {
 		const _args = [interceptor, [value, args] as TArgs2, value] as const
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		value = (await fallbackIfFails(..._args)) ?? value
 	}
 	return value
@@ -165,18 +178,18 @@ const executeInterceptors = async <
 
 /** Execute fetch(), retry if needed and return Response */
 export const getResponse = async (...[url, options]: FetchArgsInterceptor) => {
-	const goGetch = () =>
-		fetch(url, options).catch((err: Error) =>
+	const doFetch = () =>
+		globalThis.fetch(url, options).catch((err: Error) =>
 			err.message === 'Failed to fetch'
 				? // catch network errors to allow retries
 					new Response(null, {
 						status: 0,
 						statusText: 'Network Error',
 					})
-				: ThePromise.reject(err),
+				: globalThis.Promise.reject(err),
 		)
 
-	const response = await PromisE.retry(goGetch, {
+	const response = await PromisE.retry(doFetch, {
 		...options,
 		retryIf: (r?: Response) => !r?.ok,
 	}).catch(err => {

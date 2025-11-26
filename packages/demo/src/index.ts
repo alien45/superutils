@@ -1,7 +1,6 @@
 import {
 	asAny,
 	fallbackIfFails,
-	isValidURL,
 	toDatetimeLocal,
 	TupleMaxLength,
 } from '@superutils/core'

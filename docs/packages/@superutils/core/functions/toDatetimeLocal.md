@@ -2,7 +2,7 @@
 
 > **toDatetimeLocal**(`dateStr`): `""` \| `` `${number}-${number}-${number}T${number}:${number}` ``
 
-Defined in: [toDatetimeLocal.ts:27](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/toDatetimeLocal.ts#L27)
+Defined in: [packages/core/src/toDatetimeLocal.ts:27](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/toDatetimeLocal.ts#L27)
 
 Convert timestamp to `input["datetime-local"]` compatible format.
 

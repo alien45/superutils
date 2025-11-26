@@ -2,13 +2,15 @@
 
 > **isUrl**(`x`): `x is URL`
 
-Defined in: [is.ts:51](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/is.ts#L51)
+Defined in: [packages/core/src/is/isUrl.ts:2](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/isUrl.ts#L2)
+
+Check if value is instance of URL
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 

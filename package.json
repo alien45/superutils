@@ -1,10 +1,12 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "",
+	"description": "A compilation of re-usable, high-quality tools and utilities for TypeScript that have been developed and refined over many years. The collection aims to solve common real-world problems with elegant, robust, practical and well-tested solutions.",
 	"devDependencies": {
 		"@eslint/js": "^9.37.0",
 		"@types/eslint": "^9.6.1",
 		"@types/node": "^24.7.2",
+		"@typescript-eslint/eslint-plugin": "^8.47.0",
+		"@typescript-eslint/parser": "^8.47.0",
 		"@vitest/coverage-v8": "^3.2.4",
 		"@vitest/ui": "^3.2.4",
 		"eslint": "^9.37.0",

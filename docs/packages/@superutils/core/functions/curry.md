@@ -1,8 +1,8 @@
 # Function: curry()
 
-> **curry**\<`TData`, `TArgs`, `TArgsIsFinite`, `TArity`\>(`func`, ...`__namedParameters`): [`Curry`](../type-aliases/Curry.md)\<`TData`, `TCurriedArgs`\>
+> **curry**\<`TData`, `TArgs`, `TArgsIsFinite`, `TArity`\>(`func`, ...`__namedParameters`): [`Curry`](../type-aliases/Curry.md)\<`TData`, [`CurriedArgs`](../type-aliases/CurriedArgs.md)\<`TArgs`, `TArgsIsFinite`, (...`args`) => `TData`, `TArity`\>\>
 
-Defined in: [curry.ts:71](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/curry.ts#L71)
+Defined in: [packages/core/src/curry.ts:71](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/curry.ts#L71)
 
 Creates a curried version of a function. The curried function can be
 called with one or more or all arguments at a time. Once all arguments have been
@@ -49,7 +49,7 @@ The function to curry.
 
 ## Returns
 
-[`Curry`](../type-aliases/Curry.md)\<`TData`, `TCurriedArgs`\>
+[`Curry`](../type-aliases/Curry.md)\<`TData`, [`CurriedArgs`](../type-aliases/CurriedArgs.md)\<`TArgs`, `TArgsIsFinite`, (...`args`) => `TData`, `TArity`\>\>
 
 A new, curried function that is fully type-safe.
 

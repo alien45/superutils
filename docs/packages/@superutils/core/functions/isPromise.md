@@ -2,19 +2,21 @@
 
 > **isPromise**\<`T`\>(`x`): `x is Promise<T>`
 
-Defined in: [is.ts:47](https://github.com/alien45/utiils/blob/1eb281bb287b81b48f87f780196f814d5c255c8a/packages/core/src/is.ts#L47)
+Defined in: [packages/core/src/is/index.ts:45](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/index.ts#L45)
+
+Check if value is a Promise
 
 ## Type Parameters
 
 ### T
 
-`T` = `any`
+`T` = `unknown`
 
 ## Parameters
 
 ### x
 
-`any`
+`unknown`
 
 ## Returns
 

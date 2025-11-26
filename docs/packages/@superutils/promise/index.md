@@ -218,7 +218,6 @@ loadUserNProducts()
 ## Variables
 
 - [config](variables/config.md)
-- [ThePromise](variables/ThePromise.md)
 
 ## Functions
 

@@ -5,21 +5,21 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"incremental": true,
-		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"module": "ESNext",
+		"lib": ["ES2024", "DOM", "DOM.Iterable"],
+		"module": "es2022",
 		"moduleResolution": "node",
 		"outDir": "./dist",
 		"resolveJsonModule": true,
 		"rootDir": "./src",
 		"strict": true,
 		"skipLibCheck": true,
-		"target": "ES2018"
+		"target": "ES2018" // Keep this for broad compatibility
 	},
 	"exclude": [
 		"node_modules",
 		"dist",
 		// Exclude all possible tests files and directories
-		"packages/*/tests**",
+		"packages/*/tests/**",
 		"**/__tests__",
 		"**/__tests__/**",
 		"**/*.test.ts",
