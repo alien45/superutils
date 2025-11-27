@@ -63,22 +63,31 @@ export function sort<
 	propertyName: keyof V & string,
 	options?: SortOptions,
 ): IterableType<T>
+/** Sort `Map` by map-keys `K` */
 export function sort<K, V>(
 	data: Map<K, V>,
-	/** Sort by value property name */
 	byKey: true,
 	options?: SortOptions,
 ): Map<K, V>
+/** Sort `Map` with comparator function */
 export function sort<K, V>(
 	map: Map<K, V>,
 	comparator: EntryComparator<K, V>,
 	options?: SortOptions,
 ): Map<K, V>
-export function sort<V, T extends V[] | Set<V>>(
-	arrOrSet: T,
+/** Sort `Array` with comparator function */
+export function sort<V>(
+	array: V[],
 	comparator: ArrayComparator<V>,
 	options?: SortOptions,
-): T extends V[] ? V[] : Set<V>
+): V[]
+/** Sort `Set` with comparator function */
+export function sort<V>(
+	set: Set<V>,
+	comparator: ArrayComparator<V>,
+	options?: SortOptions,
+): Set<V>
+/** Sort Array/Map/Set with `string | boolean | number` values */
 export function sort<
 	K,
 	V extends string | boolean | number,

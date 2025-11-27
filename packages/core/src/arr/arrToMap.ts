@@ -1,4 +1,4 @@
-import { isArr, isDefined, isFn, isObj } from '../is'
+import { isArr, isDefined, isFn, isNumber, isObj } from '../is'
 
 /**
  * Generate a Map from one or more arrays
@@ -30,43 +30,56 @@ import { isArr, isDefined, isFn, isObj } from '../is'
  * const map = arrToMap(arr, (item: Item) => item.key, 1) // Map<number, Item>
  * ```
  */
-export const arrToMap = <
+
+// Overload for when no key is provided. The map keys will be array indices (number).
+export function arrToMap<T extends unknown[], FlatDepth extends number = 0>(
+	arr: T,
+	flatDepth?: FlatDepth,
+): Map<number, FlatArray<T, FlatDepth>>
+
+// Overload for when a key function is provided.
+export function arrToMap<
 	T extends unknown[],
-	GetKeyFn extends (
-		item: MapItem,
-		index: number,
-		flatArr: MapItem[],
-		arr: T,
-	) => unknown,
 	FlatDepth extends number = 0,
 	MapItem = FlatArray<T, FlatDepth>,
-	ParamKey =
-		| undefined
-		| GetKeyFn
-		| (MapItem extends Record<infer K, unknown> ? MapItem[K] : unknown),
-	MapKey = ParamKey extends undefined
-		? number
-		: ParamKey extends (...args: Parameters<GetKeyFn>) => infer Ret
-			? Ret
-			: ParamKey,
+	MapKey = unknown,
 >(
 	arr: T,
-	flatDepth: FlatDepth = 0 as FlatDepth,
-	key?: ParamKey,
-) =>
-	new Map(
-		(isArr(arr) ? arr : [])
-			.flat(flatDepth)
-			.filter(Boolean)
-			.map((item, i, arrFlat) => [
-				(isFn(key)
-					? key(item as MapItem, i, arrFlat, arr)
-					: isObj(item) && isDefined(key) && !isFn(key)
-						? (item as Record<PropertyKey, unknown>)[
-								key as PropertyKey
-							]
-						: i) ?? i,
-				item,
-			]),
-	) as Map<MapKey, MapItem>
+	key: (item: MapItem, index: number, flatArr: MapItem[]) => MapKey,
+	flatDepth?: FlatDepth,
+): Map<MapKey, MapItem>
+
+// Overload for when a property name is provided as the key.
+export function arrToMap<
+	T extends unknown[],
+	FlatDepth extends number = 0,
+	MapItem = FlatArray<T, FlatDepth>,
+	KeyProp extends keyof MapItem = keyof MapItem,
+>(arr: T, key: KeyProp, flatDepth?: FlatDepth): Map<MapItem[KeyProp], MapItem>
+
+// Implementation
+export function arrToMap<T extends unknown[]>(
+	arr: T,
+	key?: unknown,
+	flatDepth = 0,
+): Map<unknown, unknown> {
+	;[key, flatDepth] = isNumber(key) ? [undefined, key] : [key, flatDepth]
+
+	const flatEntries = (
+		!isArr(arr)
+			? [] // invalid arr
+			: flatDepth > 0 // flattening required
+				? arr.flat(flatDepth)
+				: arr
+	).map((item, i, flatArr) => [
+		(isFn(key)
+			? key(item, i, flatArr)
+			: isObj(item) && isDefined(key)
+				? item[key as keyof typeof item]
+				: i) ?? i,
+		item,
+	]) as [unknown, unknown][]
+
+	return new Map(flatEntries)
+}
 export default arrToMap

@@ -3,7 +3,7 @@ import { AsyncFn } from '../types'
 
 /** Check if value is a function */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isFn = (x: unknown): x is (...args: any[]) => any =>
+export const isFn = <T extends (...args: any[]) => any>(x: unknown): x is T =>
 	typeof x === 'function'
 
 /**

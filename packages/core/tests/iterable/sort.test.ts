@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { randomInt, sort } from '../../src'
+import { sort } from '../../src'
 import {
 	type MapEntry,
 	compareMap,
@@ -9,35 +9,6 @@ import {
 describe('sort', () => {
 	const prepared = prepareMapOfObjects()
 	let mapOfObjectsSortedByAge: Map<number, MapEntry>
-
-	// console.log('benchmark sorting map by value-key')
-	// const perf = (tag = '', func: () => unknown) => {
-	// 	console.time(tag)
-	// 	func()
-	// 	console.timeEnd(tag)
-	// }
-	// const max = 100_000
-	// const arr = new Array(max).fill(0).map(() => ({ key: `${randomInt(max)}` }))
-	// for (let i = 0; i < 1; i++) {
-	// 	let map = new Map(arr.map(x => [x, x]))
-	// 	perf('sort(): map', () => sort(map, 'key'))
-	// 	map = new Map(arr.map(x => [x, x]))
-	// 	perf('sort(): map comparator', () =>
-	// 		sort(map, (a, b) =>
-	// 			`${a[1].key}`.toLowerCase() > `${b[1].key}`.toLowerCase()
-	// 				? 1
-	// 				: -1,
-	// 		),
-	// 	)
-	// 	map = new Map(arr.map(x => [x, x]))
-	// 	perf('entries.sort(): map', () =>
-	// 		[...map.entries()].sort((a, b) =>
-	// 			`${a[1].key}`.toLowerCase() > `${b[1].key}`.toLowerCase()
-	// 				? 1
-	// 				: -1,
-	// 		),
-	// 	)
-	// }
 	afterEach(() => {
 		mapOfObjectsSortedByAge.clear()
 	})
@@ -49,13 +20,27 @@ describe('sort', () => {
 		)
 	})
 
-	it('should return empty map when non-map value provided', () => {
+	it('should return original when non-map value provided', () => {
 		expect(sort({} as any, '')).toEqual({})
+		expect(sort(null as any, '')).toEqual(null)
+		expect(sort(1 as any, '')).toEqual(1)
+		expect(sort(false as any, '')).toEqual(false)
 	})
 
 	describe('array', () => {
 		it('should sort arrays', () => {
 			expect(sort([3, 1, 2])).toEqual([1, 2, 3])
+			expect(sort(['c', 'a', 'b'])).toEqual(['a', 'b', 'c'])
+			expect(sort(['A', 'a', 'B', 'c'], { ignoreCase: false })).toEqual([
+				'A',
+				'B',
+				'a',
+				'c',
+			])
+		})
+
+		it('should sort arrays with comparator function', () => {
+			expect(sort([3, 1, 2], (a, b) => b - a)).toEqual([3, 2, 1])
 			expect(sort(['3', '1', '2'])).toEqual(['1', '2', '3'])
 		})
 
@@ -160,7 +145,12 @@ describe('sort', () => {
 
 	describe('set', () => {
 		it('should sort sets', () => {
-			expect([...sort(new Set([3, 1, 2]))]).toEqual([1, 2, 3])
+			const set = new Set([3, 1, 2])
+			expect([...sort(set)]).toEqual([1, 2, 3])
+
+			const newSet = sort(set, { newInstance: true })
+			expect([...newSet]).toEqual([1, 2, 3])
+			expect(newSet).not.toBe(set)
 		})
 
 		it('should return sort and reverse original array', () => {

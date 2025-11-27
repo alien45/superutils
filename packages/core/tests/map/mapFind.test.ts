@@ -20,4 +20,12 @@ describe('mapFind', () => {
 		})
 		expect(result).toEqual({ age: 22, name: 'Eve' })
 	})
+
+	it('should find by using callback', () => {
+		const result = mapFind(
+			prepared.mapOfObjects,
+			({ name }) => name === 'Eve',
+		)
+		expect(result).toEqual({ age: 22, name: 'Eve' })
+	})
 })

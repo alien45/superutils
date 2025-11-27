@@ -38,17 +38,6 @@ export type SortOptions = {
 export type SearchOptions<K, V, AsMap extends boolean = false> = {
 	/** Whethere to return the result as a map (`true`) or array (`false`). Default: `true` */
 	asMap?: AsMap
-	/** Whether to convert item property (object, map, array....) to string */
-	propToStr?:
-		| boolean
-		| (<Item extends V & Record<string, unknown>>(
-				/** List item */
-				item: Item,
-				/** Item property value or `undefined` for fuzzy search. */
-				value?: unknown,
-				/** Item property key provided by query or `undefined` for fuzzy search. */
-				key?: string,
-		  ) => string)
 	/** case-insensitive search for strings. Default: `false` */
 	ignoreCase?: boolean
 	/** limit number of results. Default: `Infinity` */
@@ -61,4 +50,13 @@ export type SearchOptions<K, V, AsMap extends boolean = false> = {
 	query: Record<string, unknown> | string
 	/** Map to store results in. Default: `new Map()` */
 	result?: Map<K, V>
+	/** Callback to convert item/item-property to string */
+	transform?: (
+		/** List item */
+		item: V,
+		/** Item property value or `undefined` for fuzzy search. */
+		value?: V[keyof V],
+		/** Item property key provided by query or `undefined` for fuzzy search. */
+		key?: keyof V,
+	) => string
 }
