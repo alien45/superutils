@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { search, mapFind } from '../../src'
-import { compareMap, MapEntry, prepareMapOfObjects } from '../map/prepareMap'
+import { search } from '../../src'
+import { compareMap, MapEntry, prepareMapOfObjects } from './prepareMap'
 
 describe('search', () => {
 	const prepared = prepareMapOfObjects()
 
 	it('should return undefined when map or conf is unexpected value', () => {
-		const result = mapFind(null as any, null as any)
-		expect(result).toEqual(undefined)
+		compareMap(search(null as any, null as any), new Map())
 	})
 
 	describe('array', () => {
@@ -40,7 +39,7 @@ describe('search', () => {
 					},
 				}))
 			const result = search(arr, {
-				asMap: false,
+				asMap: false, // returns array
 				// merge name object into a single string
 				transform: ({ name, nameArr }, v, key) =>
 					key !== 'name'

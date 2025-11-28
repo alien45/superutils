@@ -1,19 +1,13 @@
 {
 	"compilerOptions": {
-		// "composite": true,
+		// "composite": true, //disabled for lerna
 		"declaration": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		// "incremental": true,
-		// "lib": ["ESNext", "DOM", "DOM.Iterable"],
-		// "module": "node",
-		// "moduleResolution": "node",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"outDir": "./dist",
+		"module": "esnext",
+		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
-		"rootDir": "./src",
 		"strict": true,
 		"skipLibCheck": true,
 		"target": "es2018" // use ES2018 for broad compatibility

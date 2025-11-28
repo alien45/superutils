@@ -45,6 +45,7 @@
 		"publish:packages": "lerna publish",
 		"start": "npm run clean:purge && npm run build && npm run build:watch",
 		"test": "bash scripts/test.sh",
+		"test:tsc": "tsc --noEmit",
 		"vbuild": "",
 		"vitest": "vitest",
 		"vitest:coverage": "vitest --coverage"

@@ -26,10 +26,11 @@
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_watch": "tsc -p tsconfig.json --watch",
-		"build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.dts.json --clean --config ../../tsup.config.js",
+		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
 		"test": "vitest"
 	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
 	"version": "0.1.0"

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { mapEntries } from '../../src'
+import { getEntries } from '../../src'
 
-describe('mapEntries', () => {
+describe('getEntries', () => {
 	it('should convert a Map to 2D array', () => {
 		expect(
-			mapEntries(
+			getEntries(
 				new Map([
 					[1, 1],
 					[2, 2],
@@ -16,8 +16,8 @@ describe('mapEntries', () => {
 		])
 	})
 	it('should return empty array when non-Map values provided', () => {
-		expect(mapEntries(null as any)).toEqual([])
-		expect(mapEntries(0 as any)).toEqual([])
-		expect(mapEntries('' as any)).toEqual([])
+		expect(getEntries(null as any)).toEqual([])
+		expect(getEntries(0 as any)).toEqual([])
+		expect(getEntries('' as any)).toEqual([])
 	})
 })

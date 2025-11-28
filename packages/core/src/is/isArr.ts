@@ -10,7 +10,7 @@ export const isArr = <Item = unknown>(x: unknown): x is Item[] =>
 export const isArrObj = <K extends PropertyKey, V, T extends Record<K, V>[]>(
 	x: unknown,
 	strict = true,
-): x is T[] => isArr(x) && x.every(x => isObj<T>(x, strict))
+): x is T[] => isArr<T>(x) && x.every(x => isObj(x, strict))
 
 /** Check if argument is a 2-dimentional array */
 export const isArr2D = <Item = unknown>(x: unknown): x is Item[][] =>

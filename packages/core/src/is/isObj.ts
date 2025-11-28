@@ -41,7 +41,10 @@
  * console.log(isObj(new Test(), false)) // true
  * ```
  */
-export const isObj = <T = object>(x: unknown, strict = true): x is T =>
+export const isObj = <T = Record<PropertyKey, unknown>>(
+	x: unknown,
+	strict = true,
+): x is T =>
 	!!x // excludes null, NaN, Infinity....
 	&& typeof x === 'object'
 	&& (!strict

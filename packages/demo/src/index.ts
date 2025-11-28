@@ -3,6 +3,9 @@ import {
 	fallbackIfFails,
 	toDatetimeLocal,
 	TupleMaxLength,
+	arrReverse,
+	reverse,
+	randomInt,
 } from '@superutils/core'
 import { PromisE, ResolveIgnored, IPromisE } from '@superutils/promise'
 
@@ -16,6 +19,8 @@ import {
 import { distinctUntilChanged } from 'rxjs'
 
 console.log('Started')
+
+require('./benchmark-arr-reverse')
 
 // ;(async () => {
 // 	const count = 1_000_000

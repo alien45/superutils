@@ -34,6 +34,7 @@
 		"dev": "npm run build -- --watch",
 		"test": "vitest"
 	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
 	"version": "0.1.0"

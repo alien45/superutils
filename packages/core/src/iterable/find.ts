@@ -1,28 +1,16 @@
-import { isFn } from '../is/'
-import { search, type SearchOptions } from '../iterable'
-import { mapFilter } from './mapFilter'
+import { isFn } from '../is'
+import filter from './filter'
+import search from './search'
+import { IterableList, type FindOptions } from './types'
 
-export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
-	SearchOptions<K, V>,
-	'limit' | 'asMap'
-> & {
-	/**
-	 * Whether to include the key in the return type.
-	 *
-	 * If `true`, return type is `[K, V]` else `V`
-	 *
-	 * Default: `false`
-	 */
-	includeKey?: IncludeKey
-}
 /**
- * @summary finds a specific object by supplied object property/key and value within.
+ * Finds a first item matching criteria in an {@link IterableList}.
  *
  * @returns first item matched or `undefined` if not found
  *
  * @example Find item using callback
  * ```typescript
- * import { mapFindByKey } from '@superutils/core'
+ * import { find } from '@superutils/core'
  *
  * const map = new Map<number, { name: string; age: number }>([
  * 	[1, { name: 'Alice', age: 30 }],
@@ -35,7 +23,7 @@ export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
  *
  * @example Find item using search options
  * ```typescript
- * import { mapFindByKey } from '@superutils/core'
+ * import { find } from '@superutils/core'
  *
  * const map = new Map<number, { name: string; age: number }>([
  * 	[1, { name: 'Alice', age: 30 }],
@@ -49,31 +37,34 @@ export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
  * // result: { name: 'Bob', age: 25 }
  * ```
  */
-export function mapFind<
+export function find<
 	K,
 	V extends Record<string, unknown>,
 	IncludeKey extends boolean = false,
 	Return = undefined | (IncludeKey extends true ? [K, V] : V),
->(data: Map<K, V>, callback: Parameters<typeof mapFilter<V, K>>[1]): Return
-export function mapFind<
+>(
+	data: IterableList<K, V>,
+	callback: Parameters<typeof filter<K, V>>[1],
+): Return
+export function find<
 	K,
 	V extends Record<string, unknown>,
 	IncludeKey extends boolean = false,
 	Return = undefined | (IncludeKey extends true ? [K, V] : V),
->(data: Map<K, V>, options: FindOptions<K, V, IncludeKey>): Return
-export function mapFind<
+>(data: IterableList<K, V>, options: FindOptions<K, V, IncludeKey>): Return
+export function find<
 	K,
 	V extends Record<string, unknown>,
 	IncludeKey extends boolean = false,
 	Result = undefined | (IncludeKey extends true ? [K, V] : V),
 >(
-	data: Map<K, V>,
+	data: IterableList<K, V>,
 	optsOrCb:
-		| ((value: V, key: K, map: Map<K, V>) => boolean)
+		| ((value: V, key: K, data: IterableList<K, V>) => boolean)
 		| FindOptions<K, V, IncludeKey>,
 ): Result {
 	const result = isFn(optsOrCb)
-		? mapFilter(data, optsOrCb, 1)
+		? filter(data, optsOrCb, 1)
 		: search(data, { ...optsOrCb, asMap: true, limit: 1 })
 
 	return result[
@@ -82,3 +73,5 @@ export function mapFind<
 			: 'values' // returns: value
 	]().next().value as Result
 }
+
+export default find

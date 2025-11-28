@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { mapFind } from '../../src'
+import { find } from '../../src'
 import { prepareMapOfObjects } from './prepareMap'
 
-describe('mapFind', () => {
+describe('find', () => {
 	const prepared = prepareMapOfObjects()
 	it('should find object-item by key and value', () => {
-		const result = mapFind(prepared.mapOfObjects, {
+		const result = find(prepared.mapOfObjects, {
 			includeKey: true,
 			matchExact: true,
 			query: { name: 'Bob' },
@@ -14,7 +14,7 @@ describe('mapFind', () => {
 	})
 
 	it('should find first item matching partial value', () => {
-		const result = mapFind(prepared.mapOfObjects, {
+		const result = find(prepared.mapOfObjects, {
 			matchExact: true,
 			query: { name: 'Eve' },
 		})
@@ -22,10 +22,7 @@ describe('mapFind', () => {
 	})
 
 	it('should find by using callback', () => {
-		const result = mapFind(
-			prepared.mapOfObjects,
-			({ name }) => name === 'Eve',
-		)
+		const result = find(prepared.mapOfObjects, ({ name }) => name === 'Eve')
 		expect(result).toEqual({ age: 22, name: 'Eve' })
 	})
 })
