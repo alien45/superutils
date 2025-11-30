@@ -5,7 +5,7 @@ export interface SubjectLike<T = unknown> {
 		next: (value: T) => void,
 		...args: unknown[]
 	) => SubscriptionLike
-	value: T
+	value?: T
 }
 
 export interface SubscriptionLike {

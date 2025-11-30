@@ -9,4 +9,5 @@
 		{ "path": "packages/react" }, // requires: core & rx
 		{ "path": "packages/demo" }
 	]
+	// "extends": "./tsconfig.base.json"
 }

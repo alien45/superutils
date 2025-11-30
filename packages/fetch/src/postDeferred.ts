@@ -96,15 +96,18 @@ export {
  * // This results in only two network requests instead of four.
  * ```
  */
-export function postDeferred<ThisArg = unknown>(
+export function postDeferred<ThisArg, DefaultUrl extends string | URL>(
 	deferOptions: DeferredOptions<ThisArg> = {},
-	...[defaultUrl, defaultData, defaultOptions]: Partial<PostArgs>
+	defaultUrl?: DefaultUrl,
+	defaultData?: PostArgs[1],
+	defaultOptions?: PostArgs[2],
 ) {
 	let _abortCtrl: AbortController | undefined
-	type CbArgs = typeof defaultUrl extends undefined
-		? PostArgs
-		: Partial<PostArgs>
-	const doPost = <TData = unknown>(...[url, data, options = {}]: CbArgs) => {
+	const doPost = <TData = unknown>(
+		...[url, data, options = {}]: DefaultUrl extends undefined
+			? PostArgs
+			: Partial<PostArgs>
+	) => {
 		options.abortCtrl ??= new AbortController()
 		// abort any previous fetch
 		_abortCtrl?.abort()
@@ -125,4 +128,5 @@ export function postDeferred<ThisArg = unknown>(
 	}
 	return PromisE.deferredCallback(doPost, deferOptions)
 }
+
 export default postDeferred

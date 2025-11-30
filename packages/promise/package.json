@@ -1,14 +1,18 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "An extended Promise class with extra features and utilities.",
-	"devDependencies": {
-		"@superutils/core": "^0.1.0"
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
 	},
+	"dependencies": {
+		"@superutils/core": "^1.0.1"
+	},
+	"description": "An extended Promise class with extra features and utilities.",
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
+	"homepage": "https://github.com/alien45/superutils/#readme",
 	"keywords": [
 		"promise",
 		"async",
@@ -18,15 +22,25 @@
 	"license": "MIT",
 	"main": "dist/index.js",
 	"name": "@superutils/promise",
-	"peerDependencies": {
-		"@superutils/core": "^0.1.0"
+	"peerDpendencies": {
+		"@superutils/core": "^1.0.1"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
 	},
 	"scripts": {
-		"build": "tsc -p tsconfig.json",
-		"test": "jest",
-		"watch": "tsc -p tsconfig.json --watch"
+		"_build": "tsc -p tsconfig.json",
+		"_watch": "tsc -p tsconfig.json --watch",
+		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
+		"dev": "npm run build -- --watch",
+		"test": "vitest"
 	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "0.1.0"
+	"version": "1.0.1"
 }

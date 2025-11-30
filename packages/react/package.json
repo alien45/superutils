@@ -1,10 +1,12 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Utilities, components and hooks for React applications.",
-	"devDependencies": {
-		"@superutils/core": "^0.1.0",
-		"@superutils/promise": "^0.1.0",
-		"@types/react": "^18.0.0"
+	"dependencies": {
+		"@superutils/core": "^1.0.1",
+		"@superutils/promise": "^1.0.1",
+		"@types/react": "^18.0.0",
+		"react": ">=16.8.0",
+		"rxjs": "^7.0.0"
 	},
 	"files": [
 		"dist",
@@ -22,16 +24,20 @@
 	"main": "dist/index.js",
 	"name": "@superutils/react",
 	"peerDependencies": {
-		"@superutils/promise": "^0.1.0",
-		"@superutils/core": "^0.1.0",
-		"react": ">=16.8.0",
-		"rxjs": "^7.0.0"
+		"@superutils/core": "^1.0.1",
+		"@superutils/promise": "^1.0.1"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
-		"build": "tsc -p tsconfig.json",
-		"test": "jest",
-		"watch": "tsc -p tsconfig.json --watch"
+		"_build": "tsc -p tsconfig.json",
+		"_watch": "tsc -p tsconfig.json --watch",
+		"build": "tsup src/index.ts --format esm --dts --tsconfig ./tsconfig.dts.json --clean --config ../../tsup.config.js",
+		"dev": "npm run build -- --watch",
+		"test": "vitest"
 	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
 	"version": "0.1.0"

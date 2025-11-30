@@ -1,8 +1,8 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { isArrLike, isEmpty, isFn, isMap, isObj, isRegExp, isStr } from '../is'
 import { objCopy, objCreate } from '../obj'
-import { mapValues } from '../map'
 import getSize from './getSize'
+import getValues from './getValues'
 import { IterableList, SearchOptions } from './types'
 
 /**
@@ -63,7 +63,7 @@ export const search = <
 	const ignore = !getSize(data) || isEmpty(options?.query) // object: no properties | string: only whitespaces
 	const result = isMap(options?.result) ? options.result : new Map()
 	const asMap = options?.asMap ?? search.defaultOptions.asMap
-	if (ignore) return (asMap ? result : mapValues(result)) as Result
+	if (ignore) return (asMap ? result : getValues(result)) as Result
 
 	options = objCopy(search.defaultOptions, options, [], 'empty') as Required<
 		SearchOptions<K, V, AsMap>
@@ -72,9 +72,10 @@ export const search = <
 	let { query } = options
 
 	const qIsStr = isStr(query)
+	const qIsRegExp = !qIsStr && isRegExp(query)
 	const qKeys = fallbackIfFails(Object.keys, [query], [])
 	// Pre-process keywords for case-insensitivity outside the main loop
-	if (ignoreCase && !matchExact) {
+	if (ignoreCase && !matchExact && !qIsRegExp) {
 		query = qIsStr
 			? (query as string).toLowerCase()
 			: objCreate(
@@ -90,16 +91,17 @@ export const search = <
 	for (const [dataKey, dataValue] of entries) {
 		if (result.size >= limit) break
 
-		const matched = qIsStr
-			? matchItemOrProp(options, dataValue, undefined) // fuzzy search
-			: qKeys[matchAll ? 'every' : 'some'](
-					key => matchItemOrProp(options, dataValue, key), // search specific properties
-				)
+		const matched =
+			qIsStr || qIsRegExp
+				? matchItemOrProp(options, dataValue, undefined) // fuzzy search
+				: qKeys[matchAll ? 'every' : 'some'](
+						key => matchItemOrProp(options, dataValue, key), // search specific properties
+					)
 		if (!matched) continue
 
 		result.set(dataKey, dataValue)
 	}
-	return (asMap ? result : mapValues(result)) as Result
+	return (asMap ? result : getValues(result)) as Result
 }
 search.defaultOptions = {
 	asMap: true,
@@ -107,17 +109,11 @@ search.defaultOptions = {
 	limit: Infinity,
 	matchAll: false,
 	matchExact: false,
-} as
-	| Pick<
-			// options that should always have default value
-			Required<SearchOptions<unknown, unknown, true>>,
-			'asMap' | 'ignoreCase' | 'limit' | 'matchAll' | 'matchExact'
-	  >
-	| Omit<
-			// options that should NOT have default value
-			SearchOptions<unknown, unknown, true>,
-			'query' | 'result' | 'transform'
-	  >
+} as Pick<
+	// options that should always have default value
+	Required<SearchOptions<unknown, unknown, true>>,
+	'asMap' | 'ignoreCase' | 'limit' | 'matchAll' | 'matchExact'
+>
 
 /** Utility for use with {@link search()} function */
 export function matchItemOrProp<K, V>( // extends Record<string, unknown>
@@ -133,7 +129,7 @@ export function matchItemOrProp<K, V>( // extends Record<string, unknown>
 	item: V,
 	propertyName?: string,
 ) {
-	const fuzzy = isStr(query) || propertyName === undefined
+	const fuzzy = isStr(query) || isRegExp(query) || propertyName === undefined
 	const keyword = fuzzy ? query : query[propertyName]
 	const propVal: unknown =
 		fuzzy || !isObj(item)

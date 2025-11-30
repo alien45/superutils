@@ -1,6 +1,6 @@
 import { objSort } from '@superutils/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
+import fetch, {
 	config,
 	type FetchArgs,
 	fetchDeferred,
@@ -70,7 +70,7 @@ describe('deferredFetch', () => {
 		// - runAllTimersAsync executes only the 3rd call.
 		const context = getDeferredContext()
 		const headers = new Headers({ 'x-header': 'default header' })
-		const getProduct = fetchDeferred(
+		const getProduct = fetch.get.deferred(
 			context,
 			`${fetchBaseUrl}/1`, // default url
 			{ headers },

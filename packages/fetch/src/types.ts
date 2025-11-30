@@ -11,6 +11,7 @@ export type FetchArgsInterceptor = [
 export enum FetchAs {
 	arrayBuffer = 'arrayBuffer',
 	blob = 'blob',
+	bytes = 'bytes',
 	formData = 'formData',
 	json = 'json',
 	response = 'response',
@@ -276,6 +277,7 @@ export type FetchOptionsInterceptor = Omit<
 export interface FetchResult<T> {
 	arrayBuffer: ArrayBuffer
 	blob: Blob
+	bytes: Uint8Array<ArrayBuffer>
 	formData: FormData
 	json: T
 	text: string
@@ -311,7 +313,7 @@ export type PostArgs = [
 	url: string | URL,
 	data?: PostBody,
 	options?: Omit<FetchOptions, 'method'> & {
-		/** Default: 'post' */
-		method?: 'post' | 'put' | 'patch'
+		/** Default: `'post'` */
+		method?: 'post' | 'put' | 'patch' | 'delete'
 	},
 ]

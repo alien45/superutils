@@ -1,0 +1,9 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		// Override the module settings just for DTS file generation to avoid the strict import extension checks.
+		"module": "ES2022",
+		"moduleResolution": "node"
+	},
+	"include": ["src"]
+}

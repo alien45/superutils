@@ -13,7 +13,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-react": "^7.37.5",
 		"globals": "^16.4.0",
-		"lerna": "^8.2.2",
+		"lerna": "^8.2.4",
 		"prettier": "^3.6.2",
 		"prettier-eslint": "^16.4.2",
 		"typedoc": "^0.28.13",
@@ -31,8 +31,10 @@
 	"license": "ISC",
 	"private": true,
 	"scripts": {
-		"build": "tsc --build",
-		"build:watch": "tsc --build --watch",
+		"_build": "tsc --build",
+		"_build:watch": "tsc --build --watch",
+		"build": "lerna run build",
+		"build:watch": "lerna watch -- lerna run build --scope=$LERNA_PACKAGE_NAME",
 		"clean": "tsc --build --clean",
 		"clean:purge": "rm -rf packages/*/dist/* && npm run clean",
 		"docs:dev": "npm run docs:build-packages && vitepress dev docs",
@@ -41,8 +43,10 @@
 		"docs:preview": "vitepress preview docs",
 		"lint": "eslint . --ext .ts,.tsx",
 		"publish:packages": "lerna publish",
-		"start": "npm run clean:purge && npm run build:watch",
+		"start": "npm run clean:purge && npm run build && npm run build:watch",
 		"test": "bash scripts/test.sh",
+		"test:tsc": "tsc --noEmit",
+		"vbuild": "",
 		"vitest": "vitest",
 		"vitest:coverage": "vitest --coverage"
 	},
@@ -50,5 +54,6 @@
 	"workspaces": [
 		"packages/*"
 	],
-	"version": "1.0.0"
+	"version": "1.0.0",
+	"dependencies": {}
 }

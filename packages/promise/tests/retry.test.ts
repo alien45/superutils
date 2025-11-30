@@ -10,6 +10,21 @@ describe('PromisE.retry', () => {
 		vi.useFakeTimers()
 	})
 
+	it('should throw error after attempting max retries', async () => {
+		const func = vi.fn(async () => {
+			return Promise.reject(new Error('Even number'))
+		})
+		const promise = PromisE.retry(func, {
+			retry: 1,
+			retryBackOff: 'linear',
+		})
+		vi.runAllTimersAsync()
+		let error: unknown
+		await promise.catch(err => (error = err))
+		expect(error).toEqual(new Error('Even number'))
+		expect(func).toHaveBeenCalledTimes(2)
+	})
+
 	it('should attempt to re-execute a failed function', async () => {
 		let count = 0
 		const func = vi.fn(() => {

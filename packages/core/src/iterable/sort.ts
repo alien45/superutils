@@ -1,6 +1,6 @@
 import { arrReverse } from '../arr'
 import { isArr, isFn, isMap, isObj, isSet } from '../is'
-import { IterableList, IterableType, SortOptions } from './types'
+import { IterableList, SortOptions } from './types'
 
 export type EntryComparator<K, V> = (a: [K, V], b: [K, V]) => number
 export type ArrayComparator<V> = (a: V, b: V) => number
@@ -58,11 +58,7 @@ export function sort<
 	K,
 	V extends Record<PropertyKey, unknown>,
 	T extends IterableList<K, V>,
->(
-	data: T,
-	propertyName: keyof V & string,
-	options?: SortOptions,
-): IterableType<T>
+>(data: T, propertyName: keyof V & string, options?: SortOptions): T
 /** Sort `Map` by map-keys `K` */
 export function sort<K, V>(
 	data: Map<K, V>,
@@ -92,7 +88,7 @@ export function sort<
 	K,
 	V extends string | boolean | number,
 	T extends IterableList<K, V>,
->(data: T, options?: SortOptions): IterableType<T>
+>(data: T, options?: SortOptions): T
 export function sort<
 	K,
 	V = Record<PropertyKey, unknown>,

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { mapKeys } from '../../src'
+import { getKeys } from '../../src'
 
-describe('mapKeys', () => {
+describe('getKeys', () => {
 	it('should return map values as array', () => {
 		expect(
-			mapKeys(
+			getKeys(
 				new Map([
 					[1, 2],
 					[3, 4],
@@ -13,8 +13,8 @@ describe('mapKeys', () => {
 		).toEqual([1, 3])
 	})
 	it('should return empty array when non-Map values provided', () => {
-		expect(mapKeys(null as any)).toEqual([])
-		expect(mapKeys(0 as any)).toEqual([])
-		expect(mapKeys('' as any)).toEqual([])
+		expect(getKeys(null as any)).toEqual([])
+		expect(getKeys(0 as any)).toEqual([])
+		expect(getKeys('' as any)).toEqual([])
 	})
 })

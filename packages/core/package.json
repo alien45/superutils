@@ -1,12 +1,15 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
+	},
 	"description": "Utilities for TS/JS/Node.js environments.",
-	"devDependencies": {},
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
+	"homepage": "https://github.com/alien45/superutils/#readme",
 	"keywords": [
 		"javascript",
 		"rxjs",
@@ -21,13 +24,22 @@
 	"license": "MIT",
 	"main": "dist/index.js",
 	"name": "@superutils/core",
-	"peerDependencies": {},
-	"scripts": {
-		"build": "tsc -p tsconfig.json",
-		"test": "vitest",
-		"watch": "tsc -p tsconfig.json --watch"
+	"publishConfig": {
+		"access": "public"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
+	},
+	"scripts": {
+		"_build": "tsc -p tsconfig.json",
+		"_watch": "tsc -p tsconfig.json --watch",
+		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
+		"dev": "npm run build -- --watch",
+		"test": "vitest"
+	},
+	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "0.1.0"
+	"version": "1.0.1"
 }

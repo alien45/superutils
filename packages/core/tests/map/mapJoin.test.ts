@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mapJoin } from '../../src'
-import { compareMap } from './prepareMap'
+import { compareMap } from '../iterable/prepareMap'
 
 describe('mapJoin', () => {
 	it('should join multiple maps into one', () => {

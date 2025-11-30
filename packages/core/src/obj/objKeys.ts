@@ -7,11 +7,8 @@ import fallbackIfFails from '../fallbackIfFails'
  * @param sorted (optional) Whether to sort the keys. Default: `true`
  * @param includeSymbols (optional) Whether to include `Symbol` object. Default: `false`
  */
-export const objKeys = <
-	Key extends PropertyKey,
-	Include extends true | false = true,
->(
-	obj: Record<Key, unknown>,
+export const objKeys = <T extends object, Include extends true | false = true>(
+	obj: T,
 	sorted = true,
 	includeSymbols: Include = true as Include,
 ) =>
@@ -22,5 +19,5 @@ export const objKeys = <
 		],
 		[],
 		[],
-	) as Include extends true ? Key[] : Key[] & string[]
+	) as Include extends true ? (keyof T)[] : (keyof T)[] & string[]
 export default objKeys

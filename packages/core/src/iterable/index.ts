@@ -1,6 +1,12 @@
 // common helpers for working with Array, Map, Set or anything that extends Iterable
-export * from './sliceMap'
+export * from './filter'
+export * from './find'
+export * from './getEntries'
+export * from './getKeys'
 export * from './getSize'
+export * from './getValues'
+export * from './reverse'
 export * from './search'
+export * from './sliceMap'
 export * from './sort'
 export * from './types'

@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, expect } from 'vitest'
-import { mapEntries } from '../../src'
+import { getEntries } from '../../src'
 
 export type MapEntry = { age: number; name: string }
+
+/** Deep-compare two maps' entries */
 export const compareMap = (map: Map<any, any>, expected: Map<any, any>) =>
-	expect(mapEntries(map)).toEqual(mapEntries(expected))
+	expect(getEntries(map)).toEqual(getEntries(expected))
+
+/** Create Map for testing accoss multiple files */
 export const prepareMapOfObjects = () => {
 	const prepared = {
 		mapOfObjects: new Map<number, MapEntry>(),
