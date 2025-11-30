@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Fetch utilities",
 	"dependencies": {
-		"@superutils/core": "^0.1.0",
+		"@superutils/core": "^1.0.0",
 		"@superutils/promise": "^0.1.0"
 	},
 	"files": [
@@ -20,8 +20,11 @@
 	"main": "dist/index.js",
 	"name": "@superutils/fetch",
 	"peerDependencies": {
-		"@superutils/core": "^0.1.0",
+		"@superutils/core": "^1.0.0",
 		"@superutils/promise": "^0.1.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",

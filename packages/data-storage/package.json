@@ -1,7 +1,7 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
 	"dependencies": {
-		"@superutils/core": "^0.1.0"
+		"@superutils/core": "^1.0.0"
 	},
 	"description": "JSON data storage helper for LocalStorage",
 	"files": [
@@ -20,7 +20,10 @@
 	"main": "dist/index.js",
 	"name": "@superutils/data-storage",
 	"peerDependencies": {
-		"@superutils/core": "^0.1.0"
+		"@superutils/core": "^1.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",

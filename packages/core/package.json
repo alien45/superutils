@@ -22,6 +22,9 @@
 	"main": "dist/index.js",
 	"name": "@superutils/core",
 	"peerDependencies": {},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_watch": "tsc -p tsconfig.json --watch",
@@ -32,5 +35,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "0.1.0"
+	"version": "1.0.0"
 }

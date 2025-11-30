@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Examples",
 	"dependencies": {
-		"@superutils/core": "^0.1.0"
+		"@superutils/core": "^1.0.0"
 	},
 	"files": [
 		"dist",
@@ -20,7 +20,10 @@
 	"main": "dist/index.js",
 	"name": "@superutils/template",
 	"peerDependencies": {
-		"@superutils/core": "^0.1.0"
+		"@superutils/core": "^1.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
