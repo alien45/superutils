@@ -10,12 +10,13 @@
 
 This monorepo contains the following packages. Each is independently versioned and published to NPM.
 
-| Package               | NPM Version                                               | Description                                                                             |
-| :-------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| `@superutils/core`    | [!npm](https://www.npmjs.com/package/@superutils/core)    | A collection of lightweight, dependency-free utility functions and types.               |
-| `@superutils/promise` | [!npm](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.    |
-| `@superutils/react`   | [!npm](https://www.npmjs.com/package/@superutils/react)   | A collection of React hooks and components for common UI patterns and state management. |
-| `@superutils/rx`      | [!npm](https://www.npmjs.com/package/@superutils/rx)      | A suite of powerful operators and utilities for working with RxJS observables.          |
+| Package               | NPM Version                                               | Description                                                                                                                               |
+| :-------------------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| `@superutils/core`    | [!npm](https://www.npmjs.com/package/@superutils/core)    | A collection of lightweight, dependency-free utility functions and types.                                                                 |
+| `@superutils/fetch`   | [!npm](https://www.npmjs.com/package/@superutils/fetch)   | A modern, practical, and lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate. |
+| `@superutils/promise` | [!npm](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.                                                      |
+| `@superutils/react`   | [!npm](https://www.npmjs.com/package/@superutils/react)   | A collection of React hooks and components for common UI patterns and state management.                                                   |
+| `@superutils/rx`      | [!npm](https://www.npmjs.com/package/@superutils/rx)      | A suite of powerful operators and utilities for working with RxJS observables.                                                            |
 
 ## Getting Started
 
