@@ -9,6 +9,7 @@ import config from './config'
  * The function will be re-executed if:
  * 1. The `func` promise rejects or the function throws an error.
  * 2. The optional `retryIf` function returns `true`.
+ * 3. `retry > 0`
  *
  * Retries will stop when the `retry` count is exhausted, or when `func` executes successfully
  * (resolves without error) AND the `retryIf` (if provided) returns `false`.
