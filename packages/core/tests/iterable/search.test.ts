@@ -11,20 +11,20 @@ describe('search', () => {
 
 	describe('array', () => {
 		it('should return empty array when non-array values provided', () => {
-			const config = { asMap: false, query: '2' }
-			expect(search(null as any, config)).toEqual([])
-			expect(search(undefined as any, config)).toEqual([])
-			config.query = 'null'
-			expect(search([undefined, null], config)).toEqual([])
-			config.query = 'undefined'
-			expect(search([undefined, null], config)).toEqual([])
+			const options = { asMap: false, query: '2' }
+			expect(search(null as any, options)).toEqual([])
+			expect(search(undefined as any, options)).toEqual([])
+			options.query = 'null'
+			expect(search([undefined, null], options)).toEqual([])
+			options.query = 'undefined'
+			expect(search([undefined, null], options)).toEqual([])
 		})
 
 		it('should search array with non-object values', () => {
-			const config = { asMap: false, query: '2' }
-			expect(search([1, 2, 4], config)).toEqual([2])
-			config.query = 'false'
-			expect(search([true, false], config)).toEqual([false])
+			const options = { asMap: false, query: '2' }
+			expect(search([1, 2, 4], options)).toEqual([2])
+			options.query = 'false'
+			expect(search([true, false], options)).toEqual([false])
 		})
 
 		it('should use `propToStr()` when searching array of objects containing object properties', () => {
@@ -92,21 +92,21 @@ describe('search', () => {
 				{ age: 90, name: 'charlie' },
 			]
 			const first2 = arr.slice(0, 2)
-			const config = {
+			const options = {
 				asMap: false,
 				matchAll: false,
 				query: { age: 8 } as { age?: string | number; name?: string },
 			}
-			expect(search(arr, config)).toEqual(first2)
+			expect(search(arr, options)).toEqual(first2)
 
-			config.query.age = '8'
-			expect(search(arr, config)).toEqual(first2)
+			options.query.age = '8'
+			expect(search(arr, options)).toEqual(first2)
 
-			config.query.name = 'ob'
-			expect(search(arr, config)).toEqual(first2)
+			options.query.name = 'ob'
+			expect(search(arr, options)).toEqual(first2)
 
-			config.matchAll = true
-			expect(search(arr, config)).toEqual([arr[1]])
+			options.matchAll = true
+			expect(search(arr, options)).toEqual([arr[1]])
 		})
 	})
 
@@ -180,6 +180,33 @@ describe('search', () => {
 			})
 			const expected = new Map([[1, { age: 30, name: 'Alice' }]])
 			compareMap(result, expected)
+
+			const withChild = new Map(prepared.mapOfObjects)
+			withChild.set(withChild.size + 1, {
+				age: 1,
+				name: 'Michael',
+			})
+			withChild.set(withChild.size + 1, {
+				age: 15,
+				name: 'Jackson',
+			})
+			const result2 = search(prepared.mapOfObjects, {
+				query: /lice|ave/,
+				transform: item => {
+					// exclude items by returning undefined or emptry string
+					if (item.age < 18) return
+
+					// return value to search continue search as per criteria
+					return Object.values(item).join(' ')
+				},
+			})
+			compareMap(
+				result2,
+				new Map([
+					[1, { age: 30, name: 'Alice' }],
+					[4, { age: 28, name: 'Dave' }],
+				]),
+			)
 		})
 	})
 })

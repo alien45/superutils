@@ -72,9 +72,10 @@ export const search = <
 	let { query } = options
 
 	const qIsStr = isStr(query)
+	const qIsRegExp = !qIsStr && isRegExp(query)
 	const qKeys = fallbackIfFails(Object.keys, [query], [])
 	// Pre-process keywords for case-insensitivity outside the main loop
-	if (ignoreCase && !matchExact) {
+	if (ignoreCase && !matchExact && !qIsRegExp) {
 		query = qIsStr
 			? (query as string).toLowerCase()
 			: objCreate(
@@ -90,11 +91,12 @@ export const search = <
 	for (const [dataKey, dataValue] of entries) {
 		if (result.size >= limit) break
 
-		const matched = qIsStr
-			? matchItemOrProp(options, dataValue, undefined) // fuzzy search
-			: qKeys[matchAll ? 'every' : 'some'](
-					key => matchItemOrProp(options, dataValue, key), // search specific properties
-				)
+		const matched =
+			qIsStr || qIsRegExp
+				? matchItemOrProp(options, dataValue, undefined) // fuzzy search
+				: qKeys[matchAll ? 'every' : 'some'](
+						key => matchItemOrProp(options, dataValue, key), // search specific properties
+					)
 		if (!matched) continue
 
 		result.set(dataKey, dataValue)
@@ -127,7 +129,7 @@ export function matchItemOrProp<K, V>( // extends Record<string, unknown>
 	item: V,
 	propertyName?: string,
 ) {
-	const fuzzy = isStr(query) || propertyName === undefined
+	const fuzzy = isStr(query) || isRegExp(query) || propertyName === undefined
 	const keyword = fuzzy ? query : query[propertyName]
 	const propVal: unknown =
 		fuzzy || !isObj(item)

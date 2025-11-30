@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Utilities, components and hooks for React applications.",
 	"dependencies": {
-		"@superutils/core": "^1.0.0",
+		"@superutils/core": "^1.0.1",
 		"@superutils/promise": "^0.1.0",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
@@ -24,7 +24,7 @@
 	"main": "dist/index.js",
 	"name": "@superutils/react",
 	"peerDependencies": {
-		"@superutils/core": "^1.0.0",
+		"@superutils/core": "^1.0.1",
 		"@superutils/promise": "^0.1.0"
 	},
 	"publishConfig": {

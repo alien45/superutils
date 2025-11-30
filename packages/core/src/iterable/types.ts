@@ -53,7 +53,7 @@ export type SearchOptions<K, V, AsMap extends boolean = false> = {
 	/** match all supplied key-value pairs. Default: `false` */
 	matchAll?: boolean
 	/** key-value pairs */
-	query: Record<string, unknown> | string
+	query: Record<string, unknown> | string | RegExp
 	/** Map to store results in. Default: `new Map()` */
 	result?: Map<K, V>
 	/** Callback to convert item/item-property to string */
@@ -64,5 +64,5 @@ export type SearchOptions<K, V, AsMap extends boolean = false> = {
 		value?: V[keyof V],
 		/** Item property key provided by query or `undefined` for fuzzy search. */
 		key?: keyof V,
-	) => string
+	) => string | undefined
 }

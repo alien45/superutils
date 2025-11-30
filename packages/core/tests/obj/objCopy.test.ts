@@ -23,6 +23,24 @@ describe('objCopy', () => {
 			a: 2,
 			e: 5,
 		})
+
+		const source = {
+			a: 1,
+			b: 2,
+			c: 3,
+		}
+		const dest = {
+			c: 33,
+			d: 4,
+			e: 5,
+		}
+		const copied2 = objCopy(source, dest, ['a'], 'empty')
+		expect(copied2).toEqual({
+			b: 2,
+			c: 33,
+			d: 4,
+			e: 5,
+		})
 	})
 
 	it('should should exclude specified properties and recursive deep-copy', () => {
