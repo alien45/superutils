@@ -2,7 +2,7 @@ import { isObj } from '../is'
 import objKeys from './objKeys'
 
 /** create a new object with properties sorted by key */
-export const objSort = <T extends Record<PropertyKey, unknown>>(
+export const objSort = <T>(
 	obj: T,
 	recursive = true,
 	_done = new Map<unknown, boolean>(),
