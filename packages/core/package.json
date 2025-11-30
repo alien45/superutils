@@ -4,7 +4,6 @@
 		"url": "https://github.com/alien45/superutils/issues"
 	},
 	"description": "Utilities for TS/JS/Node.js environments.",
-	"devDependencies": {},
 	"files": [
 		"dist",
 		"README.md",
@@ -25,7 +24,6 @@
 	"license": "MIT",
 	"main": "dist/index.js",
 	"name": "@superutils/core",
-	"peerDependencies": {},
 	"publishConfig": {
 		"access": "public"
 	},

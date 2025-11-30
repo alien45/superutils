@@ -4,6 +4,18 @@ An extended `Promise` implementation, named `PromisE`, that provides additional 
 
 This package offers a drop-in replacement for the native `Promise` that includes status tracking (`.pending`, `.resolved`, `.rejected`) and a suite of powerful static methods for common asynchronous patterns like deferred execution, throttling, and cancellable fetches.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+    - [`new PromisE(executor)`](#promise-executor): Drop-in replacement for `Promise`
+    - [`new PromisE(promise)`](#promise-status): Check promise status
+    - [`PromisE.try()`](#static-methods): Static methods
+    - [`PromisE.delay()`](#delay): Async delay
+    - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
+    - [`PromisE.timeout()`](#timeout): Reject after timeout
+
 ## Features
 
 - **Promise Status**: Easily check if a promise is `pending`, `resolved`, or `rejected`.
@@ -21,7 +33,9 @@ npm install @superutils/core @superutils/promise
 
 ## Usage
 
-### `new PromisE(executor)`
+<div id="promise-executor"></div>
+
+### `new PromisE(executor)`: Drop-in replacement for `Promise`
 
 The `PromisE` class can be used just like the native `Promise`. The key difference is the addition of status properties:
 
@@ -49,22 +63,11 @@ p.then(result => console.log(result))
 setTimeout(() => p.resolve('finished early'), 500)
 ```
 
-### `new PromisE(promise)`
+<div id="static-methods"></div>
 
-Check status of an existing promise.
+### `PromisE.try(fn)`: Static methods
 
-```typescript
-import { PromisE } from '@superutils/promise'
-const x = Promise.resolve(1)
-const p = new PromisE(x)
-console.log(p.pending) // false
-console.log(p.resolved) // true
-console.log(p.rejected) // false
-```
-
-### `PromisE.try(fn)`
-
-Safely execute a function that might throw an error and wrap it in a `PromisE`.
+Drop-in replacement for all `Promise` static methods such as `.all()`, `.race()`, `.reject`, `.resolve`, `.try()`, `.withResolvers()`....
 
 ```typescript
 import { PromisE } from '@superutils/promise'
@@ -79,7 +82,24 @@ p.catch(error => {
 })
 ```
 
-### `PromisE.delay(duration)`
+<div id="promise-status"></div>
+
+### `new PromisE(promise)`
+
+Check status of an existing promise.
+
+```typescript
+import { PromisE } from '@superutils/promise'
+const x = Promise.resolve(1)
+const p = new PromisE(x)
+console.log(p.pending) // false
+console.log(p.resolved) // true
+console.log(p.rejected) // false
+```
+
+<div id="delay"></div>
+
+### `PromisE.delay(duration)`: Async delay
 
 Creates a promise that resolves after a specified duration, essentially a promise-based `setTimeout`.
 
@@ -91,9 +111,24 @@ while (!appReady) {
 }
 ```
 
-## Advanced Utilities
+#### `PromisE.delay(duration, callback)`: execute after delay
 
-### `PromisE.deferred(options)`
+Creates a promise that executes a function after a specified duration and returns the value the function returns.
+
+If callback returns undefined, default value will be the duration.
+
+```typescript
+import PromisE from '@superutils/promise'
+
+const callback = () => {
+	/* do stuff here */
+}
+await PromisE.delay(100, callback)
+```
+
+<div id="deferred"></div>
+
+### `PromisE.deferred(options)`: async debounced/throttled execution
 
 Create a function that debounces or throttles promise-returning function calls. This is useful for scenarios like auto-saving user input or preventing multiple rapid API calls.
 
@@ -125,32 +160,38 @@ deferredSave(() => api.save({ text: 'third' })).then(response =>
 )
 ```
 
-### `PromisE.deferredFetch(options, ...defaultFetchArgs)`
+<div id="deferredCallback"></div>
 
-A powerful utility that combines `deferred` execution with `fetch`. It's perfect for implementing cancellable, debounced search inputs.
+### `PromisE.deferredCallback(callback, options)`: async debounced/throttled callbacks
+
+Same as `PromisE.deferred` but for event handlers etc.
 
 ```typescript
-import { PromisE, ResolveIgnored } from '@superutils/promise'
+import PromisE from '@superutils/promise'
 
-const searchProducts = PromisE.deferredFetch({
-	defer: 300, // Debounce for 300ms
-	throttle: true, // In throttle mode, the first call in a series is executed
-	resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (cancelled) requests will resolve with `undefined`
+// Input change handler
+const handleChange = (e: { target: { value: number } }) =>
+	console.log(e.target.value)
+// Change handler with `PromisE.deferred()`
+const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
+	delayMs: 300,
+	throttle: false,
 })
-
-// User types 'apple'
-searchProducts('https://api.example.com/products?q=apple').then(console.log)
-
-// User quickly types 'applesauce'
-searchProducts('https://api.example.com/products?q=applesauce').then(
-	console.log,
+// Simulate input change events after prespecified delays
+const delays = [100, 150, 200, 550, 580, 600, 1000, 1100]
+delays.forEach(timeout =>
+	setTimeout(
+		() => handleChangeDeferred({ target: { value: timeout } }),
+		timeout,
+	),
 )
-
-// The first request for 'apple' will be aborted, and its promise will resolve with `undefined`.
-// The second request for 'applesauce' will be executed.
+// Prints:
+// 200, 600, 1100
 ```
 
-### `PromisE.timeout(timeoutDuration, ...promises)`
+<div id="timeout"></div>
+
+### `PromisE.timeout(duration, ...promises)`: Reject after timeout
 
 #### Reject stuck or unexpectedly lenghthy promise(s) after a specified timeout:
 
@@ -168,6 +209,7 @@ PromisE.timeout(
 
 ```typescript
 import { PromisE } from '@superutils/promise'
+
 const loadUserNProducts = () => {
 	const promise = PromisE.timeout(
 		5000, // timeout after 5000ms

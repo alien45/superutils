@@ -1,5 +1,8 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
+	},
 	"dependencies": {
 		"@superutils/core": "^1.0.1"
 	},
@@ -9,6 +12,7 @@
 		"README.md",
 		"LICENSE"
 	],
+	"homepage": "https://github.com/alien45/superutils/#readme",
 	"keywords": [
 		"promise",
 		"async",
@@ -24,6 +28,10 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
+	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_watch": "tsc -p tsconfig.json --watch",
@@ -34,5 +42,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "0.1.0"
+	"version": "1.0.1"
 }

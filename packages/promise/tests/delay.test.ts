@@ -26,6 +26,14 @@ describe('PromisE.delay', () => {
 		await expect(promise).resolves.toBe(10_000)
 	})
 
+	it('should execute a function after delay', async () => {
+		const callback = vi.fn(() => 99)
+		const promise = PromisE.delay(10_000, callback)
+		await vi.runAllTimersAsync()
+		await expect(promise).resolves.toBe(99)
+		expect(callback).toHaveBeenCalledOnce()
+	})
+
 	it('should resolve delayed promise earlier than the duration provided', async () => {
 		const promise = PromisE.delay(10_000, 'original value')
 		await vi.advanceTimersByTimeAsync(5_000)

@@ -45,11 +45,12 @@ export const retry = async <T>(
 	maxRetries = maxRetries >= 0 ? maxRetries : d.retry
 	delayMs = isPositiveInteger(delayMs) ? delayMs : d.retryDelay
 	jitterMax = isPositiveInteger(jitterMax) ? jitterMax : d.retryDelayJitterMax
-	let retryCount = 0
+	let retryCount = -1
 	let result: T | undefined
 	let error: unknown
 	let shouldRetry = false
 	do {
+		retryCount++
 		if (retryBackOff === 'exponential' && retryCount > 1) delayMs *= 2
 		if (retryDelayJitter) delayMs += Math.floor(Math.random() * jitterMax)
 
@@ -63,11 +64,11 @@ export const retry = async <T>(
 		}
 		shouldRetry =
 			maxRetries > 0
+			&& (!!error || !!retryIf?.(result, retryCount, error))
 			&& retryCount < maxRetries
-			&& (!!error || !!retryIf?.(result, retryCount++))
 	} while (shouldRetry)
 
-	if (error && !result) throw error as Error
+	if (error !== undefined) return Promise.reject(error as Error)
 	return result as T
 }
 
