@@ -10,10 +10,6 @@ export {
 	ResolveIgnored,
 } from '@superutils/promise'
 
-export type FetchDeferredCbArgs<TUrl> = TUrl extends undefined
-	? FetchArgs
-	: Partial<FetchArgs>
-
 /**
  * Creates a deferred/throttled version of {@link fetch}, powered by {@link PromisE.deferred}.
  * This is ideal for scenarios requiring advanced control over HTTP requests, such as debouncing search inputs,
@@ -99,20 +95,19 @@ export type FetchDeferredCbArgs<TUrl> = TUrl extends undefined
  * // Console output will show the same quote ID for all three calls.
  * ```
  */
-export function fetchDeferred<
-	TArgs extends FetchDeferredArgs,
-	ThisArg = unknown,
->(deferOptions: DeferredOptions<ThisArg> = {}, ...defaultFetchArgs: TArgs) {
-	const [defaultUrl, defaultOptions = {}] = defaultFetchArgs
+export function fetchDeferred<ThisArg, DefaultUrl extends string | URL>(
+	deferOptions: DeferredOptions<ThisArg> = {},
+	defaultUrl?: DefaultUrl,
+	defaultOptions?: FetchDeferredArgs[1],
+) {
 	let _abortCtrl: AbortController | undefined
-	// type CbArgs = TArgs[0] extends undefined ? FetchArgs : Partial<FetchArgs>
 	const fetchCallback = <TCbData = unknown>(
-		...args: FetchDeferredCbArgs<TArgs[0]>
+		...args: DefaultUrl extends undefined ? FetchArgs : Partial<FetchArgs>
 	) => {
 		const [url, options = {}] = args
 		options.abortCtrl ??= new AbortController()
-		options.timeout ??= defaultOptions.timeout
-		options.errMsgs = { ...defaultOptions.errMsgs, ...options.errMsgs }
+		options.timeout ??= defaultOptions?.timeout
+		options.errMsgs = { ...defaultOptions?.errMsgs, ...options.errMsgs }
 		const { abortCtrl } = options
 		// abort any previous fetch
 		_abortCtrl?.abort()
@@ -120,7 +115,7 @@ export function fetchDeferred<
 		const promise = fetch<TCbData>(
 			...forceCast<FetchArgs>([
 				url ?? defaultUrl,
-				mergeFetchOptions(defaultOptions, options),
+				mergeFetchOptions(defaultOptions ?? {}, options),
 			]),
 		)
 		// abort fetch request if promise is finalized manually before completion

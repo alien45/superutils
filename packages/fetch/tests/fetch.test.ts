@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PromisE from '@superutils/promise'
-import fetcher, { config, FetchError } from '../src'
+import fetcher, { config, FetchAs, FetchError } from '../src'
 
 describe('fetch', () => {
 	const fetchBaseUrl = 'https://dummyjson.com/products'
@@ -31,6 +31,65 @@ describe('fetch', () => {
 		})
 		await expect(promise).rejects.toThrow('Invalid URL')
 		expect(errorIntercepror).toHaveBeenCalledOnce()
+	})
+
+	it('should return successful response parsed as JSON by default', async () => {
+		const fetch200 = vi.fn((...args: any[]) =>
+			Promise.resolve({
+				ok: true,
+				status: 200,
+				json: () => ({
+					age: 33,
+					id: 'adam',
+					location: 'heaven',
+					name: 'Adam',
+				}),
+			}),
+		)
+		vi.stubGlobal('fetch', fetch200)
+		const promise = fetcher.get(`${fetchBaseUrl}`)
+		await vi.runAllTimersAsync()
+		await expect(promise).resolves.toEqual({
+			age: 33,
+			id: 'adam',
+			location: 'heaven',
+			name: 'Adam',
+		})
+		expect(fetch200).toHaveBeenCalledOnce()
+	})
+
+	it('should return successful response as Response by modifying default in `config.fetchOptions.as`', async () => {
+		const fetch200 = vi.fn((...args: any[]) =>
+			Promise.resolve(
+				new Response(
+					JSON.stringify({
+						age: 33,
+						id: 'adam',
+						location: 'heaven',
+						name: 'Adam',
+					}),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
+					},
+				),
+			),
+		)
+		const asOriginal = config.fetchOptions.as
+		config.fetchOptions.as = FetchAs.response
+		vi.stubGlobal('fetch', fetch200)
+		const promise: Promise<Response> = fetcher(`${fetchBaseUrl}`)
+		await vi.runAllTimersAsync()
+		const response = await promise
+		expect(response).instanceOf(Response)
+		await expect(response.json()).resolves.toEqual({
+			age: 33,
+			id: 'adam',
+			location: 'heaven',
+			name: 'Adam',
+		})
+		expect(fetch200).toHaveBeenCalledOnce()
+		config.fetchOptions.as = asOriginal
 	})
 
 	it('should fail fetch with 500', async () => {
@@ -155,6 +214,7 @@ describe('fetch', () => {
 		const { interceptors } = config.fetchOptions
 		let midResult: string | undefined
 		const mockedIntercepros = {
+			error: [],
 			request: [vi.fn()],
 			result: [
 				vi.fn(() => 'modified result'), // transform result
@@ -168,8 +228,9 @@ describe('fetch', () => {
 			],
 			response: [vi.fn()],
 		}
-		config.fetchOptions.interceptors = mockedIntercepros as any
+		config.fetchOptions.interceptors = mockedIntercepros
 		const promise = fetcher(`${fetchBaseUrl}`)
+		await vi.runAllTimersAsync()
 		const result = await promise
 		expect(midResult).toBe('modified result')
 		expect(result).toBe('modified result again')

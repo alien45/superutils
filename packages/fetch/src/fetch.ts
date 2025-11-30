@@ -1,23 +1,22 @@
 import {
-	asAny,
-	fallbackIfFails,
 	isFn,
 	isPositiveNumber,
+	isPromise,
 	isUrlValid,
 	type TimeoutId,
 } from '@superutils/core'
 import PromisE, { type IPromisE } from '@superutils/promise'
 import mergeFetchOptions from './mergeFetchOptions'
 import {
-	type FetchArgsInterceptor,
-	type FetchAs,
+	FetchAs,
 	FetchError,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchInterceptors,
 	type FetchOptions,
 	type FetchResult,
-	type Interceptor,
 } from './types'
+import executeInterceptors from './executeInterceptors'
+import getResponse from './getResponse'
 
 /**
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
@@ -46,12 +45,12 @@ import {
  * ```
  */
 export function fetch<
-	TJSON = unknown,
+	TJSON,
 	TOptions extends FetchOptions = FetchOptions,
 	TReturn = TOptions['as'] extends FetchAs
 		? FetchResult<TJSON>[TOptions['as']]
 		: TJSON,
->(url: string | URL, options: TOptions & FetchOptions = {} as TOptions) {
+>(url: string | URL, options: TOptions = {} as TOptions) {
 	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
 	options.method ??= 'get'
@@ -90,13 +89,14 @@ export function fetch<
 			const { status = 0 } = response
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
-				const json = (await response.json()) as Error
+				const jsonError = (await response.json()) as Error
 				const message =
-					json?.message || `${errMsgs.requestFailed} ${status}.`
+					jsonError?.message || `${errMsgs.requestFailed} ${status}.`
 				throw new Error(`${message}`.replace('Error: ', ''), {
-					cause: json,
+					cause: jsonError,
 				})
 			}
+
 			let result: unknown = response
 			const parseFunc = response[parseAs as keyof typeof response]
 			if (isFn(parseFunc)) {
@@ -111,10 +111,9 @@ export function fetch<
 					)
 					return globalThis.Promise.reject(err)
 				}
-				result = await (parseFunc() as Promise<TReturn>)?.catch(
-					handleErr,
-				)
 
+				result = parseFunc()
+				if (isPromise(result)) result = result.catch(handleErr)
 				// invoke global and local request interceptors to intercept and/or transform parsed `result`
 				result = await executeInterceptors(
 					result,
@@ -125,7 +124,7 @@ export function fetch<
 			}
 			resolve((await result) as TReturn)
 		} catch (err: unknown) {
-			const errX = asAny<Error>(err)
+			const errX = err as Error
 			let error = new FetchError(
 				errX?.name === 'AbortError'
 					? errMsgs.reqTimedout
@@ -157,45 +156,3 @@ export function fetch<
 	return promise as IPromisE<TReturn>
 }
 export default fetch
-
-/** Gracefully execute interceptors and return un-/modified value */
-const executeInterceptors = async <
-	T,
-	TArgs extends unknown[],
-	TArgs2 extends unknown[] = [value: T, ...TArgs],
->(
-	value: T,
-	interceptors: Interceptor<T, TArgs, TArgs2>[],
-	...args: TArgs
-) => {
-	for (const interceptor of interceptors.filter(isFn)) {
-		const _args = [interceptor, [value, args] as TArgs2, value] as const
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		value = (await fallbackIfFails(..._args)) ?? value
-	}
-	return value
-}
-
-/** Execute fetch(), retry if needed and return Response */
-export const getResponse = async (...[url, options]: FetchArgsInterceptor) => {
-	const doFetch = () =>
-		globalThis.fetch(url, options).catch((err: Error) =>
-			err.message === 'Failed to fetch'
-				? // catch network errors to allow retries
-					new Response(null, {
-						status: 0,
-						statusText: 'Network Error',
-					})
-				: globalThis.Promise.reject(err),
-		)
-
-	const response = await PromisE.retry(doFetch, {
-		...options,
-		retryIf: (r?: Response) => !r?.ok,
-	}).catch(err => {
-		if (!options.retry) return Promise.reject(err as Error)
-		const msg = `Request failed after attempt #${(options.retry || 0) + 1}`
-		return Promise.reject(new Error(msg, { cause: err }))
-	})
-	return response
-}
