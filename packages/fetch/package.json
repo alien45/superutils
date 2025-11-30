@@ -3,7 +3,7 @@
 	"description": "Fetch utilities",
 	"dependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^0.1.0"
+		"@superutils/promise": "^1.0.1"
 	},
 	"files": [
 		"dist",
@@ -21,7 +21,7 @@
 	"name": "@superutils/fetch",
 	"peerDependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^0.1.0"
+		"@superutils/promise": "^1.0.1"
 	},
 	"publishConfig": {
 		"access": "public"
