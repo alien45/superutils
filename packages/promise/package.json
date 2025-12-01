@@ -37,10 +37,10 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "vitest"
+		"test": "cd ../../ && npm run test promise"
 	},
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "1.0.1"
+	"version": "1.0.2"
 }

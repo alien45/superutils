@@ -1,4 +1,4 @@
-import { isPositiveInteger, ValueOrPromise } from '@superutils/core'
+import { isNumber, isPositiveInteger, ValueOrPromise } from '@superutils/core'
 import delay from './delay'
 import { RetryOptions } from './types'
 import config from './config'
@@ -38,13 +38,13 @@ export const retry = async <T>(
 		retryDelayJitter = d.retryDelayJitter,
 	} = options
 	let {
-		retry: maxRetries = 1,
+		retry: maxRetries = d.retry,
 		retryDelay: delayMs,
 		retryDelayJitterMax: jitterMax,
 	} = options
-	maxRetries = maxRetries >= 0 ? maxRetries : d.retry
-	delayMs = isPositiveInteger(delayMs) ? delayMs : d.retryDelay
-	jitterMax = isPositiveInteger(jitterMax) ? jitterMax : d.retryDelayJitterMax
+	if (maxRetries !== 0 && !isPositiveInteger(maxRetries)) maxRetries = d.retry
+	if (!isPositiveInteger(delayMs)) delayMs = d.retryDelay
+	if (!isPositiveInteger(jitterMax)) jitterMax = d.retryDelayJitterMax
 	let retryCount = -1
 	let result: T | undefined
 	let error: unknown
@@ -64,8 +64,8 @@ export const retry = async <T>(
 		}
 		shouldRetry =
 			maxRetries > 0
-			&& (!!error || !!retryIf?.(result, retryCount, error))
 			&& retryCount < maxRetries
+			&& (!!error || !!retryIf?.(result, retryCount, error))
 	} while (shouldRetry)
 
 	if (error !== undefined) return Promise.reject(error as Error)

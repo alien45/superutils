@@ -1,6 +1,8 @@
+import { isFn, isObj, isPositiveNumber } from '@superutils/core'
 import delayReject from './delayReject'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Timeout } from './types'
+import { TimeoutFunc, type TimeoutOptions } from './types'
 
 /**
  * @function    PromisE.timeout
@@ -59,22 +61,40 @@ import { IPromisE_Timeout } from './types'
  *```
  */
 export function timeout<
-	T extends unknown[] | [],
-	TOut = T['length'] extends 1 ? T[0] : T,
->(timeout = 10_000, ...values: Promise<TOut>[]) {
+	T extends [unknown, ...unknown[]], // require at least one value
+	TFunc extends keyof TimeoutFunc<T>,
+	Result = T['length'] extends 1
+		? Awaited<T[0]>
+		: Awaited<ReturnType<TimeoutFunc<T>[TFunc]>>,
+>(
+	timeout: number | TimeoutOptions<TFunc>,
+	...values: T
+): IPromisE_Timeout<Result> {
+	let funcName = 'all' as TFunc
+	let timeoutMsg = ''
+	if (isObj(timeout)) {
+		funcName = timeout.func
+		timeoutMsg = timeout.timeoutMsg ?? ''
+		timeout = timeout.timeout ?? 10_000
+	}
+	timeout = (isPositiveNumber(timeout) && timeout) || 10_000
+
+	const func = isFn(PromisEBase[funcName])
+		? PromisEBase[funcName]
+		: PromisEBase.all
 	const dataPromise = (
-		values.length === 1
-			? new PromisEBase<T[0]>(values[0]) // single promise resolves to a single result
-			: PromisEBase.all(values)
-	) as PromisEBase<TOut> // array of promises resolves to an array of results
-	const timeoutPromise = delayReject<TOut>(
+		values.length <= 1
+			? new PromisEBase<T[0]>(values?.[0]) // single promise resolves to a single result
+			: func(values)
+	) as PromisEBase<Result> // array of promises resolves to an array of results
+	const timeoutPromise = delayReject<Result>(
 		timeout,
-		new Error(`Timed out after ${timeout}ms`),
+		new Error(timeoutMsg || `Timed out after ${timeout}ms`),
 	)
 	const promise = PromisEBase.race([
 		dataPromise,
 		timeoutPromise,
-	]) as IPromisE_Timeout<TOut>
+	]) as IPromisE_Timeout<Result>
 	promise.clearTimeout = () => clearTimeout(timeoutPromise.timeoutId)
 	promise.data = dataPromise
 	promise.timeout = timeoutPromise
@@ -86,9 +106,16 @@ export function timeout<
 	// clear timeout after finalization
 	dataPromise
 		.catch(() => {
-			/* avoid unhandled rejection here */
+			/* avoid unhandled rejections here */
 		})
-		.finally(promise.clearTimeout)
+		.finally(() => {
+			promise.clearTimeout()
+		})
+
 	return promise
 }
+timeout.defaultOptions = {
+	func: 'all',
+	timeout: 10_000,
+} as Required<TimeoutOptions>
 export default timeout

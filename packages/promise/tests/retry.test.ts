@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE from '../src'
+import PromisE, { config } from '../src'
 
 describe('PromisE.retry', () => {
 	afterEach(() => {
@@ -10,19 +10,23 @@ describe('PromisE.retry', () => {
 		vi.useFakeTimers()
 	})
 
-	it('should throw error after attempting max retries', async () => {
+	it('should throw error after attempting max retries and use global default "retry"', async () => {
+		const _retry = config.retryOptions.retry
+		// set global default retry count
+		config.retryOptions.retry = 10
 		const func = vi.fn(async () => {
 			return Promise.reject(new Error('Even number'))
 		})
 		const promise = PromisE.retry(func, {
-			retry: 1,
+			retry: null as any,
 			retryBackOff: 'linear',
 		})
 		vi.runAllTimersAsync()
 		let error: unknown
 		await promise.catch(err => (error = err))
 		expect(error).toEqual(new Error('Even number'))
-		expect(func).toHaveBeenCalledTimes(2)
+		expect(func).toHaveBeenCalledTimes(config.retryOptions.retry + 1)
+		config.retryOptions.retry = _retry
 	})
 
 	it('should attempt to re-execute a failed function', async () => {

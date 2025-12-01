@@ -3,7 +3,7 @@
 	"description": "Utilities, components and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1",
+		"@superutils/promise": "^1.0.2",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
 		"rxjs": "^7.0.0"
@@ -25,7 +25,7 @@
 	"name": "@superutils/react",
 	"peerDependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1"
+		"@superutils/promise": "^1.0.2"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -35,7 +35,7 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --tsconfig ./tsconfig.dts.json --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "vitest"
+		"test": "cd ../../ && npm run test promise"
 	},
 	"sideEffects": false,
 	"type": "module",

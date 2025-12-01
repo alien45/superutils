@@ -3,7 +3,7 @@
 	"description": "Fetch utilities",
 	"dependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1"
+		"@superutils/promise": "^1.0.2"
 	},
 	"files": [
 		"dist",
@@ -21,7 +21,7 @@
 	"name": "@superutils/fetch",
 	"peerDependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1"
+		"@superutils/promise": "^1.0.2"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -31,7 +31,7 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "vitest"
+		"test": "cd ../../ && npm run test promise"
 	},
 	"sideEffects": false,
 	"type": "module",

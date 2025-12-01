@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE, { ResolveIgnored } from '../src'
+import PromisE from '../src'
 
 describe('PromisE', () => {
 	beforeEach(() => {
@@ -47,7 +47,11 @@ describe('PromisE', () => {
 		const p1 = new PromisE<number>()
 		expect(p1.pending).toBe(true)
 		p1.onEarlyFinalize.push(onFinalize)
-		setTimeout(() => p1.reject('error'), 3000)
+		setTimeout(() => {
+			p1.reject('error')
+			// Attempting to reject 2nd time will be ignored
+			p1.reject('error2')
+		}, 3000)
 		expect(p1.pending).toBe(true)
 		vi.runAllTimersAsync()
 		await p1.catch(() => {})

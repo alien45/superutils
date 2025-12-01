@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"dependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1",
+		"@superutils/promise": "^1.0.2",
 		"@superutils/rx": "^0.1.0"
 	},
 	"devDependencies": {
@@ -26,7 +26,7 @@
 	"name": "@superutils/demo",
 	"peerDependencies": {
 		"@superutils/core": "^1.0.1",
-		"@superutils/promise": "^1.0.1",
+		"@superutils/promise": "^1.0.2",
 		"@superutils/rx": "^0.1.0"
 	},
 	"scripts": {
@@ -36,7 +36,7 @@
 		"dev": "npm run build -- --watch",
 		"_start": "npm run --workspace=@superutils/demo@0.1.0",
 		"start": "node dist/index.js",
-		"test": "vitest"
+		"test": "cd ../../ && npm run test promise"
 	},
 	"type": "module",
 	"version": "0.1.0"

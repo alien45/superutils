@@ -40,6 +40,10 @@ export type DeferredOptions<ThisArg = unknown> = {
 	 */
 	resolveIgnored?: ResolveIgnored
 
+	/**
+	 * What do to when an executed function/promise throws error
+	 * See {@link ResolveError} for available options.
+	 */
 	resolveError?: ResolveError
 
 	/** Enable throttle mode. Requires {@link DeferredOptions.delayMs}*/

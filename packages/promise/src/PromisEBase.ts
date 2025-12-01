@@ -118,7 +118,7 @@ export class PromisEBase<T = unknown>
 	//
 
 	/** Sugar for `new PromisE(Promise.all(...))` */
-	static all = <T extends readonly unknown[] | []>(values: T) =>
+	static all = <T extends unknown[]>(values: T) =>
 		new PromisEBase(globalThis.Promise.all<T>(values)) as IPromisE<{
 			-readonly [P in keyof T]: Awaited<T[P]>
 		}>
@@ -132,12 +132,14 @@ export class PromisEBase<T = unknown>
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
 		new PromisEBase(globalThis.Promise.any<T>(values)) as IPromisE<
-			T[number]
+			Awaited<T[number]>
 		>
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
-	static race = <T>(values: T[]) =>
-		new PromisEBase(globalThis.Promise.race(values)) as IPromisE<Awaited<T>>
+	static race = <T extends unknown[]>(values: T) =>
+		new PromisEBase(globalThis.Promise.race(values)) as IPromisE<
+			Awaited<T[number]>
+		>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {

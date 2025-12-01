@@ -21,7 +21,7 @@ describe('PromisE.delay', () => {
 	})
 
 	it('should resolve delayed promise with the duration provided', async () => {
-		const promise = PromisE.delay(10_000)
+		const promise = PromisE.delay(10_000, () => undefined)
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toBe(10_000)
 	})
