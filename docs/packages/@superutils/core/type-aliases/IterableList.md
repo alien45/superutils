@@ -1,10 +1,10 @@
 # Type Alias: IterableList\<K, V\>
 
-> **IterableList**\<`K`, `V`\> = `object` & \{ `size`: `number`; \} \| \{ `length`: `number`; \}
+> **IterableList**\<`K`, `V`\> = `object` & \{ `clear`: () => `void`; `size`: `number`; \} \| \{ `length`: `number`; \}
 
-Defined in: [packages/core/src/iterable/types.ts:2](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/types.ts#L2)
+Defined in: [packages/core/src/iterable/types.ts:17](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/types.ts#L17)
 
-A general type helper to capture all iterables like Array, Map, Set....
+A general type to capture all iterables like Array, Map, Set....
 
 ## Type Declaration
 

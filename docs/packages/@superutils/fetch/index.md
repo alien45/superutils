@@ -1,25 +1,36 @@
-# @superutils/fetct
+# @superutils/fetch
 
-An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
+A modern, practical, and lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
 
-This package offers a drop-in replacement for the native `Promise` that includes status tracking (`.pending`, `.resolved`, `.rejected`) and a suite of powerful static methods for common asynchronous patterns like deferred execution, throttling, and cancellable fetches.
+This package enhances the native `fetch` API by providing a streamlined interface and integrating practical & useful features from `@superutils/promise`. It offers built-in support for automatic retries, request timeouts, interceptors, and effortless request cancellation, making complex asynchronous flows simple and manageable.
+
+## Table of Contents
+
+- Features
+- Installation
+- Usage
+    - `fetch(url, options)`
+    - `fetchDeferred(deferOptions, url, fetchOptions)`
 
 ## Features
 
-- **Promise Status**: Easily check if a promise is `pending`, `resolved`, or `rejected`.
-- **Deferred Execution**: Defer or throttle promise-based function calls with `PromisE.deferred()`.
-- **Auto-cancellable Fetch**: Automatically abort pending requests when subsequent requests are made using `PromisE.deferredFetch()` and `PromisE.deferredPost()`.
-- **Auto-cancellable Fetch**: The `PromisE.deferredFetch` and `PromisE.deferredPost` utilities automatically abort pending requests when a new deferred/throttled call is made.
-- **Timeouts**: Wrap any promise with a timeout using `PromisE.timeout()`.
-- **Rich Utilities**: A collection of static methods like `.all()`, `.race()`, `.delay()`, and more, all returning `PromisE` instances.
+- **Simplified API**: Automatically parses JSON responses, eliminating the need for `.then(res => res.json())`.
+- **Built-in Retries**: Automatic request retries with configurable exponential or fixed backoff strategies.
+- **Request Timeouts**: Easily specify a timeout for any request to prevent it from hanging indefinitely.
+- **Cancellable & Debounced Requests**: The `fetchDeferred` utility provides debouncing and throttling capabilities, automatically cancelling stale or intermediate requests. This is ideal for features like live search inputs.
+- **Interceptors**: Hook into the request/response lifecycle to globally modify requests, handle responses, or manage errors.
+- **Strongly Typed**: Written in TypeScript for excellent autocompletion and type safety.
+- **Isomorphic**: Works seamlessly in both Node.js and browser environments.
 
 ## Installation
 
 ```bash
-npm install @superutils/core @superutils/promise @superutils/fetch
+npm install @superutils/fetch
 ```
 
 ## Usage
+
+<div id="fetch"></div>
 
 ### `fetch(url, options)`
 
@@ -32,9 +43,11 @@ const theActualData = await fetch('https://dummyjson.com/products/1')
 console.log(theActualData)
 ```
 
+<div id="fetchDeferred"></div>
+
 ### `fetchDeferred(deferOptions, url, fetchOptions)`
 
-A powerful utility that combines `PromisE.deferred()` from `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced/throttled search inputs.
+A practical utility that combines `PromisE.deferred()` from the `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced, or throttled search inputs.
 
 ```typescript
 import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
@@ -81,7 +94,7 @@ setTimeout(() => {
        It will remain pending indefinitely.
     4. `ResolveIgnored.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
 
-Using "defaultFetchArgs" to reduce redundancy
+#### Using defaults to reduce redundancy
 
 ```typescript
 import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
@@ -111,6 +124,14 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 // Console output will show the same quote ID for all three calls.
 ```
 
+<div id="post"></div>
+
+### `post(url, options)`
+
+<div id="postDeferred"></div>
+
+### `postDeferred(deferOptions, url, postOptions)`
+
 ## Enumerations
 
 - [FetchAs](enumerations/FetchAs.md)
@@ -123,6 +144,7 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 
 ## Interfaces
 
+- [DefaultFetch](interfaces/DefaultFetch.md)
 - [FetchResult](interfaces/FetchResult.md)
 
 ## Type Aliases
@@ -132,8 +154,8 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 - [FetchArgs](type-aliases/FetchArgs.md)
 - [FetchArgsInterceptor](type-aliases/FetchArgsInterceptor.md)
 - [FetchConf](type-aliases/FetchConf.md)
+- [FetchDeferred](type-aliases/FetchDeferred.md)
 - [FetchDeferredArgs](type-aliases/FetchDeferredArgs.md)
-- [FetchDeferredCbArgs](type-aliases/FetchDeferredCbArgs.md)
 - [FetchErrMsgs](type-aliases/FetchErrMsgs.md)
 - [FetchInterceptorError](type-aliases/FetchInterceptorError.md)
 - [FetchInterceptorRequest](type-aliases/FetchInterceptorRequest.md)
@@ -143,19 +165,20 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 - [FetchOptions](type-aliases/FetchOptions.md)
 - [FetchOptionsInterceptor](type-aliases/FetchOptionsInterceptor.md)
 - [FetchRetryOptions](type-aliases/FetchRetryOptions.md)
+- [Func](type-aliases/Func.md)
 - [Interceptor](type-aliases/Interceptor.md)
+- [MethodFunc](type-aliases/MethodFunc.md)
 - [PostArgs](type-aliases/PostArgs.md)
 - [PostBody](type-aliases/PostBody.md)
 
 ## Variables
 
 - [config](variables/config.md)
+- [fetch](variables/fetch.md)
 
 ## Functions
 
-- [fetch](functions/fetch.md)
 - [fetchDeferred](functions/fetchDeferred.md)
-- [getResponse](functions/getResponse.md)
 - [mergeFetchOptions](functions/mergeFetchOptions.md)
 - [postDeferred](functions/postDeferred.md)
 
@@ -163,4 +186,4 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 
 ### default
 
-Renames and re-exports [fetch](functions/fetch.md)
+Renames and re-exports [fetch](variables/fetch.md)

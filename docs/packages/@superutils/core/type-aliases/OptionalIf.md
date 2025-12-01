@@ -2,7 +2,7 @@
 
 > **OptionalIf**\<`T1`, `T2`, `T2IF`, `T1Alt`\> = `T2` *extends* `T2IF` ? `T1` : `T1` \| `T1Alt`
 
-Defined in: [packages/core/src/types.ts:189](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L189)
+Defined in: [packages/core/src/types.ts:189](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L189)
 
 Make T1 optional if T2 is undefined
 

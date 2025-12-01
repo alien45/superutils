@@ -1,6 +1,6 @@
 # Enumeration: ResolveError
 
-Defined in: packages/promise/dist/types/deferred.d.ts:39
+Defined in: packages/promise/dist/index.d.ts:119
 
 Options for what to do when deferred promise/function fails
 
@@ -10,7 +10,7 @@ Options for what to do when deferred promise/function fails
 
 > **NEVER**: `"NEVER"`
 
-Defined in: packages/promise/dist/types/deferred.d.ts:41
+Defined in: packages/promise/dist/index.d.ts:121
 
 Neither resolve nor reject the failed
 
@@ -20,7 +20,7 @@ Neither resolve nor reject the failed
 
 > **REJECT**: `"REJECT"`
 
-Defined in: packages/promise/dist/types/deferred.d.ts:43
+Defined in: packages/promise/dist/index.d.ts:123
 
 (default) Reject the failed as usual
 
@@ -30,7 +30,7 @@ Defined in: packages/promise/dist/types/deferred.d.ts:43
 
 > **WITH\_ERROR**: `"RESOLVE_ERROR"`
 
-Defined in: packages/promise/dist/types/deferred.d.ts:45
+Defined in: packages/promise/dist/index.d.ts:125
 
 Resolve (not reject) with the error/reason
 
@@ -40,6 +40,6 @@ Resolve (not reject) with the error/reason
 
 > **WITH\_UNDEFINED**: `"RESOLVE_UNDEFINED"`
 
-Defined in: packages/promise/dist/types/deferred.d.ts:47
+Defined in: packages/promise/dist/index.d.ts:127
 
 Resolve with undefined

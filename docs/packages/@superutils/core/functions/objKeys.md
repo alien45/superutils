@@ -1,16 +1,16 @@
 # Function: objKeys()
 
-> **objKeys**\<`Key`, `Include`\>(`obj`, `sorted`, `includeSymbols`): `Include` *extends* `true` ? `Key`[] : `Key`[] & `string`[]
+> **objKeys**\<`T`, `Include`\>(`obj`, `sorted`, `includeSymbols`): `Include` *extends* `true` ? keyof `T`[] : keyof `T`[] & `string`[]
 
-Defined in: [packages/core/src/obj/objKeys.ts:10](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objKeys.ts#L10)
+Defined in: [packages/core/src/obj/objKeys.ts:10](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/objKeys.ts#L10)
 
 Get object property names/keys
 
 ## Type Parameters
 
-### Key
+### T
 
-`Key` *extends* `PropertyKey`
+`T` *extends* `object`
 
 ### Include
 
@@ -20,7 +20,7 @@ Get object property names/keys
 
 ### obj
 
-`Record`\<`Key`, `unknown`\>
+`T`
 
 target object
 
@@ -38,4 +38,4 @@ target object
 
 ## Returns
 
-`Include` *extends* `true` ? `Key`[] : `Key`[] & `string`[]
+`Include` *extends* `true` ? keyof `T`[] : keyof `T`[] & `string`[]

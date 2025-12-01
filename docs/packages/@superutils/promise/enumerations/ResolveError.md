@@ -1,6 +1,6 @@
 # Enumeration: ResolveError
 
-Defined in: [packages/promise/src/types/deferred.ts:53](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L53)
+Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/deferred.ts#L57)
 
 Options for what to do when deferred promise/function fails
 
@@ -10,7 +10,7 @@ Options for what to do when deferred promise/function fails
 
 > **NEVER**: `"NEVER"`
 
-Defined in: [packages/promise/src/types/deferred.ts:55](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L55)
+Defined in: [packages/promise/src/types/deferred.ts:59](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/deferred.ts#L59)
 
 Neither resolve nor reject the failed
 
@@ -20,7 +20,7 @@ Neither resolve nor reject the failed
 
 > **REJECT**: `"REJECT"`
 
-Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L57)
+Defined in: [packages/promise/src/types/deferred.ts:61](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/deferred.ts#L61)
 
 (default) Reject the failed as usual
 
@@ -30,7 +30,7 @@ Defined in: [packages/promise/src/types/deferred.ts:57](https://github.com/alien
 
 > **WITH\_ERROR**: `"RESOLVE_ERROR"`
 
-Defined in: [packages/promise/src/types/deferred.ts:59](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L59)
+Defined in: [packages/promise/src/types/deferred.ts:63](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/deferred.ts#L63)
 
 Resolve (not reject) with the error/reason
 
@@ -40,6 +40,6 @@ Resolve (not reject) with the error/reason
 
 > **WITH\_UNDEFINED**: `"RESOLVE_UNDEFINED"`
 
-Defined in: [packages/promise/src/types/deferred.ts:61](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/types/deferred.ts#L61)
+Defined in: [packages/promise/src/types/deferred.ts:65](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/deferred.ts#L65)
 
 Resolve with undefined

@@ -2,7 +2,7 @@
 
 > **isEmpty**(`x`, `nonNumerable`, `fallback`): `boolean` \| `0` \| `1`
 
-Defined in: [packages/core/src/is/isEmpty.ts:54](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/isEmpty.ts#L54)
+Defined in: [packages/core/src/is/isEmpty.ts:54](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/is/isEmpty.ts#L54)
 
 Check if variable contains empty, null-ish value.
 

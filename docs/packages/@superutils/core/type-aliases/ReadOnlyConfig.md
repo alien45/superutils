@@ -2,7 +2,7 @@
 
 > **ReadOnlyConfig**\<`T`, `Revocable`\> = `object`
 
-Defined in: [packages/core/src/obj/types.ts:7](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/types.ts#L7)
+Defined in: [packages/core/src/obj/types.ts:7](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/types.ts#L7)
 
 ## Type Parameters
 
@@ -20,7 +20,7 @@ Defined in: [packages/core/src/obj/types.ts:7](https://github.com/alien45/utiils
 
 > `optional` **add**: `boolean` \| [`ReadOnlyAllowAddFn`](ReadOnlyAllowAddFn.md)\<`T`\>
 
-Defined in: [packages/core/src/obj/types.ts:9](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/types.ts#L9)
+Defined in: [packages/core/src/obj/types.ts:9](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/types.ts#L9)
 
 Whether to allow adding new properties. Default: `false`
 
@@ -30,7 +30,7 @@ Whether to allow adding new properties. Default: `false`
 
 > `optional` **revocable**: `Revocable`
 
-Defined in: [packages/core/src/obj/types.ts:11](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/types.ts#L11)
+Defined in: [packages/core/src/obj/types.ts:11](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/types.ts#L11)
 
 Default: `false`
 
@@ -40,6 +40,6 @@ Default: `false`
 
 > `optional` **silent**: `boolean`
 
-Defined in: [packages/core/src/obj/types.ts:13](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/types.ts#L13)
+Defined in: [packages/core/src/obj/types.ts:13](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/types.ts#L13)
 
 Whether to throw error when a write operation is rejected. Default: `true`

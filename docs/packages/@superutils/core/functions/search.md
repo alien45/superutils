@@ -2,7 +2,7 @@
 
 > **search**\<`K`, `V`, `AsMap`, `Result`\>(`data`, `options`): `Result`
 
-Defined in: [packages/core/src/iterable/search.ts:89](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/search.ts#L89)
+Defined in: [packages/core/src/iterable/search.ts:54](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/search.ts#L54)
 
 A versatile utility for searching through an iterable list (e.g., Array, Map, Set) of objects.
 It supports both a simple "fuzzy" search with a string query across all properties and a
@@ -16,7 +16,7 @@ detailed, field-specific search using a query object.
 
 ### V
 
-`V` *extends* `Record`\<`string`, `unknown`\>
+`V`
 
 ### AsMap
 
@@ -36,8 +36,8 @@ The list of objects to search within. Compatible types include:
 - `Array`
 - `Map`
 - `Set`
-- `NodeList` (in DOM environments)
-- `HTMLCollection` (in DOM environments)
+- `NodeList` (in DOM environments): `options.transform()` required
+- `HTMLCollection` (in DOM environments): should accompany `options.transform()`
 
 ### options
 

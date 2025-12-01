@@ -103,21 +103,6 @@
 // export const isObjMap = x => isMap(x) && Array.from(x).every(([_, v]) => isObj(v))
 
 // /**
-//  * @name	getKeys
-//  * @summary returns an Array of keys or indexes depending on input type
-//  *
-//  * @param	{Array|Map|Object} source
-//  *
-//  * @returns {Array}
-//  */
-// export const getKeys = source => {
-//     if (isArr(source)) return source.map((_, i) => i)
-//     if (isMap(source)) return Array.from(source).map(x => x[0])
-//     if (isObj(source)) return Object.keys(source)
-//     return []
-// }
-
-// /**
 //  * @name	className
 //  * @summary formats supplied value into CSS class name compatible string for React
 //  *
@@ -150,27 +135,6 @@
 //         .filter(Boolean)
 //         .map(x => !isObj(x) ? x : className(x))
 //         .join(' ')
-// }
-
-// /**
-//  * @name	objCreate
-//  * @summary constructs a new object with supplied key(s) and value(s)
-//  *
-//  * @param	{Array}	keys
-//  * @param	{Array}		values	(optional)
-//  * @param	{Object}		result	(optional)
-//  *
-//  *
-//  * @returns	{Object}
-//  */
-// export const objCreate = (keys = [], values = [], result = {}) => {
-//     if (!isArr(keys) || !isArr(values) || !isObj(result)) return {}
-//     for (let i = 0;i < keys.length;i++) {
-//         const key = keys[i]
-//         const value = values[i]
-//         result[key] = value
-//     }
-//     return result
 // }
 
 // /**
@@ -266,50 +230,6 @@
 // }
 
 // /**
-//  * @name	objWithoutKeys
-//  * @summary constructs a new object excluding specific properties
-//  *
-//  * @param	{Object}	input
-//  * @param	{Array}		keys	property names to exclude
-//  * @param	{Object}	output	(optional) to delete unwanted props from the original `input` use it here.
-//  * 								Default: a copy of the `input` object
-//  *
-//  * @returns {Object}
-//  */
-// export const objWithoutKeys = (input, keys, output = { ...input }) => {
-//     if (!isObj(input)) return {}
-//     if (!isArr(keys) || !keys.length) return input
-
-//     for (let i = 0;i < keys.length;i++) {
-//         delete output[keys[i]]
-//     }
-//     return output
-// }
-
-// /**
-//  * @name	search
-//  * @summary Search Array or Map
-//  *
-//  * @param	{Array|Map} data
-//  * @param	{String}	query search query
-//  * @param	{Array}		keys  property names to search for
-//  *
-//  * @returns {Array|Map}
-//  */
-// export const search = (data, query, keys = []) => {
-//     if (!query || query.length === 0 || !(isArr(data) || isMap(data))) return data
-//     const searchFunc = isMap(data)
-//         ? mapSearch
-//         : arrSearch
-//     const keyValues = objCreate(
-//         keys,
-//         new Array(keys.length)
-//             .fill(query)
-//     )
-//     return searchFunc(data, keyValues, false, false, true, false)
-// }
-
-// /**
 //  * @name			searchRanked
 //  * @summary 		enhanced search for Dropdown
 //  * @description		Semantic UI Dropdown search defaults to only 'text' option property.
@@ -359,33 +279,6 @@
 // }
 
 // /**
-//  * @name	sort
-//  * @summary Sort Array or Map
-//  *
-//  * @param {Array|Map} data
-//  * @param {String}	  key		   (optional) property to sort by
-//  * @param {Boolean}   reverse	   (optional)
-//  * @param {Boolean}	  caseInsensitive (optional) Default: true
-//  * @param {Boolean}	  sortOriginal (optional) for Array only.
-//  *
-//  * @returns {Array|Map}
-//  */
-// export const sort = (data, key, reverse, caseInsensitive, sortOriginal) => {
-//     const sortFunc = isArr(data)
-//         ? arrSort
-//         : isMap(data)
-//             ? mapSort
-//             : () => data // return as is
-//     return sortFunc(
-//         data,
-//         key,
-//         reverse,
-//         caseInsensitive,
-//         sortOriginal,
-//     )
-// }
-
-// /**
 //  * @name	textCapitalize
 //  * @summary capitalizes the first letter of input
 //  *
@@ -403,7 +296,7 @@
 //     forceLowercase = false,
 //     output = input,
 // ) => {
-//     if (!input) return input
+//     if (!input) return input ?? ''
 //     if (isStr(input)) {
 //         if (forceLowercase) input = input.toLowerCase()
 //         if (!fullSentence) return input[0].toUpperCase() + input.slice(1)

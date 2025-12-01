@@ -2,7 +2,7 @@
 
 > `const` **is**: `object`
 
-Defined in: [packages/core/src/is/index.ts:77](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/is/index.ts#L77)
+Defined in: [packages/core/src/is/index.ts:77](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/is/index.ts#L77)
 
 Compilation of all the compile-time & runtime utilities functions above
 
@@ -411,9 +411,15 @@ Check if value is instance of Error
 
 ### fn()
 
-> **fn**: (`x`) => `x is (args: any[]) => any` = `isFn`
+> **fn**: \<`T`\>(`x`) => `x is T` = `isFn`
 
 Check if value is a function
+
+#### Type Parameters
+
+##### T
+
+`T` *extends* (...`args`) => `any`
 
 #### Parameters
 
@@ -423,7 +429,7 @@ Check if value is a function
 
 #### Returns
 
-`x is (args: any[]) => any`
+`x is T`
 
 ### integer()
 
@@ -527,7 +533,7 @@ Check if value is an object.
 
 ##### T
 
-`T` = `object`
+`T` = `Record`\<`PropertyKey`, `unknown`\>
 
 #### Parameters
 
@@ -691,32 +697,6 @@ Check if value is string
 #### Returns
 
 `x is string`
-
-### subjectLike()
-
-> **subjectLike**: (`x`, `withValue`) => `boolean` = `isSubjectLike`
-
-Check if value is similar to a RxJS subject with .subscribe & .next functions
-
-#### Parameters
-
-##### x
-
-`unknown`
-
-The value to check
-
-##### withValue
-
-`boolean` = `false`
-
-When `true`, also checks if `value` property exists in `x`
-
-#### Returns
-
-`boolean`
-
-`true` if the value is subject-like, `false` otherwise.
 
 ### symbol()
 

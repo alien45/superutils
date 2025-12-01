@@ -2,4 +2,4 @@
 
 > **FetchArgs** = \[`string` \| `URL`, [`FetchOptions`](FetchOptions.md)\]
 
-Defined in: [packages/fetch/src/types.ts:4](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L4)
+Defined in: [packages/fetch/src/types.ts:4](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L4)

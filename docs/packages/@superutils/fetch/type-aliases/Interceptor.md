@@ -1,8 +1,8 @@
 # Type Alias: Interceptor()\<T, TArgs, TArgsCb\>
 
-> **Interceptor**\<`T`, `TArgs`, `TArgsCb`\> = (...`args`) => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`void`\> \| [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`T`\>
+> **Interceptor**\<`T`, `TArgs`, `TArgsCb`\> = (...`args`) => `ValueOrPromise`\<`void`\> \| `ValueOrPromise`\<`T`\>
 
-Defined in: [packages/fetch/src/types.ts:302](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L302)
+Defined in: [packages/fetch/src/types.ts:304](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L304)
 
 Generic fetch interceptor type
 
@@ -28,4 +28,4 @@ Generic fetch interceptor type
 
 ## Returns
 
-[`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`void`\> \| [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`T`\>
+`ValueOrPromise`\<`void`\> \| `ValueOrPromise`\<`T`\>

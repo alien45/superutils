@@ -1,8 +1,8 @@
 # Function: timeout()
 
-> **timeout**\<`T`, `TOut`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
+> **timeout**\<`T`, `TFunc`, `Result`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
 
-Defined in: [packages/promise/src/timeout.ts:61](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/timeout.ts#L61)
+Defined in: [packages/promise/src/timeout.ts:63](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/timeout.ts#L63)
 
 **`Function`**
 
@@ -12,30 +12,34 @@ PromisE.timeout
 
 ### T
 
-`T` *extends* `unknown`[] \| \[\]
+`T` *extends* \[`unknown`, `...unknown[]`\]
 
-### TOut
+### TFunc
 
-`TOut` = `T`\[`"length"`\] *extends* `1` ? `T`\[`0`\] : `T`
+`TFunc` *extends* keyof [`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>
+
+### Result
+
+`Result` = `T`\[`"length"`\] *extends* `1` ? `Awaited`\<`T`\[`0`\]\> : `Awaited`\<`ReturnType`\<[`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>\[`TFunc`\]\>\>
 
 ## Parameters
 
 ### timeout
 
-`number` = `10_000`
-
 (optional) timeout duration in milliseconds.
                  Default: `10000` (10 seconds)
 
+`number` | [`TimeoutOptions`](../type-aliases/TimeoutOptions.md)\<`TFunc`\>
+
 ### values
 
-...`Promise`\<`TOut`\>[]
+...`T`
 
 promise/function: one or more promises as individual arguments
 
 ## Returns
 
-[`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`TOut`\>
+[`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
 
 ## Examples
 

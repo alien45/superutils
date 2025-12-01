@@ -1,6 +1,6 @@
 # Interface: DeferredConfig\<ThisArg\>
 
-Defined in: [packages/core/src/types.ts:49](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L49)
+Defined in: [packages/core/src/types.ts:49](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L49)
 
 Deferred function config
 
@@ -16,7 +16,7 @@ Deferred function config
 
 > `optional` **leading**: `boolean` \| `"global"`
 
-Defined in: [packages/core/src/types.ts:50](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L50)
+Defined in: [packages/core/src/types.ts:50](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L50)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [packages/core/src/types.ts:50](https://github.com/alien45/utiils/bl
 
 > `optional` **onError**: (`err`) => `unknown`
 
-Defined in: [packages/core/src/types.ts:51](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L51)
+Defined in: [packages/core/src/types.ts:51](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L51)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [packages/core/src/types.ts:51](https://github.com/alien45/utiils/bl
 
 > `optional` **thisArg**: `ThisArg`
 
-Defined in: [packages/core/src/types.ts:52](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L52)
+Defined in: [packages/core/src/types.ts:52](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L52)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [packages/core/src/types.ts:52](https://github.com/alien45/utiils/bl
 
 > `optional` **tid**: `string` \| `number` \| `Timeout`
 
-Defined in: [packages/core/src/types.ts:53](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/types.ts#L53)
+Defined in: [packages/core/src/types.ts:53](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L53)

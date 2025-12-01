@@ -2,7 +2,7 @@
 
 > **deferred**\<`T`\>(`options`): [`DeferredReturn`](../type-aliases/DeferredReturn.md)
 
-Defined in: [packages/promise/src/deferred.ts:86](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/deferred.ts#L86)
+Defined in: [packages/promise/src/deferred.ts:86](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/deferred.ts#L86)
 
 **`Function`**
 

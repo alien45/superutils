@@ -1,10 +1,12 @@
-# Function: mapFind()
+# Function: find()
 
 ## Call Signature
 
-> **mapFind**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `callback`): `Return`
+> **find**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `callback`): `Return`
 
-Defined in: [packages/core/src/map/mapFind.ts:52](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFind.ts#L52)
+Defined in: [packages/core/src/iterable/find.ts:40](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/find.ts#L40)
+
+Finds a first item matching criteria in an [IterableList](../type-aliases/IterableList.md).
 
 ### Type Parameters
 
@@ -28,11 +30,11 @@ Defined in: [packages/core/src/map/mapFind.ts:52](https://github.com/alien45/uti
 
 #### data
 
-`Map`\<`K`, `V`\>
+[`IterableList`](../type-aliases/IterableList.md)\<`K`, `V`\>
 
 #### callback
 
-(`value`, `key`, `map`) => `boolean`
+(`value`, `key`, `data`) => `boolean`
 
 ### Returns
 
@@ -43,7 +45,7 @@ first item matched or `undefined` if not found
 ### Examples
 
 ```typescript
-import { mapFindByKey } from '@superutils/core'
+import { find } from '@superutils/core'
 
 const map = new Map<number, { name: string; age: number }>([
 	[1, { name: 'Alice', age: 30 }],
@@ -55,7 +57,7 @@ const result = mapFind(testMap, ({ name }) => name === 'Bob')
 ```
 
 ```typescript
-import { mapFindByKey } from '@superutils/core'
+import { find } from '@superutils/core'
 
 const map = new Map<number, { name: string; age: number }>([
 	[1, { name: 'Alice', age: 30 }],
@@ -71,9 +73,11 @@ const map = new Map<number, { name: string; age: number }>([
 
 ## Call Signature
 
-> **mapFind**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `options`): `Return`
+> **find**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `options`): `Return`
 
-Defined in: [packages/core/src/map/mapFind.ts:58](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/map/mapFind.ts#L58)
+Defined in: [packages/core/src/iterable/find.ts:49](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/find.ts#L49)
+
+Finds a first item matching criteria in an [IterableList](../type-aliases/IterableList.md).
 
 ### Type Parameters
 
@@ -97,7 +101,7 @@ Defined in: [packages/core/src/map/mapFind.ts:58](https://github.com/alien45/uti
 
 #### data
 
-`Map`\<`K`, `V`\>
+[`IterableList`](../type-aliases/IterableList.md)\<`K`, `V`\>
 
 #### options
 
@@ -112,7 +116,7 @@ first item matched or `undefined` if not found
 ### Examples
 
 ```typescript
-import { mapFindByKey } from '@superutils/core'
+import { find } from '@superutils/core'
 
 const map = new Map<number, { name: string; age: number }>([
 	[1, { name: 'Alice', age: 30 }],
@@ -124,7 +128,7 @@ const result = mapFind(testMap, ({ name }) => name === 'Bob')
 ```
 
 ```typescript
-import { mapFindByKey } from '@superutils/core'
+import { find } from '@superutils/core'
 
 const map = new Map<number, { name: string; age: number }>([
 	[1, { name: 'Alice', age: 30 }],

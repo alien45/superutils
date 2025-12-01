@@ -1,8 +1,8 @@
 # Function: postDeferred()
 
-> **postDeferred**\<`ThisArg`\>(`deferOptions`, ...`__namedParameters`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
+> **postDeferred**\<`ThisArg`, `DefaultUrl`\>(`deferOptions`, `defaultUrl?`, `defaultData?`, `defaultOptions?`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: [packages/fetch/src/postDeferred.ts:99](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/postDeferred.ts#L99)
+Defined in: [packages/fetch/src/postDeferred.ts:99](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/postDeferred.ts#L99)
 
 Creates a deferred/throttled function for making `POST`, `PUT`, or `PATCH` requests, powered by
 PromisE.deferred.
@@ -16,7 +16,11 @@ the most recent or relevant action is executed.
 
 ### ThisArg
 
-`ThisArg` = `unknown`
+`ThisArg`
+
+### DefaultUrl
+
+`DefaultUrl` *extends* `string` \| `URL`
 
 ## Parameters
 
@@ -24,9 +28,17 @@ the most recent or relevant action is executed.
 
 [`DeferredOptions`](../type-aliases/DeferredOptions.md)\<`ThisArg`\> = `{}`
 
-### \_\_namedParameters
+### defaultUrl?
 
-...\[`string` \| `URL`, [`PostBody`](../type-aliases/PostBody.md), `Omit`\<[`FetchOptions`](../type-aliases/FetchOptions.md), `"method"`\> & `object`\]
+`DefaultUrl`
+
+### defaultData?
+
+[`PostBody`](../type-aliases/PostBody.md)
+
+### defaultOptions?
+
+`Omit`\<[`FetchOptions`](../type-aliases/FetchOptions.md), `"method"`\> & `object`
 
 ## Returns
 
@@ -42,7 +54,7 @@ the most recent or relevant action is executed.
 
 #### args
 
-...\[`string` \| `URL`, [`PostBody`](../type-aliases/PostBody.md), `Omit`\<[`FetchOptions`](../type-aliases/FetchOptions.md), `"method"`\> & `object`\]
+...`DefaultUrl` *extends* `undefined` ? [`PostArgs`](../type-aliases/PostArgs.md) : \[`string` \| `URL`, [`PostBody`](../type-aliases/PostBody.md), `Omit`\<[`FetchOptions`](../type-aliases/FetchOptions.md), `"method"`\> & `object`\]
 
 ### Returns
 

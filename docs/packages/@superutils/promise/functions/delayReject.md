@@ -2,7 +2,7 @@
 
 > **delayReject**\<`T`\>(`duration`, `reason?`): [`IPromisE_Delay`](../interfaces/IPromisE_Delay.md)\<`T`\>
 
-Defined in: [packages/promise/src/delayReject.ts:35](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/delayReject.ts#L35)
+Defined in: [packages/promise/src/delayReject.ts:35](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/delayReject.ts#L35)
 
 **`Function`**
 

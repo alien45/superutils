@@ -2,7 +2,7 @@
 
 > **objCreate**\<`V`, `K`, `RV`, `RK`, `Result`\>(`keys`, `values`, `result?`): `Result`
 
-Defined in: [packages/core/src/obj/objCreate.ts:29](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/obj/objCreate.ts#L29)
+Defined in: [packages/core/src/obj/objCreate.ts:29](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/objCreate.ts#L29)
 
 Creates an object from an array of keys and a corresponding array of values.
 It pairs each key with the value at the same index.

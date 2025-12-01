@@ -10,20 +10,21 @@
 
 This monorepo contains the following packages. Each is independently versioned and published to NPM.
 
-| Package               | NPM Version                                               | Description                                                                             |
-| :-------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| `@superutils/core`    | [!npm](https://www.npmjs.com/package/@superutils/core)    | A collection of lightweight, dependency-free utility functions and types.               |
-| `@superutils/promise` | [!npm](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.    |
-| `@superutils/react`   | [!npm](https://www.npmjs.com/package/@superutils/react)   | A collection of React hooks and components for common UI patterns and state management. |
-| `@superutils/rx`      | [!npm](https://www.npmjs.com/package/@superutils/rx)      | A suite of powerful operators and utilities for working with RxJS observables.          |
+| Package               | NPM                                                         | Description                                                                                                                               |
+| :-------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| `@superutils/core`    | [v1.0.1](https://www.npmjs.com/package/@superutils/core)    | A collection of lightweight, dependency-free utility functions and types.                                                                 |
+| `@superutils/fetch`   | WIP                                                         | A modern, practical, and lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate. |
+| `@superutils/promise` | [v1.0.2](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.                                                      |
+| `@superutils/react`   | WIP                                                         | A collection of React hooks and components for common UI patterns and state management.                                                   |
+| `@superutils/rx`      | WIP                                                         | A suite of powerful operators and utilities for working with RxJS observables.                                                            |
 
 ## Getting Started
 
 All packages are scoped under `@superutils` and will be available on the NPM registry. You can install any package using your preferred package manager.
 
 ```bash
-# Example: Installing the @superutils/promise package
-npm install @superutils/core @superutils/promise
+# Installing the @superutils/promise package
+npm install @superutils/promise
 ```
 
 Once installed, you can import the utilities directly into your project.
@@ -52,6 +53,107 @@ For more details please read the API reference for respective packages.
 ## Contribute
 
 Contributions are welcome! If you'd like to help improve `@superutils`, please feel free to open an issue to discuss a new feature or submit a pull request.
+
+### Development Setup
+
+To contribute to `@superutils`, you'll first need to set up the monorepo on your local machine. This project uses `npm` workspaces to manage dependencies and link local packages.
+
+**Prerequisites:**
+For consistency please make sure to install/update `node v25.2.1` and `npm v11.6.2` or higher
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/alien45/superutils.git
+    ```
+
+2.  **Install dependencies:**
+    This command will install all dependencies for the root project and all packages within the workspace, and it will automatically create symbolic links between them.
+
+    ```bash
+    cd superutils && npm i
+    ```
+
+3.  **Install VSCode extensions**
+    1. [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint):
+    - Press `CTRL + P`
+    - Paste `ext install dbaeumer.vscode-eslint` and press `ENTER`
+    2. [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+    - Press `CTRL + P`
+    - Paste `ext install esbenp.prettier-vscode` and press `ENTER`
+
+### Scripts
+
+The following scripts are available at the root level to help with development:
+
+- `npm run build`
+  Incrementally builds all packages in the `packages/*` directory.
+
+- `npm run build:watch`
+  Starts the incremental build process in watch mode for all packages.
+
+- `npm run clean`
+  Cleans all build artifacts.
+
+- `npm run clean:purge` <span id="script-clean-purge"> </span>
+  Removes all `dist/*` files before cleaning all build artifacts.
+
+    > [!warning]
+    > _This script uses `rm -rf` for cleaning `dist` files. While `npm` often provides cross-platform compatibility for such commands, users on Windows might need a Unix-like environment (e.g., Git Bash or WSL) for it to function correctly._
+
+- `npm run docs`
+  Builds the API documentation and starts the VitePress development server in development mode, accessible at [localhost:5173](http://localhost:5173)
+
+- `npm run docs:build`
+  Builds the API documentation and exits.
+
+- `npm run docs:preview`
+  Serves previously built docs at [localhost:4173](http://localhost:4173/)
+
+- `npm run lint`
+  Lints the entire codebase using ESLint.
+
+- `npm start`
+  Cleans and starts build process in watch mode.
+  Uses: `build:watch` and <a href="#script-clean-purge">`clean:purge`</a>
+
+- `npm test`
+  Runs the test suite. It runs the `scripts/test.sh` script which both accepts environment variables and/or a colon-delimited command argument.
+
+    **Supported environment variables:**
+    - `PKG`: name of the package to test. Accepts:
+        - `*` (default, test all packages),
+        - `core`
+        - `promise`
+        - `react`
+        - or any other directory name under `packages/` directory
+    - `UI`: start the interactive Vitest UI server and open in a browser. Accepts: `true` / `false`.
+    - `RUN`: run test only once and exit immediately. Accepts: `true` / `false`.
+    - `COVERAGE`: enable/disable code coverage. Accepts: `true` / `false`.
+
+    **Command Argument:**
+
+    For a more streamlined workflow, you can combine the package and options into a single, colon-delimited argument with the following structure:
+    `npm test [package][:option1][:option2]...`
+
+    | Option     | Alias | Description                                | Default |
+    | :--------- | :---: | :----------------------------------------- | :-----: |
+    | `ui`       |       | Opens the interactive Vitest UI.           |  `""`   |
+    | `run`      |  `1`  | Runs tests once and exits (no watch mode). |  `""`   |
+    | `coverage` |  `%`  | Generates a code coverage report.          |  `""`   |
+
+    **Note:**
+    - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.
+    - You can combine both environment variables and the options above. However, if there's a conflict, the options take precedence.
+      **Examples:**
+
+    | Command                      | Action                                                                          |
+    | :--------------------------- | :------------------------------------------------------------------------------ |
+    | `npm test`                   | Watch and run all tests for all packages.                                       |
+    | `npm test :1`                | Run all tests for all packages only once and exit immediately.                  |
+    | `UI=true npm test promise:%` | Watch and test only `promise` package with UI and coverage.                     |
+    | `npm test :%:ui`             | Same as above                                                                   |
+    | `UI=false npm test :ui`      | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
 
 ### Pull Request Guidelines
 
@@ -120,95 +222,6 @@ Here are a few examples:
 
     BREAKING CHANGE: The `deepClone` function no longer clones functions or Symbols. It now only clones plain objects, arrays, and primitives.
     ```
-
-### Development Setup
-
-To contribute to `@superutils`, you'll first need to set up the monorepo on your local machine. This project uses `npm` workspaces to manage dependencies and link local packages.
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/alien45/superutils.git
-    ```
-
-2.  **Navigate to the project directory:**
-
-    ```bash
-    cd superutils
-    ```
-
-3.  **Install dependencies:**
-    This command will install all dependencies for the root project and all packages within the workspace, and it will automatically create symbolic links between them.
-    ```bash
-    npm i
-    ```
-
-### Scripts
-
-The following scripts are available at the root level to help with development:
-
-- `npm run build`
-  Incrementally builds all packages in the `packages/*` directory.
-
-- `npm run build:watch`
-  Starts the incremental build process in watch mode for all packages.
-
-- `npm run clean`
-  Cleans all build artifacts.
-
-- `npm run clean:purge` <span id="script-clean-purge"> </span>
-  Removes all `dist/*` files before cleaning all build artifacts.
-
-    > [!warning]
-    > _This script uses `rm -rf` for cleaning `dist` files. While `npm` often provides cross-platform compatibility for such commands, users on Windows might need a Unix-like environment (e.g., Git Bash or WSL) for it to function correctly._
-
-- `npm run docs:dev`
-  Builds the API documentation and starts the VitePress development server, accessible at `http://localhost:5173`.
-
-- `npm run lint`
-  Lints the entire codebase using ESLint.
-
-- `npm start`
-  Cleans and starts build process in watch mode.
-  Uses: `build:watch` and <a href="#script-clean-purge">`clean:purge`</a>
-
-- `npm test`
-  Runs the test suite. It runs the `scripts/test.sh` script which both accepts environment variables and/or a colon-delimited command argument.
-
-    **Supported environment variables:**
-    - `PKG`: name of the package to test. Accepts:
-        - `*` (default, test all packages),
-        - `core`
-        - `promise`
-        - `react`
-        - or any other directory name under `packages/` directory
-    - `UI`: start the interactive Vitest UI server and open in a browser. Accepts: `true` / `false`.
-    - `RUN`: run test only once and exit immediately. Accepts: `true` / `false`.
-    - `COVERAGE`: enable/disable code coverage. Accepts: `true` / `false`.
-
-    **Command Argument:**
-
-    For a more streamlined workflow, you can combine the package and options into a single, colon-delimited argument with the following structure:
-    `npm test [package][:option1][:option2]...`
-
-    | Option     | Alias | Description                                | Default |
-    | :--------- | :---: | :----------------------------------------- | :-----: |
-    | `ui`       |       | Opens the interactive Vitest UI.           |  `""`   |
-    | `run`      |  `1`  | Runs tests once and exits (no watch mode). |  `""`   |
-    | `coverage` |  `%`  | Generates a code coverage report.          |  `""`   |
-
-    **Note:**
-    - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.
-    - You can combine both environment variables and the options above. However, if there's a conflict, the options take precedence.
-      **Examples:**
-
-    | Command                      | Action                                                                          |
-    | :--------------------------- | :------------------------------------------------------------------------------ |
-    | `npm test`                   | Watch and run all tests for all packages.                                       |
-    | `npm test :1`                | Run all tests for all packages only once and exit immediately.                  |
-    | `UI=true npm test promise:%` | Watch and test only `promise` package with UI and coverage.                     |
-    | `npm test :%:ui`             | Same as above                                                                   |
-    | `UI=false npm test :ui`      | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
 
 ## License
 

@@ -1,25 +1,25 @@
 # Function: fetchDeferred()
 
-> **fetchDeferred**\<`TArgs`, `ThisArg`\>(`deferOptions`, ...`defaultFetchArgs`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
+> **fetchDeferred**\<`ThisArg`, `DefaultUrl`\>(`deferOptions`, `defaultUrl?`, `defaultOptions?`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: [packages/fetch/src/fetchDeferred.ts:102](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/fetchDeferred.ts#L102)
+Defined in: [packages/fetch/src/fetchDeferred.ts:98](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/fetchDeferred.ts#L98)
 
-Creates a deferred/throttled version of [fetch](fetch.md), powered by PromisE.deferred.
+Creates a deferred/throttled version of [fetch](../variables/fetch.md), powered by PromisE.deferred.
 This is ideal for scenarios requiring advanced control over HTTP requests, such as debouncing search inputs,
 throttling API calls, or ensuring sequential request execution.
 
-It leverages the robust capabilities of the underlying [fetch](fetch.md) function, which includes features like request timeouts and manual abortion.
+It leverages the robust capabilities of the underlying [fetch](../variables/fetch.md) function, which includes features like request timeouts and manual abortion.
 `fetchDeferred` uses this to automatically abort pending requests when a new one is initiated, preventing race conditions and redundant network traffic.
 
 ## Type Parameters
 
-### TArgs
-
-`TArgs` *extends* [`FetchDeferredArgs`](../type-aliases/FetchDeferredArgs.md)
-
 ### ThisArg
 
-`ThisArg` = `unknown`
+`ThisArg`
+
+### DefaultUrl
+
+`DefaultUrl` *extends* `string` \| `URL`
 
 ## Parameters
 
@@ -30,12 +30,13 @@ It leverages the robust capabilities of the underlying [fetch](fetch.md) functio
 Configuration for the deferred execution behavior (e.g., `delayMs`, `throttle`).
 See [DeferredOptions](../type-aliases/DeferredOptions.md) for details.
 
-### defaultFetchArgs
+### defaultUrl?
 
-...`TArgs`
+`DefaultUrl`
 
-(optional) Default `url` and `fetchOptions` to be used for every call made by the
-returned function. This is useful for creating a reusable client for a specific endpoint.
+### defaultOptions?
+
+`Omit`\<[`FetchOptions`](../type-aliases/FetchOptions.md), `"abortCtrl"`\>
 
 ## Returns
 
@@ -51,7 +52,7 @@ returned function. This is useful for creating a reusable client for a specific 
 
 #### args
 
-...[`FetchDeferredCbArgs`](../type-aliases/FetchDeferredCbArgs.md)
+...`DefaultUrl` *extends* `undefined` ? [`FetchArgs`](../type-aliases/FetchArgs.md) : \[`string` \| `URL`, [`FetchOptions`](../type-aliases/FetchOptions.md)\]
 
 ### Returns
 

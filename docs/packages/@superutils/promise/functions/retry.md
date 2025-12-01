@@ -2,13 +2,14 @@
 
 > **retry**\<`T`\>(`func`, `options?`): `Promise`\<`T`\>
 
-Defined in: [packages/promise/src/retry.ts:29](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/promise/src/retry.ts#L29)
+Defined in: [packages/promise/src/retry.ts:30](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/retry.ts#L30)
 
 Executes a function and retries it on failure or until a specific condition is met.
 
 The function will be re-executed if:
 1. The `func` promise rejects or the function throws an error.
 2. The optional `retryIf` function returns `true`.
+3. `retry > 0`
 
 Retries will stop when the `retry` count is exhausted, or when `func` executes successfully
 (resolves without error) AND the `retryIf` (if provided) returns `false`.
@@ -25,7 +26,7 @@ The type of the value that the `func` returns/resolves to.
 
 ### func
 
-() => [`ValueOrPromise`](../../core/type-aliases/ValueOrPromise.md)\<`T`\>
+() => `ValueOrPromise`\<`T`\>
 
 The function to execute. It can be synchronous or asynchronous.
 

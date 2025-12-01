@@ -2,7 +2,7 @@
 
 > **getUrlParam**\<`TName`, `TAsArray`, `TResult`\>(`name?`, `url?`, `asArray?`): `TResult`
 
-Defined in: [packages/core/src/str/getUrlParam.ts:16](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/str/getUrlParam.ts#L16)
+Defined in: [packages/core/src/str/getUrlParam.ts:16](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/str/getUrlParam.ts#L16)
 
 Read parameters of a given URL
 

@@ -2,7 +2,7 @@
 
 > **FetchInterceptors** = `object`
 
-Defined in: [packages/fetch/src/types.ts:248](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L248)
+Defined in: [packages/fetch/src/types.ts:249](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L249)
 
 All valid interceptors for fetch requests are:
 ---
@@ -44,7 +44,7 @@ See the following for more details and examples:
 
 > `optional` **error**: [`FetchInterceptorError`](FetchInterceptorError.md)[]
 
-Defined in: [packages/fetch/src/types.ts:249](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L249)
+Defined in: [packages/fetch/src/types.ts:250](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L250)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [packages/fetch/src/types.ts:249](https://github.com/alien45/utiils/
 
 > `optional` **request**: [`FetchInterceptorRequest`](FetchInterceptorRequest.md)[]
 
-Defined in: [packages/fetch/src/types.ts:250](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L250)
+Defined in: [packages/fetch/src/types.ts:251](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L251)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [packages/fetch/src/types.ts:250](https://github.com/alien45/utiils/
 
 > `optional` **response**: [`FetchInterceptorResponse`](FetchInterceptorResponse.md)[]
 
-Defined in: [packages/fetch/src/types.ts:251](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L251)
+Defined in: [packages/fetch/src/types.ts:252](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L252)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: [packages/fetch/src/types.ts:251](https://github.com/alien45/utiils/
 
 > `optional` **result**: [`FetchInterceptorResult`](FetchInterceptorResult.md)[]
 
-Defined in: [packages/fetch/src/types.ts:252](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/fetch/src/types.ts#L252)
+Defined in: [packages/fetch/src/types.ts:253](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L253)

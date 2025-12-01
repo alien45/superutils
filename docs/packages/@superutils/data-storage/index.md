@@ -17,3 +17,7 @@ import DataStorage from '@superutils/data-storage'
 
 new DataStorage()
 ```
+
+## Variables
+
+- [default](variables/default.md)

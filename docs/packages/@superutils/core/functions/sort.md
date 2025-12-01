@@ -2,9 +2,9 @@
 
 ## Call Signature
 
-> **sort**\<`K`, `V`, `T`\>(`data`, `propertyName`, `options?`): [`IterableType`](../type-aliases/IterableType.md)\<`T`\>
+> **sort**\<`K`, `V`, `T`\>(`data`, `propertyName`, `options?`): `T`
 
-Defined in: [packages/core/src/iterable/sort.ts:57](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L57)
+Defined in: [packages/core/src/iterable/sort.ts:57](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L57)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -45,7 +45,7 @@ Accepted values:
 
 ### Returns
 
-[`IterableType`](../type-aliases/IterableType.md)\<`T`\>
+`T`
 
 sorted map
 
@@ -81,9 +81,9 @@ sort(map, 'name')
 
 > **sort**\<`K`, `V`\>(`data`, `byKey`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:66](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L66)
+Defined in: [packages/core/src/iterable/sort.ts:63](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L63)
 
-Sort iterable lists (Array/Map/Set).
+Sort `Map` by map-keys `K`
 
 ### Type Parameters
 
@@ -105,55 +105,21 @@ Sort iterable lists (Array/Map/Set).
 
 `true`
 
-Sort by value property name
-
 #### options?
 
 [`SortOptions`](../type-aliases/SortOptions.md)
-
-(optional) extra sorting opitons
 
 ### Returns
 
 `Map`\<`K`, `V`\>
 
-sorted map
-
-### Examples
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-	   [1, 1],
-	   [2, 2],
-    [0, 0],
-])
-sort(map)
-// result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
-```
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-    [0, { name: 'Charlie' }],
-    [1, { name: 'Alice' }],
-    [2, { name: 'Bob' }],
-])
-sort(map, 'name')
-// result: Map(3) {
-//   1 => { name: 'Alice' },
-//   2 => { name: 'Bob' },
-//   0 => { name: 'Charlie' }
-// }
-```
-
 ## Call Signature
 
 > **sort**\<`K`, `V`\>(`map`, `comparator`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:72](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L72)
+Defined in: [packages/core/src/iterable/sort.ts:69](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L69)
 
-Sort iterable lists (Array/Map/Set).
+Sort `Map` with comparator function
 
 ### Type Parameters
 
@@ -179,49 +145,17 @@ Sort iterable lists (Array/Map/Set).
 
 [`SortOptions`](../type-aliases/SortOptions.md)
 
-(optional) extra sorting opitons
-
 ### Returns
 
 `Map`\<`K`, `V`\>
 
-sorted map
-
-### Examples
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-	   [1, 1],
-	   [2, 2],
-    [0, 0],
-])
-sort(map)
-// result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
-```
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-    [0, { name: 'Charlie' }],
-    [1, { name: 'Alice' }],
-    [2, { name: 'Bob' }],
-])
-sort(map, 'name')
-// result: Map(3) {
-//   1 => { name: 'Alice' },
-//   2 => { name: 'Bob' },
-//   0 => { name: 'Charlie' }
-// }
-```
-
 ## Call Signature
 
-> **sort**\<`V`, `T`\>(`arrOrSet`, `comparator`, `options?`): `T` *extends* `V`[] ? `V`[] : `Set`\<`V`\>
+> **sort**\<`V`\>(`array`, `comparator`, `options?`): `V`[]
 
-Defined in: [packages/core/src/iterable/sort.ts:77](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L77)
+Defined in: [packages/core/src/iterable/sort.ts:75](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L75)
 
-Sort iterable lists (Array/Map/Set).
+Sort `Array` with comparator function
 
 ### Type Parameters
 
@@ -229,15 +163,11 @@ Sort iterable lists (Array/Map/Set).
 
 `V`
 
-#### T
-
-`T` *extends* `V`[] \| `Set`\<`V`\>
-
 ### Parameters
 
-#### arrOrSet
+#### array
 
-`T`
+`V`[]
 
 #### comparator
 
@@ -247,49 +177,49 @@ Sort iterable lists (Array/Map/Set).
 
 [`SortOptions`](../type-aliases/SortOptions.md)
 
-(optional) extra sorting opitons
-
 ### Returns
 
-`T` *extends* `V`[] ? `V`[] : `Set`\<`V`\>
-
-sorted map
-
-### Examples
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-	   [1, 1],
-	   [2, 2],
-    [0, 0],
-])
-sort(map)
-// result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
-```
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-    [0, { name: 'Charlie' }],
-    [1, { name: 'Alice' }],
-    [2, { name: 'Bob' }],
-])
-sort(map, 'name')
-// result: Map(3) {
-//   1 => { name: 'Alice' },
-//   2 => { name: 'Bob' },
-//   0 => { name: 'Charlie' }
-// }
-```
+`V`[]
 
 ## Call Signature
 
-> **sort**\<`K`, `V`, `T`\>(`data`, `options?`): [`IterableType`](../type-aliases/IterableType.md)\<`T`\>
+> **sort**\<`V`\>(`set`, `comparator`, `options?`): `Set`\<`V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:82](https://github.com/alien45/utiils/blob/73c1a330ca693d319e11ae981651ae1f5cdff43e/packages/core/src/iterable/sort.ts#L82)
+Defined in: [packages/core/src/iterable/sort.ts:81](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L81)
 
-Sort iterable lists (Array/Map/Set).
+Sort `Set` with comparator function
+
+### Type Parameters
+
+#### V
+
+`V`
+
+### Parameters
+
+#### set
+
+`Set`\<`V`\>
+
+#### comparator
+
+[`ArrayComparator`](../type-aliases/ArrayComparator.md)\<`V`\>
+
+#### options?
+
+[`SortOptions`](../type-aliases/SortOptions.md)
+
+### Returns
+
+`Set`\<`V`\>
+
+## Call Signature
+
+> **sort**\<`K`, `V`, `T`\>(`data`, `options?`): `T`
+
+Defined in: [packages/core/src/iterable/sort.ts:87](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L87)
+
+Sort Array/Map/Set with `string | boolean | number` values
 
 ### Type Parameters
 
@@ -315,38 +245,6 @@ Sort iterable lists (Array/Map/Set).
 
 [`SortOptions`](../type-aliases/SortOptions.md)
 
-(optional) extra sorting opitons
-
 ### Returns
 
-[`IterableType`](../type-aliases/IterableType.md)\<`T`\>
-
-sorted map
-
-### Examples
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-	   [1, 1],
-	   [2, 2],
-    [0, 0],
-])
-sort(map)
-// result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
-```
-
-```typescript
-import { sort } from '@superutils/core'
-const map = new Map([
-    [0, { name: 'Charlie' }],
-    [1, { name: 'Alice' }],
-    [2, { name: 'Bob' }],
-])
-sort(map, 'name')
-// result: Map(3) {
-//   1 => { name: 'Alice' },
-//   2 => { name: 'Bob' },
-//   0 => { name: 'Charlie' }
-// }
-```
+`T`
