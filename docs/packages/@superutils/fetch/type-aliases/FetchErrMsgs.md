@@ -2,7 +2,7 @@
 
 > **FetchErrMsgs** = `object`
 
-Defined in: [packages/fetch/src/types.ts:40](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L40)
+Defined in: [packages/fetch/src/types.ts:40](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L40)
 
 ## Properties
 
@@ -10,7 +10,7 @@ Defined in: [packages/fetch/src/types.ts:40](https://github.com/alien45/utiils/b
 
 > `optional` **invalidUrl**: `string`
 
-Defined in: [packages/fetch/src/types.ts:41](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L41)
+Defined in: [packages/fetch/src/types.ts:41](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L41)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: [packages/fetch/src/types.ts:41](https://github.com/alien45/utiils/b
 
 > `optional` **parseFailed**: `string`
 
-Defined in: [packages/fetch/src/types.ts:42](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L42)
+Defined in: [packages/fetch/src/types.ts:42](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L42)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/fetch/src/types.ts:42](https://github.com/alien45/utiils/b
 
 > `optional` **reqTimedout**: `string`
 
-Defined in: [packages/fetch/src/types.ts:43](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L43)
+Defined in: [packages/fetch/src/types.ts:43](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L43)
 
 ***
 
@@ -34,4 +34,4 @@ Defined in: [packages/fetch/src/types.ts:43](https://github.com/alien45/utiils/b
 
 > `optional` **requestFailed**: `string`
 
-Defined in: [packages/fetch/src/types.ts:44](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L44)
+Defined in: [packages/fetch/src/types.ts:44](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L44)

@@ -2,7 +2,7 @@
 
 > **mergeFetchOptions**(...`allOptions`): [`FetchOptionsInterceptor`](../type-aliases/FetchOptionsInterceptor.md)
 
-Defined in: [packages/fetch/src/mergeFetchOptions.ts:19](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/mergeFetchOptions.ts#L19)
+Defined in: [packages/fetch/src/mergeFetchOptions.ts:19](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/mergeFetchOptions.ts#L19)
 
 Merge one or more [FetchOptions](../type-aliases/FetchOptions.md) with global fetch options ([config.fetchOptions](../type-aliases/Config.md)).
 

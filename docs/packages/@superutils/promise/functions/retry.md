@@ -2,7 +2,7 @@
 
 > **retry**\<`T`\>(`func`, `options?`): `Promise`\<`T`\>
 
-Defined in: [packages/promise/src/retry.ts:30](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/retry.ts#L30)
+Defined in: [packages/promise/src/retry.ts:30](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/retry.ts#L30)
 
 Executes a function and retries it on failure or until a specific condition is met.
 

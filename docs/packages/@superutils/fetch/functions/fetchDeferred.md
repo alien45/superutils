@@ -2,7 +2,7 @@
 
 > **fetchDeferred**\<`ThisArg`, `DefaultUrl`\>(`deferOptions`, `defaultUrl?`, `defaultOptions?`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: [packages/fetch/src/fetchDeferred.ts:98](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/fetchDeferred.ts#L98)
+Defined in: [packages/fetch/src/fetchDeferred.ts:98](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/fetchDeferred.ts#L98)
 
 Creates a deferred/throttled version of [fetch](../variables/fetch.md), powered by PromisE.deferred.
 This is ideal for scenarios requiring advanced control over HTTP requests, such as debouncing search inputs,

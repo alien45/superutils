@@ -2,7 +2,7 @@
 
 > **FetchInterceptorError** = [`Interceptor`](Interceptor.md)\<[`FetchError`](../classes/FetchError.md), \[\]\>
 
-Defined in: [packages/fetch/src/types.ts:109](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L109)
+Defined in: [packages/fetch/src/types.ts:109](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L109)
 
 Fetch error interceptor to be invoked whenever an exception occurs.
 This interceptor can also be used as the error transformer by returning [FetchError](../classes/FetchError.md).

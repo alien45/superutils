@@ -4,7 +4,7 @@
 
 > **sort**\<`K`, `V`, `T`\>(`data`, `propertyName`, `options?`): `T`
 
-Defined in: [packages/core/src/iterable/sort.ts:57](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L57)
+Defined in: [packages/core/src/iterable/sort.ts:57](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L57)
 
 Sort iterable lists (Array/Map/Set).
 
@@ -81,7 +81,7 @@ sort(map, 'name')
 
 > **sort**\<`K`, `V`\>(`data`, `byKey`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:63](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L63)
+Defined in: [packages/core/src/iterable/sort.ts:63](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L63)
 
 Sort `Map` by map-keys `K`
 
@@ -117,7 +117,7 @@ Sort `Map` by map-keys `K`
 
 > **sort**\<`K`, `V`\>(`map`, `comparator`, `options?`): `Map`\<`K`, `V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:69](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L69)
+Defined in: [packages/core/src/iterable/sort.ts:69](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L69)
 
 Sort `Map` with comparator function
 
@@ -153,7 +153,7 @@ Sort `Map` with comparator function
 
 > **sort**\<`V`\>(`array`, `comparator`, `options?`): `V`[]
 
-Defined in: [packages/core/src/iterable/sort.ts:75](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L75)
+Defined in: [packages/core/src/iterable/sort.ts:75](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L75)
 
 Sort `Array` with comparator function
 
@@ -185,7 +185,7 @@ Sort `Array` with comparator function
 
 > **sort**\<`V`\>(`set`, `comparator`, `options?`): `Set`\<`V`\>
 
-Defined in: [packages/core/src/iterable/sort.ts:81](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L81)
+Defined in: [packages/core/src/iterable/sort.ts:81](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L81)
 
 Sort `Set` with comparator function
 
@@ -217,7 +217,7 @@ Sort `Set` with comparator function
 
 > **sort**\<`K`, `V`, `T`\>(`data`, `options?`): `T`
 
-Defined in: [packages/core/src/iterable/sort.ts:87](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/sort.ts#L87)
+Defined in: [packages/core/src/iterable/sort.ts:87](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/sort.ts#L87)
 
 Sort Array/Map/Set with `string | boolean | number` values
 

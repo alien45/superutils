@@ -2,7 +2,7 @@
 
 > **KeepFirstN**\<`T`, `N`\> = [`TupleMaxLength`](TupleMaxLength.md)\<`T`\> *extends* `N` ? `T` : `T` *extends* readonly \[`...(infer TWithoutLast)`, `unknown`\] ? `KeepFirstN`\<`TWithoutLast`, `N`\> : `never`
 
-Defined in: [packages/core/src/types.ts:134](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L134)
+Defined in: [packages/core/src/types.ts:134](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/types.ts#L134)
 
 Keep first N items from an array/tuple and drop the rest
 ---

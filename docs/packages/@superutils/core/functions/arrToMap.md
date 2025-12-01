@@ -4,7 +4,7 @@
 
 > **arrToMap**\<`T`, `FlatDepth`\>(`arr`, `flatDepth?`): `Map`\<`number`, `FlatArray`\<`T`, `FlatDepth`\>\>
 
-Defined in: [packages/core/src/arr/arrToMap.ts:35](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrToMap.ts#L35)
+Defined in: [packages/core/src/arr/arrToMap.ts:35](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrToMap.ts#L35)
 
 Generate a Map from one or more arrays
 
@@ -62,7 +62,7 @@ const map = arrToMap(arr, (item: Item) => item.key, 1) // Map<number, Item>
 
 > **arrToMap**\<`T`, `FlatDepth`, `MapItem`, `MapKey`\>(`arr`, `key`, `flatDepth?`): `Map`\<`MapKey`, `MapItem`\>
 
-Defined in: [packages/core/src/arr/arrToMap.ts:41](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrToMap.ts#L41)
+Defined in: [packages/core/src/arr/arrToMap.ts:41](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrToMap.ts#L41)
 
 Generate a Map from one or more arrays
 
@@ -134,7 +134,7 @@ const map = arrToMap(arr, (item: Item) => item.key, 1) // Map<number, Item>
 
 > **arrToMap**\<`T`, `FlatDepth`, `MapItem`, `KeyProp`\>(`arr`, `key`, `flatDepth?`): `Map`\<`MapItem`\[`KeyProp`\], `MapItem`\>
 
-Defined in: [packages/core/src/arr/arrToMap.ts:53](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrToMap.ts#L53)
+Defined in: [packages/core/src/arr/arrToMap.ts:53](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrToMap.ts#L53)
 
 Generate a Map from one or more arrays
 

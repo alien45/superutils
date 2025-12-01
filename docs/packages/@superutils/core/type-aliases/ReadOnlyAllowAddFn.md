@@ -2,7 +2,7 @@
 
 > **ReadOnlyAllowAddFn**\<`T`\> = (`obj`, `key`, `valule`) => `boolean`
 
-Defined in: [packages/core/src/obj/types.ts:1](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/obj/types.ts#L1)
+Defined in: [packages/core/src/obj/types.ts:1](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/obj/types.ts#L1)
 
 ## Type Parameters
 

@@ -2,7 +2,7 @@
 
 > **isEmptySafe**(`x`, `numberableOnly`): `boolean` \| `1`
 
-Defined in: [packages/core/src/is/isEmpty.ts:100](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/is/isEmpty.ts#L100)
+Defined in: [packages/core/src/is/isEmpty.ts:100](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/is/isEmpty.ts#L100)
 
 Safe version of [isEmpty](isEmpty.md) with extended type checks and cross-realm handling.
 

@@ -1,6 +1,6 @@
 # Interface: FetchResult\<T\>
 
-Defined in: [packages/fetch/src/types.ts:277](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L277)
+Defined in: [packages/fetch/src/types.ts:277](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L277)
 
 Result types for specific parsers ("as": FetchAs)
 
@@ -16,7 +16,7 @@ Result types for specific parsers ("as": FetchAs)
 
 > **arrayBuffer**: `ArrayBuffer`
 
-Defined in: [packages/fetch/src/types.ts:278](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L278)
+Defined in: [packages/fetch/src/types.ts:278](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L278)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [packages/fetch/src/types.ts:278](https://github.com/alien45/utiils/
 
 > **blob**: `Blob`
 
-Defined in: [packages/fetch/src/types.ts:279](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L279)
+Defined in: [packages/fetch/src/types.ts:279](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L279)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [packages/fetch/src/types.ts:279](https://github.com/alien45/utiils/
 
 > **bytes**: `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/fetch/src/types.ts:280](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L280)
+Defined in: [packages/fetch/src/types.ts:280](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L280)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [packages/fetch/src/types.ts:280](https://github.com/alien45/utiils/
 
 > **formData**: `FormData`
 
-Defined in: [packages/fetch/src/types.ts:281](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L281)
+Defined in: [packages/fetch/src/types.ts:281](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L281)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [packages/fetch/src/types.ts:281](https://github.com/alien45/utiils/
 
 > **json**: `T`
 
-Defined in: [packages/fetch/src/types.ts:282](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L282)
+Defined in: [packages/fetch/src/types.ts:282](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L282)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [packages/fetch/src/types.ts:282](https://github.com/alien45/utiils/
 
 > **response**: `Response`
 
-Defined in: [packages/fetch/src/types.ts:284](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L284)
+Defined in: [packages/fetch/src/types.ts:284](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L284)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [packages/fetch/src/types.ts:284](https://github.com/alien45/utiils/
 
 > **text**: `string`
 
-Defined in: [packages/fetch/src/types.ts:283](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L283)
+Defined in: [packages/fetch/src/types.ts:283](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L283)

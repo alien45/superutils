@@ -2,7 +2,7 @@
 
 > **FetchInterceptorResponse** = [`Interceptor`](Interceptor.md)\<`Response`, [`FetchArgsInterceptor`](FetchArgsInterceptor.md)\>
 
-Defined in: [packages/fetch/src/types.ts:164](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/types.ts#L164)
+Defined in: [packages/fetch/src/types.ts:164](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/types.ts#L164)
 
 Fetch response interceptor to be invoked before making a fetch request.
 

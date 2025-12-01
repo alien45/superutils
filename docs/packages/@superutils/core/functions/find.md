@@ -4,7 +4,7 @@
 
 > **find**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `callback`): `Return`
 
-Defined in: [packages/core/src/iterable/find.ts:40](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/find.ts#L40)
+Defined in: [packages/core/src/iterable/find.ts:40](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/find.ts#L40)
 
 Finds a first item matching criteria in an [IterableList](../type-aliases/IterableList.md).
 
@@ -75,7 +75,7 @@ const map = new Map<number, { name: string; age: number }>([
 
 > **find**\<`K`, `V`, `IncludeKey`, `Return`\>(`data`, `options`): `Return`
 
-Defined in: [packages/core/src/iterable/find.ts:49](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/iterable/find.ts#L49)
+Defined in: [packages/core/src/iterable/find.ts:49](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/iterable/find.ts#L49)
 
 Finds a first item matching criteria in an [IterableList](../type-aliases/IterableList.md).
 

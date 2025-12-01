@@ -4,7 +4,7 @@
 
 > **copyRxSubject**\<`TCopy`, `TRxSource`, `T`\>(`rxSource`, `rxCopy?`, `valueModifier?`, `defer?`): [`SubjectLike`](../interfaces/SubjectLike.md)\<`TCopy`\>
 
-Defined in: [packages/rx/src/copyRxSubject.ts:117](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/rx/src/copyRxSubject.ts#L117)
+Defined in: [packages/rx/src/copyRxSubject.ts:117](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/rx/src/copyRxSubject.ts#L117)
 
 **`Function`**
 
@@ -139,7 +139,7 @@ Non-subjects will act as unobserved values to be included in the final value.
 
 > **copyRxSubject**\<`TCopy`, `TRxSource`, `T`\>(`rxSource`, `rxCopy`, `valueModifier`, `defer?`): [`SubjectLike`](../interfaces/SubjectLike.md)\<`TCopy`\>
 
-Defined in: [packages/rx/src/copyRxSubject.ts:131](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/rx/src/copyRxSubject.ts#L131)
+Defined in: [packages/rx/src/copyRxSubject.ts:131](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/rx/src/copyRxSubject.ts#L131)
 
 Overload for when TCopy doesn't extend T (modifier required)
 

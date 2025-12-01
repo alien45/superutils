@@ -2,7 +2,7 @@
 
 > **isAsyncFn**\<`TData`, `TArgs`\>(`x`): `x is AsyncFn<TData, TArgs>`
 
-Defined in: [packages/core/src/is/isFn.ts:20](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/is/isFn.ts#L20)
+Defined in: [packages/core/src/is/isFn.ts:20](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/is/isFn.ts#L20)
 
 Check if value is an Async function.
 Caution: May not work at runtime when Babel/Webpack is used due to code compilation.

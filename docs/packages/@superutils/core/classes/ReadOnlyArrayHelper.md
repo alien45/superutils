@@ -1,6 +1,6 @@
 # Class: ReadOnlyArrayHelper\<T\>
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:27](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L27)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:27](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L27)
 
 Helper class for creating read-only arrays.
 
@@ -27,7 +27,7 @@ Use [()](../functions/arrReadOnly.md) instead.
 
 > **new ReadOnlyArrayHelper**\<`T`\>(`config`, `arr`): `ReadOnlyArrayHelper`\<`T`\>
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:28](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L28)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:28](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L28)
 
 #### Parameters
 
@@ -241,7 +241,7 @@ Gets or sets the length of the array. This is a number one higher than the highe
 
 > `readonly` **config**: `Omit`\<[`ReadOnlyConfig`](../type-aliases/ReadOnlyConfig.md)\<`T`[]\>, `"revoke"`\>
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:29](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L29)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:29](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L29)
 
 ***
 
@@ -263,7 +263,7 @@ Gets or sets the length of the array. This is a number one higher than the highe
 
 > **reduce**: \{(`callbackfn`): `T`; (`callbackfn`, `initialValue`): `T`; \<`U`\>(`callbackfn`, `initialValue`): `U`; \}
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:59](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L59)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:59](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L59)
 
 Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -347,7 +347,7 @@ If initialValue is specified, it is used as the initial value to start the accum
 
 > **reduceRight**: \{(`callbackfn`): `T`; (`callbackfn`, `initialValue`): `T`; \<`U`\>(`callbackfn`, `initialValue`): `U`; \}
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:61](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L61)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:61](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L61)
 
 Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -1291,7 +1291,7 @@ An object to which the this keyword can refer in the callbackfn function. If thi
 
 > **pop**(): `T`
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:42](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L42)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:42](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L42)
 
 #### Returns
 
@@ -1307,7 +1307,7 @@ Defined in: [packages/core/src/arr/arrReadOnly.ts:42](https://github.com/alien45
 
 > **push**(...`items`): `number`
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:44](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L44)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:44](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L44)
 
 #### Parameters
 
@@ -1329,7 +1329,7 @@ Defined in: [packages/core/src/arr/arrReadOnly.ts:44](https://github.com/alien45
 
 > **reverse**(): `ReadOnlyArrayHelper`\<`T`\>
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:49](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L49)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:49](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L49)
 
 #### Returns
 
@@ -1345,7 +1345,7 @@ Defined in: [packages/core/src/arr/arrReadOnly.ts:49](https://github.com/alien45
 
 > **shift**(): `T`
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:51](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L51)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:51](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L51)
 
 #### Returns
 
@@ -1464,7 +1464,7 @@ value otherwise. If omitted, the elements are sorted in ascending, UTF-16 code u
 
 > **splice**(...`_ignoredArgs`): `never`[]
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:53](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L53)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:53](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L53)
 
 #### Parameters
 
@@ -1671,7 +1671,7 @@ Returns a string representation of an array.
 
 > **unshift**(...`_ignoredArgs`): `number`
 
-Defined in: [packages/core/src/arr/arrReadOnly.ts:55](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/arr/arrReadOnly.ts#L55)
+Defined in: [packages/core/src/arr/arrReadOnly.ts:55](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/arr/arrReadOnly.ts#L55)
 
 #### Parameters
 

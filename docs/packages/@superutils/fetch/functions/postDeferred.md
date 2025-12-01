@@ -2,7 +2,7 @@
 
 > **postDeferred**\<`ThisArg`, `DefaultUrl`\>(`deferOptions`, `defaultUrl?`, `defaultData?`, `defaultOptions?`): \<`TResult`\>(...`args`) => `IPromisE`\<`TResult`\>
 
-Defined in: [packages/fetch/src/postDeferred.ts:99](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/fetch/src/postDeferred.ts#L99)
+Defined in: [packages/fetch/src/postDeferred.ts:99](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/fetch/src/postDeferred.ts#L99)
 
 Creates a deferred/throttled function for making `POST`, `PUT`, or `PATCH` requests, powered by
 PromisE.deferred.

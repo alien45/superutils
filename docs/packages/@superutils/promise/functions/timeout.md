@@ -1,47 +1,43 @@
 # Function: timeout()
 
-> **timeout**\<`T`, `TFunc`, `Result`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
+## Call Signature
 
-Defined in: [packages/promise/src/timeout.ts:63](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/timeout.ts#L63)
+> **timeout**\<`T`, `Result`\>(`timeout`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
 
-**`Function`**
+Defined in: [packages/promise/src/timeout.ts:81](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/timeout.ts#L81)
 
-PromisE.timeout
+Creates a new promise that wraps one or more promises and rejects if they do not settle within a
+specified timeout duration. When multiple promises are provided, they can be processed using methods like
+ `all` (default), `race`, `any`, or `allSettled`.
 
-## Type Parameters
+### Type Parameters
 
-### T
+#### T
 
 `T` *extends* \[`unknown`, `...unknown[]`\]
 
-### TFunc
+#### Result
 
-`TFunc` *extends* keyof [`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>
+`Result` = `T`\[`"length"`\] *extends* `1` ? `Awaited`\<`T`\[`0`\]\> : `Awaited`\<`T`\[`number`\]\>[]
 
-### Result
+### Parameters
 
-`Result` = `T`\[`"length"`\] *extends* `1` ? `Awaited`\<`T`\[`0`\]\> : `Awaited`\<`ReturnType`\<[`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>\[`TFunc`\]\>\>
+#### timeout
 
-## Parameters
-
-### timeout
+`number`
 
 (optional) timeout duration in milliseconds.
-                 Default: `10000` (10 seconds)
+Default: `10000` (10 seconds)
 
-`number` | [`TimeoutOptions`](../type-aliases/TimeoutOptions.md)\<`TFunc`\>
-
-### values
+#### values
 
 ...`T`
 
-promise/function: one or more promises as individual arguments
-
-## Returns
+### Returns
 
 [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
 
-## Examples
+### Examples
 
 ```typescript
 PromisE.timeout(
@@ -54,6 +50,14 @@ PromisE.timeout(
 ```typescript
 PromisE.timeout(
     5000, // timeout after 5000ms
+    PromisE.delay(20000), // resolves after 20000ms with value 20000
+).catch(console.error)
+// Error: Error('Timed out after 5000ms')
+```
+
+```typescript
+PromisE.timeout(
+    5000, // timeout after 5000ms
     PromisE.delay(1000), // resolves after 1000ms with value 1000
     PromisE.delay(2000), // resolves after 2000ms with value 2000
     PromisE.delay(3000), // resolves after 3000ms with value 3000
@@ -61,15 +65,7 @@ PromisE.timeout(
 // Result: [ 1000, 2000, 3000 ]
 ```
 
-```typescript
-PromisE.timeout(
-    5000, // timeout after 5000ms
-    PromisE.delay(20000), // resolves after 20000ms with value 20000
-).catch(console.error)
-// Error: Error('Timed out after 5000ms')
-```
-
-// Eg: when API request is taking longer than expected, print a message but not reject the promise.
+Eg: when API request is taking longer than expected, print a message avoid rejecting the promise.
 ```typescript
 const promise = PromisE.timeout(
     5000, // timeout after 5000ms
@@ -81,7 +77,57 @@ const data = await promise.catch(err => {
 
     // promise timed out >> print/update UI
     console.log('Request is taking longer than expected......')
-    // now return the data promise (the promise(s) provided in the PromisE.timeout())
+    // Now return the data promise which is the result of `PromisE.all(promises)` (default).
     return promise.data
 })
 ```
+
+```typescript
+PromisE.timeout(
+    { // instead of `timeout: number` an object can be used for additional options
+        func: 'race', // tells PromisE.timeout to use `PromisE.race(promises)`
+        timeout: 5000, // timeout after 5000ms
+        timeoutMsg: 'My custom timed out message',
+    },
+    PromisE.delay(1000), // resolves after 1000ms with value 1000
+    PromisE.delay(2000), // resolves after 2000ms with value 2000
+    PromisE.delay(3000), // resolves after 3000ms with value 3000
+).then(console.log)
+// Result: 1000 (Result of `Promise.race(promises)`)
+```
+
+## Call Signature
+
+> **timeout**\<`T`, `TFunc`, `Result`\>(`options`, ...`values`): [`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>
+
+Defined in: [packages/promise/src/timeout.ts:102](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/timeout.ts#L102)
+
+### Type Parameters
+
+#### T
+
+`T` *extends* \[`unknown`, `...unknown[]`\]
+
+#### TFunc
+
+`TFunc` *extends* keyof [`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>
+
+#### Result
+
+`Result` = `T`\[`"length"`\] *extends* `1` ? `Awaited`\<`T`\[`0`\]\> : `Awaited`\<`ReturnType`\<[`TimeoutFunc`](../type-aliases/TimeoutFunc.md)\<`T`\>\[`TFunc`\]\>\>
+
+### Parameters
+
+#### options
+
+[`TimeoutOptions`](../type-aliases/TimeoutOptions.md)\<`TFunc`\>
+
+An options object can be passed with one or more of the following properties:
+
+#### values
+
+...`T`
+
+### Returns
+
+[`IPromisE_Timeout`](../type-aliases/IPromisE_Timeout.md)\<`Result`\>

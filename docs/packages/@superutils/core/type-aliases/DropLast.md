@@ -2,7 +2,7 @@
 
 > **DropLast**\<`T`\> = `T` *extends* \[`...(infer Rest)`, `unknown`\] ? `Rest` : \[\]
 
-Defined in: [packages/core/src/types.ts:97](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L97)
+Defined in: [packages/core/src/types.ts:97](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/types.ts#L97)
 
 Drop the last item from an array/tuple and keep the rest
 ---

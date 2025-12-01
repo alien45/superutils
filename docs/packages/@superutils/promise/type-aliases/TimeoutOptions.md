@@ -2,7 +2,7 @@
 
 > **TimeoutOptions**\<`Func`\> = `object`
 
-Defined in: [packages/promise/src/types/timeout.ts:18](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/timeout.ts#L18)
+Defined in: [packages/promise/src/types/timeout.ts:18](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/types/timeout.ts#L18)
 
 `PromisE.timeout` options
 
@@ -30,7 +30,7 @@ Defined in: [packages/promise/src/types/timeout.ts:18](https://github.com/alien4
 
 > **func**: `Func`
 
-Defined in: [packages/promise/src/types/timeout.ts:19](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/timeout.ts#L19)
+Defined in: [packages/promise/src/types/timeout.ts:19](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/types/timeout.ts#L19)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/promise/src/types/timeout.ts:19](https://github.com/alien4
 
 > `optional` **timeout**: `number`
 
-Defined in: [packages/promise/src/types/timeout.ts:20](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/timeout.ts#L20)
+Defined in: [packages/promise/src/types/timeout.ts:20](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/types/timeout.ts#L20)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [packages/promise/src/types/timeout.ts:20](https://github.com/alien4
 
 > `optional` **timeoutMsg**: `string`
 
-Defined in: [packages/promise/src/types/timeout.ts:21](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/promise/src/types/timeout.ts#L21)
+Defined in: [packages/promise/src/types/timeout.ts:21](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/promise/src/types/timeout.ts#L21)

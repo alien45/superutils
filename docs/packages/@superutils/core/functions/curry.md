@@ -2,7 +2,7 @@
 
 > **curry**\<`TData`, `TArgs`, `TArgsIsFinite`, `TArity`\>(`func`, ...`__namedParameters`): [`Curry`](../type-aliases/Curry.md)\<`TData`, [`CurriedArgs`](../type-aliases/CurriedArgs.md)\<`TArgs`, `TArgsIsFinite`, (...`args`) => `TData`, `TArity`\>\>
 
-Defined in: [packages/core/src/curry.ts:71](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/curry.ts#L71)
+Defined in: [packages/core/src/curry.ts:71](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/curry.ts#L71)
 
 Creates a curried version of a function. The curried function can be
 called with one or more or all arguments at a time. Once all arguments have been

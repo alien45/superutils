@@ -2,7 +2,7 @@
 
 > **TupleWithAlt**\<`Tuple`, `TAlt`\> = \{ -readonly \[K in keyof Tuple\]: Tuple\[K\] \| TAlt \}
 
-Defined in: [packages/core/src/types.ts:262](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/types.ts#L262)
+Defined in: [packages/core/src/types.ts:262](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/types.ts#L262)
 
 Add alt type to all members of a tuple.
 

@@ -5,14 +5,16 @@ import { IPromisE_Timeout } from './types'
 import { TimeoutFunc, type TimeoutOptions } from './types'
 
 /**
- * @function    PromisE.timeout
- * @summary times out a promise after specified timeout duration.
+ * Creates a new promise that wraps one or more promises and rejects if they do not settle within a
+ * specified timeout duration. When multiple promises are provided, they can be processed using methods like
+ *  `all` (default), `race`, `any`, or `allSettled`.
  *
- * @param   timeout (optional) timeout duration in milliseconds.
- *                  Default: `10000` (10 seconds)
- * @param   values  promise/function: one or more promises as individual arguments
+ * @param timeout (optional) timeout duration in milliseconds.
+ * Default: `10000` (10 seconds)
  *
- * @example Example 1: single promise - resolved
+ * @param values... rest param containing one or more promises/values
+ *
+ * @example Wokring with a single promise: resolved succesfully
  * ```typescript
  * PromisE.timeout(
  *   5000, // timeout after 5000ms
@@ -21,7 +23,16 @@ import { TimeoutFunc, type TimeoutOptions } from './types'
  * // Result: 1000
  * ```
  *
- * @example Example 2: multiple promises - resolved
+ * @example Promise times out & rejected
+ * ```typescript
+ * PromisE.timeout(
+ *     5000, // timeout after 5000ms
+ *     PromisE.delay(20000), // resolves after 20000ms with value 20000
+ * ).catch(console.error)
+ * // Error: Error('Timed out after 5000ms')
+ *```
+ *
+ * @example Working with multiple promises, resolved using "PromisE.all()"
  *
  * ```typescript
  * PromisE.timeout(
@@ -33,17 +44,8 @@ import { TimeoutFunc, type TimeoutOptions } from './types'
  * // Result: [ 1000, 2000, 3000 ]
  * ```
  *
- * @example Example 3: timed out & rejected
- * ```typescript
- * PromisE.timeout(
- *     5000, // timeout after 5000ms
- *     PromisE.delay(20000), // resolves after 20000ms with value 20000
- * ).catch(console.error)
- * // Error: Error('Timed out after 5000ms')
- *```
- *
- * @example Example 4: timed out & but not rejected.
- * // Eg: when API request is taking longer than expected, print a message but not reject the promise.
+ * @example Promise times out & but not rejected.
+ * Eg: when API request is taking longer than expected, print a message avoid rejecting the promise.
  * ```typescript
  * const promise = PromisE.timeout(
  *     5000, // timeout after 5000ms
@@ -55,11 +57,55 @@ import { TimeoutFunc, type TimeoutOptions } from './types'
  *
  *     // promise timed out >> print/update UI
  *     console.log('Request is taking longer than expected......')
- *     // now return the data promise (the promise(s) provided in the PromisE.timeout())
+ *     // Now return the data promise which is the result of `PromisE.all(promises)` (default).
  *     return promise.data
  * })
  *```
+ *
+ * @example Multiple promises resolved using "PromisE.race()"
+ *
+ * ```typescript
+ * PromisE.timeout(
+ *     { // instead of `timeout: number` an object can be used for additional options
+ *         func: 'race', // tells PromisE.timeout to use `PromisE.race(promises)`
+ *         timeout: 5000, // timeout after 5000ms
+ *         timeoutMsg: 'My custom timed out message',
+ *     },
+ *     PromisE.delay(1000), // resolves after 1000ms with value 1000
+ *     PromisE.delay(2000), // resolves after 2000ms with value 2000
+ *     PromisE.delay(3000), // resolves after 3000ms with value 3000
+ * ).then(console.log)
+ * // Result: 1000 (Result of `Promise.race(promises)`)
+ * ```
  */
+export function timeout<
+	T extends [unknown, ...unknown[]], // require at least one value
+	Result = T['length'] extends 1 ? Awaited<T[0]> : Awaited<T[number]>[],
+>(timeout: number, ...values: T): IPromisE_Timeout<Result>
+/**
+ *
+ * @param options An options object can be passed with one or more of the following properties:
+ * @param options.func (optional) Name of the `PromisE` method to be used to combine the `values`.
+ * Only used when more than one promise is provided.
+ *
+ * Accepted values:
+ * 1. `'all'` **(default)**: for `PromisE.all`
+ * 2. `'allSettled'`: for `PromisE.allSettled`
+ * 3. `'any'`: for `PromisE.any`
+ * 4. `'race'`: for `PromisE.race`
+ *
+ * @param options.timeout (optional) timeout duration in milliseconds. Default: `10_000` (10 seconds)
+ * @param options.timeoutMsg (optional) custom error message to be used when promises timeout.
+ *
+ * @param values
+ */
+export function timeout<
+	T extends [unknown, ...unknown[]], // require at least one value
+	TFunc extends keyof TimeoutFunc<T>,
+	Result = T['length'] extends 1
+		? Awaited<T[0]>
+		: Awaited<ReturnType<TimeoutFunc<T>[TFunc]>>,
+>(options: TimeoutOptions<TFunc>, ...values: T): IPromisE_Timeout<Result>
 export function timeout<
 	T extends [unknown, ...unknown[]], // require at least one value
 	TFunc extends keyof TimeoutFunc<T>,

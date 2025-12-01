@@ -2,7 +2,7 @@
 
 > **ThrottleConfig**\<`ThisArg`\> = `object`
 
-Defined in: [packages/core/src/throttled.ts:4](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/throttled.ts#L4)
+Defined in: [packages/core/src/throttled.ts:4](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/throttled.ts#L4)
 
 ## Type Parameters
 
@@ -16,7 +16,7 @@ Defined in: [packages/core/src/throttled.ts:4](https://github.com/alien45/utiils
 
 > `optional` **onError**: (`err`) => [`ValueOrPromise`](ValueOrPromise.md)\<`unknown`\>
 
-Defined in: [packages/core/src/throttled.ts:5](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/throttled.ts#L5)
+Defined in: [packages/core/src/throttled.ts:5](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/throttled.ts#L5)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [packages/core/src/throttled.ts:5](https://github.com/alien45/utiils
 
 > `optional` **thisArg**: `ThisArg`
 
-Defined in: [packages/core/src/throttled.ts:6](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/throttled.ts#L6)
+Defined in: [packages/core/src/throttled.ts:6](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/throttled.ts#L6)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/core/src/throttled.ts:6](https://github.com/alien45/utiils
 
 > `optional` **tid**: [`TimeoutId`](TimeoutId.md)
 
-Defined in: [packages/core/src/throttled.ts:8](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/throttled.ts#L8)
+Defined in: [packages/core/src/throttled.ts:8](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/throttled.ts#L8)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [packages/core/src/throttled.ts:8](https://github.com/alien45/utiils
 
 > `optional` **trailing**: `boolean`
 
-Defined in: [packages/core/src/throttled.ts:7](https://github.com/alien45/utiils/blob/d7177c2d4cc6f77ae68ce7eb97309af0bd9e2f3f/packages/core/src/throttled.ts#L7)
+Defined in: [packages/core/src/throttled.ts:7](https://github.com/alien45/utiils/blob/4acac077d6c90ce235cd4eb775ddbbb207554437/packages/core/src/throttled.ts#L7)
