@@ -5,7 +5,7 @@ import typedocSidebar from '../packages/typedoc-sidebar.json'
 export default defineConfig({
 	title: 'Superutils',
 	description:
-		'A suite of powerful, opinionated, and modular utilities for TypeScript, React, and RxJS.',
+		'A suite of practical, opinionated and modular utilities for TypeScript, React, and RxJS.',
 	ignoreDeadLinks: 'localhostLinks',
 	themeConfig: {
 		footer: {
