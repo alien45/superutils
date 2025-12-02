@@ -1,6 +1,6 @@
 # @superutils/fetch
 
-A modern, practical, and lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
+A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
 
 This package enhances the native `fetch` API by providing a streamlined interface and integrating practical & useful features from `@superutils/promise`. It offers built-in support for automatic retries, request timeouts, interceptors, and effortless request cancellation, making complex asynchronous flows simple and manageable.
 

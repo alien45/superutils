@@ -21,6 +21,9 @@ features:
     - title: '@superutils/core'
       link: /packages/@superutils/core/
       details: A collection of lightweight, dependency-free utility functions and types.
+    - title: '@superutils/fetch'
+      link: /packages/@superutils/fetch/
+      details: A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
     - title: '@superutils/promise'
       link: /packages/@superutils/promise/
       details: An extended Promise with status tracking, deferred execution, and cancellable fetch.

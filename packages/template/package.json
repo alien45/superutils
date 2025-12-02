@@ -1,6 +1,6 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "Examples",
+	"description": "template",
 	"dependencies": {
 		"@superutils/core": "^1.0.1"
 	},
@@ -30,7 +30,7 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "cd ../../ && npm run test promise"
+		"test": "cd ../../ && npm run test template"
 	},
 	"sideEffects": false,
 	"type": "module",

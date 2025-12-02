@@ -2,6 +2,12 @@
 
 A collection of lightweight, dependency-free utility functions and types.
 
+<div v-if="false">
+
+For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/core/).
+
+</div>
+
 ## Table of Contents
 
 - [Installation](#installation)

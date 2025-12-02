@@ -6,17 +6,27 @@
 
 `@superutils` is a compilation of re-usable, high-quality tools and utilities for TypeScript that have been developed and refined over many years. The collection aims to solve common real-world problems with elegant, robust, practical and well-tested solutions.
 
+## Table of Contents
+
+- [Packages](#packages)
+- [Getting Started](#getting-started)
+- [Contribute](#contribute)
+    - [Development Setup](#development-setup)
+    - [Scripts](#scripts)
+    - [Pull Request Guidelines](#pull-request-guidelines)
+- [License](#license)
+
 ## Packages
 
 This monorepo contains the following packages. Each is independently versioned and published to NPM.
 
-| Package               | NPM                                                         | Description                                                                                                                               |
-| :-------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| `@superutils/core`    | [v1.0.1](https://www.npmjs.com/package/@superutils/core)    | A collection of lightweight, dependency-free utility functions and types.                                                                 |
-| `@superutils/fetch`   | WIP                                                         | A modern, practical, and lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate. |
-| `@superutils/promise` | [v1.0.2](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.                                                      |
-| `@superutils/react`   | WIP                                                         | A collection of React hooks and components for common UI patterns and state management.                                                   |
-| `@superutils/rx`      | WIP                                                         | A suite of powerful operators and utilities for working with RxJS observables.                                                            |
+| NPM Package                                                                | Description                                                                                                        | Status   | API Reference                                                              |
+| :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------- | :------------------------------------------------------------------------- |
+| [`@superutils/core`](https://www.npmjs.com/package/@superutils/core)       | A collection of lightweight, dependency-free utility functions and types.                                          | Released | [docs](https://alien45.github.io/superutils/packages/@superutils/core/)    |
+| `@superutils/fetch`                                                        | A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate. | WIP      | [docs](https://alien45.github.io/superutils/packages/@superutils/fetch/)   |
+| [`@superutils/promise`](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.                               | Released | [docs](https://alien45.github.io/superutils/packages/@superutils/promise/) |
+| `@superutils/react`                                                        | A collection of React hooks and components for common UI patterns and state management.                            | ToDo     | [docs](https://alien45.github.io/superutils/packages/@superutils/react/)   |
+| `@superutils/rx`                                                           | A suite of powerful operators and utilities for working with RxJS observables.                                     | WIP      | [docs](https://alien45.github.io/superutils/packages/@superutils/rx/)      |
 
 ## Getting Started
 

@@ -1,8 +1,14 @@
-# @superutils/promise
+# [@superutils/promise](https://www.npmjs.com/package/@superutils/promise)
 
 An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
 
 This package offers a drop-in replacement for the native `Promise` that includes status tracking (`.pending`, `.resolved`, `.rejected`) and a suite of powerful static methods for common asynchronous patterns like deferred execution, throttling, and cancellable fetches.
+
+<div v-if="false">
+
+For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/promise/).
+
+</div>
 
 ## Table of Contents
 
