@@ -31,6 +31,10 @@ jobs:
               # Using npm ci for faster, more reliable installs in CI
               run: npm ci
 
+            - name: 'Build all packages 🚀'
+              # This script uses lerna (using nx & tsup) to build all packages
+              run: npm run build
+
             - name: 'Build VitePress Site 🚀'
               # This script runs 'typedoc' and then 'vitepress build'
               run: npm run docs:build
