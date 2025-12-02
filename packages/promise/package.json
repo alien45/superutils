@@ -4,7 +4,7 @@
 		"url": "https://github.com/alien45/superutils/issues"
 	},
 	"dependencies": {
-		"@superutils/core": "^1.0.1"
+		"@superutils/core": "1.0.3"
 	},
 	"description": "An extended Promise class with extra features and utilities.",
 	"files": [
@@ -12,7 +12,7 @@
 		"README.md",
 		"LICENSE"
 	],
-	"homepage": "https://github.com/alien45/superutils/#readme",
+	"homepage": "https://alien45.github.io/superutils/packages/@superutils/promise/",
 	"keywords": [
 		"promise",
 		"async",
@@ -23,7 +23,7 @@
 	"main": "dist/index.js",
 	"name": "@superutils/promise",
 	"peerDpendencies": {
-		"@superutils/core": "^1.0.1"
+		"@superutils/core": "1.0.3"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -42,5 +42,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "1.0.2"
+	"version": "1.0.3"
 }

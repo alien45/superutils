@@ -3,13 +3,13 @@
 	"bugs": {
 		"url": "https://github.com/alien45/superutils/issues"
 	},
-	"description": "Utilities for TS/JS/Node.js environments.",
+	"description": "A collection of lightweight, dependency-free utility functions and types for Javascript/Typescript",
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
-	"homepage": "https://github.com/alien45/superutils/#readme",
+	"homepage": "https://alien45.github.io/superutils/packages/@superutils/core/",
 	"keywords": [
 		"javascript",
 		"rxjs",
@@ -41,5 +41,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "1.0.1"
+	"version": "1.0.3"
 }

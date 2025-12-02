@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 import typedocSidebar from '../packages/typedoc-sidebar.json'
 
 export default defineConfig({
-	base: '/superutils/',
+	base: '/superutils/', // Relative path to page. Change if ever deployed to a domain
 	title: 'Superutils',
 	description:
 		'A suite of practical, opinionated and modular utilities for TypeScript, React, and RxJS.',
