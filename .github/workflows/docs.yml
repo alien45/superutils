@@ -1,0 +1,46 @@
+# .github/workflows/docs.yml
+
+name: 'Docs: Build and Deploy'
+
+on:
+    # Trigger the workflow on pushes to the main branch
+    push:
+        branches:
+            - main
+
+# Allow this job to clone the repo and create a page deployment
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: 'Checkout 🛎️'
+              uses: actions/checkout@v4
+
+            - name: 'Setup Node.js ⚙️'
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '24' # using LTS (even numbered) version
+                  cache: 'npm'
+
+            - name: 'Install Dependencies 📦'
+              # Using npm ci for faster, more reliable installs in CI
+              run: npm ci
+
+            - name: 'Build VitePress Site 🚀'
+              # This script runs 'typedoc' and then 'vitepress build'
+              run: npm run docs:build
+
+            - name: 'Upload artifact 📦'
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  # This is the default output directory for VitePress
+                  path: docs/.vitepress/dist
+
+            - name: 'Deploy to GitHub Pages 🚀'
+              id: deployment
+              uses: actions/deploy-pages@v4

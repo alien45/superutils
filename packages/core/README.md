@@ -9,8 +9,8 @@ A collection of lightweight, dependency-free utility functions and types.
     - [`is`](#is): Type checkers
     - [`deferred()`](#deferred): Debounce callbacks
     - [`throttle()`](#throttle): Throttle callbacks
-    - [`fallbackIfFails()`](#fallbackIfFails): Gracefully invoke functions
-    - [`objCopy()`](#objCopy): Deep-copy objects
+    - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions
+    - [`objCopy()`](#obj-copy): Deep-copy objects
     - [`search()`](#search): Search iterable collections
 
 ## Installation
@@ -102,7 +102,7 @@ handleChange({ target: { value 2 } }) // will be ignored
 handleChange({ target: { value 3 } }) // will be ignored
 ```
 
-<div id="fallbackIfFails"></div>
+<div id="fallback-if-fails"></div>
 
 ### `fallbackIfFails(fn, args, fallback)`: gracefully invoke functions
 
@@ -145,7 +145,7 @@ fallbackIfFails(
 // Prints the result when request is successful or fallback value when request fails
 ```
 
-<div id="objCopy"></div>
+<div id="obj-copy"></div>
 
 ### `objCopy(source, dest, ignoreKeys, override)`: deep-copy objects
 

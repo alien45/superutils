@@ -12,3 +12,4 @@ credentials.json
 #vitepress/docs
 docs/.vitepress/dist
 docs/.vitepress/cache
+docs/packages/@superutils
