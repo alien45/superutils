@@ -9,8 +9,10 @@ This package enhances the native `fetch` API by providing a streamlined interfac
 - Features
 - Installation
 - Usage
-    - `fetch(url, options)`
-    - `fetchDeferred(deferOptions, url, fetchOptions)`
+    - [`fetch()`](#fetch): make HTTP requests just like built-in `fetch()`
+    - [`fetchDeferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
+    - [`post()`](#post): make post-like requests
+    - [`postDeferred()`](#post-deferred) cancellable and debounced or throttled `post()`
 
 ## Features
 
@@ -39,13 +41,18 @@ Make a simple GET request. No need for `response.json()` or `result.data.theActu
 ```typescript
 import { fetch } from '@superutils/fetch'
 
-const theActualData = await fetch('https://dummyjson.com/products/1')
+const theActualData = await fetch('https://dummyjson.com/products/1', {
+	method: 'get', // default
+})
+console.log(theActualData)
+// Alternative:
+const theActualData = await fetch.get('https://dummyjson.com/products/1')
 console.log(theActualData)
 ```
 
-<div id="fetchDeferred"></div>
+<div id="fetch-deferred"></div>
 
-### `fetchDeferred(deferOptions, url, fetchOptions)`
+### `fetch.get.deferred(deferOptions, url, fetchOptions)`
 
 A practical utility that combines `PromisE.deferred()` from the `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced, or throttled search inputs.
 
@@ -53,7 +60,7 @@ A practical utility that combines `PromisE.deferred()` from the `@superutils/pro
 import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
 
 // Create a debounced search function with a 300ms delay.
-const searchProducts = fetchDeferred({
+const searchProducts = fetch.get.deferred({
 	delayMs: 300, // Debounce delay
 	resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (aborted) promises will resolve with `undefined`
 })
@@ -126,8 +133,10 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 
 <div id="post"></div>
 
-### `post(url, options)`
+### `fetch.post(url, options)`
 
-<div id="postDeferred"></div>
+<div id="post-deferred"></div>
 
-### `postDeferred(deferOptions, url, postOptions)`
+### `fetch.post.deferred(deferOptions, url, postOptions)`
+
+<div id="method-specific"></div>
