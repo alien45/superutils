@@ -1,6 +1,6 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "Fetch utilities",
+	"description": "A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.",
 	"dependencies": {
 		"@superutils/core": "^1.0.1",
 		"@superutils/promise": "^1.0.2"
