@@ -1,12 +1,14 @@
 import { fallbackIfFails } from '../fallbackIfFails'
 
 /**
- * @summary Copies text to browser clipboard.
+ * Copies text to browser clipboard.
  *
  * CAUTION:
  * Based on browser security policy it may be required to invoke `copyToClipboard` from an user-generated event handler.
  *
- * This function first attempts to use the modern, asynchronous Clipboard API (`window.navigator.clipboard.writeText`).
+ * Invoking from non-browser environment will already resolve with `0`.
+ *
+ * This function first attempts to use the modern, asynchronous Clipboard API (`navigator.clipboard.writeText`).
  * If that fails or is unavailable, it falls back to the legacy `document.execCommand('copy')` method.
  *
  *
@@ -23,23 +25,25 @@ export const copyToClipboard = (str: string): Promise<0 | 1 | 2> =>
 		() => navigator.clipboard.writeText(str).then(() => 1),
 		[],
 		// If clipboard API is not available or fails, use the fallback method
-		() =>
-			fallbackIfFails(
-				() => {
-					const el = document.createElement('textarea')
-					el.value = str
-					el.setAttribute('readonly', '')
-					el.style.position = 'absolute'
-					el.style.left = '-9999px'
-					document.body.appendChild(el)
-					el.select()
-
-					const result = document.execCommand('copy')
-					document.body.removeChild(el)
-					return Promise.resolve(result ? 2 : 0)
-				},
-				[],
-				() => Promise.resolve(0),
-			),
+		() => Promise.resolve(copyLegacy(str)),
 	)
 export default copyToClipboard
+
+const copyLegacy = (str: string) =>
+	fallbackIfFails(
+		() => {
+			const el = document.createElement('textarea')
+			el.value = str
+			el.setAttribute('readonly', '')
+			el.style.position = 'absolute'
+			el.style.left = '-9999px'
+			document.body.appendChild(el)
+			el.select()
+
+			const success = document.execCommand('copy')
+			document.body.removeChild(el)
+			return success ? 2 : 0
+		},
+		[],
+		0, // On error, resolve with 0
+	)

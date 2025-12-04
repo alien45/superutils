@@ -29,11 +29,6 @@
 //     a.click()
 // }
 
-// export const escapeStringRegexp = (str) => {
-//     const fn = require('escape-string-regexp')
-//     return fn(str)
-// }
-
 // /**
 //  * @name	generateHash
 //  * @summary generate hash using supplied data
