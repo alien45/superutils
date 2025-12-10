@@ -6,7 +6,7 @@
 	"dependencies": {
 		"@superutils/core": "1.0.3"
 	},
-	"description": "An extended Promise class with extra features and utilities.",
+	"description": "An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.",
 	"files": [
 		"dist",
 		"README.md",
@@ -37,6 +37,7 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
+		"start": "npm run build -- --watch",
 		"test": "cd ../../ && npm run test promise"
 	},
 	"sideEffects": false,

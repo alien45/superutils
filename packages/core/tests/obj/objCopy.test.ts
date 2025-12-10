@@ -11,7 +11,11 @@ describe('objCopy', () => {
 	it('should should deep-copy source & merge into output object', () => {
 		const d = Symbol('d')
 		const obj = { c: 3, a: 1, [d]: 4, b: 2 }
-		expect(objCopy(obj, { e: 5 })).toEqual({ ...obj, e: 5 })
+		expect(objCopy(obj, { a: 2, e: 5 }, [], false)).toEqual({
+			...obj,
+			a: 2,
+			e: 5,
+		})
 	})
 
 	it('should should override property only when "empty"', () => {
@@ -90,6 +94,20 @@ describe('objCopy', () => {
 		}
 
 		expect(copied).toEqual(expected)
+	})
+
+	it('should copy object properties and use callback to determine whether property should be overriden', () => {
+		const input = { a: 1, b: 2 }
+		const output = { a: 2, b: 1 }
+		const result = objCopy(
+			input,
+			output,
+			[],
+			// override only if output property value is smaller than input property
+			(_key, outValue, inValue) => outValue < inValue,
+		)
+		expect(result).toBe(output)
+		expect(result).toEqual({ a: 2, b: 2 })
 	})
 
 	it('should return empty object if non-object value is provided', () => {

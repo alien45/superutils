@@ -1,4 +1,4 @@
-import { asAny, TimeoutId } from '@superutils/core'
+import { TimeoutId } from '@superutils/core'
 import { BehaviorSubject } from './BehaviorSubject'
 
 /**
@@ -31,12 +31,12 @@ import { BehaviorSubject } from './BehaviorSubject'
  * ```
  */
 export class IntervalSubject extends BehaviorSubject<number> {
-	private intervalId: TimeoutId
-	readonly running: boolean = false
+	private _intervalId: TimeoutId
+	private _running = false
 
 	constructor(
 		public autoStart: boolean,
-		public delay = 1000,
+		private _delay = 1000,
 		readonly initialValue = 0,
 		public incrementBy = 1,
 	) {
@@ -44,10 +44,23 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		this.autoStart && this.start()
 	}
 
-	pause = () => {
-		clearInterval(this.intervalId)
+	get delay() {
+		return this._delay
+	}
 
-		this.setRunning(false)
+	set delay(newDelay: number) {
+		// ignore if interval is alreay running
+		if (!this._running) this._delay = newDelay
+	}
+
+	get running() {
+		return this._running
+	}
+
+	pause = () => {
+		clearInterval(this._intervalId)
+
+		this._running = false
 		return this
 	}
 
@@ -55,17 +68,14 @@ export class IntervalSubject extends BehaviorSubject<number> {
 
 	start = () => {
 		if (!this.running) {
-			this.setRunning(true)
-			this.intervalId = setInterval(
+			this._running = true
+			this._intervalId = setInterval(
 				() => this.next(this.value + this.incrementBy),
-				this.delay,
+				this._delay,
 			)
 		}
 		return this
 	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	private setRunning = (value = false) => (asAny(this).running = value)
 
 	stop = () => {
 		this.pause()

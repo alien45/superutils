@@ -1,5 +1,5 @@
 import deferred from './deferred'
-import { IPromisE, DeferredOptions } from './types'
+import { IPromisE, DeferredAsyncOptions } from './types'
 
 /**
  * @function PromisE.deferredCallback
@@ -35,14 +35,16 @@ import { IPromisE, DeferredOptions } from './types'
  */
 export function deferredCallback<
 	TDefault,
+	ThisArg,
+	Delay extends number = number,
 	CbArgs extends unknown[] = unknown[],
 >(
 	callback: (...args: CbArgs) => TDefault | Promise<TDefault>,
-	options: DeferredOptions = {},
+	options: DeferredAsyncOptions<ThisArg, Delay> = {},
 ) {
 	const { thisArg } = options
 	if (thisArg !== undefined) callback = callback.bind(thisArg)
-	const deferPromise = deferred<TDefault>(options)
+	const deferPromise = deferred<TDefault, ThisArg, Delay>(options)
 
 	return <TResult = TDefault>(...args: CbArgs) =>
 		deferPromise(() => callback(...args) as IPromisE<TResult>)

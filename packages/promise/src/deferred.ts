@@ -1,20 +1,21 @@
 import {
 	deferred as deferredCore,
 	fallbackIfFails,
-	forceCast,
 	isFn,
 	isPositiveNumber,
+	objCopy,
 	throttled as throttledCore,
 } from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import {
 	IPromisE,
-	DeferredOptions,
+	DeferredAsyncOptions,
 	ResolveError,
 	ResolveIgnored,
-	DeferredReturn,
+	DeferredAsyncCallback,
+	DeferredAsyncGetPromise,
+	DeferredAsyncDefaults,
 } from './types'
-import config from './config'
 
 /**
  * @function PromisE.deferred
@@ -83,19 +84,23 @@ import config from './config'
  * // `5000` will be printed in the console
  * ```
  */
-export function deferred<T>(options: DeferredOptions = {}): DeferredReturn {
-	const defaults = config.deferOptions
+export function deferred<T, ThisArg = unknown, Delay extends number = number>(
+	options?: DeferredAsyncOptions<ThisArg, Delay>,
+): DeferredAsyncCallback {
+	const { defaults } = deferred
+	options = objCopy(defaults, options, [], 'empty')
 	let { onError, onIgnore, onResult } = options
 	const {
-		delayMs = defaults.delayMs,
-		resolveError = defaults.resolveError, // by default reject on error
-		resolveIgnored = defaults.resolveIgnored,
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		delayMs,
+		resolveError, // by default reject on error
+		resolveIgnored,
 		thisArg,
-		throttle = defaults.throttle,
-	} = options
-	let lastPromisE: IPromisE<unknown> | null = null
+		throttle,
+	} = options as DeferredAsyncOptions<ThisArg, Delay>
+	let lastPromisE: IPromisE<T> | null = null
 	interface QueueItem extends PromisEBase<unknown> {
-		getPromise: () => Promise<unknown>
+		getPromise: DeferredAsyncGetPromise<T>
 		started?: boolean
 	}
 	const queue = new Map<symbol, QueueItem>()
@@ -119,7 +124,6 @@ export function deferred<T>(options: DeferredOptions = {}): DeferredReturn {
 			const [iId, iItem] = items[i]
 			queue.delete(iId)
 			if (iItem == undefined || iItem.started) continue
-
 			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], undefined)
 
 			// Options for ignored
@@ -188,14 +192,23 @@ export function deferred<T>(options: DeferredOptions = {}): DeferredReturn {
 	) => {
 		const id = Symbol('deferred-queue-item-id')
 		const qItem = new PromisEBase() as QueueItem
-		qItem.getPromise = isFn(promise) ? promise : () => promise
+		qItem.getPromise = (
+			isFn(promise) ? promise : () => promise
+		) as DeferredAsyncGetPromise<TResult>
 		qItem.started = false
 		queue.set(id, qItem)
 
 		if (gotDelay || !lastPromisE) execute(id, qItem)
 
-		return forceCast<IPromisE<TResult>>(qItem)
+		return qItem as IPromisE<TResult>
 	}
 	return deferredFunc
 }
+deferred.defaults = {
+	delayMs: -100,
+	resolveError: ResolveError.REJECT,
+	resolveIgnored: ResolveIgnored.WITH_LAST,
+} satisfies DeferredAsyncDefaults
 export default deferred
+
+// deferred({ delayMs: 100, leading: true, trailing: true })

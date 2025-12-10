@@ -115,7 +115,7 @@ search.defaultOptions = {
 	'asMap' | 'ignoreCase' | 'limit' | 'matchAll' | 'matchExact'
 >
 
-/** Utility for use with {@link search()} function */
+/** Utility for use with {@link search} function */
 export function matchItemOrProp<K, V>( // extends Record<string, unknown>
 	{
 		query,

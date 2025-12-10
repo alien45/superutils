@@ -29,6 +29,11 @@ describe('isTouchable', () => {
 		expect(isEnvTouchable()).toBe(false)
 		vi.unstubAllGlobals()
 	})
+	it('should return false when in "window" is available but not documentElement', () => {
+		vi.stubGlobal('window', {})
+		expect(isEnvTouchable()).toBe(false)
+		vi.unstubAllGlobals()
+	})
 	it('should return true when in browser with touch support', () => {
 		vi.stubGlobal('window', {
 			document: {

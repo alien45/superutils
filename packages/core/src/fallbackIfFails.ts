@@ -87,20 +87,16 @@ export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
 		| ((reason: unknown) => IfPromiseAddValue<T>),
 ): T => {
 	let result: unknown
-	let asPromise = false // indicates whether fallback value should also resolve as a promise
 	try {
 		result = !isFn(target)
 			? target // assume value or promise received
 			: target(...(isFn(args) ? args() : args))
 		if (!isPromise(result)) return result as T
 
-		asPromise = true
 		return result.catch(err => getAltValCb(err, fallbackValue)) as T
 	} catch (error) {
-		result = getAltValCb(error, fallbackValue)
-		return asPromise && !isPromise(result)
-			? (Promise.resolve(result) as T)
-			: (result as T)
+		// sync function invocation failed
+		return getAltValCb(error, fallbackValue) as T
 	}
 }
 export default fallbackIfFails

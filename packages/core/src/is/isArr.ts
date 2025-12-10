@@ -32,7 +32,7 @@ export const isArrLike = (
  * Check if value is convertible to an array by using `Array.from(x)` even if it comes from a different realm
  * (eg: iframe, iframes, worker contexts, node vm contexts, browser extensions).
  *
- * Caution: much slower than {@link isArrLike()} due to use of `Object.prototype.toString.call()`
+ * Caution: much slower than {@link isArrLike} due to use of `Object.prototype.toString.call()`
  */
 export const isArrLikeSafe = <T = unknown, MapKey = unknown>(
 	x: unknown,

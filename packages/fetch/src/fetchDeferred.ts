@@ -1,11 +1,10 @@
-import { forceCast } from '@superutils/core'
-import PromisE, { type DeferredOptions } from '@superutils/promise'
+import PromisE, { type DeferredAsyncOptions } from '@superutils/promise'
 import fetch from './fetch'
 import mergeFetchOptions from './mergeFetchOptions'
-import { FetchArgs, FetchDeferredArgs } from './types'
+import { FetchArgs, FetchDeferredArgs, FetchOptions } from './types'
 // Export useful types from PromisE for ease of use
 export {
-	type DeferredOptions,
+	type DeferredAsyncOptions,
 	ResolveError,
 	ResolveIgnored,
 } from '@superutils/promise'
@@ -19,10 +18,11 @@ export {
  * `fetchDeferred` uses this to automatically abort pending requests when a new one is initiated, preventing race conditions and redundant network traffic.
  *
  * @param deferOptions Configuration for the deferred execution behavior (e.g., `delayMs`, `throttle`).
- * See {@link DeferredOptions} for details.
- * @param defaultFetchArgs (optional) Default `url` and `fetchOptions` to be used for every call made by the
- * returned function. This is useful for creating a reusable client for a specific endpoint.
- *
+ * See {@link DeferredAsyncOptions} for details.
+ * @param globalUrl (optional) If a global URL is `undefined`, returned callback will always require an URL.
+ * @param defaultOptions (optional) Default {@link FetchOptions} to be used by the returned function.
+ * Default options will be merged with the options provided in the callback.
+ * If the same property is provided in both cases, defaults will be overriden by the callback.
  *
  * @example Debounce/Throttle requests for an auto-complete search input
  * ```typescript
@@ -95,34 +95,40 @@ export {
  * // Console output will show the same quote ID for all three calls.
  * ```
  */
-export function fetchDeferred<ThisArg, DefaultUrl extends string | URL>(
-	deferOptions: DeferredOptions<ThisArg> = {},
-	defaultUrl?: DefaultUrl,
+export function fetchDeferred<
+	ThisArg = unknown,
+	Delay extends number = number,
+	GlobalUrl extends string | URL | undefined = string | URL | undefined,
+	Args extends unknown[] = undefined extends GlobalUrl
+		? FetchArgs
+		: [options?: FetchOptions],
+>(
+	deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
+	globalUrl?: GlobalUrl,
 	defaultOptions?: FetchDeferredArgs[1],
 ) {
 	let _abortCtrl: AbortController | undefined
-	const fetchCallback = <TCbData = unknown>(
-		...args: DefaultUrl extends undefined ? FetchArgs : Partial<FetchArgs>
-	) => {
-		const [url, options = {}] = args
+	const fetchCallback = <Result = unknown>(...args: Args) => {
+		let options = {
+			...(((globalUrl === undefined ? args[1] : args[0])
+				?? {}) as FetchOptions),
+		}
+		if (defaultOptions) options = mergeFetchOptions(defaultOptions, options)
 		options.abortCtrl ??= new AbortController()
-		options.timeout ??= defaultOptions?.timeout
-		options.errMsgs = { ...defaultOptions?.errMsgs, ...options.errMsgs }
-		const { abortCtrl } = options
-		// abort any previous fetch
-		_abortCtrl?.abort()
-		_abortCtrl = abortCtrl
-		const promise = fetch<TCbData>(
-			...forceCast<FetchArgs>([
-				url ?? defaultUrl,
-				mergeFetchOptions(defaultOptions ?? {}, options),
-			]),
+		// make sure to abort any previous pending request
+		_abortCtrl?.abort?.()
+		_abortCtrl = options.abortCtrl
+		const promise = fetch<Result>(
+			globalUrl ?? (args[0] as FetchArgs[0]),
+			options,
 		)
 		// abort fetch request if promise is finalized manually before completion
 		// by invoking `promise.reject()` or `promise.resolve()
 		promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
 		return promise
 	}
+
 	return PromisE.deferredCallback(fetchCallback, deferOptions)
 }
+
 export default fetchDeferred

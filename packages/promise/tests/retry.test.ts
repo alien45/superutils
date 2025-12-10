@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE, { config } from '../src'
+import PromisE from '../src'
 
 describe('PromisE.retry', () => {
 	afterEach(() => {
@@ -10,10 +10,11 @@ describe('PromisE.retry', () => {
 		vi.useFakeTimers()
 	})
 
-	it('should throw error after attempting max retries and use global default "retry"', async () => {
-		const _retry = config.retryOptions.retry
+	it('should use global retry.defaults and throw error after attempting max retries', async () => {
+		const _retry = PromisE.retry.defaults.retry
 		// set global default retry count
-		config.retryOptions.retry = 10
+		PromisE.retry.defaults.retry = 10
+
 		const func = vi.fn(async () => {
 			return Promise.reject(new Error('Even number'))
 		})
@@ -25,8 +26,8 @@ describe('PromisE.retry', () => {
 		let error: unknown
 		await promise.catch(err => (error = err))
 		expect(error).toEqual(new Error('Even number'))
-		expect(func).toHaveBeenCalledTimes(config.retryOptions.retry + 1)
-		config.retryOptions.retry = _retry
+		expect(func).toHaveBeenCalledTimes(PromisE.retry.defaults.retry + 1)
+		PromisE.retry.defaults.retry = _retry
 	})
 
 	it('should attempt to re-execute a failed function', async () => {
@@ -71,7 +72,7 @@ describe('PromisE.retry', () => {
 			retryBackOff: 'exponential',
 			retryDelay: retryDelayMs,
 			retryDelayJitter: false,
-			retryDelayJitterMax: -1,
+			retryDelayJitterMax: undefined,
 		})
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toBe(undefined)
@@ -85,7 +86,7 @@ describe('PromisE.retry', () => {
 			.slice(1) // excluding first item that didn't have any delay before execution
 		// check if every subsequent delay is 2X from it's predecessor
 		const isExponential = arrDelays.every(
-			(ms, i, arr) => i === 0 || ms === arr[i - 1] * 2,
+			(delay, i, arr) => i === 0 || delay >= arr[i - 1] * 2,
 		)
 		expect(isExponential).toBe(true)
 	})

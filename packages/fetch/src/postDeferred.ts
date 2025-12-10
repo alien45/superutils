@@ -1,11 +1,16 @@
 import { forceCast } from '@superutils/core'
-import PromisE, { DeferredOptions } from '@superutils/promise'
+import PromisE, { DeferredAsyncOptions } from '@superutils/promise'
 import mergeFetchOptions from './mergeFetchOptions'
 import post from './post'
-import { PostArgs } from './types'
+import {
+	PostArgs,
+	PostBody,
+	PostDeferredCallbackArgs,
+	PostOptions,
+} from './types'
 // Export useful types from PromisE for ease of use
 export {
-	type DeferredOptions,
+	type DeferredAsyncOptions,
 	ResolveError,
 	ResolveIgnored,
 } from '@superutils/promise'
@@ -18,6 +23,16 @@ export {
  *
  * Like `fetchDeferred`, it automatically aborts pending requests when a new one is initiated, ensuring only
  * the most recent or relevant action is executed.
+ *
+ *
+ * @param deferOptions Configuration for the deferred execution behavior (e.g., `delayMs`, `throttle`).
+ * See {@link DeferredAsyncOptions} for details.
+ * @param globalUrl (optional) If global URL is `undefined`, returned callback will always require an URL.
+ * @param globalData (optional) If global data is `undefined`, returned callback will allow a data parameter.
+ * @param defaultOptions (optional) Default {@link FetchOptions} to be used by the returned function.
+ * Default options will be merged with the options provided in the callback.
+ * If the same property is provided in both cases, defaults will be overriden by the callback.
+ *
  *
  * @example Debouncing an authentication token refresh
  * ```typescript
@@ -96,37 +111,43 @@ export {
  * // This results in only two network requests instead of four.
  * ```
  */
-export function postDeferred<ThisArg, DefaultUrl extends string | URL>(
-	deferOptions: DeferredOptions<ThisArg> = {},
-	defaultUrl?: DefaultUrl,
-	defaultData?: PostArgs[1],
-	defaultOptions?: PostArgs[2],
+export function postDeferred<
+	ThisArg,
+	Delay extends number = number,
+	GlobalUrl extends PostArgs[0] | undefined = undefined,
+	GlobalData extends PostArgs[1] | undefined = undefined,
+	// Conditionally define the arguments for the returned function
+	Args extends unknown[] = PostDeferredCallbackArgs<GlobalUrl, GlobalData>,
+>(
+	deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
+	globalUrl?: GlobalUrl, // The default URL for all calls
+	globalData?: GlobalData, // The default data for all calls
+	defaultOptions?: PostOptions, // Default options (e.g., headers)
 ) {
 	let _abortCtrl: AbortController | undefined
-	const doPost = <TData = unknown>(
-		...[url, data, options = {}]: DefaultUrl extends undefined
-			? PostArgs
-			: Partial<PostArgs>
-	) => {
+	const doPost = <Result = unknown>(...args: Args) => {
+		// add global url to the beginning of the array
+		if (globalUrl !== undefined) args.splice(0, 0, globalUrl)
+		// add global data after the url
+		if (globalData !== undefined) args.splice(1, 0, globalData)
+
+		const url = args[0] as PostArgs[0]
+		const data = args[1] as PostArgs[1]
+		const options = mergeFetchOptions(
+			defaultOptions ?? {},
+			args[2] ?? {},
+		) as PostOptions
 		options.abortCtrl ??= new AbortController()
-		// abort any previous fetch
-		_abortCtrl?.abort()
-		// create a new abort control for current request
+		// make sure to abort any previous pending request
+		_abortCtrl?.abort?.()
 		_abortCtrl = options.abortCtrl
-		const mergedOptions = mergeFetchOptions(options, defaultOptions ?? {})
-		const promise = post<TData>(
-			...forceCast<PostArgs>([
-				url ?? defaultUrl,
-				data ?? defaultData,
-				mergedOptions,
-			]),
-		)
+		const promise = post<Result>(url, data, options)
 		// abort post request if promise is finalized manually before completion
 		// by invoking `promise.reject()` or `promise.resolve()`
 		promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
 		return promise
 	}
+
 	return PromisE.deferredCallback(doPost, deferOptions)
 }
-
 export default postDeferred

@@ -36,7 +36,8 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "cd ../../ && npm run test promise"
+		"start": "npm run build -- --watch",
+		"test": "cd ../../ && npm run test core"
 	},
 	"sideEffects": false,
 	"type": "module",

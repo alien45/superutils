@@ -46,7 +46,7 @@ DropFirstN<TParams, TArgs['length']> extends [unknown, ...unknown[]]
 /**
  * Deferred function config
  */
-export interface DeferredConfig<ThisArg = unknown> {
+export interface DeferredOptions<ThisArg = unknown> {
 	leading?: boolean | 'global'
 	onError?: (err: unknown) => ValueOrPromise<unknown>
 	thisArg?: ThisArg

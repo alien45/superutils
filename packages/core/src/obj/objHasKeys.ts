@@ -22,3 +22,4 @@ export function objHasKeys(
 	}
 	return true
 }
+export default objHasKeys

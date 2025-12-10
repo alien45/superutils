@@ -19,7 +19,7 @@ describe('arrToMap', () => {
 	})
 
 	it('should use callback to generate keys', () => {
-		const arr = [1, 2, 3]
+		const arr = [1, 2, 3, 4]
 		const keys = ['a', 'b', 'c']
 		const result = arrToMap(arr, (_, i) => keys[i])
 		expect(result).instanceOf(Map)
@@ -27,8 +27,9 @@ describe('arrToMap', () => {
 			['a', 1],
 			['b', 2],
 			['c', 3],
+			[3, 4], // callback function returned undefined, index is used as the key
 		])
-		expect(result.size).toBe(3)
+		expect(result.size).toBe(4)
 	})
 
 	it('should use object properties as keys', () => {

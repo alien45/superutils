@@ -19,10 +19,11 @@ export const arrReadOnly = <T>(
 export default arrReadOnly
 
 /**
+ * @ignore exclude from documentation
  * Helper class for creating read-only arrays.
  *
  * Caution: This class can by itself only make the array partially read-only.
- * Use {@link arrReadOnly()} instead.
+ * Use {@link arrReadOnly} instead.
  */
 export class ReadOnlyArrayHelper<T> extends Array<T> {
 	constructor(
@@ -56,7 +57,7 @@ export class ReadOnlyArrayHelper<T> extends Array<T> {
 
 	// fromAsync = super.fromAsync
 
-	reduce = super.reduce
+	// reduce = super.reduce
 
-	reduceRight = super.reduceRight
+	// reduceRight = super.reduceRight
 }

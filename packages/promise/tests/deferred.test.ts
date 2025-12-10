@@ -1,30 +1,6 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
-import PromisE, { DeferredOptions, ResolveError, ResolveIgnored } from '../src/'
-
-export const getDeferredContext = () =>
-	({
-		data: {
-			errors: [] as unknown[],
-			ignored: [] as unknown[],
-			results: [] as unknown[],
-		},
-		delayMs: 100,
-		onError(err) {
-			this.data.errors.push(err)
-		},
-		onIgnore(ignored) {
-			this.data.ignored.push(ignored)
-		},
-		onResult(result) {
-			this.data.results.push(result)
-		},
-		resolveIgnored: ResolveIgnored.WITH_LAST,
-		resolveError: ResolveError.REJECT,
-		throttle: false,
-		get thisArg() {
-			return this
-		},
-	}) as DeferredOptions & Record<string, any>
+import PromisE, { ResolveError, ResolveIgnored } from '../src/'
+import { getDeferredContext } from './getDeferredContext'
 
 describe('PromisE.deferred', () => {
 	beforeEach(() => {

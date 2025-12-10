@@ -1,4 +1,3 @@
-export * from './config'
 export * from './deferred'
 export * from './deferredCallback'
 export * from './delay'

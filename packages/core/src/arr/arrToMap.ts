@@ -31,6 +31,13 @@ import { isArr, isDefined, isFn, isNumber, isObj } from '../is'
  * ```
  */
 
+export function arrToMap<
+	T extends unknown[],
+	FlatDepth extends number = 0,
+	MapItem = FlatArray<T, FlatDepth>,
+	KeyProp extends keyof MapItem = keyof MapItem,
+>(arr: T, key: KeyProp, flatDepth?: FlatDepth): Map<MapItem[KeyProp], MapItem>
+
 // Overload for when no key is provided. The map keys will be array indices (number).
 export function arrToMap<T extends unknown[], FlatDepth extends number = 0>(
 	arr: T,
@@ -48,14 +55,6 @@ export function arrToMap<
 	key: (item: MapItem, index: number, flatArr: MapItem[]) => MapKey,
 	flatDepth?: FlatDepth,
 ): Map<MapKey, MapItem>
-
-// Overload for when a property name is provided as the key.
-export function arrToMap<
-	T extends unknown[],
-	FlatDepth extends number = 0,
-	MapItem = FlatArray<T, FlatDepth>,
-	KeyProp extends keyof MapItem = keyof MapItem,
->(arr: T, key: KeyProp, flatDepth?: FlatDepth): Map<MapItem[KeyProp], MapItem>
 
 // Implementation
 export function arrToMap<T extends unknown[]>(

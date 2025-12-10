@@ -1,7 +1,7 @@
 import fallbackIfFails from './fallbackIfFails'
 import { TimeoutId, ValueOrPromise } from './types'
 
-export type ThrottleConfig<ThisArg = unknown> = {
+export type ThrottleOptions<ThisArg = unknown> = {
 	onError?: (err: unknown) => ValueOrPromise<unknown>
 	thisArg?: ThisArg
 	trailing?: boolean
@@ -22,7 +22,7 @@ export type ThrottleConfig<ThisArg = unknown> = {
 export const throttled = <TArgs extends unknown[], ThisArg>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
 	delay = 50,
-	config: ThrottleConfig<ThisArg> = {},
+	config: ThrottleOptions<ThisArg> = {},
 ) => {
 	const { defaults: d } = throttled
 	const { onError = d.onError, trailing = d.trailing, thisArg } = config
@@ -56,5 +56,5 @@ export const throttled = <TArgs extends unknown[], ThisArg>(
 throttled.defaults = {
 	onError: undefined,
 	trailing: true,
-} satisfies ThrottleConfig
+} satisfies ThrottleOptions
 export default throttled

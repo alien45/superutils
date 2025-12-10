@@ -1,4 +1,5 @@
 import {
+	isEmpty,
 	isFn,
 	isPositiveNumber,
 	isPromise,
@@ -10,6 +11,8 @@ import mergeFetchOptions from './mergeFetchOptions'
 import {
 	FetchAs,
 	FetchError,
+	FetchErrMsgs,
+	FetchOptionsInterceptor,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchInterceptors,
 	type FetchOptions,
@@ -18,46 +21,23 @@ import {
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
 
-/**
- * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
- * and powerful interceptors. It also includes deferred and throttled request capabilities for complex asynchronous
- * control flows.
- *
- * Will reject promise if response status code is not 2xx (200 <= status < 300).
- *
- * @param	url
- * @param options (optional) all built-in `fetch()` options such as "method", "headers" and the additionals below.
- * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
- * @param options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
- * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
- * @param options.method  (optional) Default: `"get"`
- * @param options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
- * @param options.parse   (optional) specify how to parse the result.
- * Default: {@link FetchAs.json}
- * For raw `Response` use {@link FetchAs.response}
- *
- * @example Make a simple HTTP requests
- * ```typescript
- * import { fetch } from '@superutils/fetch'
- *
- * // no need for `response.json()` or `result.data.theActualData` drilling
- * fetch('https://dummyjson.com/products/1').then(theActualData => console.log(theActualData))
- * ```
- */
-export function fetch<
+export const fetch = <
 	TJSON,
 	TOptions extends FetchOptions = FetchOptions,
 	TReturn = TOptions['as'] extends FetchAs
 		? FetchResult<TJSON>[TOptions['as']]
 		: TJSON,
->(url: string | URL, options: TOptions = {} as TOptions) {
+>(
+	url: string | URL,
+	options: TOptions = {} as TOptions,
+) => {
 	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
-	options.method ??= 'get'
 	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	const promise = new PromisE(async (resolve, reject) => {
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-		const _options = mergeFetchOptions(options)
+		const _options = mergeFetchOptions(defaults, options)
+		if (isEmpty(_options.method)) _options.method = 'get'
 		// avoid interceptors' mutations during interceptor calls
 		const errorInterceptors = [..._options.interceptors.error]
 		const requestInterceptors = [..._options.interceptors.request]
@@ -75,7 +55,7 @@ export function fetch<
 		let errResponse: Response | undefined
 		try {
 			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			if (!isUrlValid(url, false)) throw errMsgs.invalidUrl //new Error()
+			if (!isUrlValid(url, false)) throw errMsgs.invalidUrl
 			// make the fetch call
 			let response = await getResponse(url, _options)
 			// invoke global and local request interceptors to intercept and/or transform `response`
@@ -155,4 +135,29 @@ export function fetch<
 	promise.onEarlyFinalize.push(() => abortCtrl?.abort())
 	return promise as IPromisE<TReturn>
 }
+/** Default fetch options */
+const defaults = {
+	as: FetchAs.json,
+	errMsgs: {
+		invalidUrl: 'Invalid URL',
+		parseFailed: 'Failed to parse response as',
+		reqTimedout: 'Request timed out',
+		requestFailed: 'Request failed with status code:',
+	} as Required<FetchErrMsgs>, // all error messages must be defined here
+	headers: new Headers([['content-type', 'application/json']]),
+	/** Global interceptors for fetch requests */
+	interceptors: {
+		/**
+		 * Global error interceptors to be invoked whenever an exception occurs
+		 * Returning an
+		 */
+		error: [],
+		/** Interceptors to be invoked before making fetch requests */
+		request: [],
+		response: [],
+		result: [],
+	},
+	timeout: 0,
+} as Omit<FetchOptionsInterceptor, 'method' | 'retryIf'>
+fetch.defaults = defaults
 export default fetch

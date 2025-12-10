@@ -1,6 +1,6 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { asAny } from '../forceCast'
-import { isEmpty, isObj, isSymbol } from '../is'
+import { isEmpty, isFn, isObj, isSymbol } from '../is'
 import objKeys from './objKeys'
 
 /** Clone any value by first strinfigying and then parsing back  */
@@ -11,50 +11,74 @@ const clone = <T>(value: T, fallback = 'null') =>
  * Deep-copy an object to another object
  *
  * @param input input object
+ * @param _output (optional) output object
  * @param ignoreKeys (optional) input peroperties to be ignored. Prevents output's property to be overriden.
  *
  * For child object properties use "." (dot) separated path.
  *
  * Eg: `"child.grandchild1"` where input is `{ child: { grandchild1: 1, grandchild2: 2 }}`
  *
- * @param output (optional) output object
- * @param override (optional) whether to allow override output (if provided) properties.
+ * @param override (optional) whether to allow override output properties.
+ * This will only be used if `output` object is provided and has own property.
  * Accepted values:
- * `true`: input property will override output property
- * `false`: no overriding if output contains the property. Even if the property value is `undefined`.
- * `"empty"`: only allow overriding output property if it's value is empty by using {@link isEmpty}.
+ * - `true`: input property will override output property
+ * - `false`: no overriding if output contains the property. Even if the property value is `undefined`.
+ * - `"empty"`: only allow overriding output property if it's value is empty by using {@link isEmpty}.
+ * - `function`: decide whether to override on a per property basis.
+ *
+ * Function Arguments:
+ *     1. key: current property name/key
+ *     2. outputValue: `output` property value
+ *     3. inputValue: `input` property value
  *
  * Default: `false`
+ *
+ * @param reverse (optional) whether to reverse sort object properties. Default: `false`
  *
  *
  * @returns copied and/or merged object
  */
 export const objCopy = <
-	Key extends string | symbol,
-	T extends Record<Key, unknown>,
+	Key extends PropertyKey,
+	InValue,
+	OutValue,
 	IgnoredKey extends Key | string,
 >(
-	input: T,
-	output?: Record<PropertyKey, unknown>,
+	input: Record<Key, InValue>,
+	output?: Record<PropertyKey, OutValue>,
 	ignoreKeys?: IgnoredKey[] | Set<IgnoredKey>,
-	override: boolean | 'empty' = false,
+	override:
+		| boolean
+		| 'empty'
+		| ((
+				key: Key,
+				outputValue: OutValue,
+				inputValue: InValue,
+		  ) => boolean) = false,
 	recursive = true,
 ) => {
-	if (!isObj(output)) output = {} as T
-	if (!isObj(input)) return output
+	const _output = (isObj(output) ? output : {}) as Record<
+		PropertyKey,
+		unknown
+	>
+	if (!isObj(input)) return _output
 
 	const _ignoreKeys = new Set(ignoreKeys ?? [])
-	const inKeys = (objKeys(input, true, true) as IgnoredKey[]).filter(
-		x => !_ignoreKeys.has(x),
+	const inKeys = objKeys(input, true, true).filter(
+		x => !_ignoreKeys.has(x as IgnoredKey),
 	)
 
 	for (const _key of inKeys) {
-		const key = _key as Key
+		const key = _key // as Key
 		const value = input[key]
 
 		const skip =
-			output.hasOwnProperty(key)
-			&& (!override || (override === 'empty' && !isEmpty(output[key])))
+			_output.hasOwnProperty(key)
+			&& (override === 'empty'
+				? !isEmpty(_output[key])
+				: isFn(override)
+					? !override(key, _output[key] as OutValue, value)
+					: true)
 		if (skip) continue
 
 		const isPrimitive =
@@ -62,11 +86,11 @@ export const objCopy = <
 			|| !isObj(value, false)
 		if (isPrimitive) {
 			// directly assign any primitive types
-			output[key] = value
+			_output[key] = value
 			continue
 		}
 
-		output[key] = (() => {
+		_output[key] = (() => {
 			switch (Object.getPrototypeOf(value)) {
 				case Array.prototype:
 					return clone(value, '[]')
@@ -100,22 +124,21 @@ export const objCopy = <
 			const ignoreChildKeys = [..._ignoreKeys]
 				.map(
 					x =>
-						!isSymbol(x)
-						&& x.startsWith(key.concat('.'))
-						&& x.split(key.concat('.'))[1],
+						String(x).startsWith(String(key).concat('.'))
+						&& String(x).split(String(key).concat('.'))[1],
 				)
-				.filter(Boolean) as Key[]
+				.filter(Boolean) as string[]
 			if (!ignoreChildKeys.length) return clone(value)
 
 			return objCopy(
-				value as T,
-				output[key] as T,
-				ignoreChildKeys,
+				value as Record<Key, InValue>,
+				_output[key] as Record<PropertyKey, OutValue>,
+				ignoreChildKeys as IgnoredKey[],
 				override,
 				recursive,
 			)
 		})()
 	}
 
-	return output
+	return _output
 }

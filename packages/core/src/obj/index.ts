@@ -1,6 +1,7 @@
 export * from './objClean'
 export * from './objCopy'
 export * from './objCreate'
+export * from './objHasKeys'
 export * from './objKeys'
 export * from './objReadOnly'
 export * from './objSetProp'

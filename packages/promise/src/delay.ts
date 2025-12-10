@@ -1,5 +1,4 @@
 import { fallbackIfFails, isFn } from '@superutils/core'
-import config from './config'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
@@ -33,7 +32,7 @@ import { IPromisE_Delay } from './types'
  * ```
  */
 export function delay<T = number, TReject extends boolean = boolean>(
-	duration = 100,
+	duration = delay.defaults.duration,
 	result: T | (() => T) = duration as T,
 	asRejected: TReject = false as TReject,
 ) {
@@ -45,7 +44,8 @@ export function delay<T = number, TReject extends boolean = boolean>(
 
 		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
 		promise.reject(
-			result ?? new Error(`${config.delayTimeoutMsg} ${duration}ms`),
+			result
+				?? new Error(`${delay.defaults.delayTimeoutMsg} ${duration}ms`),
 		)
 	}
 	promise.timeoutId = setTimeout(() => finalize(result), duration)
@@ -56,5 +56,11 @@ export function delay<T = number, TReject extends boolean = boolean>(
 		})
 		.finally(() => promise.pause())
 	return promise
+}
+delay.defaults = {
+	/** Default delay duration in milliseconds */
+	duration: 100,
+	/** Default timed out message */
+	delayTimeoutMsg: 'Timed out after',
 }
 export default delay

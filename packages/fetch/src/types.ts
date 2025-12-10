@@ -269,7 +269,7 @@ export type FetchOptionsInterceptor = Omit<
 	errMsgs: Required<FetchErrMsgs>
 	headers: Headers
 	interceptors: Required<FetchInterceptors>
-} & Required<FetchRetryOptions>
+} & FetchRetryOptions
 
 /**
  * Result types for specific parsers ("as": FetchAs)
@@ -312,8 +312,52 @@ export type PostBody = Record<string, unknown> | BodyInit | null
 export type PostArgs = [
 	url: string | URL,
 	data?: PostBody,
-	options?: Omit<FetchOptions, 'method'> & {
-		/** Default: `'post'` */
-		method?: 'post' | 'put' | 'patch' | 'delete'
-	},
+	options?: PostOptions,
 ]
+
+/**
+ *
+ * @example
+ * ```typescript
+ * // test with types
+ * type T1 = PostDeferredCallbackArgs<string | URL, undefined> // expected: [data, options]
+ * type T2 = PostDeferredCallbackArgs<undefined, string> // expected: [url, options]
+ * type T3 = PostDeferredCallbackArgs // expected: [url, data, options]
+ * type T4 = PostDeferredCallbackArgs<string, string> // expected: [options]
+ *
+ * const data = { name: 'test' }
+ * const url = 'https://domain.com'
+ * // test with postDeferred()
+ * const f1 = postDeferred({}, 'https://domain.com')
+ * // expected: [data, options]
+ * f1({data: 1}).then(console.log, console.warn)
+ *
+ * const f2 = postDeferred({}, undefined, 'dome data')
+ * // expected: [url, options]
+ * f2('https').then(console.log, console.warn)
+ *
+ * const f3 = postDeferred({})
+ * // expected: [url, data, options]
+ * f3('https://domain.com').then(console.log, console.warn)
+ *
+ * const f4 = postDeferred({}, 'url', 'data')
+ * // expected: [options]
+ * f4().then(console.log, console.warn)
+ * ```
+ */
+export type PostDeferredCallbackArgs<
+	TUrl = undefined,
+	TData = undefined,
+	RPA extends unknown[] = Required<PostArgs>,
+> = [TUrl, TData] extends [RPA[0], undefined] // only URL provided
+	? [data?: PostArgs[1], options?: PostArgs[2]]
+	: [TUrl, TData] extends [undefined, RPA[1]] // only data provided
+		? [url: PostArgs[0], options?: PostArgs[2]]
+		: [TUrl, TData] extends [RPA[0], RPA[1]]
+			? [options?: PostArgs[2]] // Both default URL and data are provided
+			: PostArgs
+
+export type PostOptions = Omit<FetchOptions, 'method'> & {
+	/** Default: `'post'` */
+	method?: 'post' | 'put' | 'patch' | 'delete'
+}

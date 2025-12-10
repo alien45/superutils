@@ -26,7 +26,7 @@ features:
       details: A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
     - title: '@superutils/promise'
       link: /packages/@superutils/promise/
-      details: An extended Promise with status tracking, deferred execution, and cancellable fetch.
+      details: An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.
     - title: '@superutils/react'
       link: /packages/@superutils/react/
       details: A collection of React hooks and components for common UI patterns and state management.

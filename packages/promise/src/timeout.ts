@@ -12,7 +12,7 @@ import { TimeoutFunc, type TimeoutOptions } from './types'
  * @param timeout (optional) timeout duration in milliseconds.
  * Default: `10000` (10 seconds)
  *
- * @param values... rest param containing one or more promises/values
+ * @param values rest param containing one or more promises/values
  *
  * @example Wokring with a single promise: resolved succesfully
  * ```typescript

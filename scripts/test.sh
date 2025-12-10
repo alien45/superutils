@@ -44,7 +44,7 @@ if [[ -n "$FIRST" ]]; then
         return 1
     }
 
-    if isOption "ui" || [[ "${UI}" == 1 ]]; then
+    if isOption "ui" || [[ "${UI}" == "1" ]]; then
         export UI="true"
     fi
 

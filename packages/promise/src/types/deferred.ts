@@ -1,30 +1,50 @@
 import {
-	DeferredConfig,
-	ThrottleConfig,
+	DeferredOptions,
+	PositiveNumber,
+	ThrottleOptions,
 	ValueOrPromise,
 } from '@superutils/core'
 import { IPromisE } from './IPromisE'
 
 /** Return type of `PromisE.deferred()` */
-export type DeferredReturn<TArgs extends unknown[] | [] = []> = <
+export type DeferredAsyncCallback<TArgs extends unknown[] | [] = []> = <
 	TResult = unknown,
 >(
 	promise: Promise<TResult> | ((...args: TArgs) => Promise<TResult>),
 ) => IPromisE<TResult>
 
-export type DeferredOptions<ThisArg = unknown> = {
-	/** Delay in milliseconds, used for `debounce` and `throttle` modes. */
-	delayMs?: number
+export type DeferredAsyncGetPromise<T> = <TResult = T>() => Promise<TResult>
+
+/** Default options used by `PromisE.deferred` and related functions */
+export type DeferredAsyncDefaults = Pick<
+	Required<DeferredAsyncOptions>,
+	'delayMs' | 'resolveError' | 'resolveIgnored'
+>
+
+/** Options for `PromisE.deferred` and other related functions */
+export type DeferredAsyncOptions<
+	ThisArg = unknown,
+	DelayMs extends number = number,
+> = {
+	/**
+	 * Delay in milliseconds, used for `debounce` and `throttle` modes.
+	 *
+	 * Default: `100`
+	 */
+	// delayMs?: number
 
 	/** Callback invoked whenever promise/function throws error */
-	onError?: (err: unknown) => ValueOrPromise<unknown>
+	onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
 
 	/**
 	 * Whenever a promise/function is ignored when in debource/throttle mode, `onIgnored` wil be invoked.
 	 * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
 	 * Use for debugging or logging purposes.
 	 */
-	onIgnore?: (ignored: () => Promise<unknown>) => ValueOrPromise<unknown>
+	onIgnore?: (
+		this: ThisArg,
+		ignored: DeferredAsyncGetPromise<unknown>,
+	) => ValueOrPromise<unknown>
 
 	/**
 	 * Whenever a promise/function is executed successfully `onResult` will be called.
@@ -32,7 +52,8 @@ export type DeferredOptions<ThisArg = unknown> = {
 	 *
 	 * Result can be `undefined` if `ResolveIgnored.WITH_UNDEFINED` is used.
 	 */
-	onResult?: (result?: unknown) => ValueOrPromise<unknown>
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	onResult?: (this: ThisArg, result?: any) => ValueOrPromise<unknown>
 
 	/**
 	 * Indicates what to do when a promise in the queue is ignored.
@@ -46,14 +67,27 @@ export type DeferredOptions<ThisArg = unknown> = {
 	 */
 	resolveError?: ResolveError
 
-	/** Enable throttle mode. Requires {@link DeferredOptions.delayMs}*/
-	throttle?: boolean
+	/** The value to be used as "thisArg" whenever any of the callbacks are invoked */
+	thisArg?: ThisArg
 } & (
-	| ({ delayMs: number; throttle: true } & ThrottleConfig<ThisArg>)
-	| ({ delayMs?: number; throttle?: false } & DeferredConfig<ThisArg>)
+	| ({
+			/** Throttle duration in milliseconds */
+			delayMs?: PositiveNumber<DelayMs>
+			throttle: true
+	  } & Omit<ThrottleOptions, 'onError' | 'ThisArg' | 'tid'>)
+	| ({
+			/** Debounce/deferred duration in milliseconds */
+			delayMs?: PositiveNumber<DelayMs>
+			throttle?: false | undefined
+	  } & Omit<DeferredOptions, 'onError' | 'ThisArg' | 'tid'>)
 )
+// | {
+// 		/** Sequential execution */
+// 		delayMs: 0
+// 		throttle?: false
+//   }
 
-/** Options for what to do when deferred promise/function fails */
+/** Determines what to do when deferred promise/function fails */
 export enum ResolveError {
 	/** Neither resolve nor reject the failed */
 	NEVER = 'NEVER',
@@ -65,7 +99,10 @@ export enum ResolveError {
 	WITH_UNDEFINED = 'RESOLVE_UNDEFINED',
 }
 
-/** Options for what to do when a promise/callback is ignored, either because of being deferred, throttled or another been prioritized. */
+/**
+ * Determines what to do when a promise/callback is ignored, either because of being
+ * deferred, throttled or another been prioritized.
+ */
 export enum ResolveIgnored {
 	/** Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks. */
 	NEVER = 'NEVER',

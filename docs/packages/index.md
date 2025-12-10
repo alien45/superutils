@@ -20,13 +20,60 @@
 
 This monorepo contains the following packages. Each is independently versioned and published to NPM.
 
-| NPM Package                                                                | Description                                                                                                        | Status   | API Reference                                                              |
-| :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------- | :------------------------------------------------------------------------- |
-| [`@superutils/core`](https://www.npmjs.com/package/@superutils/core)       | A collection of lightweight, dependency-free utility functions and types.                                          | Released | [docs](https://alien45.github.io/superutils/packages/@superutils/core/)    |
-| `@superutils/fetch`                                                        | A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate. | WIP      | [docs](https://alien45.github.io/superutils/packages/@superutils/fetch/)   |
-| [`@superutils/promise`](https://www.npmjs.com/package/@superutils/promise) | An extended Promise with status tracking, deferred execution, and cancellable fetch.                               | Released | [docs](https://alien45.github.io/superutils/packages/@superutils/promise/) |
-| `@superutils/react`                                                        | A collection of React hooks and components for common UI patterns and state management.                            | ToDo     | [docs](https://alien45.github.io/superutils/packages/@superutils/react/)   |
-| `@superutils/rx`                                                           | A suite of powerful operators and utilities for working with RxJS observables.                                     | WIP      | [docs](https://alien45.github.io/superutils/packages/@superutils/rx/)      |
+<table>
+  <thead>
+    <tr>
+      <th><a href="https://www.npmjs.com/org/superutils">NPM Package</a></th>
+      <th>Description</th>
+      <th>Status</th>
+      <th><a href="https://alien45.github.io/superutils">API Reference</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/core">
+          <code>@superutils/core</code>
+        </a>
+      </td>
+      <td>A collection of lightweight, dependency-free utility functions and types.</td>
+      <td>Released</td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View docs</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://www.npmjs.com/package/@superutils/fetch"><code>@superutils/fetch</code></a></td>
+      <td>A lightweight <code>fetch</code> wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.</td>
+      <td>WIP</td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View docs</a></td>
+    </tr>
+    <tr>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/promise">
+          <code>@superutils/promise</code>
+        </a>
+      </td>
+      <td>An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.</td>
+      <td>Released</td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/promise/">View docs</a></td>
+    </tr>
+    <tr>
+      <td>
+        <code>@superutils/react</code>
+      </td>
+      <td>A collection of React hooks and components for common UI patterns and state management.</td>
+      <td>ToDo</td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/react/">View docs</a></td>
+    </tr>
+    <tr>
+      <td>
+        <code>@superutils/rx</code>
+      </td>
+      <td>A suite of powerful operators and utilities for working with RxJS observables.</td>
+      <td>WIP</td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View docs</a></td>
+    </tr>
+  </tbody>
+</table>
 
 ## Getting Started
 
@@ -155,15 +202,16 @@ The following scripts are available at the root level to help with development:
     **Note:**
     - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.
     - You can combine both environment variables and the options above. However, if there's a conflict, the options take precedence.
-      **Examples:**
 
-    | Command                      | Action                                                                          |
-    | :--------------------------- | :------------------------------------------------------------------------------ |
-    | `npm test`                   | Watch and run all tests for all packages.                                       |
-    | `npm test :1`                | Run all tests for all packages only once and exit immediately.                  |
-    | `UI=true npm test promise:%` | Watch and test only `promise` package with UI and coverage.                     |
-    | `npm test :%:ui`             | Same as above                                                                   |
-    | `UI=false npm test :ui`      | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
+        **Examples:**
+
+        | Command                      | Action                                                                          |
+        | :--------------------------- | :------------------------------------------------------------------------------ |
+        | `npm test`                   | Watch and run all tests for all packages.                                       |
+        | `npm test :1`                | Run all tests for all packages only once and exit immediately.                  |
+        | `UI=true npm test promise:%` | Watch and test only `promise` package with UI and coverage.                     |
+        | `npm test :%:ui`             | Same as above                                                                   |
+        | `UI=false npm test :ui`      | Run test and open UI. PS: environment variable `UI` is overriden by `:ui` flag. |
 
 ### Pull Request Guidelines
 

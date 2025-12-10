@@ -31,7 +31,11 @@ This monorepo contains the following packages. Each is independently versioned a
   </thead>
   <tbody>
     <tr>
-      <td><a href="https://www.npmjs.com/package/@superutils/core"><code>@superutils/core</code></a></td>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/core">
+          <code>@superutils/core</code>
+        </a>
+      </td>
       <td>A collection of lightweight, dependency-free utility functions and types.</td>
       <td>Released</td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View docs</a></td>
@@ -43,19 +47,27 @@ This monorepo contains the following packages. Each is independently versioned a
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View docs</a></td>
     </tr>
     <tr>
-      <td><a href="https://www.npmjs.com/package/@superutils/promise"><code>@superutils/promise</code></a></td>
-      <td>An extended Promise with status tracking, deferred execution, and cancellable fetch.</td>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/promise">
+          <code>@superutils/promise</code>
+        </a>
+      </td>
+      <td>An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.</td>
       <td>Released</td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/promise/">View docs</a></td>
     </tr>
     <tr>
-      <td><code>@superutils/react</code></td>
+      <td>
+        <code>@superutils/react</code>
+      </td>
       <td>A collection of React hooks and components for common UI patterns and state management.</td>
       <td>ToDo</td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/react/">View docs</a></td>
     </tr>
     <tr>
-      <td><code>@superutils/rx</code></td>
+      <td>
+        <code>@superutils/rx</code>
+      </td>
       <td>A suite of powerful operators and utilities for working with RxJS observables.</td>
       <td>WIP</td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View docs</a></td>

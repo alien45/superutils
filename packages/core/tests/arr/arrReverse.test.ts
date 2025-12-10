@@ -9,7 +9,7 @@ describe('arrReverse', () => {
 		expect(arrReverse(new Uint8Array() as any)).toEqual([])
 	})
 	it('should return a new array with reversed elements', () => {
-		expect(arrReverse([1, 2, 4])).toEqual([4, 2, 1])
+		expect(arrReverse([1, 2, 4], true, true)).toEqual([4, 2, 1])
 	})
 	it('should return a original array when "newArray" param is false', () => {
 		const arr = [1, 2, 3]

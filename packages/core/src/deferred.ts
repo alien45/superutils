@@ -1,5 +1,5 @@
 import fallbackIfFails from './fallbackIfFails'
-import { DeferredConfig, ValueOrPromise } from './types'
+import { DeferredOptions, ValueOrPromise } from './types'
 
 /**
  * @function deferred AKA debounce
@@ -32,7 +32,7 @@ import { DeferredConfig, ValueOrPromise } from './types'
 export const deferred = <TArgs extends unknown[], ThisArg>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
 	delay = 50,
-	config: DeferredConfig<ThisArg> = {},
+	config: DeferredOptions<ThisArg> = {},
 ) => {
 	const {
 		leading = deferred.defaults.leading,
@@ -72,5 +72,5 @@ deferred.defaults = {
 	 * This change is applicable application-wide and only applies to any new invocation of `deferred()`.
 	 */
 	onError: undefined,
-} satisfies DeferredConfig
+} satisfies DeferredOptions
 export default deferred

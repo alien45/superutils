@@ -1,4 +1,3 @@
-import config from './config'
 import deferred from './deferred'
 import deferredCallback from './deferredCallback'
 import delay from './delay'
@@ -48,9 +47,6 @@ import timeout from './timeout'
  * ```
  */
 export class PromisE<T = unknown> extends PromisEBase<T> {
-	/** Global configuration & default values */
-	static config = config
-
 	static deferred = deferred
 
 	static deferredCallback = deferredCallback

@@ -2,7 +2,7 @@ import fallbackIfFails from '../fallbackIfFails'
 import { isEmpty, isFn, isObj } from '../is'
 import { IterableList } from './types'
 
-export type SliceMapCallback<Data, Value, Key> = (
+export type SliceMapTransform<Data, Value, Key> = (
 	item: Value,
 	key: Key,
 	data: Data,
@@ -11,8 +11,8 @@ export type SliceMapCallback<Data, Value, Key> = (
 export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
 	/** Whether to return the result as a Map (preserving original keys) or an Array */
 	asMap?: AsMap
-	/** callback to transform each item */
-	transform?: SliceMapCallback<Data, Value, Key>
+	/** Callback to transform each item from the selected range */
+	transform?: SliceMapTransform<Data, Value, Key>
 	/** End index (exclusive). Default: `undefined` (end of the list) */
 	end?: number
 	/** Whether to exclude item if value is `undefined | null` */
@@ -24,9 +24,14 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
  * Slice an iterable list and map the values into an Array/Map
  *
  * @param data		Array, Map, Set...
- * @param start		Default: `0`
- * @param end		(optional) last index - exclusive. Default: index of the last item
- * @param callback	to be executed on each item within the set range.
+ * @param options	One of the following is required to create a new list:
+ * 1. A callback function {@link SliceMapTransform} to transform all items.
+ * 2. Advanced options {@link SliceMapOptions}.
+ * @param options.asMap	(optional) whether return a Map or Array.
+ * @param options.end	(optional) End index (exclusive). Default: `undefined` (end of the list)
+ * @param options.ignoreEmpty (optional) Whether to exclude item if value is `undefined | null`
+ * @param options.start	(optional) Default: `0`
+ * @param options.transform	(optional)
  *
  * If callback throws error or returnes `undefined`, the item will be ignored.
  *
@@ -42,12 +47,12 @@ export const sliceMap = <
 	Key = Data extends IterableList<infer Key, unknown> ? Key : never,
 	Value = Data extends IterableList<unknown, infer Value> ? Value : never,
 	AsMap extends boolean = false,
-	// Result = AsMap extends false ? Value : Map<KV[0], Value>,
+	Result = AsMap extends false ? Value[] : Map<Key, Value>,
 >(
 	data: Data,
 	options?:
 		| SliceMapOptions<Data, Value, Key, AsMap>
-		| SliceMapCallback<Data, Value, Key>,
+		| SliceMapTransform<Data, Value, Key>,
 ) => {
 	const {
 		asMap = false as AsMap,
@@ -70,8 +75,6 @@ export const sliceMap = <
 		// ignore if callback execution failed
 		newValue !== undefined && result.set(key, newValue as Value)
 	}
-	return (asMap ? result : [...result.values()]) as AsMap extends false
-		? Value[]
-		: Map<Key, Value>
+	return (asMap ? result : [...result.values()]) as Result
 }
 export default sliceMap

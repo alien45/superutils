@@ -69,7 +69,7 @@ export const getUrlParam = <
 }
 
 /**
- * Get url params using regex as a fallback for {@link getUrlParam()}.
+ * Get url params using regex as a fallback for {@link getUrlParam}.
  * For older browsers or environments where `URLSearchParams` is not supported.
  */
 const getUrlParamRegex = (
