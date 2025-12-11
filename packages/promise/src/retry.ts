@@ -1,4 +1,5 @@
 import {
+	fallbackIfFails,
 	isEmpty,
 	isPositiveInteger,
 	objCopy,
@@ -79,7 +80,12 @@ export const retry = async <T>(
 		shouldRetry =
 			maxRetries > 0
 			&& retryCount < maxRetries
-			&& (!!error || !!options?.retryIf?.(result, retryCount, error))
+			&& (!!error
+				|| !!(await fallbackIfFails(
+					options.retryIf,
+					[result, retryCount, error],
+					false,
+				)))
 	} while (shouldRetry)
 
 	if (error !== undefined) return Promise.reject(error as Error)

@@ -1,13 +1,11 @@
 import { isArr, isEmpty, isObj } from '../is'
 
 /**
- * @name	objHasKeys
- * @summary checks if all the supplied keys exists in a object
+ * Checks if all the supplied keys exist in an object
  *
  * @param input
  * @param keys
  * @param equireValue (optional) whether each property should have some value.
- *
  */
 export function objHasKeys(
 	input: object | unknown[] = {},

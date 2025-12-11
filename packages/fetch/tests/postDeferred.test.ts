@@ -4,7 +4,7 @@ import PromisE from '@superutils/promise/src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
 import fetch, { postDeferred, mergeFetchOptions } from '../src'
 
-describe('post && postDeferred', () => {
+describe('postDeferred', () => {
 	let mockPost200: ReturnType<typeof vi.fn>
 	const fetchBaseUrl = 'https://dummyjson.com/products'
 	let mockedResponse: Record<string, unknown> | undefined
@@ -118,25 +118,26 @@ describe('post && postDeferred', () => {
 		expect(context.data.results).toEqual([result1, result2])
 	})
 
-	it('should debounce post requests and only execute trailing calls', async () => {
+	it('should debounce post requests and use global data', async () => {
 		const context = getDeferredContext()
-		const saveProduct = postDeferred(context, `${fetchBaseUrl}/1`)
-		saveProduct({ name: 'Product 1' })
+		const saveProduct = postDeferred(context, `${fetchBaseUrl}/1`, {
+			name: 'Product 1',
+		})
+		saveProduct()
 		let delay = PromisE.delay(100)
 		await vi.runAllTimersAsync()
 		await delay
 		expect(mockPost200).toHaveBeenCalledTimes(1)
 		expect(context.data.results).toHaveLength(1)
-		saveProduct({ name: 'Product 2' })
-		saveProduct('Product 3')
+		saveProduct()
+		saveProduct()
 		delay = PromisE.delay(100)
 		vi.runAllTimersAsync()
 		await delay
 		expect(mockPost200).toHaveBeenCalledTimes(2)
 		expect(context.data.results).toHaveLength(2)
-		const result1 = getMockedPostResult(1, { body: { name: 'Product 1' } })
-		const result2 = getMockedPostResult(1, { body: 'Product 3' })
-		expect(context.data.results).toEqual([result1, result2])
+		const result = getMockedPostResult(1, { body: { name: 'Product 1' } })
+		expect(context.data.results).toEqual([result, result])
 	})
 
 	it('should test refresh token example', async () => {

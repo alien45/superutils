@@ -158,7 +158,7 @@ export function matchItemOrProp<K, V>( // extends Record<string, unknown>
 	if (ignoreCase && !matchExact) value = value.toLowerCase()
 	if (value === keyword) return true
 
-	return !matchExact && `${value}`.includes(keyword?.toString?.() ?? '')
+	return !matchExact && `${value}`.includes(String(keyword))
 }
 
 export default search

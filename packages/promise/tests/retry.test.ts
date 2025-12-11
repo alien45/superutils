@@ -18,10 +18,7 @@ describe('PromisE.retry', () => {
 		const func = vi.fn(async () => {
 			return Promise.reject(new Error('Even number'))
 		})
-		const promise = PromisE.retry(func, {
-			retry: null as any,
-			retryBackOff: 'linear',
-		})
+		const promise = PromisE.retry(func, null as any)
 		vi.runAllTimersAsync()
 		let error: unknown
 		await promise.catch(err => (error = err))

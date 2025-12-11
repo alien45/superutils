@@ -40,5 +40,5 @@ export type RetryOptions<T = unknown> = {
 				prevResult: T | undefined,
 				retryCount: number,
 				error?: unknown,
-		  ) => boolean)
+		  ) => boolean | Promise<boolean>)
 }

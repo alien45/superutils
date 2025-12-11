@@ -287,7 +287,10 @@ export interface FetchResult<T> {
 /**
  * Fetch retry options
  */
-export type FetchRetryOptions = Partial<RetryOptions> & {
+export type FetchRetryOptions = Omit<
+	Partial<RetryOptions>,
+	'retry' | 'retryIf'
+> & {
 	/**
 	 * Maximum number of retries.
 	 *
@@ -296,6 +299,13 @@ export type FetchRetryOptions = Partial<RetryOptions> & {
 	 * Default: `0`
 	 */
 	retry?: number
+	retryIf?:
+		| null
+		| ((
+				response: Response | undefined,
+				retryCount: number,
+				error?: unknown,
+		  ) => boolean | Promise<boolean>)
 }
 
 /**

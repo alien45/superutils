@@ -13,7 +13,12 @@ describe('filter', () => {
 		compareMap(result, expected)
 	})
 
-	it('should filter map by value', () => {
+	it('should return original map when callback is not a function', () => {
+		const result = filter(prepared.mapOfObjects, null as any)
+		compareMap(result, prepared.mapOfObjects)
+	})
+
+	it('should filter a Map by value and return results as Map by defualt', () => {
 		const result = filter(
 			prepared.mapOfObjects,
 			({ name }) => name === 'Alice',
@@ -23,8 +28,14 @@ describe('filter', () => {
 		compareMap(result, expected)
 	})
 
-	it('should return original map when callback is not a function', () => {
-		const result = filter(prepared.mapOfObjects, null as any)
-		compareMap(result, prepared.mapOfObjects)
+	it('should filter a Map by value and return results as Array', () => {
+		const result = filter(
+			prepared.mapOfObjects,
+			({ name }) => name === 'Alice',
+			1,
+			true,
+		)
+		const expected = [{ age: 30, name: 'Alice' }]
+		expect([...result.values()]).toEqual(expected)
 	})
 })

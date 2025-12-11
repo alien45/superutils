@@ -7,19 +7,17 @@ import {
 	type TimeoutId,
 } from '@superutils/core'
 import PromisE, { type IPromisE } from '@superutils/promise'
+import executeInterceptors from './executeInterceptors'
+import getResponse from './getResponse'
 import mergeFetchOptions from './mergeFetchOptions'
 import {
 	FetchAs,
 	FetchError,
 	FetchErrMsgs,
 	FetchOptionsInterceptor,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	FetchInterceptors,
 	type FetchOptions,
 	type FetchResult,
 } from './types'
-import executeInterceptors from './executeInterceptors'
-import getResponse from './getResponse'
 
 export const fetch = <
 	TJSON,

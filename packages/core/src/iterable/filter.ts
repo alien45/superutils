@@ -1,5 +1,5 @@
 import fallbackIfFails from '../fallbackIfFails'
-import { isMap } from '../is'
+import { isMap, isPositiveInteger } from '../is'
 import { IterableList } from './types'
 
 /**
@@ -7,6 +7,12 @@ import { IterableList } from './types'
  *
  * @param data
  * @param predicate callback function to filter values
+ * Parameters:
+ * 1. `item`: current item
+ * 2. `key`: index/key
+ * 3. `data`: value provided in the first argument (`data`)
+ * @param limit	(optional) limit number of results
+ * @param arArray
  *
  * @returns new Map with filtered items
  *
@@ -34,13 +40,14 @@ export const filter = <
 	Result = AsArray extends true ? V[] : Map<K, V>,
 >(
 	data: IterableList<K, V>,
-	predicate: (value: V, key: K, data: IterableList<K, V>) => boolean,
-	limit = Infinity,
-	asArray: AsArray = false as AsArray,
-	result = new Map<K, V>(),
+	predicate: (item: V, key: K, data: IterableList<K, V>) => boolean,
+	limit?: number,
+	asArray?: AsArray,
+	result?: Map<K, V>,
 ): Result => {
 	if (!isMap(result)) result = new Map()
 
+	if (!isPositiveInteger(limit)) limit = Infinity
 	for (const [key, item] of data?.entries?.() || []) {
 		if (result.size >= limit) break
 

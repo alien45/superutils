@@ -43,7 +43,7 @@ This monorepo contains the following packages. Each is independently versioned a
     <tr>
       <td><a href="https://www.npmjs.com/package/@superutils/fetch"><code>@superutils/fetch</code></a></td>
       <td>A lightweight <code>fetch</code> wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.</td>
-      <td>WIP</td>
+      <td>Released</td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View docs</a></td>
     </tr>
     <tr>

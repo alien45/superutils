@@ -25,7 +25,7 @@ export const copyToClipboard = (str: string): Promise<0 | 1 | 2> =>
 		() => navigator.clipboard.writeText(str).then(() => 1),
 		[],
 		// If clipboard API is not available or fails, use the fallback method
-		() => Promise.resolve(copyLegacy(str)),
+		() => Promise.resolve(copyLegacy(str) ? 2 : 0),
 	)
 export default copyToClipboard
 
@@ -42,8 +42,8 @@ const copyLegacy = (str: string) =>
 
 			const success = document.execCommand('copy')
 			document.body.removeChild(el)
-			return success ? 2 : 0
+			return success
 		},
 		[],
-		0, // On error, resolve with 0
+		false, // On error, return false
 	)
