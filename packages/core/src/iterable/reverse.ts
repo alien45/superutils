@@ -29,12 +29,16 @@ export const reverse = <K, V, T extends IterableList<K, V>>(
 	) as V[] | [K, V][]
 
 	if (reverse) arr.reverse()
-	if (dataType === 1) return arr
 
-	if (newInstance || !('clear' in data && isFn(data.clear))) {
-		return dataType === 2
-			? new Map(arr as [K, V][]) // craete map with entries
-			: (dataType === 3 && new Set(arr as V[])) || []
+	switch (dataType) {
+		case 1:
+			return arr
+		case 2:
+		case 3:
+			if (newInstance || !('clear' in data && isFn(data.clear)))
+				return dataType === 2
+					? new Map(arr as [K, V][]) // craete map with entries
+					: new Set(arr as V[])
 	}
 
 	data?.clear?.()

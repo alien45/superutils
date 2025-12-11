@@ -1,5 +1,5 @@
 import { arrUnique } from '../arr'
-import { isArr, isObj, isStr, isSymbol } from '../is'
+import { isArr, isObj, isSymbol } from '../is'
 
 /**
  * Constructs a new object with only the supplied property names (keys) and their respective values
@@ -20,7 +20,7 @@ export const objClean = <
 	if (!isObj(obj) || !isArr(keys)) return result
 
 	const uniqKeys = arrUnique(
-		keys.map(x => (isStr(x) ? `${x}`.split('.')[0] : x)),
+		keys.map(x => String(x).split('.')[0]),
 	).sort() as Key[]
 
 	for (const key of uniqKeys) {

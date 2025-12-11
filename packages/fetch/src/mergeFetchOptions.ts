@@ -26,8 +26,7 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 				})
 			for (const key of objKeys(msgs2)) {
 				// prevent `undefined | null` msg overriding previous msg
-				if (isEmpty(msgs2[key])) continue
-				errMsgs[key] = msgs2[key]
+				if (!isEmpty(msgs2[key])) errMsgs[key] = msgs2[key]
 			}
 			return {
 				...o1,

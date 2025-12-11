@@ -156,28 +156,6 @@
 //     return output
 // }
 
-// /**
-//  * @name	objHasKeys
-//  * @summary checks if all the supplied keys exists in a object
-//  *
-//  * @param	{Object} 	obj
-//  * @param	{Array} 	keys
-//  * @param	{Boolean}	requireValue (optional) whether each property should have some value.
-//  *
-//  * @returns {Boolean}
-//  */
-// export function objHasKeys(obj = {}, keys = [], requireValue = false) {
-//     if (!isObj(obj) || !isArr(keys)) return false
-
-//     for (let i = 0;i < keys.length;i++) {
-//         const key = keys[i]
-//         if (!obj.hasOwnProperty(key)) return false
-//         if (!requireValue) continue
-
-//         if (!hasValue(obj[key])) return false
-//     }
-//     return true
-// }
 
 // /**
 //  * @name	objToUrlParams

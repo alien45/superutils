@@ -51,11 +51,11 @@ export interface FetchWithMethods extends FetchWithoutMethods {
 const createFetchMethodFunc = (method = 'get') => {
 	const methodFunc = (<T>(
 		url: string | URL,
-		options: Omit<FetchOptions, 'method'> = {},
+		options?: Omit<FetchOptions, 'method'>,
 	) => {
 		const _options: FetchOptions = isObj(options) ? options : {}
 		_options.method = method
-		return fetch<T, FetchOptions>(url, _options)
+		return fetchOriginal<T, FetchOptions>(url, _options)
 	}) as FetchMethodFunc
 	/** Make debounced/throttled request */
 	methodFunc.deferred = (<
@@ -75,11 +75,12 @@ const createPostMethodFunc = (
 ) => {
 	const methodFunc = ((
 		url: string | URL,
-		options: Omit<PostOptions, 'method'> = {},
+		data?: PostBody,
+		options?: Omit<PostOptions, 'method'>,
 	) => {
 		const _options: PostOptions = isObj(options) ? options : {}
 		_options.method = method
-		return post(url, _options)
+		return post(url, data, _options)
 	}) as PostMethodFunc
 	/** Make debounced/throttled request */
 	methodFunc.deferred = (<

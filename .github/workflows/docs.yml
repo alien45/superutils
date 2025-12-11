@@ -28,8 +28,7 @@ jobs:
                   cache: 'npm'
 
             - name: 'Install Dependencies 📦'
-              # Using npm ci for faster, more reliable installs in CI
-              run: npm ci
+              run: npm install
 
             - name: 'Build all packages 🚀'
               # This script uses lerna (using nx & tsup) to build all packages

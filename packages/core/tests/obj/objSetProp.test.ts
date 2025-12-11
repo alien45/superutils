@@ -38,4 +38,11 @@ describe('objSetPropUndefined', () => {
 			c: 3,
 		})
 	})
+	it('should ignore when object property value is not undefined', () => {
+		expect(objSetPropUndefined({ a: 1, b: 2, c: 3 }, 'b', 4)).toEqual({
+			a: 1,
+			b: 2,
+			c: 3,
+		})
+	})
 })

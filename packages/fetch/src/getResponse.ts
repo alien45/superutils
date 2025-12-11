@@ -1,5 +1,6 @@
 import PromisE from '@superutils/promise'
 import { FetchArgs } from './types'
+import { isPositiveInteger } from '@superutils/core'
 
 /**
  * Execute built-in `fetch()` and retry if request fails and `options.retry > 0`.
@@ -9,27 +10,37 @@ import { FetchArgs } from './types'
  *
  * @returns response
  */
-export const getResponse = async (...[url, options]: FetchArgs) => {
-	const doFetch = () =>
-		globalThis.fetch(url, options).catch((err: Error) =>
+export const getResponse = async (...[url, options = {}]: FetchArgs) => {
+	let attemptCount = 0 // preserve the number of attempts made
+	const doFetch = async () => {
+		attemptCount++
+
+		return globalThis.fetch(url, options).catch((err: Error) =>
 			err.message === 'Failed to fetch'
 				? // catch network errors to allow retries
 					new Response(null, {
 						status: 0,
 						statusText: 'Network Error',
 					})
-				: globalThis.Promise.reject(err),
+				: Promise.reject(err),
 		)
+	}
 
-	const response = await PromisE.retry(doFetch, {
+	if (!isPositiveInteger(options.retry)) return doFetch()
+
+	const response = PromisE.retry(doFetch, {
 		...options,
-		retryIf: (res, count) =>
-			!res?.ok && options?.retryIf?.(res, count) !== false,
-	}).catch(err => {
-		if (!options?.retry) return Promise.reject(err as Error)
-		const msg = `Request failed after attempt #${(options.retry || 0) + 1}`
-		return Promise.reject(new Error(msg, { cause: err }))
-	})
+		retryIf: async (res, count, err) =>
+			res?.ok === false
+			|| (await options?.retryIf?.(res, count, err)) === true,
+	}).catch(err =>
+		Promise.reject(
+			new Error(`Request failed after attempt #${attemptCount}`, {
+				cause: err,
+			}),
+		),
+	)
+
 	return response
 }
 export default getResponse
