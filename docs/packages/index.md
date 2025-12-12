@@ -25,8 +25,8 @@ This monorepo contains the following packages. Each is independently versioned a
     <tr>
       <th><a href="https://www.npmjs.com/org/superutils">NPM Package</a></th>
       <th>Description</th>
-      <th>Status</th>
-      <th><a href="https://alien45.github.io/superutils">API Reference</a></th>
+      <th>Test Coverage</th>
+      <th><a href="https://alien45.github.io/superutils">Docs</a></th>
     </tr>
   </thead>
   <tbody>
@@ -37,14 +37,14 @@ This monorepo contains the following packages. Each is independently versioned a
         </a>
       </td>
       <td>A collection of lightweight, dependency-free utility functions and types.</td>
-      <td>Released</td>
-      <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View docs</a></td>
+      <td id="coverage_core"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View</a></td>
     </tr>
     <tr>
       <td><a href="https://www.npmjs.com/package/@superutils/fetch"><code>@superutils/fetch</code></a></td>
       <td>A lightweight <code>fetch</code> wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.</td>
-      <td>WIP</td>
-      <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View docs</a></td>
+      <td id="coverage_fetch"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View</a></td>
     </tr>
     <tr>
       <td>
@@ -53,24 +53,24 @@ This monorepo contains the following packages. Each is independently versioned a
         </a>
       </td>
       <td>An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.</td>
-      <td>Released</td>
-      <td><a href="https://alien45.github.io/superutils/packages/@superutils/promise/">View docs</a></td>
+      <td id="coverage_promise"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/promise/">View</a></td>
     </tr>
     <tr>
       <td>
-        <code>@superutils/react</code>
+        <code>@superutils/react (ToDo)</code>
       </td>
       <td>A collection of React hooks and components for common UI patterns and state management.</td>
-      <td>ToDo</td>
-      <td><a href="https://alien45.github.io/superutils/packages/@superutils/react/">View docs</a></td>
+      <td id="coverage_react"><div style="color:gray">&#128221;&nbsp;ToDo</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/react/">View</a></td>
     </tr>
     <tr>
       <td>
-        <code>@superutils/rx</code>
+        <code>@superutils/rx (WIP)</code>
       </td>
       <td>A suite of powerful operators and utilities for working with RxJS observables.</td>
-      <td>WIP</td>
-      <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View docs</a></td>
+      <td id="coverage_rx"><div style="color:gray">&#128221;&nbsp;ToDo</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View</a></td>
     </tr>
   </tbody>
 </table>
@@ -201,6 +201,14 @@ The following scripts are available at the root level to help with development:
 
     **Note:**
     - If `package` is omitted (e.g., `npm test :ui`), tests will run for all packages.
+    - Vitest CLI flags can be passed by adding `--` followed by the Vitest flag (eg: `--passWithNoTests`)
+        ```bash
+        npm test core:1 -- --passWithNoTests
+        ```
+        Or,
+        ```bash
+        npm test  -- --passWithNoTests core:1
+        ```
     - You can combine both environment variables and the options above. However, if there's a conflict, the options take precedence.
 
         **Examples:**

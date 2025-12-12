@@ -21,7 +21,38 @@ import {
  * @function PromisE.deferred
  * The adaptation of the `deferred()` function tailored for Promises.
  *
- * @param options           (optional) options
+ *
+ * # Notes
+ *
+ * - A "request" simply means invokation of the returned callback function
+ * - By "handled" it means a "request" will be resolved or rejected.
+ * - `PromisE.deferred` is to be used with promises/functions.
+ * `PromisE.deferredCallback` is for use with callback functions.
+ * - There is no specific time delay.
+ * - If a request takes longer than `delayMs`, the following request will be added to queue
+ * and either be ignored or exectued based on the debounce/throttle configuration.
+ * - If not throttled:
+ *     1. Once a request is handled, all previous requests will be ignored and pool starts anew.
+ *     2. If a function is provided in the  returned callback, ALL of them will be invoked, regardless of pool size.
+ *     3. The last/only request in an on-going requests' pool will handled (resolve/reject).
+ * - If throttled:
+ *     1. Once a requst starts executing, subsequent requests will be added to a queue.
+ *     2. The last/only item in the queue will be handled. Rest will be ignored.
+ *     3. If a function is provided in the returned callback, it will be invoked only if the request is handled.
+ *     Thus, improving performance by avoiding unnecessary invokations.
+ *     4. If every single request/function needs to be invoked, avoid using throttle.
+ * - If throttled and `strict` is truthy, all subsequent request while a request is being handled will be ignored.
+ *
+ * @param options (optional) Debounce/throttle configuration.
+ *
+ * The properties' default values can be overridden to be EFFECTIVE GLOBALLY:
+ * ```typescript
+ * deferred.defaults = {
+ *     delayMs: 100,
+ *     resolveError: ResolveError.REJECT,
+ *     resolveIgnored: ResolveIgnored.WITH_LAST,
+ * }
+ * ```
  * @property options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
  * @property options.onError   (optional)
  * @property options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
@@ -33,30 +64,11 @@ import {
  * Requires `defer`.
  * Default: `false`
  *
- * @returns {Function} a callback that is invoked in one of the followin 3 methods:
- * - sequential: when `delayMs <= 0` or `delayMs = undefined`
+ * @returns Callback function that can be invoked in one of the followin 3 methods:
+ * - sequential: when `delayMs <= 0`
  * - debounced: when `delayMs > 0` and `throttle = false`
  * - throttled: when `delayMs > 0` and `throttle = true`
  *
- * The main difference is that:
- *  - Notes:
- *      1. A "request" simply means invokation of the returned callback function
- *      2. By "handled" it means a "request" will be resolved or rejected.
- *  - `PromisE.deferred` is to be used with promises/functions
- *  - There is no specific time delay.
- *  - The time when a request is completed is irrelevant.
- *  - If not throttled:
- *      1. Once a request is handled, all previous requests will be ignored and pool starts anew.
- *      2. If a function is provided in the  returned callback, ALL of them will be invoked, regardless of pool size.
- *      3. The last/only request in an on-going requests' pool will handled (resolve/reject).
- *  - If throttled:
- *      1. Once a requst starts executing, subsequent requests will be added to a queue.
- *      2. The last/only item in the queue will be handled. Rest will be ignored.
- *      3. If a function is provided in the returned callback, it will be invoked only if the request is handled.
- *      Thus, improving performance by avoiding unnecessary invokations.
- *      4. If every single request/function needs to be invoked, avoid using throttle.
- *
- *  - If throttled and `strict` is truthy, all subsequent request while a request is being handled will be ignored.
  *
  * @example Explanation & example usage:
  * ```typescript
@@ -91,7 +103,6 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 	options = objCopy(defaults, options, [], 'empty')
 	let { onError, onIgnore, onResult } = options
 	const {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		delayMs,
 		resolveError, // by default reject on error
 		resolveIgnored,
@@ -204,11 +215,10 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 	}
 	return deferredFunc
 }
+/** Global default values */
 deferred.defaults = {
-	delayMs: -100,
+	delayMs: 100,
 	resolveError: ResolveError.REJECT,
 	resolveIgnored: ResolveIgnored.WITH_LAST,
 } satisfies DeferredAsyncDefaults
 export default deferred
-
-// deferred({ delayMs: 100, leading: true, trailing: true })

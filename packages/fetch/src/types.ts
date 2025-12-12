@@ -18,7 +18,8 @@ export enum FetchAs {
 	text = 'text',
 }
 
-export type FetchConf = {
+/** Custom fetch options (not used by built-in `fetch()`*/
+export type FetchCustomOptions = {
 	/**
 	 * Specify how the parse the result. To get raw response use {@link FetchAs.response}.
 	 * Default: 'json'
@@ -29,7 +30,7 @@ export type FetchConf = {
 	interceptors?: FetchInterceptors
 	/** Request timeout in milliseconds. */
 	timeout?: number
-}
+} & FetchRetryOptions
 
 /** Default args */
 export type FetchDeferredArgs = [
@@ -256,7 +257,12 @@ export type FetchInterceptors = {
 /**
  * Fetch request options
  */
-export type FetchOptions = RequestInit & FetchConf & FetchRetryOptions
+export type FetchOptions = RequestInit & FetchCustomOptions
+
+export type FetchOptionsDefaults = Omit<
+	FetchOptionsInterceptor,
+	'method' | 'retryIf'
+>
 
 /**
  * Fetch options available to interceptors

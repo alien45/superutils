@@ -14,17 +14,17 @@ import {
 	FetchAs,
 	FetchError,
 	FetchErrMsgs,
-	FetchOptionsInterceptor,
 	type FetchOptions,
 	type FetchResult,
+	FetchOptionsDefaults,
 } from './types'
 
 export const fetch = <
-	TJSON,
+	T,
 	TOptions extends FetchOptions = FetchOptions,
 	TReturn = TOptions['as'] extends FetchAs
-		? FetchResult<TJSON>[TOptions['as']]
-		: TJSON,
+		? FetchResult<T>[TOptions['as']]
+		: T,
 >(
 	url: string | URL,
 	options: TOptions = {} as TOptions,
@@ -34,7 +34,7 @@ export const fetch = <
 	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	const promise = new PromisE(async (resolve, reject) => {
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-		const _options = mergeFetchOptions(defaults, options)
+		const _options = mergeFetchOptions(fetch.defaults, options)
 		if (isEmpty(_options.method)) _options.method = 'get'
 		// avoid interceptors' mutations during interceptor calls
 		const errorInterceptors = [..._options.interceptors.error]
@@ -134,7 +134,7 @@ export const fetch = <
 	return promise as IPromisE<TReturn>
 }
 /** Default fetch options */
-const defaults = {
+fetch.defaults = {
 	as: FetchAs.json,
 	errMsgs: {
 		invalidUrl: 'Invalid URL',
@@ -156,6 +156,5 @@ const defaults = {
 		result: [],
 	},
 	timeout: 0,
-} as Omit<FetchOptionsInterceptor, 'method' | 'retryIf'>
-fetch.defaults = defaults
+} as FetchOptionsDefaults
 export default fetch

@@ -3,15 +3,19 @@ import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
 /**
- * @function    PromisE.delay
- * @summary Creates a promise that completes after given delay/duration.
+ * Creates a promise that completes after given delay/duration.
  *
- * @param {Number}    duration   duration in milliseconds
- * @param {unknown}   result    (optional) specify a value to resolve or reject with.
- *                              Default: `delayMs` when resolved or timed out error when rejected
- * @param {boolean}   asRejected (optional) if `true`, will reject the promise after the delay.
+ * Also accessible from the `PromisE` class as `PromisE.delay()`.
  *
- * @returns See {@link IPromisE_Delay}
+ * @param duration duration in milliseconds. Default: `100`
+ * @param result (optional) specify a value to resolve or error to reject with.
+ *
+ * Alternatively, a function (with no arguments) can be provided that returns the result.
+ *
+ * Default: `delayMs` when resolved or timed out error when rejected
+ * @param asRejected (optional) if `true`, will reject the promise after the delay.
+ *
+ * @returns a promise
  *
  * @example Delay before continuing execution
  * ```typescript
@@ -42,10 +46,12 @@ export function delay<T = number, TReject extends boolean = boolean>(
 			result = fallbackIfFails(result, [], undefined) ?? duration
 		if (!asRejected) return promise.resolve(result as T)
 
-		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
 		promise.reject(
-			result
-				?? new Error(`${delay.defaults.delayTimeoutMsg} ${duration}ms`),
+			(duration !== result && result !== undefined
+				? result
+				: new Error(
+						`${delay.defaults.delayTimeoutMsg} ${duration}ms`,
+					)) as Error,
 		)
 	}
 	promise.timeoutId = setTimeout(() => finalize(result), duration)
@@ -57,10 +63,11 @@ export function delay<T = number, TReject extends boolean = boolean>(
 		.finally(() => promise.pause())
 	return promise
 }
+/** Global default values */
 delay.defaults = {
 	/** Default delay duration in milliseconds */
 	duration: 100,
-	/** Default timed out message */
+	/** Default timed out message (if `result` is not provided) */
 	delayTimeoutMsg: 'Timed out after',
 }
 export default delay

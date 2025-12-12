@@ -22,7 +22,7 @@ describe('PromisE.delay', () => {
 	})
 
 	it('should reject delayed promise with the duration provided', async () => {
-		const promise = PromisE.delayReject(10_000, null)
+		const promise = PromisE.delayReject(10_000)
 		await vi.runAllTimersAsync()
 		await expect(promise).rejects.toEqual(
 			new Error('Timed out after 10000ms'),

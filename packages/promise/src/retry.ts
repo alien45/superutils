@@ -9,7 +9,7 @@ import delay from './delay'
 import { RetryOptions } from './types'
 
 /**
- * Executes a function and retries it on failure or until a specific condition is met.
+ * Executes a function asynchronously and retries it on failure or until a specific condition is met.
  *
  * The function will be re-executed if:
  * 1. The `func` promise rejects or the function throws an error.
@@ -19,18 +19,52 @@ import { RetryOptions } from './types'
  * Retries will stop when the `retry` count is exhausted, or when `func` executes successfully
  * (resolves without error) AND the `retryIf` (if provided) returns `false`.
  *
- * @template T The type of the value that the `func` returns/resolves to.
- * @param {() => ValueOrPromise<T>}	func The function to execute. It can be synchronous or asynchronous.
- * @param {RetryOptions} [options={}] (optional) Options for configuring the retry mechanism.
- * @property {number} [options.retry=1] (optional) The maximum number of retries.
- * @property {number} [options.retryDelayMs=300] The base delay in milliseconds between retries.
- * @property {'exponential' | 'fixed'} [options.retryBackOff='exponential'] The backoff strategy. 'exponential' doubles the delay for each subsequent retry. 'fixed' uses a constant delay.
- * @property {boolean} [options.retryDelayJitter=true] If true, adds a random jitter to the delay to prevent thundering herd problem.
- * @property {number} [options.retryDelayJitterMax=100] The maximum jitter in milliseconds to add to the delay.
- * @property {(result: T | undefined, retryCount: number) => boolean} [options.retryIf] A function that is called after a successful execution of `func`. If it returns `true`, a retry is triggered. It receives the result and the current retry count.
- * @returns {Promise<T | undefined>} A promise that resolves with the result of the last successful execution of `func`.
- * If all retries fail (either by throwing an error or by the condition function always returning true),
- * it resolves with `undefined`. Errors thrown by `func` are caught and handled internally, not re-thrown.
+ * @template T The type of the value that the `func` resolves to.
+ *
+ * @param func The function to execute. It can be synchronous or asynchronous.
+ * @param options (optional) Configuration of the retry mechanism.
+ *
+ * The following options' default values can be configured to be EFFECTIVE GLOBALLY.
+ *
+ * ```typescript
+ * PromisE.retry.defaults = {
+ *     retry: 1,
+ *     retryBackOff: 'exponential',
+ *     retryDelay: 300,
+ *     retryDelayJitter: true,
+ *     retryDelayJitterMax: 100,
+ * }
+ * ```
+ * @param options.retry (optional) The maximum number of retries. Default: `1`
+ * @param options.retryBackOff (optional) The backoff strategy.
+ * Accepted values:
+ * - `'exponential'` doubles the delay for each subsequent retry.
+ * - `'linear'` uses a constant delay.
+ *
+ * Default: `'exponential'`
+ * @param options.retryDelayMs (optional) The base delay in milliseconds between retries.
+ *
+ * Default: `300`
+ * @param options.retryDelayJitter (optional) If true, adds a random jitter to the delay to prevent
+ * the thundering herd problem.
+ *
+ * Default: `true`
+ * @param options.retryDelayJitterMax The maximum jitter in milliseconds to add to the delay.
+ *
+ * Default: `100`
+ * @param options.retryIf (optional) A function that is called after a successful execution of `func`.
+ * If it returns `true`, a retry is triggered.
+ *
+ * **Arguments:**
+ * - `result`: result received after the most recent `func` excution
+ * - `retryCount`: number of times the execution has been retried (`total_attemts - 1`)
+ *
+ * If `retryIf()` throws error, the are handled gracefully and it's return value defaults `false` (no further retry).
+ *
+ * @returns A promise that resolves with the result of the last successful execution of `func`.
+ * If all retries fail (either by throwing an error or when `retryIf()` returned true in every time),
+ * it resolves with the last return value of `func()`. Errors thrown by `func` are caught and handled internally,
+ * only re-thrown if no result is received after maximum retries.
  */
 export const retry = async <T>(
 	func: () => ValueOrPromise<T>,
@@ -83,7 +117,7 @@ export const retry = async <T>(
 			&& (!!error
 				|| !!(await fallbackIfFails(
 					options.retryIf,
-					[result, retryCount, error],
+					[result, retryCount],
 					false,
 				)))
 	} while (shouldRetry)
@@ -91,6 +125,7 @@ export const retry = async <T>(
 	if (error !== undefined) return Promise.reject(error as Error)
 	return result as T
 }
+/** Global default values */
 retry.defaults = {
 	retry: 1,
 	retryBackOff: 'exponential',

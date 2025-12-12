@@ -95,14 +95,73 @@ const createPostMethodFunc = (
 }
 
 /**
+ * @function fetch
+ *
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
  * and powerful interceptors. It also includes deferred and throttled request capabilities for complex asynchronous
  * control flows.
  *
  * Will reject promise if response status code is not 2xx (200 <= status < 300).
  *
+ * ## Method Specific Functions
+ *
+ * While `fetch()` provides access to all HTTP request methods by specifying it in options (eg: `{ method: 'get' }`),
+ * for ease of use you can also use the following:
+ *
+ * - `fetch.delete(...)`
+ * - `fetch.get(...)`
+ * - `fetch.head(...)`
+ * - `fetch.options(...)`
+ * - `fetch.patch(...)`
+ * - `fetch.post(...)`
+ * - `fetch.put(...)`
+ *
+ * **Deferred variants:** To debounce/throttle requests.
+ *
+ * - `fetch.delete.deferred(...)`
+ * - `fetch.get.deferred(...)`
+ * - `fetch.head.deferred(...)`
+ * - `fetch.options.deferred(...)`
+ * - `fetch.patch.deferred(...)`
+ * - `fetch.post.deferred(...)`
+ * - `fetch.put.deferred(...)`
+ *
+ * @template T The type of the value that the `fetch` resolves to.
+ * @template TReturn Return value type.
+ *
+ * If `T` is not specified defaults to the following based on the value of `options.as`:
+ * - FetchAs.arrayBuffer: `ArrayBuffer`
+ * - FetchAs.blob: `Blob`
+ * - FetchAs.bytes: `Uint8Array<ArrayBuffer>`
+ * - FetchAs.formData: `FormData`
+ * - FetchAs.json: `unknown`
+ * - FetchAs.text: `string`
+ * - FetchAs.response: `Response`
  * @param url
  * @param options (optional) all built-in `fetch()` options such as "method", "headers" and the additionals below.
+ *
+ * Options' default values (excluding `method` and `retryIf`) can be configured to be EFFECTIVE GLOBALLY.
+ *
+ * ```typescript
+ * fetch.defaults = {
+ *     as: FetchAs.json,
+ *     errMsgs: {
+ *        invalidUrl: 'Invalid URL',
+ *        parseFailed: 'Failed to parse response as',
+ *        reqTimedout: 'Request timed out',
+ *        requestFailed: 'Request failed with status code:',
+ *     },
+ *     headers: new Headers([['content-type', 'application/json']]),
+ *     interceptors: {
+ *     	   error: [],
+ *     	   request: [],
+ *     	   response: [],
+ *     	   result: [],
+ *     },
+ *     timeout: 0,
+ *     ........
+ * }
+ * ```
  * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
  * @param options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
  * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
@@ -124,7 +183,7 @@ export const fetch = fetchOriginal as FetchWithMethods
 fetch.get = createFetchMethodFunc('get')
 fetch.head = createFetchMethodFunc('head')
 fetch.options = createFetchMethodFunc('options')
-// methods that allows `options.body`
+// Post-like methods that allow `options.body`
 fetch.delete = createPostMethodFunc('delete')
 fetch.patch = createPostMethodFunc('patch')
 fetch.post = createPostMethodFunc('post')

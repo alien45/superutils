@@ -30,9 +30,9 @@ export const getResponse = async (...[url, options = {}]: FetchArgs) => {
 
 	const response = PromisE.retry(doFetch, {
 		...options,
-		retryIf: async (res, count, err) =>
+		retryIf: async (res, count) =>
 			res?.ok === false
-			|| (await options?.retryIf?.(res, count, err)) === true,
+			|| (await options?.retryIf?.(res, count)) === true,
 	}).catch(err =>
 		Promise.reject(
 			new Error(`Request failed after attempt #${attemptCount}`, {

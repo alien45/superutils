@@ -10,6 +10,7 @@ This package enhances the native `fetch` API by providing a streamlined interfac
 - Installation
 - Usage
     - [`fetch()`](#fetch): make HTTP requests just like built-in `fetch()`
+    - [`Method Specific Functions`](#methods)
     - [`fetchDeferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
     - [`post()`](#post): make post-like requests
     - [`postDeferred()`](#post-deferred) cancellable and debounced or throttled `post()`
@@ -39,7 +40,7 @@ npm install @superutils/fetch
 Make a simple GET request. No need for `response.json()` or `result.data.theActualData` drilling.
 
 ```typescript
-import { fetch } from '@superutils/fetch'
+import fetch from '@superutils/fetch'
 
 const theActualData = await fetch('https://dummyjson.com/products/1', {
 	method: 'get', // default
@@ -50,14 +51,38 @@ const theActualData = await fetch.get('https://dummyjson.com/products/1')
 console.log(theActualData)
 ```
 
+<div id="methods"></div>
+
+### Method Specific Functions
+
+While `fetch()` provides access to all HTTP request methods by specifying it in options (eg: `{ method: 'get' }`), for ease of use you can also use the following:
+
+- `fetch.delete(...)`
+- `fetch.get(...)`
+- `fetch.head(...)`
+- `fetch.options(...)`
+- `fetch.patch(...)`
+- `fetch.post(...)`
+- `fetch.put(...)`
+
+**Deferred variants:** To debounce/throttle requests.
+
+- `fetch.delete.deferred(...)`
+- `fetch.get.deferred(...)`
+- `fetch.head.deferred(...)`
+- `fetch.options.deferred(...)`
+- `fetch.patch.deferred(...)`
+- `fetch.post.deferred(...)`
+- `fetch.put.deferred(...)`
+
 <div id="fetch-deferred"></div>
 
-### `fetch.get.deferred(deferOptions, url, fetchOptions)`
+### `fetch.get.deferred(deferOptions, defaultUrl, defaultOptions)`
 
 A practical utility that combines `PromisE.deferred()` from the `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced, or throttled search inputs.
 
 ```typescript
-import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
+import fetch, { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
 
 // Create a debounced search function with a 300ms delay.
 const searchProducts = fetch.get.deferred({
@@ -104,11 +129,11 @@ setTimeout(() => {
 #### Using defaults to reduce redundancy
 
 ```typescript
-import { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
+import fetch, { ResolveIgnored } from '@superutils/fetch'
 
 // Create a throttled function to fetch a random quote.
 // The URL and a 3-second timeout are set as defaults, creating a reusable client.
-const getRandomQuote = fetchDeferred(
+const getRandomQuote = fetch.get.deferred(
 	{
 		delayMs: 300, // Throttle window
 		throttle: true,
