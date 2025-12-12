@@ -17,6 +17,7 @@ export default defineConfig(config => {
 		'**/node_modules/**',
 		'packages/*/dist/',
 		'packages/demo',
+		'scripts',
 		'vitest.config.ts',
 		// Exclude helper/utility files from test directories
 		'**/*/{tests,test}/**/!(*.{test,spec}).{ts,tsx}',
@@ -37,7 +38,7 @@ export default defineConfig(config => {
 						pkg && `packages/!(${pkg})/**`,
 					].filter(Boolean),
 					provider: 'v8',
-					reporter: ['text', 'json', 'html'],
+					reporter: ['text', 'json', 'html', 'json-summary'],
 					reportsDirectory: './coverage',
 					skipFull,
 				},

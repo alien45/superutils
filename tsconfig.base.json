@@ -15,6 +15,7 @@
 	"exclude": [
 		"node_modules",
 		"dist",
+		"scripts",
 		// Exclude all possible tests files and directories
 		"packages/*/tests/**",
 		"**/__tests__",

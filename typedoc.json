@@ -1,7 +1,11 @@
 {
 	"docsRoot": "./docs",
 	"entryPoints": ["packages/*/"],
-	"exclude": ["packages/template/", "packages/demo/"],
+	"exclude": [
+		"packages/ai-orchestrator/",
+		"packages/demo/",
+		"packages/template/"
+	],
 	"entryPointStrategy": "packages",
 	"excludeExternals": true,
 	"externalPattern": ["**/node_modules/**"],
@@ -12,5 +16,6 @@
 	"out": "docs/packages/",
 	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
 	// "readme": "packages/README.md",
+	/* t4ee */
 	"pretty": true
 }

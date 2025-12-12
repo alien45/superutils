@@ -6,6 +6,7 @@ packages/*/dist
 packages/*/*.tsbuildinfo
 *.tsbuildinfoa
 coverage
+coverage-summary
 credentials.json
 *credentials*.json
 
