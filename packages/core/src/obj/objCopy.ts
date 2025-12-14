@@ -1,5 +1,4 @@
 import fallbackIfFails from '../fallbackIfFails'
-import { asAny } from '../forceCast'
 import { isEmpty, isFn, isObj, isSymbol } from '../is'
 import objKeys from './objKeys'
 
@@ -82,7 +81,7 @@ export const objCopy = <
 		if (skip) continue
 
 		const isPrimitive =
-			[undefined, null, Infinity, NaN].includes(asAny(value))
+			[undefined, null, Infinity, NaN].includes(value as undefined)
 			|| !isObj(value, false)
 		if (isPrimitive) {
 			// directly assign any primitive types
@@ -95,26 +94,28 @@ export const objCopy = <
 				case Array.prototype:
 					return clone(value, '[]')
 				case ArrayBuffer.prototype:
-					return asAny<ArrayBuffer>(value).slice(0)
+					return (value as unknown as ArrayBuffer).slice(0)
 				case Date.prototype:
-					return new Date(asAny<Date>(value).getTime())
+					return new Date((value as unknown as Date).getTime())
 				case Map.prototype:
 					return new Map(
 						clone(
-							Array.from(asAny<Map<unknown, unknown>>(value)),
+							Array.from(
+								value as unknown as Map<unknown, unknown>,
+							),
 							'[]',
 						),
 					)
 				case RegExp.prototype:
-					return new RegExp(asAny<RegExp>(value))
+					return new RegExp(value as unknown as RegExp)
 				case Set.prototype:
 					return new Set(
-						clone(Array.from(asAny<Set<unknown>>(value))),
+						clone(Array.from(value as unknown as Set<unknown>)),
 					)
 				case Uint8Array.prototype:
-					return new Uint8Array([...asAny<Uint8Array>(value)])
+					return new Uint8Array([...(value as unknown as Uint8Array)])
 				case URL.prototype:
-					return new URL(asAny<URL>(value))
+					return new URL(value as unknown as URL)
 				default:
 					break
 			}

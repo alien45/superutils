@@ -98,8 +98,8 @@ const createPostMethodFunc = (
  * @function fetch
  *
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
- * and powerful interceptors. It also includes deferred and throttled request capabilities for complex asynchronous
- * control flows.
+ * and handy interceptors that also work as transformers. It also includes deferred and throttled request
+ * capabilities for complex asynchronous control flows.
  *
  * Will reject promise if response status code is not 2xx (200 <= status < 300).
  *

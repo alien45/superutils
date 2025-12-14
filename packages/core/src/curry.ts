@@ -1,13 +1,4 @@
-import forceCast, { asAny } from './forceCast'
-import {
-	CreateTuple,
-	Curry,
-	IsFiniteTuple,
-	KeepFirstN,
-	KeepOptionals,
-	KeepRequired,
-	TupleMaxLength,
-} from './types'
+import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
 
 /**
  * Creates a curried version of a function. The curried function can be
@@ -83,42 +74,19 @@ export function curry<
 			// (eg: number[] as opposed to a tuple like [a: number, b: number])
 			[arity: TArity]
 ) {
-	/**  Conditionally based on TArgs length and arity */
-	// type TCurriedArgs = TArgsIsFinite extends false
-	// 	? CreateTuple<Parameters<typeof func>[number], TArity>
-	// 	: KeepFirstN<
-	// 			[
-	// 				...KeepRequired<TArgs>,
-	// 				...KeepOptionals<TArgs, true, undefined>,
-	// 			],
-	// 			TArity
-	// 		>
 	type TCurriedArgs = CurriedArgs<TArgs, TArgsIsFinite, typeof func, TArity>
 
 	// The runtime implementation of the curried function.
 	const curriedFn = (...args: TCurriedArgs): unknown => {
 		const _args = args as unknown[]
 		// If we have received enough arguments, call the original function.
-		if (_args.length >= arity) return func(...forceCast<TArgs>(args))
+		if (_args.length >= arity) return func(...(args as TArgs))
 		// Otherwise, return a new function that waits for the rest of the arguments.
 		return (...nextArgs: unknown[]) =>
-			asAny<(...args: unknown[]) => unknown>(curriedFn)(
+			(curriedFn as (...args: unknown[]) => unknown)(
 				..._args,
 				...nextArgs,
 			)
 	}
 	return curriedFn as Curry<TData, TCurriedArgs>
 }
-
-export type CurriedArgs<
-	TArgs extends unknown[],
-	TArgsIsFinite extends boolean,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	TFunc extends (...args: any[]) => unknown,
-	TArity extends number,
-> = TArgsIsFinite extends false
-	? CreateTuple<Parameters<TFunc>[number], TArity>
-	: KeepFirstN<
-			[...KeepRequired<TArgs>, ...KeepOptionals<TArgs, true, undefined>],
-			TArity
-		>

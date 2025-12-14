@@ -16,6 +16,7 @@ describe('PromisE', () => {
 		})
 		expect(p).toBeInstanceOf(PromisE)
 		expect(p.pending).toBe(true)
+		expect(p.state).toBe(0)
 		expect(p.resolved).toBe(false)
 		expect(p.rejected).toBe(false)
 		await vi.runAllTimersAsync()

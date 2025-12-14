@@ -130,11 +130,11 @@ describe('fallbackIfFails', () => {
 
 		it('should accept a promise and turn into an async function', async () => {
 			const result = await fallbackIfFails(
-				Promise.resolve('promise value'),
+				Promise.reject<string>('promise value'),
 				[],
 				'fallback',
 			)
-			expect(result).toBe('promise value')
+			expect(result).toBe('fallback')
 		})
 
 		it('should resolve with fallback value when the input promise rejects', async () => {

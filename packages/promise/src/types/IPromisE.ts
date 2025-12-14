@@ -24,7 +24,7 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 }
 
 /* Describes a delay PromisE and it's additional properties. */
-export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
+export interface IPromisE_Delay<T = unknown> extends Promise<T>, IPromisE<T> {
 	/**
 	 * Caution: pausing will prevent the promise from resolving/rejeting automatically.
 	 *
@@ -65,6 +65,7 @@ export interface IPromisE_Delay<T = unknown> extends IPromisE<T> {
 	 * ```
 	 */
 	pause: () => void
+	/** Timeout ID */
 	timeoutId: TimeoutId
 }
 

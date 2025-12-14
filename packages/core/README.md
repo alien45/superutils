@@ -15,7 +15,7 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`is`](#is): Type checkers
     - [`deferred()`](#deferred): Debounce callbacks
     - [`throttle()`](#throttle): Throttle callbacks
-    - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions
+    - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
     - [`objCopy()`](#obj-copy): Deep-copy objects
     - [`search()`](#search): Search iterable collections
 
@@ -110,9 +110,9 @@ handleChange({ target: { value 3 } }) // will be ignored
 
 <div id="fallback-if-fails"></div>
 
-### `fallbackIfFails(fn, args, fallback)`: gracefully invoke functions
+### `fallbackIfFails(target, args, fallback)`: Gracefully invoke functions or promises with a fallback
 
-Based on the function provided `fallbackIfFails` will either execute synchronously or asynchronously.
+The `fallbackIfFails` function can wrap a standard function, a promise-returning function, or a promise directly. It automatically handles both synchronous execution and asynchronous resolution, providing a fallback value if the function throws an error or the promise is rejected.
 
 #### Sync operations:
 
@@ -149,6 +149,13 @@ fallbackIfFails(
 	{ products: [] }, // Fallback value to be returned when function throws an error.
 ).then(console.log)
 // Prints the result when request is successful or fallback value when request fails
+
+
+// use a promise
+fallbackIfFails(
+	Promise.reject('error'),
+	[], // 
+)
 ```
 
 <div id="obj-copy"></div>
@@ -249,7 +256,7 @@ search(data, {
 	asMap: false, // Result type: true => Map (default, keys preserved), false => Array
 	ignoreCase: false, // For text case-sensitivity
 	limit: 10, // Number of items returned. Default: no limit
-	matchExact: true, // true: full text search. false (default): partial matching
+	matchExact: true, // true: match exact value. false (default): partial matching
 	matchAll: true, // if true, item will be matched only when all of the query properties match
 	query: {
 		age: /(2[5-9])|(3[0-5])/, // match ages 25-35

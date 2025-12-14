@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { asAny, fallbackIfFails, isFn, isPromise } from '@superutils/core'
+import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { OnEarlyFinalize, PromiseParams, IPromisE } from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
 	implements IPromisE<T>
 {
-	public readonly state: 0 | 1 | 2 = 0
 	private _resolve?: (value: T | PromiseLike<T>) => void
 	private _reject?: (reason: unknown) => void
+	private _state: 0 | 1 | 2 = 0
 
 	/**
 	 * callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
@@ -40,11 +39,11 @@ export class PromisEBase<T = unknown>
 		let _reject: undefined | ((reason: unknown) => void)
 		super((resolve, reject) => {
 			_reject = (reason: unknown) => {
-				asAny(this).state = 2
+				this._state = 2
 				reject(reason)
 			}
 			_resolve = (value: T | PromiseLike<T>) => {
-				asAny(this).state = 1
+				this._state = 1
 				resolve(value)
 			}
 			input ??= () => {
@@ -70,17 +69,22 @@ export class PromisEBase<T = unknown>
 
 	/** Indicates if the promise is still pending/unfinalized */
 	public get pending() {
-		return this.state === 0
+		return this._state === 0
 	}
 
 	/** Indicates if the promise has been rejected */
 	public get rejected() {
-		return this.state === 2
+		return this._state === 2
 	}
 
 	/** Indicates if the promise has been resolved */
 	public get resolved() {
-		return this.state === 1
+		return this._state === 1
+	}
+
+	/** Get promise status code */
+	public get state() {
+		return this._state
 	}
 
 	//

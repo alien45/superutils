@@ -43,10 +43,23 @@ DropFirstN<TParams, TArgs['length']> extends [unknown, ...unknown[]]
 	: // If no, all parameters have been supplied, so return the final result.
 		TData
 
+export type CurriedArgs<
+	TArgs extends unknown[],
+	TArgsIsFinite extends boolean,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	TFunc extends (...args: any[]) => unknown,
+	TArity extends number,
+> = TArgsIsFinite extends false
+	? CreateTuple<Parameters<TFunc>[number], TArity>
+	: KeepFirstN<
+			[...KeepRequired<TArgs>, ...KeepOptionals<TArgs, true, undefined>],
+			TArity
+		>
+
 /**
- * Deferred function config
+ * Deferred function options
  */
-export interface DeferredOptions<ThisArg = unknown> {
+export type DeferredOptions<ThisArg = unknown> = {
 	leading?: boolean | 'global'
 	onError?: (err: unknown) => ValueOrPromise<unknown>
 	thisArg?: ThisArg

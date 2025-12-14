@@ -69,7 +69,7 @@ describe('fetch', () => {
 		vi.stubGlobal('fetch', fetch400)
 
 		let error: FetchError | undefined
-		fetch.get(fetchBaseUrl).catch(err => (error = err))
+		fetch.get(fetchBaseUrl).catch((err: FetchError) => (error = err))
 		await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
 			expect.any(FetchError),
 		)

@@ -40,7 +40,7 @@ export function delay<T = number, TReject extends boolean = boolean>(
 	result: T | (() => T) = duration as T,
 	asRejected: TReject = false as TReject,
 ) {
-	const promise = new PromisEBase() as IPromisE_Delay<T>
+	const promise = new PromisEBase() as unknown as IPromisE_Delay<T>
 	const finalize = (result?: unknown) => {
 		if (isFn(result))
 			result = fallbackIfFails(result, [], undefined) ?? duration

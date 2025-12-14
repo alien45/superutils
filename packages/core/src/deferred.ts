@@ -1,5 +1,5 @@
 import fallbackIfFails from './fallbackIfFails'
-import { DeferredOptions, ValueOrPromise } from './types'
+import { type DeferredOptions, type ValueOrPromise } from './types'
 
 /**
  * @function deferred AKA debounce
