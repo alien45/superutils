@@ -24,7 +24,7 @@ describe('filter', () => {
 			({ name }) => name === 'Alice',
 			1,
 		)
-		const expected = new Map([[1, { age: 30, name: 'Alice' }]])
+		const expected = new Map([['alice', { age: 30, name: 'Alice' }]])
 		compareMap(result, expected)
 	})
 

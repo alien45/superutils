@@ -10,19 +10,26 @@ export const compareMap = (map: Map<any, any>, expected: Map<any, any>) =>
 /** Create Map for testing accoss multiple files */
 export const prepareMapOfObjects = () => {
 	const prepared = {
-		mapOfObjects: new Map<number, MapEntry>(),
+		mapOfObjects: new Map<string, MapEntry>(),
 	}
 	afterEach(() => {
 		prepared.mapOfObjects.clear()
 	})
 
 	beforeEach(() => {
+		// prepared.mapOfObjects = new Map([
+		// 	[1, { age: 30, name: 'Alice' }],
+		// 	[2, { age: 25, name: 'Bob' }],
+		// 	[3, { age: 35, name: 'Charlie' }],
+		// 	[4, { age: 28, name: 'Dave' }],
+		// 	[5, { age: 22, name: 'Eve' }],
+		// ])
 		prepared.mapOfObjects = new Map([
-			[1, { age: 30, name: 'Alice' }],
-			[2, { age: 25, name: 'Bob' }],
-			[3, { age: 35, name: 'Charlie' }],
-			[4, { age: 28, name: 'Dave' }],
-			[5, { age: 22, name: 'Eve' }],
+			['alice', { age: 30, name: 'Alice' }],
+			['bob', { age: 25, name: 'Bob' }],
+			['charlie', { age: 35, name: 'Charlie' }],
+			['dave', { age: 28, name: 'Dave' }],
+			['eve', { age: 22, name: 'Eve' }],
 		])
 	})
 	return prepared

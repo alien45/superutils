@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "RxJS utilities and hooks for React applications.",
 	"dependencies": {
-		"@superutils/core": "^1.0.5",
+		"@superutils/core": "^1.0.6",
 		"@superutils/promise": "^1.0.6",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
@@ -24,7 +24,7 @@
 	"main": "dist/index.js",
 	"name": "@superutils/rx",
 	"peerDependencies": {
-		"@superutils/core": "^1.0.5",
+		"@superutils/core": "^1.0.6",
 		"@superutils/promise": "^1.0.6"
 	},
 	"publishConfig": {

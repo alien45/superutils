@@ -41,7 +41,12 @@ export type SortOptions = {
 }
 
 /** Search criteria for searcheing iterables */
-export type SearchOptions<K, V, AsMap extends boolean = false> = {
+export type SearchOptions<
+	K,
+	V,
+	MatchExact extends boolean = false,
+	AsMap extends boolean = false,
+> = {
 	/** Whethere to return the result as a map (`true`) or array (`false`). Default: `true` */
 	asMap?: AsMap
 	/** case-insensitive search for strings. Default: `false` */
@@ -49,20 +54,34 @@ export type SearchOptions<K, V, AsMap extends boolean = false> = {
 	/** limit number of results. Default: `Infinity` */
 	limit?: number
 	/** partial match for values. Default: `false` */
-	matchExact?: boolean
+	matchExact?: MatchExact
 	/** match all supplied key-value pairs. Default: `false` */
 	matchAll?: boolean
 	/** key-value pairs */
-	query: Record<string, unknown> | string | RegExp
+	query: Record<PropertyKey, unknown> | RegExp | string
+	/** If `true`, the results are sorted by relevance (match index). Default: `false` */
+	ranked?: boolean
 	/** Map to store results in. Default: `new Map()` */
 	result?: Map<K, V>
-	/** Callback to convert item/item-property to string */
-	transform?: (
-		/** List item */
-		item: V,
-		/** Item property value or `undefined` for fuzzy search. */
-		value?: V[keyof V],
-		/** Item property key provided by query or `undefined` for fuzzy search. */
-		key?: keyof V,
-	) => string | undefined
+	/**
+	 * Boolean or Callback to prepare item or individual property for search by converting to string.
+	 *
+	 * - `true`: value will be stringified
+	 * - `false`: value will not be stringified when `matchExact = true`
+	 * - `function`: transformed value will be used to search
+	 *
+	 * Returning "empty" (`undefined | null | [] | '' | ...`) value will ignore the item/property.
+	 *
+	 * Default: `true`
+	 */
+	transform?:
+		| boolean
+		| ((
+				/** List item */
+				item: V,
+				/** Item property value or `undefined` for global search across all properties. */
+				value?: V[keyof V],
+				/** Item property key provided by query or `undefined` for global search across all properties. */
+				key?: keyof V,
+		  ) => MatchExact extends true ? unknown : string | undefined)
 }

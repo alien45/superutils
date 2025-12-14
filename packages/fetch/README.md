@@ -11,9 +11,9 @@ This package enhances the native `fetch` API by providing a streamlined interfac
 - Usage
     - [`fetch()`](#fetch): make HTTP requests just like built-in `fetch()`
     - [`Method Specific Functions`](#methods)
-    - [`fetchDeferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
-    - [`post()`](#post): make post-like requests
-    - [`postDeferred()`](#post-deferred) cancellable and debounced or throttled `post()`
+    - [`fetch.get.deferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
+    - [`fetch.post()`](#post): make post requests
+    - [`fetch.post.deferred()`](#post-deferred) cancellable and debounced or throttled `post()`
 
 ## Features
 

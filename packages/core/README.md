@@ -222,7 +222,7 @@ search(data, { query: { age: 28, name: 've' } })
 //     [4, { age: 28, name: 'Dave' }],
 // ])
 
-// Fuzzy search accross all properties
+// Search across all properties
 search(data, { query: 'li' })
 search(data, { query: /li/i }) // Using regular expression
 // Result:
@@ -255,7 +255,7 @@ search(data, {
 		age: /(2[5-9])|(3[0-5])/, // match ages 25-35
 		name: /ali|ob|ve/i,
 	},
-	// transform the property values (or item itself when in fuzzy search mode)
+	// transform the property values (or item itself when searching all properties in global search mode using `query: string | RegExp`)
 	transform: (item, value, property) => {
 		// exclude items by returning undefined or emptry string
 		if (item.age < 18) return ''

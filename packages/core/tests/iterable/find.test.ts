@@ -10,7 +10,7 @@ describe('find', () => {
 			matchExact: true,
 			query: { name: 'Bob' },
 		})
-		expect(result).toEqual([2, { name: 'Bob', age: 25 }])
+		expect(result).toEqual(['bob', { name: 'Bob', age: 25 }])
 	})
 
 	it('should find first item matching partial value', () => {

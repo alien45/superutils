@@ -52,8 +52,7 @@ export const fetch = <
 		if (_options.abortCtrl) _options.signal = _options.abortCtrl.signal
 		let errResponse: Response | undefined
 		try {
-			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			if (!isUrlValid(url, false)) throw errMsgs.invalidUrl
+			if (!isUrlValid(url, false)) throw new Error(errMsgs.invalidUrl)
 			// make the fetch call
 			let response = await getResponse(url, _options)
 			// invoke global and local request interceptors to intercept and/or transform `response`
@@ -80,11 +79,7 @@ export const fetch = <
 			if (isFn(parseFunc)) {
 				const handleErr = (err: Error) => {
 					err = new Error(
-						[
-							errMsgs.parseFailed,
-							parseAs + '.',
-							`${err?.message ?? err}`?.replace('Error: ', ''),
-						].join(' '),
+						`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
 						{ cause: err },
 					)
 					return globalThis.Promise.reject(err)
@@ -106,9 +101,7 @@ export const fetch = <
 			let error = new FetchError(
 				errX?.name === 'AbortError'
 					? errMsgs.reqTimedout
-					: err instanceof Error
-						? err.message
-						: String(err),
+					: (err as Error)?.message,
 				{
 					cause: errX?.cause ?? err,
 					response: errResponse,

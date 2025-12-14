@@ -6,8 +6,8 @@ import getValues from './getValues'
 import { IterableList, SearchOptions } from './types'
 
 /**
- * A versatile utility for searching through an iterable list (e.g., Array, Map, Set) of objects.
- * It supports both a simple "fuzzy" search with a string query across all properties and a
+ * A versatile utility for searching through an iterable list (Array, Map, or Set) of objects.
+ * It supports both a global search (using a string or RegExp) across all properties of an item, and a
  * detailed, field-specific search using a query object.
  *
  * @param data The list of objects to search within. Compatible types include:
@@ -18,6 +18,8 @@ import { IterableList, SearchOptions } from './types'
  * - `HTMLCollection` (in DOM environments): should accompany `options.transform()`
  * @param options The search criteria.
  * @param options.query The search query. Can be a string to search all fields, or an object for field-specific
+ * @param options.ranked (optional) If `true`, the results are sorted by relevance (match index). Default: `false`.
+ *
  * searches (e.g., `{ name: 'John', city: 'New York' }`).
  * @param options.asMap (optional) If `true`, returns a `Map`. If `false`, returns an `Array`. Default: `true`.
  * @param options.ignoreCase (optional) If `true`, performs a case-insensitive search for strings. Default: `true`.
@@ -54,25 +56,35 @@ import { IterableList, SearchOptions } from './types'
 export const search = <
 	K,
 	V, // extends Record<string, unknown>,
+	MatchExact extends boolean = false,
 	AsMap extends boolean = true,
 	Result = AsMap extends true ? Map<K, V> : V[],
 >(
 	data: IterableList<K, V>,
-	options: SearchOptions<K, V, AsMap>,
+	options: SearchOptions<K, V, MatchExact, AsMap>,
 ): Result => {
 	const ignore = !getSize(data) || isEmpty(options?.query) // object: no properties | string: only whitespaces
 	const result = isMap(options?.result) ? options.result : new Map()
 	const asMap = options?.asMap ?? search.defaultOptions.asMap
 	if (ignore) return (asMap ? result : getValues(result)) as Result
 
-	options = objCopy(search.defaultOptions, options, [], 'empty') as Required<
-		SearchOptions<K, V, AsMap>
-	>
-	const { ignoreCase, limit = Infinity, matchAll, matchExact } = options
+	options = objCopy(
+		search.defaultOptions,
+		options,
+		[],
+		'empty', // override `option` property with default value when "empty" (undefined, null, '',....)
+	) as typeof options
+	const {
+		ignoreCase,
+		limit = Infinity,
+		matchAll,
+		matchExact,
+		ranked,
+	} = options
 	let { query } = options
 
 	const qIsStr = isStr(query)
-	const qIsRegExp = !qIsStr && isRegExp(query)
+	const qIsRegExp = isRegExp(query)
 	const qKeys = fallbackIfFails(Object.keys, [query], [])
 	// Pre-process keywords for case-insensitivity outside the main loop
 	if (ignoreCase && !matchExact && !qIsRegExp) {
@@ -87,20 +99,63 @@ export const search = <
 	}
 
 	options.query = query
-	const entries = data.entries()
-	for (const [dataKey, dataValue] of entries) {
-		if (result.size >= limit) break
 
-		const matched =
-			qIsStr || qIsRegExp
-				? matchItemOrProp(options, dataValue, undefined) // fuzzy search
-				: qKeys[matchAll ? 'every' : 'some'](
-						key => matchItemOrProp(options, dataValue, key), // search specific properties
-					)
-		if (!matched) continue
+	if (!ranked) {
+		for (const [dataKey, dataValue] of data.entries()) {
+			if (result.size >= limit) break
 
-		result.set(dataKey, dataValue)
+			const matched =
+				qIsStr || qIsRegExp
+					? // global search across all properties
+						matchObjOrProp(options, dataValue, undefined) >= 0
+					: // field-specific search
+						qKeys[matchAll ? 'every' : 'some'](
+							key => matchObjOrProp(options, dataValue, key) >= 0,
+						)
+			if (!matched) continue
+
+			result.set(dataKey, dataValue)
+		}
+	} else {
+		const preRankedResults = [] as [number, K, V][]
+		for (const [dataKey, dataValue] of data.entries()) {
+			let matchIndex = -1
+			if (qIsStr || qIsRegExp) {
+				matchIndex = matchObjOrProp(options, dataValue, undefined)
+				matchIndex >= 0
+					&& preRankedResults.push([matchIndex, dataKey, dataValue])
+				continue
+			}
+
+			const indexes: number[] = []
+			const match = qKeys[matchAll ? 'every' : 'some'](
+				// field-specific search
+				key => {
+					const index = matchObjOrProp(options, dataValue, key)
+					indexes.push(index)
+					return index >= 0
+				},
+			)
+			if (!match) continue
+
+			matchIndex = // eslint-disable-next-line @typescript-eslint/prefer-find
+				indexes
+					.sort((a, b) => a - b)
+					// take the lowest index
+					.filter(n => n !== -1)[0]
+
+			matchIndex >= 0
+				&& preRankedResults.push([matchIndex, dataKey, dataValue])
+		}
+
+		// Rank results by sorting them based on the match index. A lower index
+		// signifies a match found earlier in the string, giving it a higher rank.
+		preRankedResults
+			.sort((a, b) => a[0] - b[0])
+			.slice(0, limit)
+			.forEach(([_, key, value]) => result.set(key, value))
 	}
+
 	return (asMap ? result : getValues(result)) as Result
 }
 search.defaultOptions = {
@@ -108,57 +163,70 @@ search.defaultOptions = {
 	ignoreCase: true,
 	limit: Infinity,
 	matchAll: false,
-	matchExact: false,
+	ranked: false,
+	transform: true,
 } as Pick<
 	// options that should always have default value
-	Required<SearchOptions<unknown, unknown, true>>,
-	'asMap' | 'ignoreCase' | 'limit' | 'matchAll' | 'matchExact'
+	Required<SearchOptions<unknown, unknown, false, true>>,
+	'asMap' | 'ignoreCase' | 'limit' | 'matchAll' | 'ranked' | 'transform'
 >
 
-/** Utility for use with {@link search} function */
-export function matchItemOrProp<K, V>( // extends Record<string, unknown>
+/**
+ * Utility for use with {@link search} function
+ *
+ * @returns match index (`-1` means didn't match)
+ */
+export function matchObjOrProp<K, V>( // extends Record<string, unknown>
 	{
 		query,
 		ignoreCase,
 		matchExact,
-		transform,
+		transform = true,
 	}: Pick<
 		SearchOptions<K, V, boolean>,
 		'transform' | 'query' | 'ignoreCase' | 'matchExact'
 	>,
 	item: V,
 	propertyName?: string,
-) {
-	const fuzzy = isStr(query) || isRegExp(query) || propertyName === undefined
-	const keyword = fuzzy ? query : query[propertyName]
+): number {
+	// Whether to search all properties
+	const global = isStr(query) || isRegExp(query) || propertyName === undefined
+	const keyword = global ? query : query[propertyName]
 	const propVal: unknown =
-		fuzzy || !isObj(item)
+		global || !isObj(item)
 			? item
 			: (item as Record<string, unknown>)[propertyName]
-	let value = fallbackIfFails(
+	const value = fallbackIfFails(
 		() =>
 			isFn(transform)
 				? transform(
 						item,
-						fuzzy ? undefined : (propVal as V[keyof V]),
+						global ? undefined : (propVal as V[keyof V]),
 						propertyName as keyof V,
 					)
-				: isObj(propVal, false)
-					? JSON.stringify(
-							isArrLike(propVal)
-								? [...propVal.values()]
-								: Object.values(propVal),
-						)
-					: propVal?.toString?.(),
+				: matchExact && transform === false
+					? propVal // Allow direct value/reference matching
+					: isObj(propVal, false)
+						? JSON.stringify(
+								isArrLike(propVal)
+									? [...propVal.values()]
+									: Object.values(propVal),
+							)
+						: String((propVal as string) ?? ''),
 		[],
 		'',
 	)
-	if (!value?.trim()) return false
-	if (isRegExp(keyword)) return keyword.test(`${value}`)
-	if (ignoreCase && !matchExact) value = value.toLowerCase()
-	if (value === keyword) return true
+	// check if value matches as is
+	if (value === keyword) return 0
+	if (matchExact) return -1
 
-	return !matchExact && `${value}`.includes(String(keyword))
+	// Beyond this point only match values as string
+	let valueStr = String(value)
+	if (!valueStr.trim()) return -1
+	if (isRegExp(keyword)) return valueStr.match(keyword)?.index ?? -1
+	if (ignoreCase) valueStr = valueStr.toLowerCase()
+
+	return valueStr.indexOf(String(keyword))
 }
 
 export default search

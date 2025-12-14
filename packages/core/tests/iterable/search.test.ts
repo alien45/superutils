@@ -21,10 +21,31 @@ describe('search', () => {
 		})
 
 		it('should search array with non-object values', () => {
-			const options = { asMap: false, query: '2' }
+			const options = {
+				asMap: false,
+				query: '2',
+			}
 			expect(search([1, 2, 4], options)).toEqual([2])
 			options.query = 'false'
 			expect(search([true, false], options)).toEqual([false])
+		})
+
+		it('should search object properties by reference', () => {
+			const v1 = { a: 1 }
+			const v2 = { a: 2 }
+			const data = new Map([
+				[1, { value: v1 }],
+				[2, { value: v2 }],
+			])
+			const options = {
+				asMap: false,
+				query: {
+					value: v1,
+				},
+				matchExact: true,
+				transform: false,
+			}
+			expect(search(data, options)).toEqual([{ value: v1 }])
 		})
 
 		it('should use `propToStr()` when searching array of objects containing object properties', () => {
@@ -71,7 +92,10 @@ describe('search', () => {
 		})
 
 		it('should return search result as a map by default', () => {
-			const arrOfObjects = [...prepared.mapOfObjects.values()]
+			const arrOfObjects = [
+				...prepared.mapOfObjects.values(),
+				{ age: undefined, name: null },
+			]
 			const result = search(arrOfObjects, {
 				query: { name: 'a' },
 				matchExact: false,
@@ -126,24 +150,24 @@ describe('search', () => {
 				matchExact: false,
 			})
 			const expected = new Map([
-				[4, { age: 28, name: 'Dave' }],
-				[5, { age: 22, name: 'Eve' }],
+				['dave', { age: 28, name: 'Dave' }],
+				['eve', { age: 22, name: 'Eve' }],
 			])
 			compareMap(result, expected)
 		})
 
-		it('should do fuzzy-search on all properties and combine results', () => {
+		it('should do global-search across all properties and combine results', () => {
 			const result = search(prepared.mapOfObjects, {
 				matchExact: false,
 				query: 've',
 				// provide an item that should be returned along with the results.
 				// even when result is empty this item will not be touched.
-				result: new Map([[9999, { age: 99, name: 'Adam' }]]),
+				result: new Map([['adam', { age: 99, name: 'Adam' }]]),
 			})
 			const expected = new Map([
-				[9999, { age: 99, name: 'Adam' }],
-				[4, { age: 28, name: 'Dave' }],
-				[5, { age: 22, name: 'Eve' }],
+				['adam', { age: 99, name: 'Adam' }],
+				['dave', { age: 28, name: 'Dave' }],
+				['eve', { age: 22, name: 'Eve' }],
 			])
 			compareMap(result, expected)
 		})
@@ -163,7 +187,7 @@ describe('search', () => {
 				limit: 1,
 				matchExact: false,
 			})
-			const expected = new Map([[1, { age: 30, name: 'Alice' }]])
+			const expected = new Map([['alice', { age: 30, name: 'Alice' }]])
 			compareMap(result, expected)
 		})
 
@@ -178,15 +202,23 @@ describe('search', () => {
 			const result = search(prepared.mapOfObjects, {
 				query: { name: /^ali/i },
 			})
-			const expected = new Map([[1, { age: 30, name: 'Alice' }]])
+			const expected = new Map([['alice', { age: 30, name: 'Alice' }]])
+			compareMap(result, expected)
+		})
+
+		it('should use transform() function to transform results', () => {
+			const result = search(prepared.mapOfObjects, {
+				query: { name: /^ali/i },
+			})
+			const expected = new Map([['alice', { age: 30, name: 'Alice' }]])
 			compareMap(result, expected)
 
 			const withChild = new Map(prepared.mapOfObjects)
-			withChild.set(withChild.size + 1, {
+			withChild.set('michael', {
 				age: 1,
 				name: 'Michael',
 			})
-			withChild.set(withChild.size + 1, {
+			withChild.set('jackson', {
 				age: 15,
 				name: 'Jackson',
 			})
@@ -203,10 +235,60 @@ describe('search', () => {
 			compareMap(
 				result2,
 				new Map([
-					[1, { age: 30, name: 'Alice' }],
-					[4, { age: 28, name: 'Dave' }],
+					['alice', { age: 30, name: 'Alice' }],
+					['dave', { age: 28, name: 'Dave' }],
 				]),
 			)
+		})
+	})
+
+	describe('ranked', () => {
+		it('should search properties relevance', () => {
+			const result = search(prepared.mapOfObjects, {
+				asMap: false,
+				query: { name: 've' },
+				ranked: true,
+			})
+			expect(result).toEqual([
+				prepared.mapOfObjects.get('eve'),
+				prepared.mapOfObjects.get('dave'),
+			])
+		})
+
+		it('should search properties relevance and match 0 items', () => {
+			const result = search(prepared.mapOfObjects, {
+				asMap: false,
+				query: { name: 'no0000' },
+				ranked: true,
+			})
+			expect(result).toEqual([])
+		})
+		it('should search properties relevance and ensure all properties match', () => {
+			const result = search(prepared.mapOfObjects, {
+				asMap: false,
+				matchAll: true,
+				query: {
+					age: /(2[5-9])|(3[0-5])/, // match ages 25-35
+					name: /ali|ob|ve/i,
+				},
+				ranked: true,
+			})
+			expect(result).toEqual([
+				prepared.mapOfObjects.get('alice'),
+				prepared.mapOfObjects.get('bob'),
+				prepared.mapOfObjects.get('dave'),
+			])
+		})
+		it('should search items by relevance', () => {
+			const result = search(prepared.mapOfObjects, {
+				asMap: false,
+				query: 've',
+				ranked: true,
+			})
+			expect(result).toEqual([
+				prepared.mapOfObjects.get('eve'),
+				prepared.mapOfObjects.get('dave'),
+			])
 		})
 	})
 })
