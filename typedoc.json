@@ -14,7 +14,13 @@
 	"hideBreadcrumbs": true,
 	"hidePageHeader": true,
 	"out": "docs/packages/",
-	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+	"plugin": [
+		"typedoc-plugin-markdown",
+		// // custom plugin to add "try" button to examples
+		// "./scripts/auto-try-buttons.js",
+		// "./scripts/debug-hooks.js",
+		"typedoc-vitepress-theme"
+	],
 	// "readme": "packages/README.md",
 	/* t4ee */
 	"pretty": true

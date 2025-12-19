@@ -105,6 +105,11 @@ console.log({
 // Prints: { pending: false, resolved: true, rejected: false }
 ```
 
+
+<div class="try-buttons">
+  <a href="https://codesandbox.io/api/v1/sandboxes/define?json=1&parameters=%7B%22files%22%3A%7B%22index.ts%22%3A%7B%22content%22%3A%22const%20dp%20%3D%20PromisE.delay(1000)%5Cnconsole.log(%7B%5Cn%5Ctpending%3A%20dp.pending%2C%5Cn%5Ctrejected%3A%20dp.rejected%2C%5Cn%5Ctresolved%3A%20dp.resolved%2C%5Cn%7D)%5Cn%2F%2F%20Prints%3A%20%7B%20pending%3A%20true%2C%20resolved%3A%20false%2C%20rejected%3A%20false%20%7D%5Cnawait%20dp%20%2F%2F%20waits%201%20seconds%5Cnconsole.log(%7B%5Cn%5Ctpending%3A%20dp.pending%2C%5Cn%5Ctrejected%3A%20dp.rejected%2C%5Cn%5Ctresolved%3A%20dp.resolved%2C%5Cn%7D)%5Cn%2F%2F%20Prints%3A%20%7B%20pending%3A%20false%2C%20resolved%3A%20true%2C%20rejected%3A%20false%20%7D%22%7D%2C%22package.json%22%3A%7B%22content%22%3A%22%7B%5C%22dependencies%5C%22%3A%7B%5C%22typescript%5C%22%3A%5C%22latest%5C%22%2C%5C%22%40superutils%2Findex.md%5C%22%3A%5C%22latest%5C%22%7D%7D%22%7D%2C%22tsconfig.json%22%3A%7B%22content%22%3A%22%7B%5C%22compilerOptions%5C%22%3A%7B%5C%22strict%5C%22%3Atrue%2C%5C%22module%5C%22%3A%5C%22esnext%5C%22%2C%5C%22target%5C%22%3A%5C%22esnext%5C%22%2C%5C%22moduleResolution%5C%22%3A%5C%22node%5C%22%7D%7D%22%7D%7D%7D" target="_blank" class="try-button codesandbox"><svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 6px;"><path fill="currentColor" d="M2 6l10.455 6L2 18V6zm2 3.205L9.091 12 4 14.795V9.205z"/></svg> Try on CodeSandbox</a>
+</div>
+
 For more details please read the API reference for respective packages.
 
 ## Contribute

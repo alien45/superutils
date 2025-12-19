@@ -7,6 +7,29 @@ export default defineConfig({
 	title: 'Superutils',
 	description:
 		'A suite of practical, opinionated and modular utilities for TypeScript, React, and RxJS.',
+	head: [
+		// Add inline CSS
+		[
+			'style',
+			{},
+			`.try-button {
+				display: inline-block;
+				margin-top: 10px;
+				padding: 6px 12px;
+				background: #1389fd;
+				color: white;
+				border-radius: 4px;
+				text-decoration: none;
+				font-size: 14px;
+				transition: all 0.2s;
+			}
+			.try-button:hover {
+				background: #0a68c9;
+				transform: translateY(-1px);
+				box-shadow: 0 2px 8px rgba(10, 104, 201, 0.3);
+			}`,
+		],
+	],
 	ignoreDeadLinks: 'localhostLinks',
 	themeConfig: {
 		footer: {

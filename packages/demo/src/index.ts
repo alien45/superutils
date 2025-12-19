@@ -20,7 +20,7 @@ import { distinctUntilChanged } from 'rxjs'
 
 console.log('Started')
 
-require('./benchmark-arr-reverse')
+// require('./benchmark-arr-reverse')
 
 // ;(async () => {
 // 	const count = 1_000_000

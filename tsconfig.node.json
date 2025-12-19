@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
+		"allowJs": true,
 		"lib": ["ESNext"],
 		"module": "ESNext",
 		"moduleResolution": "node"
 	},
 	"extends": "./tsconfig.base.json",
-	"include": ["./vitest.config.js", "tsup.config.js"]
+	"include": ["tsup.config.js", "vitest.config.js"]
 }
