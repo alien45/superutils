@@ -85,7 +85,7 @@ export const fetch = <
 					return globalThis.Promise.reject(err)
 				}
 
-				result = parseFunc()
+				result = parseFunc.bind(response)()
 				if (isPromise(result)) result = result.catch(handleErr)
 				// invoke global and local request interceptors to intercept and/or transform parsed `result`
 				result = await executeInterceptors(
@@ -95,20 +95,19 @@ export const fetch = <
 					_options,
 				)
 			}
-			resolve((await result) as TReturn)
+			resolve(result as TReturn)
 		} catch (err: unknown) {
 			const errX = err as Error
-			let error = new FetchError(
+			const msg =
 				errX?.name === 'AbortError'
 					? errMsgs.reqTimedout
-					: (err as Error)?.message,
-				{
-					cause: errX?.cause ?? err,
-					response: errResponse,
-					options: _options,
-					url,
-				},
-			)
+					: (err as Error)?.message
+			let error = new FetchError(msg, {
+				cause: errX?.cause ?? err,
+				response: errResponse,
+				options: _options,
+				url,
+			})
 			// invoke global and local request interceptors to intercept and/or transform `error`
 			error = await executeInterceptors(
 				error,

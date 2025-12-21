@@ -5,67 +5,37 @@ export * from './mergeFetchOptions'
 export * from './post'
 export * from './types'
 import fetchOriginal from './fetch'
-import fetchDeferred from './fetchDeferred'
+import fetchDeferred, { DeferredAsyncOptions } from './fetchDeferred'
 import post from './post'
 import postDeferred from './postDeferred'
 import {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchInterceptors,
 	FetchOptions,
-	PostBody,
+	PostArgs,
 	PostOptions,
 } from './types'
-import { isObj } from '@superutils/core'
-
-export type FetchWithoutMethods = typeof fetchOriginal
-
-/** Describes method-specific fetch-functions that includes `.deferred()` function for deferred/throttled requests */
-export type FetchMethodFunc = (<
-	T,
-	Options extends Omit<FetchOptions, 'method'>,
->(
-	url: string | URL,
-	options?: Options,
-) => ReturnType<typeof fetchOriginal<T, Options>>) & {
-	deferred: typeof fetchDeferred
-}
-/** Describes method-specific fetch-functions that includes `.deferred()` function for deferred/throttled requests */
-export type PostMethodFunc = (<T, Options extends Omit<FetchOptions, 'method'>>(
-	url: string | URL,
-	data?: PostBody,
-	options?: Options,
-) => ReturnType<typeof fetchOriginal<T, Options>>) & {
-	deferred: typeof postDeferred
-}
-export interface FetchWithMethods extends FetchWithoutMethods {
-	get: FetchMethodFunc
-	head: FetchMethodFunc
-	options: FetchMethodFunc
-	delete: PostMethodFunc
-	patch: PostMethodFunc
-	post: PostMethodFunc
-	put: PostMethodFunc
-}
 
 /** Create a method-specific fetch function attached with a `.deferred()` function */
 const createFetchMethodFunc = (method = 'get') => {
-	const methodFunc = (<T>(
-		url: string | URL,
-		options?: Omit<FetchOptions, 'method'>,
-	) => {
-		const _options: FetchOptions = isObj(options) ? options : {}
-		_options.method = method
-		return fetchOriginal<T, FetchOptions>(url, _options)
-	}) as FetchMethodFunc
 	/** Make debounced/throttled request */
-	methodFunc.deferred = (<
+	const deferred = <
 		ThisArg,
 		Delay extends number,
 		GlobalUrl extends string | URL,
 	>(
 		...args: Parameters<typeof fetchDeferred<ThisArg, Delay, GlobalUrl>>
-	) => fetchDeferred(...args)) as typeof fetchDeferred
+	) => fetchDeferred<ThisArg, Delay, GlobalUrl>(...args)
 
+	const methodFunc = <T>(
+		url: string | URL,
+		options?: Omit<FetchOptions, 'method'>,
+	) => {
+		options ??= {}
+		;(options as FetchOptions).method = method
+		return fetchOriginal<T, FetchOptions>(url, options)
+	}
+	methodFunc.deferred = deferred
 	return methodFunc
 }
 
@@ -73,26 +43,50 @@ const createFetchMethodFunc = (method = 'get') => {
 const createPostMethodFunc = (
 	method: Pick<PostOptions, 'method'>['method'] = 'post',
 ) => {
-	const methodFunc = ((
-		url: string | URL,
-		data?: PostBody,
-		options?: Omit<PostOptions, 'method'>,
-	) => {
-		const _options: PostOptions = isObj(options) ? options : {}
-		_options.method = method
-		return post(url, data, _options)
-	}) as PostMethodFunc
 	/** Make debounced/throttled request */
-	methodFunc.deferred = (<
+	const deferredFunc = <
 		ThisArg,
-		Delay extends number,
-		DefaultUrl extends string | URL,
+		Delay extends number = number,
+		Args extends PostArgs<true> = PostArgs<true>,
+		GlobalUrl extends Args[0] | undefined = undefined,
+		GlobalData extends Args[1] | undefined = undefined,
 	>(
-		...args: Parameters<typeof postDeferred<ThisArg, Delay, DefaultUrl>>
-	) => postDeferred(...args)) as typeof postDeferred
+		deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
+		globalUrl?: GlobalUrl,
+		globalData?: GlobalData,
+		defaultOptions?: Args[2],
+	) => {
+		defaultOptions ??= {}
+		;(defaultOptions as PostOptions).method = method
+		return postDeferred<ThisArg, Delay, GlobalUrl, GlobalData>(
+			deferOptions,
+			globalUrl,
+			globalData,
+			defaultOptions,
+		)
+	}
+
+	const methodFunc = <T, Args extends PostArgs<true> = PostArgs<true>>(
+		url: Args[0],
+		data?: Args[1],
+		options?: Args[2],
+	) => {
+		options ??= {}
+		;(options as PostOptions).method = method
+		return post<T>(url, data, options)
+	}
+	methodFunc.deferred = deferredFunc
 
 	return methodFunc
 }
+const _get = createFetchMethodFunc('get')
+const _head = createFetchMethodFunc('head')
+const _options = createFetchMethodFunc('options')
+// Post-like methods that allow `options.body`
+const _delete = createPostMethodFunc('delete')
+const _patch = createPostMethodFunc('patch')
+const _post = createPostMethodFunc('post')
+const _put = createPostMethodFunc('put')
 
 /**
  * @function fetch
@@ -143,6 +137,8 @@ const createPostMethodFunc = (
  * Options' default values (excluding `method` and `retryIf`) can be configured to be EFFECTIVE GLOBALLY.
  *
  * ```typescript
+ * import fetch from '@superutils/fetch'
+ *
  * fetch.defaults = {
  *     as: FetchAs.json,
  *     errMsgs: {
@@ -159,15 +155,16 @@ const createPostMethodFunc = (
  *     	   result: [],
  *     },
  *     timeout: 0,
- *     ........
+ *     //........
  * }
  * ```
- * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
- * @param options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
- * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
- * @param options.method  (optional) Default: `"get"`
- * @param options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
- * @param options.parse   (optional) specify how to parse the result.
+ *
+ * @property options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
+ * @property options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
+ * @property options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
+ * @property options.method (optional) Default: `"get"`
+ * @property options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
+ * @property options.parse (optional) specify how to parse the result.
  * Default: {@link FetchAs.json}
  * For raw `Response` use {@link FetchAs.response}
  *
@@ -179,13 +176,21 @@ const createPostMethodFunc = (
  * fetch('https://dummyjson.com/products/1').then(theActualData => console.log(theActualData))
  * ```
  */
-export const fetch = fetchOriginal as FetchWithMethods
-fetch.get = createFetchMethodFunc('get')
-fetch.head = createFetchMethodFunc('head')
-fetch.options = createFetchMethodFunc('options')
-// Post-like methods that allow `options.body`
-fetch.delete = createPostMethodFunc('delete')
-fetch.patch = createPostMethodFunc('patch')
-fetch.post = createPostMethodFunc('post')
-fetch.put = createPostMethodFunc('put')
+export const fetch = fetchOriginal as typeof fetchOriginal & {
+	get: typeof _get
+	head: typeof _head
+	options: typeof _options
+	delete: typeof _delete
+	patch: typeof _patch
+	post: typeof _post
+	put: typeof _put
+}
+fetch.get = _get
+fetch.head = _head
+fetch.options = _options
+fetch.delete = _delete
+fetch.patch = _patch
+fetch.post = _post
+fetch.put = _put
+
 export default fetch

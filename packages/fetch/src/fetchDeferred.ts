@@ -98,17 +98,17 @@ export {
 export function fetchDeferred<
 	ThisArg = unknown,
 	Delay extends number = number,
-	GlobalUrl extends string | URL | undefined = string | URL | undefined,
-	Args extends unknown[] = undefined extends GlobalUrl
-		? FetchArgs
-		: [options?: FetchOptions],
+	GlobalUrl = FetchArgs[0] | undefined,
+	CbArgs extends unknown[] = undefined extends GlobalUrl
+		? FetchArgs<true>
+		: [options?: FetchArgs<true>[1]],
 >(
 	deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
 	globalUrl?: GlobalUrl,
-	defaultOptions?: FetchDeferredArgs[1],
+	defaultOptions?: FetchArgs[1],
 ) {
 	let _abortCtrl: AbortController | undefined
-	const fetchCallback = <Result = unknown>(...args: Args) => {
+	const fetchCallback = <Result = unknown>(...args: CbArgs) => {
 		let options = {
 			...(((globalUrl === undefined ? args[1] : args[0])
 				?? {}) as FetchOptions),
@@ -119,7 +119,7 @@ export function fetchDeferred<
 		_abortCtrl?.abort?.()
 		_abortCtrl = options.abortCtrl
 		const promise = fetch<Result>(
-			globalUrl ?? (args[0] as FetchArgs[0]),
+			(globalUrl ?? args[0]) as FetchArgs[0],
 			options,
 		)
 		// abort fetch request if promise is finalized manually before completion

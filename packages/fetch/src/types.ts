@@ -1,7 +1,12 @@
 import { ValueOrPromise } from '@superutils/core'
 import { type RetryOptions } from '@superutils/promise'
 
-export type FetchArgs = [url: string | URL, options?: FetchOptions]
+export type FetchArgs<OmitMethod extends boolean = false> = [
+	url: string | URL,
+	options?: OmitMethod extends true
+		? Omit<FetchOptions, 'method'>
+		: FetchOptions,
+]
 
 export type FetchArgsInterceptor = [
 	url: string | URL,
@@ -33,9 +38,12 @@ export type FetchCustomOptions = {
 } & FetchRetryOptions
 
 /** Default args */
-export type FetchDeferredArgs = [
+export type FetchDeferredArgs<OmitMethod extends boolean = false> = [
 	url?: string | URL,
-	options?: Omit<FetchOptions, 'abortCtrl'>,
+	options?: Omit<
+		FetchOptions,
+		'abortCtrl' | (OmitMethod extends true ? 'method' : never)
+	>,
 ]
 
 export type FetchErrMsgs = {
@@ -325,10 +333,12 @@ export type Interceptor<
 
 export type PostBody = Record<string, unknown> | BodyInit | null
 
-export type PostArgs = [
+export type PostArgs<OmitMethod = false> = [
 	url: string | URL,
-	data?: PostBody,
-	options?: PostOptions,
+	data?: PostBody | (() => PostBody),
+	options?: OmitMethod extends true
+		? Omit<FetchOptions, 'method'>
+		: PostOptions,
 ]
 
 /**
@@ -364,16 +374,27 @@ export type PostArgs = [
 export type PostDeferredCallbackArgs<
 	TUrl = undefined,
 	TData = undefined,
-	RPA extends unknown[] = Required<PostArgs>,
+	OmitMethod extends boolean = true,
+	CbArgs extends PostArgs<OmitMethod> = PostArgs<OmitMethod>,
+	Options = CbArgs[2],
+	RPA extends unknown[] = Required<CbArgs>,
 > = [TUrl, TData] extends [RPA[0], undefined] // only URL provided
-	? [data?: PostArgs[1], options?: PostArgs[2]]
+	? [data?: CbArgs[1], options?: Options]
 	: [TUrl, TData] extends [undefined, RPA[1]] // only data provided
-		? [url: PostArgs[0], options?: PostArgs[2]]
+		? [url: CbArgs[0], options?: Options]
 		: [TUrl, TData] extends [RPA[0], RPA[1]]
-			? [options?: PostArgs[2]] // Both default URL and data are provided
-			: PostArgs
+			? [options?: Options] // Both default URL and data are provided
+			: CbArgs
 
 export type PostOptions = Omit<FetchOptions, 'method'> & {
 	/** Default: `'post'` */
-	method?: 'post' | 'put' | 'patch' | 'delete'
+	method?:
+		| 'post'
+		| 'put'
+		| 'patch'
+		| 'delete'
+		| 'POST'
+		| 'PUT'
+		| 'PATCH'
+		| 'DELETE'
 }

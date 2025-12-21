@@ -27,7 +27,7 @@ describe('post', () => {
 			}),
 		)
 		vi.stubGlobal('fetch', post201)
-		const promise = fetch.post(postUrl, newUser)
+		const promise = fetch.post(postUrl, () => newUser)
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toEqual(newUser)
 		expect(post201).toHaveBeenCalledOnce()

@@ -1,4 +1,4 @@
-import { isStr } from '@superutils/core'
+import { isFn, isStr } from '@superutils/core'
 import fetch from './fetch'
 import mergeFetchOptions from './mergeFetchOptions'
 import { PostArgs } from './types'
@@ -16,17 +16,15 @@ import { PostArgs } from './types'
  * @returns A {@link PromisE} that resolves with the parsed JSON response.
  *
  * @example Make a POST request to create a new product
- * ```typescript
- * import { post } from '@superutils/fetch';
+ * ```javascript
+ * import fetch from '@superutils/fetch'
  *
- * const newProduct = { title: 'Perfume Oil' };
+ * const newProduct = { title: 'Perfume Oil' }
  *
- * try {
- *   const createdProduct = await post('https://dummyjson.com/products/add', newProduct);
- *   console.log('Product created:', createdProduct);
- * } catch (error) {
- *   console.error('Failed to create product:', error);
- * }
+ * fetch.post('https://dummyjson.com/products/add', newProduct).then(
+ *     createdProduct => console.log('Product created:', createdProduct),
+ *     error => console.error('Failed to create product:', error),
+ * )
  * ```
  */
 export default function post<T = unknown>(
@@ -37,7 +35,9 @@ export default function post<T = unknown>(
 		mergeFetchOptions(
 			{
 				method: 'post',
-				body: isStr(data) ? data : JSON.stringify(data),
+				body: isStr(data)
+					? data
+					: JSON.stringify(isFn(data) ? data() : data),
 			},
 			options,
 		),

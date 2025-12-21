@@ -47,8 +47,8 @@ const theActualData = await fetch('https://dummyjson.com/products/1', {
 })
 console.log(theActualData)
 // Alternative:
-const theActualData = await fetch.get('https://dummyjson.com/products/1')
-console.log(theActualData)
+const theActualData2 = await fetch.get('https://dummyjson.com/products/1')
+console.log(theActualData2)
 ```
 
 <div id="methods"></div>
@@ -124,7 +124,11 @@ setTimeout(() => {
        of the final "iphone 9" request. Both promises resolve to the same value.
     3. `ResolveIgnored.NEVER`: The promise for the aborted "iphone" request is neither resolved nor rejected.
        It will remain pending indefinitely.
-    4. `ResolveIgnored.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
+- **`resolveError`**: Controls how failed requests are handled.
+    1.  `ResolveError.NEVER`: Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks.
+    2.  `ResolveError.WITH_LAST`: (default) resolve with active promise result, the one that caused the current promise/callback to be ignored.
+    3.  `ResolveError.WITH_UNDEFINED`: resolve failed requests with `undefined` value
+    4.  `ResolveError.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
 
 #### Using defaults to reduce redundancy
 
@@ -160,8 +164,107 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
 
 ### `fetch.post(url, options)`
 
+Send a POST request to create a new product and receive the parsed JSON response.
+
+```javascript
+import fetch from '@superutils/fetch'
+
+const newProduct = { title: 'Perfume Oil' }
+
+fetch.post('https://dummyjson.com/products/add', newProduct).then(
+	createdProduct => console.log('Product created:', createdProduct),
+	error => console.error('Failed to create product:', error),
+)
+```
+
 <div id="post-deferred"></div>
 
-### `fetch.post.deferred(deferOptions, url, postOptions)`
+### `fetch.post.deferred(deferOptions, url, data, options)`
 
-<div id="method-specific"></div>
+HTTP POST request with debounce/throttle.
+
+#### Example 1: Auto-saving form data with throttling
+
+```typescript
+import fetch from '@superutils/fetch'
+import PromisE from '@superutils/promise'
+
+// Create a throttled function to auto-save product updates.
+const saveProductThrottled = fetch.post.deferred(
+	{
+		delayMs: 1000, // Throttle window of 1 second
+		throttle: true,
+		trailing: true, // Ensures the very last update is always saved
+		onResult: product => console.log(`[Saved] Product: ${product.title}`),
+	},
+	'https://dummyjson.com/products/1', // Default URL
+	undefined, // No default data
+	{ method: 'put' }, // Default method
+)
+// Simulate a user typing quickly, triggering multiple saves.
+console.log('User starts typing...')
+saveProductThrottled({ title: 'iPhone' }) // Executed immediately (leading edge)
+await PromisE.delay(200)
+saveProductThrottled({ title: 'iPhone 15' }) // Ignored (within 1000ms throttle window)
+await PromisE.delay(300)
+saveProductThrottled({ title: 'iPhone 15 Pro' }) // Ignored
+await PromisE.delay(400)
+saveProductThrottled({ title: 'iPhone 15 Pro Max' }) // Queued to execute on the trailing edge
+// Outcome:
+// The first call ('iPhone') is executed immediately.
+// The next two calls are ignored by the throttle.
+// The final call ('iPhone 15 Pro Max') is executed after the 1000ms throttle window closes,
+// thanks to `trailing: true`.
+// This results in only two network requests instead of four.
+```
+
+#### Example 2: debouncing an authentication token refresh
+
+```typescript
+import fetch from '@superutils/fetch'
+import PromisE from '@superutils/promise'
+
+// Mock a simple token store
+let currentRefreshToken = ''
+// Create a debounced function to refresh the auth token.
+// It waits 300ms after the last call before executing.
+const requestNewToken = fetch.post.deferred(
+	{
+		delayMs: 300, // debounce delay
+		onResult: ({ token = '' }) => {
+			console.log(
+				`Auth token successfully refreshed at ${new Date().toISOString()}`,
+			)
+			currentRefreshToken = token
+		},
+	},
+	'https://dummyjson.com/auth/refresh', // Default URL
+	() => ({
+		refreshToken: currentRefreshToken,
+		expiresInMins: 30,
+	}),
+)
+
+// First authenticate user to get the initial refresh token and then request new referesh tokens
+fetch
+	.post<{ refreshToken: string }>(
+		'https://dummyjson.com/auth/login',
+		{
+			username: 'emilys',
+			password: 'emilyspass',
+			expiresInMins: 30,
+		},
+		{ credentials: 'include' },
+	)
+	.then(result => {
+		currentRefreshToken = result?.refreshToken
+
+		requestNewToken() // Called at 0ms
+		PromisE.delay(50, requestNewToken) // Called at 50ms
+		PromisE.delay(100, requestNewToken) // Called at 100ms
+	}, console.error)
+// Outcome:
+// The first two calls are aborted by the debounce mechanism.
+// Only the final call executes, 300ms after it was made (at the 400ms mark).
+// The token is refreshed only once, preventing redundant network requests.
+```
