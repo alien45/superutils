@@ -12,7 +12,7 @@ import { IterableList } from './types'
  * 2. `key`: index/key
  * 3. `data`: value provided in the first argument (`data`)
  * @param limit	(optional) limit number of results
- * @param arArray
+ * @param asArray
  *
  * @returns new Map with filtered items
  *

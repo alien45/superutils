@@ -10,7 +10,7 @@ const clone = <T>(value: T, fallback = 'null') =>
  * Deep-copy an object to another object
  *
  * @param input input object
- * @param _output (optional) output object
+ * @param output (optional) output object
  * @param ignoreKeys (optional) input peroperties to be ignored. Prevents output's property to be overriden.
  *
  * For child object properties use "." (dot) separated path.
@@ -32,7 +32,7 @@ const clone = <T>(value: T, fallback = 'null') =>
  *
  * Default: `false`
  *
- * @param reverse (optional) whether to reverse sort object properties. Default: `false`
+ * @param recursive (optional) whether to recursively copy nested objects. Default: `false`
  *
  *
  * @returns copied and/or merged object

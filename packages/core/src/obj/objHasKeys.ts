@@ -5,7 +5,7 @@ import { isArr, isEmpty, isObj } from '../is'
  *
  * @param input
  * @param keys
- * @param equireValue (optional) whether each property should have some value.
+ * @param requireValue (optional) whether each property should have some value.
  */
 export function objHasKeys(
 	input: object | unknown[] = {},

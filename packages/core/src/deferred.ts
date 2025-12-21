@@ -2,8 +2,8 @@ import fallbackIfFails from './fallbackIfFails'
 import { type DeferredOptions, type ValueOrPromise } from './types'
 
 /**
- * @function deferred AKA debounce
- * @summary returns a function that invokes the callback function after certain delay/timeout.
+ *
+ * Returns a function that invokes the callback function after certain delay/timeout.
  * All errors will be gracefully swallowed.
  *
  * @param	callback 	function to be invoked after timeout
@@ -14,20 +14,18 @@ import { type DeferredOptions, type ValueOrPromise } from './types'
  * @param	config.tid	   (optional) Timeout Id. If provided, will clear the timeout on first invocation.
  *
  * @example Debounce function calls
- * ```typescript
+ * ```javascript
  * import { deferred } from '@superutils/core'
  *
  * const handleChange = deferred(
- *     event => console.log(event.target.value),
+ *     event => console.log('Value:', event.target.value),
  *     300 // debounce delay in milliseconds
  * )
  *
- * handleChange({ target: { value 1 } }) // will be ignored
- * handleChange({ target: { value 2 } }) // will be ingored
- * handleChange({ target: { value 3 } }) // will be invoked
+ * handleChange({ target: { value: 1 } }) // will be ignored
+ * handleChange({ target: { value: 2 } }) // will be ingored
+ * handleChange({ target: { value: 3 } }) // will be invoked
  * ```
- *
- *
  */
 export const deferred = <TArgs extends unknown[], ThisArg>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,

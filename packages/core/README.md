@@ -53,8 +53,7 @@ is.map(new Map()) // true
 is.number(123) // true
 is.number(NaN) // false
 is.url('https://google.com') // true
-...
-
+//...
 ```
 
 All these functions can also be imported independantly.
@@ -80,16 +79,15 @@ import {
 `debounce()`, a sugar for `deferred()`, is also available.
 
 ```javascript
-
 import { deferred } from '@superutils/core'
 
 const handleChange = deferred(
-    event => console.log(event.target.value),
-    300 // debounce delay in milliseconds
+	event => console.log(event.target.value),
+	300, // debounce delay in milliseconds
 )
-handleChange({ target: { value 1 } }) // will be ignored
-handleChange({ target: { value 2 } }) // will be ignored
-handleChange({ target: { value 3 } }) // will be executed
+handleChange({ target: { value: 1 } }) // will be ignored
+handleChange({ target: { value: 2 } }) // will be ignored
+handleChange({ target: { value: 3 } }) // will be executed
 ```
 
 <div id="throttle"></div>
@@ -100,12 +98,12 @@ handleChange({ target: { value 3 } }) // will be executed
 import { throttle } from '@superutils/core'
 
 const handleChange = throttle(
-    event => console.log(event.target.value),
-    300 // throttle duration in milliseconds
+	event => console.log(event.target.value),
+	300, // throttle duration in milliseconds
 )
-handleChange({ target: { value 1 } }) // will be executed
-handleChange({ target: { value 2 } }) // will be ignored
-handleChange({ target: { value 3 } }) // will be ignored
+handleChange({ target: { value: 1 } }) // will be executed
+handleChange({ target: { value: 2 } }) // will be ignored
+handleChange({ target: { value: 3 } }) // will be ignored
 ```
 
 <div id="fallback-if-fails"></div>
@@ -150,11 +148,10 @@ fallbackIfFails(
 ).then(console.log)
 // Prints the result when request is successful or fallback value when request fails
 
-
 // use a promise
 fallbackIfFails(
 	Promise.reject('error'),
-	[], // 
+	[], //
 )
 ```
 

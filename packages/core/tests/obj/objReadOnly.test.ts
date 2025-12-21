@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { asAny, objReadOnly } from '../../src'
+import { objReadOnly } from '../../src'
 
 describe('objClean', () => {
 	it('should return empty object when non-object value provided', () => {
@@ -17,11 +17,11 @@ describe('objClean', () => {
 		)
 
 		const addProp = vi.fn(() => {
-			asAny(obj).d = 4
+			;(obj as any).d = 4
 		})
 		expect(addProp).not.toThrow()
 		expect(addProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).d).toBe(undefined)
+		expect((obj as any).d).toBe(undefined)
 		expect(obj.hasOwnProperty('d')).toBe(false)
 
 		const defineProp = vi.fn(() => {
@@ -31,10 +31,10 @@ describe('objClean', () => {
 		})
 		expect(defineProp).not.toThrow()
 		expect(defineProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).e).toBe(undefined)
+		expect((obj as any).e).toBe(undefined)
 
 		const deleteProp = vi.fn(() => {
-			delete asAny(obj).a
+			delete (obj as any).a
 		})
 		expect(deleteProp).not.toThrow()
 		expect(deleteProp).toHaveBeenCalledOnce()
@@ -57,15 +57,15 @@ describe('objClean', () => {
 			{ silent: false },
 		)
 		const addProp = vi.fn(() => {
-			asAny(obj).d = 4
+			;(obj as any).d = 4
 		})
 		expect(addProp).toThrow()
 		expect(addProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).d).toBe(undefined)
+		expect((obj as any).d).toBe(undefined)
 		expect(obj.hasOwnProperty('d')).toBe(false)
 
 		const deleteProp = vi.fn(() => {
-			delete asAny(obj).a
+			delete (obj as any).a
 		})
 		expect(deleteProp).toThrow()
 
@@ -87,11 +87,11 @@ describe('objClean', () => {
 			{ add: true, silent: false },
 		)
 		const addProp = vi.fn(() => {
-			asAny(obj).d = 4
+			;(obj as any).d = 4
 		})
 		expect(addProp).not.toThrow()
 		expect(addProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).d).toBe(4)
+		expect((obj as any).d).toBe(4)
 		expect(obj.hasOwnProperty('d')).toBe(true)
 
 		const defineProp = vi.fn(() => {
@@ -101,7 +101,7 @@ describe('objClean', () => {
 		})
 		expect(defineProp).not.toThrow()
 		expect(defineProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).e).toBe(6)
+		expect((obj as any).e).toBe(6)
 		expect(obj.hasOwnProperty('e')).toBe(true)
 	})
 
@@ -116,11 +116,11 @@ describe('objClean', () => {
 			{ add: allowAddFn, silent: false },
 		)
 		const addProp = vi.fn(() => {
-			asAny(obj).d = 4
+			;(obj as any).d = 4
 		})
 		expect(addProp).not.toThrow()
 		expect(addProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).d).toBe(4)
+		expect((obj as any).d).toBe(4)
 		expect(obj.hasOwnProperty('d')).toBe(true)
 
 		const defineProp = vi.fn(() => {
@@ -130,7 +130,7 @@ describe('objClean', () => {
 		})
 		expect(defineProp).toThrow()
 		expect(defineProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).e).toBe(undefined)
+		expect((obj as any).e).toBe(undefined)
 		expect(obj.hasOwnProperty('e')).toBe(false)
 
 		expect(allowAddFn).toHaveBeenCalledTimes(2)
@@ -147,11 +147,11 @@ describe('objClean', () => {
 		)
 
 		const addProp = vi.fn(() => {
-			asAny(obj).d = 4
+			;(obj as any).d = 4
 		})
 		expect(addProp).toThrow()
 		expect(addProp).toHaveBeenCalledOnce()
-		expect(asAny(obj).d).toBe(undefined)
+		expect((obj as any).d).toBe(undefined)
 		expect(obj.hasOwnProperty('d')).toBe(false)
 
 		revoke()

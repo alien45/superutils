@@ -18,6 +18,19 @@ export type ThrottleOptions<ThisArg = unknown> = {
  * @param   config.tid      (optional)
  * @param	config.thisArg  (optional) the special `thisArgs` to be used when invoking the callback.
  * @param   config.trailing (optional) whether to enable trailing edge execution. Default: `true`
+ *
+ * @example
+ * ```javascript
+ * import { throttle } from '@superutils/core'
+ *
+ * const handleChange = throttle(
+ *     event => console.log('Value:', event.target.value),
+ *     300, // throttle duration in milliseconds
+ * )
+ * handleChange({ target: { value: 1 } }) // will be executed
+ * handleChange({ target: { value: 2 } }) // will be ignored
+ * handleChange({ target: { value: 3 } }) // will be ignored
+ * ```
  */
 export const throttled = <TArgs extends unknown[], ThisArg>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
