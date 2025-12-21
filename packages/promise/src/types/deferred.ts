@@ -78,14 +78,14 @@ export type DeferredAsyncOptions<
 	| ({
 			/** Debounce/deferred duration in milliseconds */
 			delayMs?: PositiveNumber<DelayMs>
-			throttle?: false | undefined
+			throttle?: false
 	  } & Omit<DeferredOptions, 'onError' | 'ThisArg' | 'tid'>)
+	| {
+			/** Sequential execution. All promises will be executed sequentially making sure there is no overlap. */
+			delayMs: 0
+			throttle?: false
+	  }
 )
-// | {
-// 		/** Sequential execution */
-// 		delayMs: 0
-// 		throttle?: false
-//   }
 
 /** Determines what to do when deferred promise/function fails */
 export enum ResolveError {
@@ -106,7 +106,7 @@ export enum ResolveError {
 export enum ResolveIgnored {
 	/** Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks. */
 	NEVER = 'NEVER',
-	/** (default) resolve with active promise result, the one that caused the current promise/callback to be ignored).  */
+	/** (default) resolve with active promise result, the one that caused the current promise/callback to be ignored. */
 	WITH_LAST = 'WITH_LAST',
 	/** resolve with `undefined` value */
 	WITH_UNDEFINED = 'WITH_UNDEFINED',

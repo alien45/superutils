@@ -21,7 +21,7 @@ export type RetryOptions<T = unknown> = {
 	 */
 	retryDelay?: number
 	/**
-	 * Add a random delay between 0ms and `retryDelayJitterMax` to the `retryDelayMs`.
+	 * Add a random delay between 0ms and `retryDelayJitterMax` to the `retryDelay`.
 	 * Default: `true`
 	 */
 	retryDelayJitter?: boolean

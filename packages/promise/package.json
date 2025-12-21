@@ -4,7 +4,7 @@
 		"url": "https://github.com/alien45/superutils/issues"
 	},
 	"dependencies": {
-		"@superutils/core": "^1.0.7"
+		"@superutils/core": "^1.0.8"
 	},
 	"description": "An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.",
 	"files": [
@@ -23,7 +23,7 @@
 	"main": "dist/index.js",
 	"name": "@superutils/promise",
 	"peerDpendencies": {
-		"@superutils/core": "^1.0.7"
+		"@superutils/core": "^1.0.8"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -43,5 +43,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "dist/index.d.ts",
-	"version": "1.0.7"
+	"version": "1.0.9"
 }

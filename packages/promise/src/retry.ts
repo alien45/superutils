@@ -42,7 +42,7 @@ import { RetryOptions } from './types'
  * - `'linear'` uses a constant delay.
  *
  * Default: `'exponential'`
- * @param options.retryDelayMs (optional) The base delay in milliseconds between retries.
+ * @param options.retryDelay (optional) The base delay in milliseconds between retries.
  *
  * Default: `300`
  * @param options.retryDelayJitter (optional) If true, adds a random jitter to the delay to prevent

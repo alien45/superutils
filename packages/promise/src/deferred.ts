@@ -97,10 +97,15 @@ import {
  * ```
  */
 export function deferred<T, ThisArg = unknown, Delay extends number = number>(
-	options?: DeferredAsyncOptions<ThisArg, Delay>,
+	options: DeferredAsyncOptions<ThisArg, Delay> = {},
 ): DeferredAsyncCallback {
 	const { defaults } = deferred
-	options = objCopy(defaults, options, [], 'empty')
+	options = objCopy(
+		defaults as Record<string, unknown>,
+		options as Record<string, unknown>,
+		[],
+		'empty',
+	) as DeferredAsyncOptions<ThisArg, Delay>
 	let { onError, onIgnore, onResult } = options
 	const {
 		delayMs,
@@ -108,7 +113,7 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 		resolveIgnored,
 		thisArg,
 		throttle,
-	} = options as DeferredAsyncOptions<ThisArg, Delay>
+	} = options
 	let lastPromisE: IPromisE<T> | null = null
 	interface QueueItem extends PromisEBase<unknown> {
 		getPromise: DeferredAsyncGetPromise<T>

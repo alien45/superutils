@@ -57,7 +57,7 @@ describe('PromisE.retry', () => {
 	})
 
 	it('should use exponential backoff delay', async () => {
-		const retryDelayMs = 1000
+		const retryDelay = 1000
 		const retry = 5
 		const timestamps: Date[] = []
 		const func = vi.fn(() => {
@@ -67,7 +67,7 @@ describe('PromisE.retry', () => {
 			retryIf: () => true, // keep re-executing regardless of result/error
 			retry, // execute total 6 times
 			retryBackOff: 'exponential',
-			retryDelay: retryDelayMs,
+			retryDelay,
 			retryDelayJitter: false,
 			retryDelayJitterMax: undefined,
 		})
