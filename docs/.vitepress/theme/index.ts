@@ -8,8 +8,6 @@ export default {
 		app.component('Playground', Playground)
 	},
 }
-// add for global access and testing purposes
-;(window as any).embedPlayground = embedPlayground
 
 setTimeout(() => {
 	// in case of hot-reload, remove previous listener first
