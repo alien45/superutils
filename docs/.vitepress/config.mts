@@ -1,6 +1,7 @@
 // docs/.vitepress/config.ts
 import { defineConfig } from 'vitepress'
 import typedocSidebar from '../packages/typedoc-sidebar.json'
+import './theme/stackblitz'
 
 export default defineConfig({
 	base: '/superutils/', // Relative path to page. Change if ever deployed to a domain
@@ -12,7 +13,11 @@ export default defineConfig({
 		[
 			'style',
 			{},
-			`.try-button {
+			`.try-button-wrap {
+				margin: 16px 0;
+				position: relative;
+			}
+			.try-button {
 				display: inline-block;
 				margin-top: 10px;
 				padding: 6px 12px;
@@ -22,11 +27,19 @@ export default defineConfig({
 				text-decoration: none;
 				font-size: 14px;
 				transition: all 0.2s;
+
+
+				position: absolute;
+				z-index: 2;
+				right: 70px;
+				margin-top: 13px;
 			}
 			.try-button:hover {
 				background: #0a68c9;
-				transform: translateY(-1px);
 				box-shadow: 0 2px 8px rgba(10, 104, 201, 0.3);
+				color: black;
+				text-decoration: unset;
+				transform: translateY(-1px);
 			}`,
 		],
 	],

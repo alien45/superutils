@@ -87,6 +87,9 @@ if [[ "${COVERAGE}" == "true" ]]; then
     SCRIPT="vitest:coverage"
 fi
 
+echo "Coverage: ${COVERAGE}"
+echo "UI: ${UI}"
+echo "RUN: ${RUN}"
 # Use eval to correctly handle arguments with spaces or quotes
 # The '--' separator tells npm to pass all subsequent args to the script
 eval npm run "$SCRIPT" -- $VITEST_CLI_ARGS

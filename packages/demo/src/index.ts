@@ -1,5 +1,4 @@
 import {
-	asAny,
 	fallbackIfFails,
 	toDatetimeLocal,
 	TupleMaxLength,
@@ -46,9 +45,9 @@ console.log('Started')
 
 // 	// await Promise.all(promises.map(promise => {
 // 	//     promise.then(
-// 	//         () => asAny(promise).resolved = true,
-// 	//         () => asAny(promise).rejected = true,
-// 	//     ).finally(() => asAny(promise).pending = false)
+// 	//         () => (promise as any)).resolved = true,
+// 	//         () => (promise as any)).rejected = true,
+// 	//     ).finally(() => (promise as any)).pending = false)
 // 	// }))
 // 	// const allResolved = promises.every(promise => promise.resolved)
 // 	// console.log({allResolved})

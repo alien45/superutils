@@ -7,7 +7,7 @@ export default defineConfig(config => {
 	const pkg = process.env.PKG || '*' // "*" => all packages
 	const coverage = `${process.env.COVERAGE}`.toLowerCase() === 'true'
 	const skipFull = `${process.env.SKIP_FULL}`.toLowerCase() === 'true'
-	const runOnce = `${process.env.RUN}`.toLowerCase() === 'true'
+	const watch = `${process.env.RUN}`.toLowerCase() !== 'true'
 	const ui = `${process.env.UI}`.toLowerCase() === 'true'
 	const exclude = [
 		'coverage',
@@ -23,6 +23,7 @@ export default defineConfig(config => {
 		'**/*/{tests,test}/**/!(*.{test,spec}).{ts,tsx}',
 	]
 	console.log('\nTest Package(s):', pkg !== '*' ? pkg : 'All', '\n')
+	// console.log({ coverage, skipFull, watch, ui, run: process.env.RUN })
 	return {
 		test: {
 			api: {
@@ -52,7 +53,7 @@ export default defineConfig(config => {
 				`packages/${pkg}/test/*.{ts,tsx}`,
 			],
 			ui,
-			watch: !runOnce,
+			watch,
 		},
 	}
 })

@@ -5,7 +5,7 @@ import { defineConfig } from 'eslint/config'
 
 const languageOptions = {
 	parserOptions: {
-		project: true,
+		// project: true,
 		projectService: true,
 		tsconfigRootDir: import.meta.dirname,
 	},
