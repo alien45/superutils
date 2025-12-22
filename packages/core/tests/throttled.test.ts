@@ -25,7 +25,7 @@ describe('throttled', () => {
 		fn()
 		fn()
 		vi.advanceTimersByTime(delayMsX2)
-		expect(onError).toHaveBeenCalledTimes(2)
+		expect(onError).toHaveBeenCalledTimes(1)
 	})
 
 	it('should bind thisArg correctly', () => {

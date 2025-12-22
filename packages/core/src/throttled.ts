@@ -68,6 +68,6 @@ export const throttled = <TArgs extends unknown[], ThisArg>(
  */
 throttled.defaults = {
 	onError: undefined,
-	trailing: true,
+	trailing: false,
 } satisfies ThrottleOptions
 export default throttled
