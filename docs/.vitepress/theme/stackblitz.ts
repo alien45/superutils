@@ -45,6 +45,7 @@ export const embedPlayground = (
 		const modal = document.createElement('div')
 		modal.classList.add('modal', 'playground')
 		modal.style = `
+			background: var(--vp-c-bg);
 			position: fixed;
 			top: 0;
 			left: 0;
