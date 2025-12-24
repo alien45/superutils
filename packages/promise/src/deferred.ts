@@ -73,7 +73,7 @@ import {
  * @example Explanation & example usage:
  * ```typescript
  * const example = throttle => {
- *     const df = PromisE.deferred(throttle)
+ *     const df = PromisE.deferred({ delayMs: 100, throttle })
  *     df(() => PromisE.delay(5000)).then(console.log)
  *     df(() => PromisE.delay(500)).then(console.log)
  *     df(() => PromisE.delay(1000)).then(console.log)
@@ -99,109 +99,110 @@ import {
 export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 	options: DeferredAsyncOptions<ThisArg, Delay> = {},
 ): DeferredAsyncCallback {
-	const { defaults } = deferred
 	options = objCopy(
-		defaults as Record<string, unknown>,
+		deferred.defaults as Record<string, unknown>,
 		options as Record<string, unknown>,
 		[],
 		'empty',
 	) as DeferredAsyncOptions<ThisArg, Delay>
 	let { onError, onIgnore, onResult } = options
 	const {
-		delayMs,
-		resolveError, // by default reject on error
+		delayMs = 0,
+		resolveError,
 		resolveIgnored,
 		thisArg,
 		throttle,
 	} = options
-	let lastPromisE: IPromisE<T> | null = null
 	interface QueueItem extends PromisEBase<unknown> {
 		getPromise: DeferredAsyncGetPromise<T>
-		started?: boolean
+		started: boolean
+		sequence: number
 	}
+	let prevQItem: QueueItem | null = null
 	const queue = new Map<symbol, QueueItem>()
-	const gotDelay = isPositiveNumber(delayMs)
+	const isSequential = !isPositiveNumber(delayMs)
+
 	if (thisArg !== undefined) {
 		onError = onError?.bind(thisArg)
 		onIgnore = onIgnore?.bind(thisArg)
 		onResult = onResult?.bind(thisArg)
 	}
-	const ignoreOrProceed = (currentId: symbol, qItem?: QueueItem) => {
-		lastPromisE = null
-		if (!gotDelay) {
+	// after a queue item is handled, decide whether to ignore or proceed with remaining items in the queue
+	const handleRemaining = (currentId: symbol) => {
+		const _prevQItem = prevQItem
+		prevQItem = null
+
+		if (isSequential) {
 			queue.delete(currentId)
 			const [nextId, nextItem] = [...queue.entries()][0] || []
-			return nextId && nextItem && execute(nextId, nextItem)
+			return nextId && nextItem && handleItem(nextId, nextItem)
 		}
 
-		const items = [...queue.entries()]
-		const currentIndex = items.findIndex(([id]) => id === currentId)
-		for (let i = 0; i <= currentIndex; i++) {
-			const [iId, iItem] = items[i]
-			queue.delete(iId)
-			if (iItem == undefined || iItem.started) continue
-			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], undefined)
+		let items = [...queue.entries()]
+		if (throttle && options.trailing) {
+			items = items.slice(
+				0,
+				items.findIndex(([id]) => id === currentId),
+			)
+		} else if (!throttle && options.leading) {
+			items = items.slice(0, -1) // prevent the last item from being ignored
+		}
 
-			// Options for ignored
-			// WITH_UNDEFINED: resolve with undefined
-			// WITH_LAST: resolve/reject with most recent promise
-			// NEVER: leave unresovled (potential memory leak if not handled properly by consumer)
+		for (const [iId, iItem] of items) {
+			queue.delete(iId)
+			if (iItem === undefined || iItem.started) continue
+
+			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], 0)
+
 			switch (resolveIgnored) {
 				case ResolveIgnored.WITH_UNDEFINED:
+					// resolve with undefined
 					iItem.resolve(undefined as T)
 					break
 				case ResolveIgnored.WITH_LAST:
-					qItem?.then(iItem.resolve, iItem.reject)
+					// resolve/reject with most recent promise
+					_prevQItem?.then(iItem.resolve, iItem.reject)
 					break
 				case ResolveIgnored.NEVER:
-					// just ignore
+					// leave unresovled (potential memory leak if not handled properly by consumer)
 					break
 			}
 		}
 	}
-	const finalizeCb =
-		<TResolve extends true | false = true>(
-			resolve: TResolve,
-			id: symbol,
-			qItem: QueueItem,
-		) =>
-		(resultOrErr: unknown) => {
-			ignoreOrProceed(id, qItem)
-			if (resolve) {
-				qItem.resolve(resultOrErr)
-				onResult && fallbackIfFails(onResult, [resultOrErr], undefined)
-				return
-			}
-
-			onError && fallbackIfFails(onError, [resultOrErr], undefined)
+	const executeItem = async (id: symbol, qItem: QueueItem) => {
+		qItem.started = true
+		prevQItem = qItem
+		// execute the promise/function
+		try {
+			const result = await PromisEBase.try(qItem.getPromise)
+			qItem.resolve(result)
+			onResult && fallbackIfFails(onResult, [result], undefined)
+		} catch (err) {
+			onError && fallbackIfFails(onError, [err], undefined)
 			switch (resolveError) {
 				case ResolveError.REJECT:
-					qItem.reject(resultOrErr as Error)
+					qItem.reject(err as Error)
 				// eslint-disable-next-line no-fallthrough
 				case ResolveError.NEVER:
 					break
 				case ResolveError.WITH_UNDEFINED:
-					resultOrErr = undefined
-				// eslint-disable-next-line no-fallthrough
+					qItem.resolve(undefined)
+					break
 				case ResolveError.WITH_ERROR:
-					qItem.resolve(resultOrErr)
+					qItem.resolve(err)
 					break
 			}
 		}
-	const execute = (() => {
-		const execute = (id: symbol, qItem: QueueItem) => {
-			qItem.started = true
-			lastPromisE = new PromisEBase(qItem.getPromise())
-			lastPromisE.then(
-				finalizeCb(true, id, qItem),
-				finalizeCb(false, id, qItem),
+		handleRemaining(id)
+	}
+	// handle items in one of the following modes: sequential, debounce or throttle
+	const handleItem = isSequential
+		? executeItem
+		: (throttle ? throttledCore : deferredCore)(
+				executeItem,
+				delayMs,
+				options,
 			)
-		}
-		if (!gotDelay) return execute
-
-		const deferFn = throttle ? throttledCore : deferredCore
-		return deferFn(execute, delayMs, options)
-	})()
 
 	const deferredFunc = <TResult = T>(
 		promise: Promise<TResult> | (() => Promise<TResult>),
@@ -214,7 +215,9 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 		qItem.started = false
 		queue.set(id, qItem)
 
-		if (gotDelay || !lastPromisE) execute(id, qItem)
+		// Execute first item in a series.
+		// Or, in throttle/debounce mode, send to respective delay function
+		if (!prevQItem || !isSequential) handleItem(id, qItem)
 
 		return qItem as IPromisE<TResult>
 	}
@@ -222,8 +225,15 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 }
 /** Global default values */
 deferred.defaults = {
+	/**
+	 * Default delay in milliseconds, used in `debounce` and `throttle` modes.
+	 *
+	 * Use `0` (or negative number) to disable debounce/throttle and execute all operations sequentially.
+	 */
 	delayMs: 100,
+	/** Set the default error resolution behavior. {@link ResolveError} for all options. */
 	resolveError: ResolveError.REJECT,
+	/** Set the default ignored resolution behavior. See {@link ResolveIgnored} for all options. */
 	resolveIgnored: ResolveIgnored.WITH_LAST,
 } satisfies DeferredAsyncDefaults
 export default deferred

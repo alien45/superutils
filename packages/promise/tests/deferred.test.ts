@@ -71,16 +71,15 @@ describe('PromisE.deferred', () => {
 			deferredFn(() => PromisE.delay(250, 3)),
 		])
 		await vi.runAllTimersAsync()
-		const results = await all
-		expect(results).toEqual([1, undefined, 3])
+		await expect(all).resolves.toEqual([1, undefined, 3])
 	})
 
 	it('should leading-edge debounce calls and only execute first & last and ignored will never resolve', async () => {
 		const context = getDeferredContext()
+		context.throttle = false
 		context.resolveIgnored = ResolveIgnored.NEVER
-		context.leading = true
+		;(context as any).leading = true
 		const deferredFn = PromisE.deferred(context)
-
 		deferredFn(() => PromisE.delay(50, 1))
 		deferredFn(() => PromisE.delay(50, 2))
 		deferredFn(() => PromisE.delay(50, 3))
@@ -123,26 +122,21 @@ describe('PromisE.deferred', () => {
 		simlateScenario(ResolveError.NEVER, none, none)
 	})
 
-	it('should throttle calls, sequentially executing the first and last', async () => {
+	it('should throttle calls and execute the first and last', async () => {
 		const context = getDeferredContext()
 		context.resolveIgnored = ResolveIgnored.WITH_LAST
+		context.resolveError = ResolveError.REJECT
 		context.throttle = true
+		;(context as any).trailing = true
 		const deferredFn = PromisE.deferred(context)
-		const executionOrder: number[] = []
-		const all = Promise.all(
-			new Array(3).fill(0).map((_, i) =>
-				deferredFn(() => {
-					executionOrder.push(i + 1)
-					return PromisE.delay(50, i + 1)
-				}),
-			),
+		Promise.all(
+			new Array(3)
+				.fill(0)
+				.map((_, i) => deferredFn(() => PromisE.delay(50, i + 1))),
 		)
 		await vi.runAllTimersAsync()
-		await all
-
-		expect(executionOrder).toEqual([1, 3])
-		expect(context.data.results).toContain(1)
-		expect(context.data.results).toContain(3)
+		expect(context.data.results).toEqual([1, 3])
+		expect(context.data.ignored.length).toBe(1)
 	})
 
 	it('should resolve ignored promises with undefined', async () => {

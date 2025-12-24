@@ -1,62 +1,37 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE from '../src'
+import PromisE, { ResolveError, ResolveIgnored } from '../src'
+import { getDeferredContext } from './getDeferredContext'
 
 describe('PromisE.deferredCallback', () => {
-	let context: Parameters<typeof PromisE.deferredCallback>[1]
-		& Record<string, any>
 	beforeEach(() => {
 		vi.useFakeTimers()
-		context = {
-			callCount: 0,
-			delayMs: 100,
-			error: null,
-			ignored: false,
-			lastResult: null,
-			results: [] as number[],
-			onError(err) {
-				this.callCount++
-				this.error = err
-			},
-			onIgnore() {
-				this.ignored = true
-			},
-			onResult(res) {
-				this.callCount++
-				this.lastResult = res
-				this.results.push(res)
-			},
-			get thisArg() {
-				return this
-			},
-		}
 	})
 
 	afterEach(() => {
 		vi.useRealTimers()
-		context = {}
 	})
 
-	it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks ', async () => {
+	it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks', async () => {
+		const context = getDeferredContext()
+		context.delayMs = 100
+		context.throttle = false
+		context.resolveIgnored = ResolveIgnored.NEVER
+		context.resolveError = ResolveError.REJECT
 		const callback = (value: number) => {
-			if (value === 3) return PromisE.delayReject(50, 'error')
-			return PromisE.delay(50, `${value}`)
+			if (value === 3) return PromisE.delayReject(50, 'error' + value)
+			return PromisE.delay(50, value)
 		}
 
 		const deferredCb = PromisE.deferredCallback(callback, context)
 		/* 1 & 2 will be ignored, but will reject because `last` will reject when `ResolveIgnored.WITH_LAST` is used */
-		const first = deferredCb(1)
-		const second = deferredCb(2)
-		vi.runAllTimersAsync()
-		const last = deferredCb(3)
-		vi.runAllTimersAsync()
-
-		await expect(first).rejects.toThrow('error')
-		await expect(second).rejects.toThrow('error')
-		await expect(last).rejects.toThrow('error')
-		expect(context.error).toBe('error')
-		expect(context.ignored).toBe(true)
-		expect(context.lastResult).toBe(null) // because the last/only executed callback rejected
-		expect(context.results).toEqual([])
+		deferredCb(1)
+		deferredCb(2)
+		await vi.advanceTimersByTimeAsync(200)
+		deferredCb(3).catch(() => {})
+		await vi.advanceTimersByTimeAsync(200)
+		expect(context.data.errors.length).toBe(1)
+		expect(context.data.ignored.length).toBe(1)
+		expect(context.data.results.length).toBe(1)
 	})
 
 	it('should debounce/defer calls, sequentially executing the last of every series', async () => {

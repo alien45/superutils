@@ -27,17 +27,19 @@ export type DeferredAsyncOptions<
 	DelayMs extends number = number,
 > = {
 	/**
-	 * Delay in milliseconds, used for `debounce` and `throttle` modes.
+	 * Delay in milliseconds, used for `debounce` and `throttle` modes. Use `0` for sequential execution.
 	 *
-	 * Default: `100`
+	 * Use `0` to disable debounce/throttle and execute all operations sequentially.
+	 *
+	 * Default: `100` (or what is set in `PromisE.deferred.defaults.delayMs`)
 	 */
-	// delayMs?: number
+	delayMs?: 0 | PositiveNumber<DelayMs>
 
 	/** Callback invoked whenever promise/function throws error */
 	onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
 
 	/**
-	 * Whenever a promise/function is ignored when in debource/throttle mode, `onIgnored` wil be invoked.
+	 * Whenever a promise/function is ignored when in debounce/throttle mode, `onIgnored` wil be invoked.
 	 * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
 	 * Use for debugging or logging purposes.
 	 */
@@ -72,19 +74,14 @@ export type DeferredAsyncOptions<
 } & (
 	| ({
 			/** Throttle duration in milliseconds */
-			delayMs?: PositiveNumber<DelayMs>
+			delayMs: PositiveNumber<DelayMs>
 			throttle: true
-	  } & Omit<ThrottleOptions, 'onError' | 'ThisArg' | 'tid'>)
+	  } & Pick<ThrottleOptions, 'trailing'>)
 	| ({
 			/** Debounce/deferred duration in milliseconds */
 			delayMs?: PositiveNumber<DelayMs>
 			throttle?: false
-	  } & Omit<DeferredOptions, 'onError' | 'ThisArg' | 'tid'>)
-	| {
-			/** Sequential execution. All promises will be executed sequentially making sure there is no overlap. */
-			delayMs: 0
-			throttle?: false
-	  }
+	  } & Pick<DeferredOptions, 'leading'>)
 )
 
 /** Determines what to do when deferred promise/function fails */

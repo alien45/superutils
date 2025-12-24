@@ -1,7 +1,7 @@
 import { DeferredAsyncOptions, ResolveError, ResolveIgnored } from '../src/'
 
-export const getDeferredContext = () =>
-	({
+export const getDeferredContext = () => {
+	const context = {
 		data: {
 			errors: [],
 			ignored: [],
@@ -9,24 +9,28 @@ export const getDeferredContext = () =>
 		},
 		delayMs: 100,
 		onError(err) {
-			this.data.errors.push(err)
+			context.data.errors.push(err)
 		},
 		onIgnore(ignored) {
-			this.data.ignored.push(ignored)
+			context.data.ignored.push(ignored)
 		},
 		onResult(result) {
-			this.data.results.push(result)
+			context.data.results.push(result)
 		},
 		resolveIgnored: ResolveIgnored.WITH_LAST,
 		resolveError: ResolveError.REJECT,
 		throttle: false,
+		trailing: false,
+		leading: false,
 		get thisArg() {
 			return this
 		},
-	}) as DeferredAsyncOptions & {
+	} as DeferredAsyncOptions & {
 		data: {
 			errors: unknown[]
 			ignored: unknown[]
 			results: unknown[]
 		}
 	}
+	return context
+}

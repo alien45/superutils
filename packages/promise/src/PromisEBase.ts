@@ -82,7 +82,13 @@ export class PromisEBase<T = unknown>
 		return this._state === 1
 	}
 
-	/** Get promise status code */
+	/**
+	 * Get promise status code:
+	 *
+	 * - `0` = pending
+	 * - `1` = resolved
+	 * - `2` = rejected
+	 */
 	public get state() {
 		return this._state
 	}
