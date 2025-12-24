@@ -5,28 +5,21 @@ export * from './mergeFetchOptions'
 export * from './post'
 export * from './types'
 import fetchOriginal from './fetch'
-import fetchDeferred, { DeferredAsyncOptions } from './fetchDeferred'
+import fetchDeferred from './fetchDeferred'
 import post from './post'
 import postDeferred from './postDeferred'
 import {
+	FetchArgs,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchInterceptors,
 	FetchOptions,
 	PostArgs,
+	PostDeferredCbArgs,
 	PostOptions,
 } from './types'
 
 /** Create a method-specific fetch function attached with a `.deferred()` function */
-const createFetchMethodFunc = (method = 'get') => {
-	/** Make debounced/throttled request */
-	const deferred = <
-		ThisArg,
-		Delay extends number,
-		GlobalUrl extends string | URL,
-	>(
-		...args: Parameters<typeof fetchDeferred<ThisArg, Delay, GlobalUrl>>
-	) => fetchDeferred<ThisArg, Delay, GlobalUrl>(...args)
-
+export const createFetchMethodFunc = (method = 'get') => {
 	const methodFunc = <T>(
 		url: string | URL,
 		options?: Omit<FetchOptions, 'method'>,
@@ -35,37 +28,32 @@ const createFetchMethodFunc = (method = 'get') => {
 		;(options as FetchOptions).method = method
 		return fetchOriginal<T, FetchOptions>(url, options)
 	}
-	methodFunc.deferred = deferred
+
+	/** Make debounced/throttled request */
+	methodFunc.deferred = <
+		ThisArg = unknown,
+		Delay extends number = number,
+		GlobalUrl = FetchArgs[0] | undefined,
+		CbArgs extends unknown[] = undefined extends GlobalUrl
+			? FetchArgs<true> // true: deny callback overriding 'method' in options
+			: [options?: FetchArgs<true>[1]],
+	>(
+		...args: Parameters<
+			typeof fetchDeferred<ThisArg, Delay, GlobalUrl, CbArgs>
+		>
+	) => {
+		args[2] ??= {}
+		args[2].method = method
+		return fetchDeferred(...args)
+	}
+
 	return methodFunc
 }
 
-/** Create a method-specific function that uses/allows "options.body" attached with a `.deferred()` function */
-const createPostMethodFunc = (
+/** Create a method-specific function for POST-like methods and with a `.deferred()` function */
+export const createPostMethodFunc = (
 	method: Pick<PostOptions, 'method'>['method'] = 'post',
 ) => {
-	/** Make debounced/throttled request */
-	const deferredFunc = <
-		ThisArg,
-		Delay extends number = number,
-		Args extends PostArgs<true> = PostArgs<true>,
-		GlobalUrl extends Args[0] | undefined = undefined,
-		GlobalData extends Args[1] | undefined = undefined,
-	>(
-		deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
-		globalUrl?: GlobalUrl,
-		globalData?: GlobalData,
-		defaultOptions?: Args[2],
-	) => {
-		defaultOptions ??= {}
-		;(defaultOptions as PostOptions).method = method
-		return postDeferred<ThisArg, Delay, GlobalUrl, GlobalData>(
-			deferOptions,
-			globalUrl,
-			globalData,
-			defaultOptions,
-		)
-	}
-
 	const methodFunc = <T, Args extends PostArgs<true> = PostArgs<true>>(
 		url: Args[0],
 		data?: Args[1],
@@ -75,7 +63,27 @@ const createPostMethodFunc = (
 		;(options as PostOptions).method = method
 		return post<T>(url, data, options)
 	}
-	methodFunc.deferred = deferredFunc
+
+	methodFunc.deferred = <
+		ThisArg,
+		Delay extends number = number,
+		GlobalUrl extends PostArgs[0] | undefined = undefined,
+		GlobalData extends PostArgs[1] | undefined = undefined,
+		// Conditionally define the arguments for the returned function
+		CbArgs extends unknown[] = PostDeferredCbArgs<
+			GlobalUrl,
+			GlobalData,
+			true // true: deny callback overriding 'method' in options
+		>,
+	>(
+		...args: Parameters<
+			typeof postDeferred<ThisArg, Delay, GlobalUrl, GlobalData, CbArgs>
+		>
+	) => {
+		args[3] ??= {}
+		args[3].method = method
+		return postDeferred(...args)
+	}
 
 	return methodFunc
 }
@@ -177,18 +185,18 @@ const _put = createPostMethodFunc('put')
  * ```
  */
 export const fetch = fetchOriginal as typeof fetchOriginal & {
+	delete: typeof _delete
 	get: typeof _get
 	head: typeof _head
 	options: typeof _options
-	delete: typeof _delete
 	patch: typeof _patch
 	post: typeof _post
 	put: typeof _put
 }
+fetch.delete = _delete
 fetch.get = _get
 fetch.head = _head
 fetch.options = _options
-fetch.delete = _delete
 fetch.patch = _patch
 fetch.post = _post
 fetch.put = _put

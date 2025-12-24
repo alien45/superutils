@@ -1,4 +1,5 @@
 import {
+	fallbackIfFails,
 	isEmpty,
 	isFn,
 	isPositiveNumber,
@@ -66,7 +67,13 @@ export const fetch = <
 			const { status = 0 } = response
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
-				const jsonError = (await response.json()) as Error
+				const jsonError = (await fallbackIfFails(
+					// try to parse error response as json first
+					() => response.json(),
+					[],
+					// fallback to text if json parsing fails
+					`Request failed with status code: ${status}`,
+				)) as Error
 				const message =
 					jsonError?.message || `${errMsgs.requestFailed} ${status}.`
 				throw new Error(`${message}`.replace('Error: ', ''), {

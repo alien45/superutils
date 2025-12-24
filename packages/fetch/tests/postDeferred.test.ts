@@ -61,6 +61,7 @@ describe('postDeferred', () => {
 	})
 
 	afterEach(() => {
+		mockPost200.mockClear()
 		vi.unstubAllGlobals()
 
 		vi.useRealTimers()

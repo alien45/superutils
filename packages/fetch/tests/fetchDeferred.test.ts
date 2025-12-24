@@ -56,8 +56,8 @@ describe('fetchDeferred', () => {
 	})
 
 	afterEach(() => {
+		mockFetch200.mockClear()
 		vi.unstubAllGlobals()
-
 		vi.useRealTimers()
 	})
 
@@ -65,7 +65,6 @@ describe('fetchDeferred', () => {
 		// This test will now use the mocked fetch.
 		// - Default fetch url is set to `${productsBaseUrl}/1`
 		// - 3 calls are made within 100ms.
-		// - 1st is called using default url. 2nd & 3rd are called by overriding default URL.
 		// - The first 2 are ignored. The 3rd is queued.
 		// - runAllTimersAsync executes only the 3rd call.
 		const context = getDeferredContext()

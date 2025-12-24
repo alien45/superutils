@@ -1,6 +1,13 @@
 import { ValueOrPromise } from '@superutils/core'
 import { type RetryOptions } from '@superutils/promise'
 
+// Export useful types from PromisE for ease of use
+export {
+	type DeferredAsyncOptions,
+	ResolveError,
+	ResolveIgnored,
+} from '@superutils/promise'
+
 export type FetchArgs<OmitMethod extends boolean = false> = [
 	url: string | URL,
 	options?: OmitMethod extends true
@@ -342,6 +349,7 @@ export type PostArgs<OmitMethod = false> = [
 ]
 
 /**
+ * Dynamic arguments for deffered post-like methods.
  *
  * @example
  * ```typescript
@@ -371,18 +379,18 @@ export type PostArgs<OmitMethod = false> = [
  * f4().then(console.log, console.warn)
  * ```
  */
-export type PostDeferredCallbackArgs<
+export type PostDeferredCbArgs<
 	TUrl = undefined,
 	TData = undefined,
 	OmitMethod extends boolean = true,
 	CbArgs extends PostArgs<OmitMethod> = PostArgs<OmitMethod>,
 	Options = CbArgs[2],
-	RPA extends unknown[] = Required<CbArgs>,
-> = [TUrl, TData] extends [RPA[0], undefined] // only URL provided
+	CbArgsReq extends unknown[] = Required<CbArgs>,
+> = [TUrl, TData] extends [CbArgsReq[0], undefined] // only URL provided
 	? [data?: CbArgs[1], options?: Options]
-	: [TUrl, TData] extends [undefined, RPA[1]] // only data provided
+	: [TUrl, TData] extends [undefined, CbArgsReq[1]] // only data provided
 		? [url: CbArgs[0], options?: Options]
-		: [TUrl, TData] extends [RPA[0], RPA[1]]
+		: [TUrl, TData] extends [CbArgsReq[0], CbArgsReq[1]]
 			? [options?: Options] // Both default URL and data are provided
 			: CbArgs
 

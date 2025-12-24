@@ -20,7 +20,7 @@ This package enhances the native `fetch` API by providing a streamlined interfac
 - **Simplified API**: Automatically parses JSON responses, eliminating the need for `.then(res => res.json())`.
 - **Built-in Retries**: Automatic request retries with configurable exponential or fixed backoff strategies.
 - **Request Timeouts**: Easily specify a timeout for any request to prevent it from hanging indefinitely.
-- **Cancellable & Debounced Requests**: The `fetchDeferred` utility provides debouncing and throttling capabilities, automatically cancelling stale or intermediate requests. This is ideal for features like live search inputs.
+- **Cancellable & Debounced Requests**: The `fetch.METHOD.deferred()` utilities provide debouncing and throttling capabilities, automatically cancelling stale or intermediate requests. This is ideal for features like live search inputs.
 - **Interceptors**: Hook into the request/response lifecycle to globally modify requests, handle responses, or manage errors.
 - **Strongly Typed**: Written in TypeScript for excellent autocompletion and type safety.
 - **Isomorphic**: Works seamlessly in both Node.js and browser environments.
@@ -42,13 +42,13 @@ Make a simple GET request. No need for `response.json()` or `result.data.theActu
 ```typescript
 import fetch from '@superutils/fetch'
 
-const theActualData = await fetch('https://dummyjson.com/products/1', {
+fetch('https://dummyjson.com/products/1', {
 	method: 'get', // default
-})
-console.log(theActualData)
+}).then(theActualData => console.log(theActualData))
 // Alternative:
-const theActualData2 = await fetch.get('https://dummyjson.com/products/1')
-console.log(theActualData2)
+fetch
+	.get('https://dummyjson.com/products/1')
+	.then(theActualData => console.log(theActualData))
 ```
 
 <div id="methods"></div>
@@ -81,13 +81,13 @@ While `fetch()` provides access to all HTTP request methods by specifying it in 
 
 A practical utility that combines `PromisE.deferred()` from the `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced, or throttled search inputs.
 
-```typescript
-import fetch, { fetchDeferred, ResolveIgnored } from '@superutils/fetch'
+```javascript
+import fetch from '@superutils/fetch'
 
 // Create a debounced search function with a 300ms delay.
 const searchProducts = fetch.get.deferred({
 	delayMs: 300, // Debounce delay
-	resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (aborted) promises will resolve with `undefined`
+	resolveIgnored: 'WITH_UNDEFINED', // Ignored (aborted) promises will resolve with `undefined`
 })
 
 // User types 'iphone'
@@ -97,34 +97,34 @@ searchProducts('https://dummyjson.com/products/search?q=iphone').then(
 	},
 )
 
-// Before 300ms has passed, the user continues typing 'iphone 9'
+// Before 300ms has passed, the user continues typing 'iphone 12'
 setTimeout(() => {
-	searchProducts('https://dummyjson.com/products/search?q=iphone 9').then(
+	searchProducts('https://dummyjson.com/products/search?q=iphone 12').then(
 		result => {
-			console.log('Result for "iphone 9":', result)
+			console.log('Result for "iphone 12":', result)
 		},
 	)
 }, 200)
 // Outcome:
 // The first request for "iphone" is aborted.
 // The first promise resolves with `undefined`.
-// The second request for "iphone 9" is executed after the 300ms debounce delay.
+// The second request for "iphone 12" is executed after the 300ms debounce delay.
 ```
 
 **Behavior with different `deferOptions` in the example above:**
 
 - **`throttle: true`**: Switches from debounce to throttle mode. The first request for "iphone" would
-  execute immediately. The second request for "iphone 9", made within the 300ms throttle window, would be ignored.
+  execute immediately. The second request for "iphone 12", made within the 300ms throttle window, would be ignored.
 - **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Both requests ("iphone"
-  and "iphone 9") would execute, but one after the other, never simultaneously.
-- **`resolveIgnored`**: Controls how the promise for an aborted request (like the first "iphone" call) resolves.
+  and "iphone 12") would execute, but one after the other, never simultaneously.
+- **`resolveIgnored` (enum)**: Controls how the promise for an aborted request (like the first "iphone" call) resolves.
     1. `ResolveIgnored.WITH_UNDEFINED` (used in the example): The promise for the aborted "iphone"
        request resolves with `undefined`.
     2. `ResolveIgnored.WITH_LAST`: The promise for the aborted "iphone" request waits and resolves with the result
-       of the final "iphone 9" request. Both promises resolve to the same value.
+       of the final "iphone 12" request. Both promises resolve to the same value.
     3. `ResolveIgnored.NEVER`: The promise for the aborted "iphone" request is neither resolved nor rejected.
        It will remain pending indefinitely.
-- **`resolveError`**: Controls how failed requests are handled.
+- **`resolveError` (enum)**: Controls how failed requests are handled.
     1.  `ResolveError.NEVER`: Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks.
     2.  `ResolveError.WITH_LAST`: (default) resolve with active promise result, the one that caused the current promise/callback to be ignored.
     3.  `ResolveError.WITH_UNDEFINED`: resolve failed requests with `undefined` value
@@ -132,8 +132,8 @@ setTimeout(() => {
 
 #### Using defaults to reduce redundancy
 
-```typescript
-import fetch, { ResolveIgnored } from '@superutils/fetch'
+```javascript
+import fetch from '@superutils/fetch'
 
 // Create a throttled function to fetch a random quote.
 // The URL and a 3-second timeout are set as defaults, creating a reusable client.
@@ -142,16 +142,16 @@ const getRandomQuote = fetch.get.deferred(
 		delayMs: 300, // Throttle window
 		throttle: true,
 		// Ignored calls will resolve with the result of the last successful call.
-		resolveIgnored: ResolveIgnored.WITH_LAST,
+		resolveIgnored: 'WITH_LAST',
 	},
 	'https://dummyjson.com/quotes/random', // Default URL
 	{ timeout: 3000 }, // Default fetch options
 )
 
 // Call the function multiple times in quick succession.
-getRandomQuote().then(quote => console.log('Call 1 resolved:', quote.id))
-getRandomQuote().then(quote => console.log('Call 2 resolved:', quote.id))
-getRandomQuote().then(quote => console.log('Call 3 resolved:', quote.id))
+getRandomQuote().then(quote => console.log('Call 1 resolved:', quote))
+getRandomQuote().then(quote => console.log('Call 2 resolved:', quote))
+getRandomQuote().then(quote => console.log('Call 3 resolved:', quote))
 
 // Outcome:
 // Due to throttling, only one network request is made.
@@ -197,9 +197,7 @@ const saveProductThrottled = fetch.post.deferred(
 		trailing: true, // Ensures the very last update is always saved
 		onResult: product => console.log(`[Saved] Product: ${product.title}`),
 	},
-	'https://dummyjson.com/products/1', // Default URL
-	undefined, // No default data
-	{ method: 'put' }, // Default method
+	'https://dummyjson.com/products/add', // Default URL
 )
 // Simulate a user typing quickly, triggering multiple saves.
 console.log('User starts typing...')

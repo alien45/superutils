@@ -1,14 +1,7 @@
 import PromisE, { DeferredAsyncOptions } from '@superutils/promise'
 import mergeFetchOptions from './mergeFetchOptions'
 import post from './post'
-import { PostArgs, PostDeferredCallbackArgs } from './types'
-
-// Export useful types from PromisE for ease of use
-export {
-	type DeferredAsyncOptions,
-	ResolveError,
-	ResolveIgnored,
-} from '@superutils/promise'
+import { PostArgs, PostDeferredCbArgs } from './types'
 
 /**
  * Creates a deferred/throttled function for making `DELETE`, `POST`, `PUT`, or `PATCH` requests, powered by
@@ -22,17 +15,17 @@ export {
  *
  * @param deferOptions Configuration for the deferred execution behavior (e.g., `delayMs`, `throttle`).
  * See {@link DeferredAsyncOptions} for details.
- * @param globalUrl (optional) If global URL is `undefined`, returned callback will always require an URL.
- * @param globalData (optional) If global data is `undefined`, returned callback will allow a data parameter.
+ * @param defaultUrl (optional) If default URL is `undefined`, returned callback will always require an URL.
+ * @param defaultData (optional) If default data is `undefined`, returned callback will allow a data parameter.
  * @param defaultOptions (optional) Default {@link FetchOptions} to be used by the returned function.
  * Default options will be merged with the options provided in the callback.
  * If the same property is provided in both cases, defaults will be overriden by the callback.
  *
  *
+ * #### Example 1: Auto-saving form data with throttling
  *
- * @example Auto-saving form data with throttling
- * ```javascript
- * import { postDeferred } from '@superutils/fetch'
+ * ```typescript
+ * import fetch from '@superutils/fetch'
  * import PromisE from '@superutils/promise'
  *
  * // Create a throttled function to auto-save product updates.
@@ -43,23 +36,27 @@ export {
  * 		trailing: true, // Ensures the very last update is always saved
  * 		onResult: product => console.log(`[Saved] Product: ${product.title}`),
  * 	},
- * 	'https://dummyjson.com/products/1', // Default URL
- * 	undefined, // No default data
- * 	{ method: 'put' }, // Default method
+ * 	'https://dummyjson.com/products/add', // Default URL
  * )
  * // Simulate a user typing quickly, triggering multiple saves.
  * console.log('User starts typing...')
- * // First call
  * saveProductThrottled({ title: 'iPhone' }) // Executed immediately (leading edge)
- * // Second call after 200ms => Ignored (within 1000ms throttle window)
- * PromisE.delay(200, () => saveProductThrottled({ title: 'iPhone 15' }))
- * // Third call 300ms after second call => Ignored
- * PromisE.delay(500, () => saveProductThrottled({ title: 'iPhone 15 Pro' }))
- * // Fourth call 400ms after third call => Queued to execute on the trailing edge
- * PromisE.delay(900, () => saveProductThrottled({ title: 'iPhone 15 Pro Max' }))
+ * await PromisE.delay(200)
+ * saveProductThrottled({ title: 'iPhone 15' }) // Ignored (within 1000ms throttle window)
+ * await PromisE.delay(300)
+ * saveProductThrottled({ title: 'iPhone 15 Pro' }) // Ignored
+ * await PromisE.delay(400)
+ * saveProductThrottled({ title: 'iPhone 15 Pro Max' }) // Queued to execute on the trailing edge
+ * // Outcome:
+ * // The first call ('iPhone') is executed immediately.
+ * // The next two calls are ignored by the throttle.
+ * // The final call ('iPhone 15 Pro Max') is executed after the 1000ms throttle window closes,
+ * // thanks to `trailing: true`.
+ * // This results in only two network requests instead of four.
  * ```
  *
- * @example Advanced example: debouncing an authentication token refresh
+ * #### Example 2: debouncing an authentication token refresh
+ *
  * ```typescript
  * import fetch from '@superutils/fetch'
  * import PromisE from '@superutils/promise'
@@ -112,35 +109,37 @@ export {
 export function postDeferred<
 	ThisArg,
 	Delay extends number = number,
-	GlobalUrl extends PostArgs[0] | undefined = undefined,
-	GlobalData extends PostArgs[1] | undefined = undefined,
+	DefaultUrl extends PostArgs[0] | undefined = undefined,
+	DefaultData extends PostArgs[1] | undefined = undefined,
 	// Conditionally define the arguments for the returned function
-	Args extends unknown[] = PostDeferredCallbackArgs<
-		GlobalUrl,
-		GlobalData,
-		true
+	CbArgs extends unknown[] = PostDeferredCbArgs<
+		DefaultUrl,
+		DefaultData,
+		false // allow callback override 'method' in options
 	>,
 >(
 	deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
-	globalUrl?: GlobalUrl,
-	globalData?: GlobalData,
+	defaultUrl?: DefaultUrl,
+	defaultData?: DefaultData,
 	defaultOptions?: PostArgs[2],
 ) {
 	let _abortCtrl: AbortController | undefined
-	const doPost = <Result = unknown>(...args: Args) => {
-		// add global url to the beginning of the array
-		if (globalUrl !== undefined) args.splice(0, 0, globalUrl)
-		// add global data after the url
-		if (globalData !== undefined) args.splice(1, 0, globalData)
+	const doPost = <Result = unknown>(...args: CbArgs) => {
+		// add default url to the beginning of the array
+		if (defaultUrl !== undefined) args.splice(0, 0, defaultUrl)
+		// add default data after the url
+		if (defaultData !== undefined) args.splice(1, 0, defaultData)
 
-		const url = args[0] as PostArgs[0]
-		const data = args[1] as PostArgs[1]
 		const options = mergeFetchOptions(defaultOptions ?? {}, args[2] ?? {})
 		options.abortCtrl ??= new AbortController()
 		// make sure to abort any previous pending request
 		_abortCtrl?.abort?.()
 		_abortCtrl = options.abortCtrl
-		const promise = post<Result>(url, data, options as PostArgs[2])
+		const promise = post<Result>(
+			args[0] as PostArgs[0],
+			args[1] as PostArgs[1],
+			options as PostArgs[2],
+		)
 		// abort post request if promise is finalized manually before completion
 		// by invoking `promise.reject()` or `promise.resolve()`
 		promise.onEarlyFinalize.push(() => _abortCtrl?.abort())

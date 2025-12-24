@@ -1,13 +1,7 @@
 import PromisE, { type DeferredAsyncOptions } from '@superutils/promise'
 import fetch from './fetch'
 import mergeFetchOptions from './mergeFetchOptions'
-import { FetchArgs, FetchDeferredArgs, FetchOptions } from './types'
-// Export useful types from PromisE for ease of use
-export {
-	type DeferredAsyncOptions,
-	ResolveError,
-	ResolveIgnored,
-} from '@superutils/promise'
+import { FetchArgs, FetchOptions } from './types'
 
 /**
  * Creates a deferred/throttled version of {@link fetch}, powered by {@link PromisE.deferred}.
@@ -19,7 +13,7 @@ export {
  *
  * @param deferOptions Configuration for the deferred execution behavior (e.g., `delayMs`, `throttle`).
  * See {@link DeferredAsyncOptions} for details.
- * @param globalUrl (optional) If a global URL is `undefined`, returned callback will always require an URL.
+ * @param defaultUrl (optional) If a global URL is `undefined`, returned callback will always require an URL.
  * @param defaultOptions (optional) Default {@link FetchOptions} to be used by the returned function.
  * Default options will be merged with the options provided in the callback.
  * If the same property is provided in both cases, defaults will be overriden by the callback.
@@ -51,20 +45,6 @@ export {
  * // The first promise resolves with `undefined`.
  * // The second request for "iphone 9" is executed after the 300ms debounce delay.
  * ```
- *
- * **Behavior with different `deferOptions` in the example above:**
- * - **`throttle: true`**: Switches from debounce to throttle mode. The first request for "iphone" would
- * execute immediately. The second request for "iphone 9", made within the 300ms throttle window, would be ignored.
- * - **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Both requests ("iphone"
- * and "iphone 9") would execute, but one after the other, never simultaneously.
- * - **`resolveIgnored`**: Controls how the promise for an aborted request (like the first "iphone" call) resolves.
- *    1. `ResolveIgnored.WITH_UNDEFINED` (used in the example): The promise for the aborted "iphone"
- * request resolves with `undefined`.
- *    2. `ResolveIgnored.WITH_LAST`: The promise for the aborted "iphone" request waits and resolves with the result
- * of the final "iphone 9" request. Both promises resolve to the same value.
- *    3. `ResolveIgnored.NEVER`: The promise for the aborted "iphone" request is neither resolved nor rejected.
- * It will remain pending indefinitely.
- *    4. `ResolveIgnored.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
  *
  * @example Creating a reusable, pre-configured client
  * ```typescript
@@ -98,28 +78,26 @@ export {
 export function fetchDeferred<
 	ThisArg = unknown,
 	Delay extends number = number,
-	GlobalUrl = FetchArgs[0] | undefined,
-	CbArgs extends unknown[] = undefined extends GlobalUrl
-		? FetchArgs<true>
-		: [options?: FetchArgs<true>[1]],
+	DefaultUrl = FetchArgs[0] | undefined,
+	CbArgs extends unknown[] = undefined extends DefaultUrl
+		? FetchArgs<false> // false: allow callback to provide 'method' in options
+		: [options?: FetchArgs<false>[1]],
 >(
 	deferOptions: DeferredAsyncOptions<ThisArg, Delay> = {},
-	globalUrl?: GlobalUrl,
+	defaultUrl?: DefaultUrl,
 	defaultOptions?: FetchArgs[1],
 ) {
 	let _abortCtrl: AbortController | undefined
 	const fetchCallback = <Result = unknown>(...args: CbArgs) => {
-		let options = {
-			...(((globalUrl === undefined ? args[1] : args[0])
-				?? {}) as FetchOptions),
-		}
+		let options = ((defaultUrl === undefined ? args[1] : args[0])
+			?? {}) as FetchOptions
 		if (defaultOptions) options = mergeFetchOptions(defaultOptions, options)
 		options.abortCtrl ??= new AbortController()
 		// make sure to abort any previous pending request
 		_abortCtrl?.abort?.()
 		_abortCtrl = options.abortCtrl
 		const promise = fetch<Result>(
-			(globalUrl ?? args[0]) as FetchArgs[0],
+			(defaultUrl ?? args[0]) as FetchArgs[0],
 			options,
 		)
 		// abort fetch request if promise is finalized manually before completion
