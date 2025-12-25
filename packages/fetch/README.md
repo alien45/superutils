@@ -201,13 +201,15 @@ const saveProductThrottled = fetch.post.deferred(
 )
 // Simulate a user typing quickly, triggering multiple saves.
 console.log('User starts typing...')
-saveProductThrottled({ title: 'iPhone' }) // Executed immediately (leading edge)
-await PromisE.delay(200)
-saveProductThrottled({ title: 'iPhone 15' }) // Ignored (within 1000ms throttle window)
-await PromisE.delay(300)
-saveProductThrottled({ title: 'iPhone 15 Pro' }) // Ignored
-await PromisE.delay(400)
-saveProductThrottled({ title: 'iPhone 15 Pro Max' }) // Queued to execute on the trailing edge
+
+// Executed immediately (leading edge)
+saveProductThrottled({ title: 'iPhone' })
+// Ignored (within 1000ms throttle window)
+PromisE.delay(200, () => saveProductThrottled({ title: 'iPhone 15' }))
+// Ignored
+PromisE.delay(300, () => saveProductThrottled({ title: 'iPhone 15 Pro' }))
+// Queued to execute on the trailing edge
+PromisE.delay(400, () => saveProductThrottled({ title: 'iPhone 15 Pro Max' }))
 // Outcome:
 // The first call ('iPhone') is executed immediately.
 // The next two calls are ignored by the throttle.
@@ -229,11 +231,11 @@ let currentRefreshToken = ''
 const requestNewToken = fetch.post.deferred(
 	{
 		delayMs: 300, // debounce delay
-		onResult: ({ token = '' }) => {
+		onResult: ({ refreshToken = '' }) => {
 			console.log(
 				`Auth token successfully refreshed at ${new Date().toISOString()}`,
 			)
-			currentRefreshToken = token
+			currentRefreshToken = refreshToken
 		},
 	},
 	'https://dummyjson.com/auth/refresh', // Default URL
