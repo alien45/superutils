@@ -69,36 +69,54 @@ import {
  * - debounced: when `delayMs > 0` and `throttle = false`
  * - throttled: when `delayMs > 0` and `throttle = true`
  *
- *
- * @example Explanation & example usage:
+ * @example Debounce calls
  * ```typescript
- * const example = throttle => {
- *     const df = PromisE.deferred({ delayMs: 100, throttle })
- *     df(() => PromisE.delay(5000)).then(console.log)
- *     df(() => PromisE.delay(500)).then(console.log)
- *     df(() => PromisE.delay(1000)).then(console.log)
- *     // delay 2 seconds and invoke df() again
- *     setTimeout(() => {
- *         df(() => PromisE.delay(200)).then(console.log)
- *     }, 2000)
+ * const example = async (options = {}) => {
+ * 	const df = PromisE.deferred({
+ * 		delayMs: 100,
+ * 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+ * 		...options,
+ * 	})
+ * 	df(() => PromisE.delay(500)).then(console.log)
+ * 	df(() => PromisE.delay(1000)).then(console.log)
+ * 	df(() => PromisE.delay(5000)).then(console.log)
+ * 	// delay 2 seconds and invoke df() again
+ * 	await PromisE.delay(2000)
+ * 	df(() => PromisE.delay(200)).then(console.log)
+ * }
+ * example({ ignoreStale: false, throttle: false })
+ * // `200` and `1000` will be printed in the console
+ * example({ ignoreStale: true, throttle: false })
+ * // `200` will be printed in the console
+ * ```
+ *
+ * @example Throttle calls
+ * ```typescript
+ * const example = async (options = {}) => {
+ * 	const df = PromisE.deferred({
+ * 		delayMs: 100,
+ * 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+ * 		...options,
+ * 	})
+ * 	df(() => PromisE.delay(5000)).then(console.log)
+ * 	df(() => PromisE.delay(500)).then(console.log)
+ * 	df(() => PromisE.delay(1000)).then(console.log)
+ * 	// delay 2 seconds and invoke df() again
+ * 	await PromisE.delay(2000)
+ * 	df(() => PromisE.delay(200)).then(console.log)
  * }
  *
- * // Without throttle
- * example(false)
- * // `1000` and `200` will be printed in the console
+ * example({ ignoreStale: true, throttle: true })
+ * // `200` will be printed in the console
  *
- * // with throttle
- * example(true)
- * // `5000` and `200` will be printed in the console
- *
- * // with throttle with strict mode
- * example(true)
- * // `5000` will be printed in the console
+ * example({ ignoreStale: false, throttle: true })
+ * // `200` and `5000` will be printed in the console
  * ```
  */
 export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 	options: DeferredAsyncOptions<ThisArg, Delay> = {},
 ): DeferredAsyncCallback {
+	let sequence = 0
 	options = objCopy(
 		deferred.defaults as Record<string, unknown>,
 		options as Record<string, unknown>,
@@ -127,6 +145,34 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 		onIgnore = onIgnore?.bind(thisArg)
 		onResult = onResult?.bind(thisArg)
 	}
+
+	const handleIgnore = (
+		items: [symbol, QueueItem][],
+		prevQItem: QueueItem | null,
+	) => {
+		for (const [iId, iItem] of items) {
+			queue.delete(iId)
+			if (iItem === undefined || iItem.started) continue
+
+			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], 0)
+
+			switch (resolveIgnored) {
+				case ResolveIgnored.WITH_UNDEFINED:
+					// resolve with undefined
+					iItem.resolve(undefined as T)
+					break
+				case ResolveIgnored.WITH_LAST:
+					// resolve/reject with most recent promise
+					prevQItem?.then(iItem.resolve, iItem.reject)
+					break
+				case ResolveIgnored.NEVER:
+					// leave unresovled (potential memory leak if not handled properly by consumer)
+					break
+			}
+		}
+
+		if (!queue.size) sequence = 0
+	}
 	// after a queue item is handled, decide whether to ignore or proceed with remaining items in the queue
 	const handleRemaining = (currentId: symbol) => {
 		const _prevQItem = prevQItem
@@ -147,34 +193,20 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 		} else if (!throttle && options.leading) {
 			items = items.slice(0, -1) // prevent the last item from being ignored
 		}
-
-		for (const [iId, iItem] of items) {
-			queue.delete(iId)
-			if (iItem === undefined || iItem.started) continue
-
-			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], 0)
-
-			switch (resolveIgnored) {
-				case ResolveIgnored.WITH_UNDEFINED:
-					// resolve with undefined
-					iItem.resolve(undefined as T)
-					break
-				case ResolveIgnored.WITH_LAST:
-					// resolve/reject with most recent promise
-					_prevQItem?.then(iItem.resolve, iItem.reject)
-					break
-				case ResolveIgnored.NEVER:
-					// leave unresovled (potential memory leak if not handled properly by consumer)
-					break
-			}
-		}
+		handleIgnore(items, _prevQItem)
 	}
+	let prevSeq = 0
 	const executeItem = async (id: symbol, qItem: QueueItem) => {
 		qItem.started = true
+		const _prevQItem = prevQItem
 		prevQItem = qItem
+		prevSeq = prevQItem?.sequence ?? 0
 		// execute the promise/function
 		try {
 			const result = await PromisEBase.try(qItem.getPromise)
+			const ignore =
+				!isSequential && options.ignoreStale && prevSeq > qItem.sequence
+			if (ignore) return handleIgnore([[id, qItem]], _prevQItem)
 			qItem.resolve(result)
 			onResult && fallbackIfFails(onResult, [result], undefined)
 		} catch (err) {
@@ -213,6 +245,7 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 			isFn(promise) ? promise : () => promise
 		) as DeferredAsyncGetPromise<TResult>
 		qItem.started = false
+		qItem.sequence = ++sequence
 		queue.set(id, qItem)
 
 		// Execute first item in a series.

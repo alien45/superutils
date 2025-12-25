@@ -117,7 +117,7 @@ while (!appReady) {
 }
 ```
 
-#### `PromisE.delay(duration, callback)`: execute after delay
+#### `PromisE.delay(duration, callback, asRejected)`: execute after delay
 
 Creates a promise that executes a function after a specified duration and returns the value the function returns.
 
@@ -126,10 +126,13 @@ If callback returns undefined, default value will be the duration.
 ```typescript
 import PromisE from '@superutils/promise'
 
-const callback = () => {
-	/* do stuff here */
+const func = async () => {
+	console.log('Waiting for app initialization or something else to be ready')
+	// wait 3 seconds before proceeding
+	await PromisE.delay(3000)
+	console.log('App ready')
 }
-await PromisE.delay(100, callback)
+func()
 ```
 
 <div id="deferred"></div>
@@ -138,32 +141,48 @@ await PromisE.delay(100, callback)
 
 Create a function that debounces or throttles promise-returning function calls. This is useful for scenarios like auto-saving user input or preventing multiple rapid API calls.
 
+#### Debounce example:
+
 ```typescript
-import PromisE, { ResolveIgnored } from '@superutils/promise'
+const example = async (options = {}) => {
+	const df = PromisE.deferred({
+		delayMs: 100,
+		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+		...options,
+	})
+	df(() => PromisE.delay(500)).then(console.log)
+	df(() => PromisE.delay(1000)).then(console.log)
+	df(() => PromisE.delay(5000)).then(console.log)
+	// delay 2 seconds and invoke df() again
+	await PromisE.delay(2000)
+	df(() => PromisE.delay(200)).then(console.log)
+}
+example({ ignoreStale: false, throttle: false })
+// `200` and `1000` will be printed in the console
+example({ ignoreStale: true, throttle: false })
+// `200` will be printed in the console
+```
 
-// Create a deferred function that waits 300ms after the last call
-const deferredSave = PromisE.deferred({
-	defer: 300,
-	/** ignored promises will resolve with `undefined` */
-	resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
+#### Throttle example:
 
-	/** ignored promises will NEVER be resolved/rejected
-	 * USE WITH CAUTION!
-	 */
-	resolveIgnored: ResolveIgnored.NEVER,
-
-	// ignored promises will resolve with the result of the last call
-	resolveIgnored: ResolveIgnored.WITH_LAST, // (default)
-})
-
-// Simulate rapid calls
-deferredSave(() => api.save({ text: 'first' }))
-deferredSave(() => api.save({ text: 'second' }))
-// Only the 3rd call is executed.
-// But all of them are resolved with the result of the 3rd call when `resolveIgnored` is `ResolveIgnored.WITH_LAST`
-deferredSave(() => api.save({ text: 'third' })).then(response =>
-	console.log('Saved!', response),
-)
+```typescript
+const example = async (options = {}) => {
+	const df = PromisE.deferred({
+		delayMs: 100,
+		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+		...options,
+	})
+	df(() => PromisE.delay(5000)).then(console.log)
+	df(() => PromisE.delay(500)).then(console.log)
+	df(() => PromisE.delay(1000)).then(console.log)
+	// delay 2 seconds and invoke df() again
+	await PromisE.delay(2000)
+	df(() => PromisE.delay(200)).then(console.log)
+}
+example({ ignoreStale: true, throttle: true })
+// `200` will be printed in the console
+example({ ignoreStale: false, throttle: true })
+// `200` and `5000` will be printed in the console
 ```
 
 <div id="deferredCallback"></div>

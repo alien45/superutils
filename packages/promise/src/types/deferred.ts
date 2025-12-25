@@ -35,6 +35,15 @@ export type DeferredAsyncOptions<
 	 */
 	delayMs?: 0 | PositiveNumber<DelayMs>
 
+	/**
+	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
+	 * In debouce/throttle mode, when an older promise is resolved after a newly resolved promise,
+	 * the older one is considered stale.
+	 *
+	 * Default: `false`
+	 */
+	ignoreStale?: boolean
+
 	/** Callback invoked whenever promise/function throws error */
 	onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
 

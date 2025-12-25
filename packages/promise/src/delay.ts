@@ -15,16 +15,14 @@ import { IPromisE_Delay } from './types'
  * Default: `delayMs` when resolved or timed out error when rejected
  * @param asRejected (optional) if `true`, will reject the promise after the delay.
  *
- * @returns a promise
+ * @returns promise
  *
- * @example Delay before continuing execution
+ * @example Create a  promise that resolves after specified delay.
  * ```typescript
  * import PromisE from '@superutils/promise'
  *
- * console.log('Waiting for app initialization or something else to be ready')
- * // wait 3 seconds before proceeding
- * await PromisE.delay(3000)
- * console.log('App ready')
+ * // Resolves after 1 second delay
+ * PromisE.delay(1000).then(console.log)
  * ```
  *
  * @example Execute a function after delay.
@@ -33,6 +31,19 @@ import { IPromisE_Delay } from './types'
  * import PromisE from '@superutils/promise'
  *
  * PromisE.delay(1000, () => console.log('Prints after 1 second delay'))
+ * ```
+ *
+ * @example Delay before continuing execution
+ * ```typescript
+ * import PromisE from '@superutils/promise'
+ *
+ * const func = async () => {
+ *     console.log('Waiting for app initialization or something else to be ready')
+ *     // wait 3 seconds before proceeding
+ *     await PromisE.delay(3000)
+ *     console.log('App ready')
+ * }
+ * func()
  * ```
  */
 export function delay<T = number, TReject extends boolean = boolean>(
