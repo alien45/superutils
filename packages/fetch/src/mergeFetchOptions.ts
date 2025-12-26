@@ -34,11 +34,19 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 				errMsgs,
 				headers,
 				interceptors: {
-					error: ints1?.error?.concat(ints2?.error ?? []) ?? [],
-					request: ints1?.request?.concat(ints2?.request ?? []) ?? [],
-					response:
-						ints1?.response?.concat(ints2?.response ?? []) ?? [],
-					result: ints1?.result?.concat(ints2?.result ?? []) ?? [],
+					error: [...(ints1?.error ?? []), ...(ints2?.error ?? [])],
+					request: [
+						...(ints1?.request ?? []),
+						...(ints2?.request ?? []),
+					],
+					response: [
+						...(ints1?.response ?? []),
+						...(ints2?.response ?? []),
+					],
+					result: [
+						...(ints1?.result ?? []),
+						...(ints2?.result ?? []),
+					],
 				},
 				timeout: o2.timeout ?? o1.timeout ?? 0,
 			}

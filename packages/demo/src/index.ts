@@ -22,6 +22,17 @@ import fetch, { ResolveIgnored, postDeferred } from '@superutils/fetch'
 
 console.log('Started')
 
+const df = fetch.post.deferred({}, '', null, {
+	interceptors: {
+		response: [console.log],
+	},
+})
+df({
+	interceptors: {
+		request: [console.warn],
+	},
+})
+
 // ----------------------------------------------------------------
 // // Create a throttled function to fetch a random quote.
 // // The URL and a 3-second timeout are set as defaults, creating a reusable client.
