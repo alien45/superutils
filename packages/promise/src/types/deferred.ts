@@ -94,6 +94,7 @@ export type DeferredAsyncOptions<
 	| {
 			// Seqential execution
 			delayMs: 0
+			throttle?: false
 	  }
 )
 

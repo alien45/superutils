@@ -4,6 +4,7 @@ import {
 	isFn,
 	isPositiveNumber,
 	objCopy,
+	PositiveNumber,
 	throttled as throttledCore,
 } from '@superutils/core'
 import PromisEBase from './PromisEBase'
@@ -186,12 +187,13 @@ export function deferred<T, ThisArg = unknown, Delay extends number = number>(
 
 		let items = [...queue.entries()]
 		if (throttle && options.trailing) {
-			items = items.slice(
-				0,
-				items.findIndex(([id]) => id === currentId),
-			)
-		} else if (!throttle && options.leading) {
-			items = items.slice(0, -1) // prevent the last item from being ignored
+			// in throttle mode only ignore items before the current queue item
+			const currentIndex = items.findIndex(([id]) => id === currentId)
+			items = items.slice(0, currentIndex)
+		} else if (!throttle) {
+			// In deferred mode, prevent the last queue item from being ignored.
+			// This is because there can possibly be more calls coming in.
+			items = items.slice(0, -1)
 		}
 		handleIgnore(items, _prevQItem)
 	}
