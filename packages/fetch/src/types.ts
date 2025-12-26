@@ -111,7 +111,7 @@ export class FetchError extends Error {
  * // Interceptors can be async functions or just return a promise that resolves to the error.
  * // If the execution of the interceptor fails or promise rejects, it will be ignored.
  * // To transform the error it must directly return an error or a Promise that `resolves` with an error.
- * const transformError = async fetchErr => {
+ * const transformError = async (fetchErr, url, options) => {
  *     fetchErr.message = 'Custom errormessage'
  * 	   return Promise.resolve(fetchErr)
  * }
@@ -122,7 +122,10 @@ export class FetchError extends Error {
  * })
  * ```
  */
-export type FetchInterceptorError = Interceptor<FetchError, []>
+export type FetchInterceptorError = Interceptor<
+	FetchError,
+	FetchArgsInterceptor
+>
 
 /**
  *
