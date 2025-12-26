@@ -110,7 +110,7 @@ import { PostArgs, PostDeferredCbArgs } from './types'
  */
 export function postDeferred<
 	ThisArg,
-	Delay extends number = number,
+	Delay = unknown,
 	DefaultUrl extends PostArgs[0] | undefined = undefined,
 	DefaultData extends PostArgs[1] | undefined = undefined,
 	// Conditionally define the arguments for the returned function

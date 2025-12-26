@@ -34,9 +34,9 @@ import { IPromisE, DeferredAsyncOptions } from './types'
  * ```
  */
 export function deferredCallback<
-	TDefault,
-	ThisArg,
-	Delay extends number = number,
+	TDefault = unknown,
+	ThisArg = unknown,
+	Delay = unknown,
 	CbArgs extends unknown[] = unknown[],
 >(
 	callback: (...args: CbArgs) => TDefault | Promise<TDefault>,

@@ -114,7 +114,7 @@ import {
  * // `200` and `5000` will be printed in the console
  * ```
  */
-export function deferred<T, ThisArg = unknown, Delay extends number = number>(
+export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 	options: DeferredAsyncOptions<ThisArg, Delay> = {},
 ): DeferredAsyncCallback {
 	let sequence = 0
@@ -270,5 +270,5 @@ deferred.defaults = {
 	resolveError: ResolveError.REJECT,
 	/** Set the default ignored resolution behavior. See {@link ResolveIgnored} for all options. */
 	resolveIgnored: ResolveIgnored.WITH_LAST,
-} satisfies DeferredAsyncDefaults
+} satisfies DeferredAsyncDefaults<unknown, number>
 export default deferred

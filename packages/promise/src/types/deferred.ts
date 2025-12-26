@@ -16,16 +16,13 @@ export type DeferredAsyncCallback<TArgs extends unknown[] | [] = []> = <
 export type DeferredAsyncGetPromise<T> = <TResult = T>() => Promise<TResult>
 
 /** Default options used by `PromisE.deferred` and related functions */
-export type DeferredAsyncDefaults = Pick<
-	Required<DeferredAsyncOptions>,
+export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
+	Required<DeferredAsyncOptions<ThisArg, Delay>>,
 	'delayMs' | 'resolveError' | 'resolveIgnored'
 >
 
 /** Options for `PromisE.deferred` and other related functions */
-export type DeferredAsyncOptions<
-	ThisArg = unknown,
-	DelayMs extends number = number,
-> = {
+export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	/**
 	 * Delay in milliseconds, used for `debounce` and `throttle` modes. Use `0` for sequential execution.
 	 *
@@ -33,7 +30,7 @@ export type DeferredAsyncOptions<
 	 *
 	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delayMs`)
 	 */
-	delayMs?: 0 | PositiveNumber<DelayMs>
+	delayMs?: 0 | PositiveNumber<Delay>
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
@@ -83,12 +80,12 @@ export type DeferredAsyncOptions<
 } & (
 	| ({
 			// Throttle mode
-			delayMs: PositiveNumber<DelayMs>
+			delayMs: PositiveNumber<Delay>
 			throttle: true
 	  } & Pick<ThrottleOptions, 'trailing'>)
 	| ({
 			// Debounce/deferred mode
-			delayMs?: PositiveNumber<DelayMs>
+			delayMs?: PositiveNumber<Delay>
 			throttle?: false
 	  } & Pick<DeferredOptions, 'leading'>)
 	| {
