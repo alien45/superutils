@@ -31,7 +31,7 @@ export type DeferredAsyncOptions<
 	 *
 	 * Use `0` to disable debounce/throttle and execute all operations sequentially.
 	 *
-	 * Default: `100` (or what is set in `PromisE.deferred.defaults.delayMs`)
+	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delayMs`)
 	 */
 	delayMs?: 0 | PositiveNumber<DelayMs>
 
@@ -82,15 +82,19 @@ export type DeferredAsyncOptions<
 	thisArg?: ThisArg
 } & (
 	| ({
-			/** Throttle duration in milliseconds */
+			// Throttle mode
 			delayMs: PositiveNumber<DelayMs>
 			throttle: true
 	  } & Pick<ThrottleOptions, 'trailing'>)
 	| ({
-			/** Debounce/deferred duration in milliseconds */
+			// Debounce/deferred mode
 			delayMs?: PositiveNumber<DelayMs>
 			throttle?: false
 	  } & Pick<DeferredOptions, 'leading'>)
+	| {
+			// Seqential execution
+			delayMs: 0
+	  }
 )
 
 /** Determines what to do when deferred promise/function fails */
