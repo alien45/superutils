@@ -1,10 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import PromisE from '@superutils/promise'
-import fetch, { FetchAs, FetchError } from '../src'
+import fetch, {
+	FetchArgsInterceptor,
+	FetchAs,
+	FetchError,
+	FetchInterceptorError,
+	FetchInterceptorRequest,
+	FetchInterceptorResponse,
+	FetchInterceptorResult,
+	FetchInterceptors,
+	FetchOptions,
+	mergeFetchOptions,
+} from '../src'
 
 describe('fetch', () => {
-	const fetchBaseUrl = 'https://dummyjson.com/products'
+	const fetchBaseUrl = 'https://dummyjson.com/products' // dummy URL -> not called
 	let mockedFetch
+	const okResponse = {
+		ok: true,
+		status: 200,
+		json: () => Promise.resolve(),
+	}
 
 	afterEach(() => {
 		vi.useRealTimers()
@@ -13,127 +29,181 @@ describe('fetch', () => {
 
 	beforeEach(() => {
 		// Mock the global fetch to avoid real network requests
-		mockedFetch = vi.fn(() =>
-			Promise.resolve({
-				ok: true,
-				status: 200,
-				json: () => Promise.resolve(),
-			}),
-		)
+		mockedFetch = vi.fn(() => Promise.resolve({ ...okResponse }))
 		vi.stubGlobal('fetch', mockedFetch)
 		vi.useFakeTimers()
 	})
 
-	it(`should handle "Failed to execute 'fetch' on 'Window'"`, async () => {
-		const fetchMock = vi.fn(async () =>
-			Promise.reject(
-				new TypeError(
-					`TypeError: Failed to execute 'fetch' on 'Window'`,
+	describe('general', () => {
+		it(`should handle "Failed to execute 'fetch' on 'Window'"`, async () => {
+			const fetchMock = vi.fn(async () =>
+				Promise.reject(
+					new TypeError(
+						`TypeError: Failed to execute 'fetch' on 'Window'`,
+					),
 				),
-			),
-		)
-		vi.stubGlobal('fetch', fetchMock)
+			)
+			vi.stubGlobal('fetch', fetchMock)
 
-		await vi.runAllTimersAsync()
-		await expect(fetch.get(fetchBaseUrl)).rejects.toThrow(
-			`TypeError: Failed to execute 'fetch' on 'Window'`,
-		)
-	})
-
-	it('should handle parse error', async () => {
-		const fetch200 = vi.fn((...args: any[]) =>
-			Promise.resolve({
-				ok: true,
-				status: 200,
-				json: () => Promise.reject(new Error('Parse error')),
-			}),
-		)
-		vi.stubGlobal('fetch', fetch200)
-
-		await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
-			expect.any(FetchError),
-		)
-		expect(fetch200).toHaveBeenCalledOnce()
-	})
-
-	it('should handle error returned from server', async () => {
-		const fetch400 = vi.fn((...args: any[]) =>
-			Promise.resolve({
-				ok: false,
-				status: 400,
-				json: () => ({
-					message: 'Bad request',
-				}),
-			}),
-		)
-		vi.stubGlobal('fetch', fetch400)
-
-		let error: FetchError | undefined
-		fetch.get(fetchBaseUrl).catch((err: FetchError) => (error = err))
-		await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
-			expect.any(FetchError),
-		)
-		expect(error?.message).toBe('Bad request')
-		expect(fetch400).toHaveBeenCalledTimes(2)
-	})
-
-	it('should return successful response parsed as JSON by default', async () => {
-		const fetch200 = vi.fn((...args: any[]) =>
-			Promise.resolve({
-				ok: true,
-				status: 200,
-				json: () => ({
-					age: 33,
-					id: 'adam',
-					location: 'heaven',
-					name: 'Adam',
-				}),
-			}),
-		)
-		vi.stubGlobal('fetch', fetch200)
-		const promise = fetch.get(fetchBaseUrl)
-		await vi.runAllTimersAsync()
-		await expect(promise).resolves.toEqual({
-			age: 33,
-			id: 'adam',
-			location: 'heaven',
-			name: 'Adam',
+			await vi.runAllTimersAsync()
+			await expect(fetch.get(fetchBaseUrl)).rejects.toThrow(
+				`TypeError: Failed to execute 'fetch' on 'Window'`,
+			)
 		})
-		expect(fetch200).toHaveBeenCalledOnce()
-	})
 
-	it('should return successful response as Response by modifying default in `fetch.defaults.as`', async () => {
-		const fetch200 = vi.fn((...args: any[]) =>
-			Promise.resolve(
-				new Response(
-					JSON.stringify({
+		it('should handle parse error', async () => {
+			const fetch200 = vi.fn((...args: any[]) =>
+				Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () => Promise.reject(new Error('Parse error')),
+				}),
+			)
+			vi.stubGlobal('fetch', fetch200)
+
+			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
+				expect.any(FetchError),
+			)
+			expect(fetch200).toHaveBeenCalledOnce()
+		})
+
+		it('should handle error returned from server', async () => {
+			const fetch400 = vi.fn((...args: any[]) =>
+				Promise.resolve({
+					ok: false,
+					status: 400,
+					json: () => ({
+						message: 'Bad request',
+					}),
+				}),
+			)
+			vi.stubGlobal('fetch', fetch400)
+
+			let error: FetchError | undefined
+			fetch.get(fetchBaseUrl).catch((err: FetchError) => (error = err))
+			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
+				expect.any(FetchError),
+			)
+			expect(error?.message).toBe('Bad request')
+			expect(fetch400).toHaveBeenCalledTimes(2)
+		})
+
+		it('should return successful response parsed as JSON by default', async () => {
+			const fetch200 = vi.fn((...args: any[]) =>
+				Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () => ({
 						age: 33,
 						id: 'adam',
 						location: 'heaven',
 						name: 'Adam',
 					}),
-					{
-						status: 200,
-						headers: { 'Content-Type': 'application/json' },
-					},
-				),
-			),
-		)
-		const asOriginal = fetch.defaults.as
-		fetch.defaults.as = FetchAs.response
-		vi.stubGlobal('fetch', fetch200)
-		const promise: Promise<Response> = fetch.get(fetchBaseUrl)
-		await vi.runAllTimersAsync()
-		const response = await promise
-		expect(response).instanceOf(Response)
-		await expect(response.json()).resolves.toEqual({
-			age: 33,
-			id: 'adam',
-			location: 'heaven',
-			name: 'Adam',
+				}),
+			)
+			vi.stubGlobal('fetch', fetch200)
+			const promise = fetch.get(fetchBaseUrl)
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual({
+				age: 33,
+				id: 'adam',
+				location: 'heaven',
+				name: 'Adam',
+			})
+			expect(fetch200).toHaveBeenCalledOnce()
 		})
-		expect(fetch200).toHaveBeenCalledOnce()
-		fetch.defaults.as = asOriginal
+
+		it('should return successful response as Response when `fetch.defaults.as` is `FetchAs.response`', async () => {
+			const fetch200 = vi.fn((...args: any[]) =>
+				Promise.resolve(
+					new Response(
+						JSON.stringify({
+							age: 33,
+							id: 'adam',
+							location: 'heaven',
+							name: 'Adam',
+						}),
+						{
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						},
+					),
+				),
+			)
+			const asOriginal = fetch.defaults.as
+			fetch.defaults.as = FetchAs.response
+			vi.stubGlobal('fetch', fetch200)
+			const promise: Promise<Response> = fetch.get(fetchBaseUrl)
+			await vi.runAllTimersAsync()
+			const response = await promise
+			expect(response).instanceOf(Response)
+			await expect(response.json()).resolves.toEqual({
+				age: 33,
+				id: 'adam',
+				location: 'heaven',
+				name: 'Adam',
+			})
+			expect(fetch200).toHaveBeenCalledOnce()
+			fetch.defaults.as = asOriginal
+		})
+
+		it('should merge options global and local options', async () => {
+			const { defaults } = fetch
+			fetch.defaults = {
+				as: FetchAs.response,
+				headers: new Headers({
+					'content-type': 'application/json',
+				}),
+				errMsgs: defaults.errMsgs,
+				interceptors: {
+					error: [vi.fn()],
+					request: [vi.fn()],
+					response: [vi.fn()],
+					result: [vi.fn()],
+				},
+			}
+			let receivedOptions: FetchOptions | undefined
+			const localOptions = {
+				as: FetchAs.json,
+				headers: {
+					'content-type': 'something else',
+				},
+				interceptors: {
+					error: [vi.fn()],
+					request: [
+						vi.fn((_v, _u, options) => {
+							receivedOptions = options
+						}),
+					],
+					response: [vi.fn()],
+					result: [vi.fn()],
+				},
+				method: 'post',
+			} as FetchOptions
+			const mergedOptions = mergeFetchOptions(
+				fetch.defaults,
+				localOptions,
+			)
+			await fetch(fetchBaseUrl, localOptions)
+			expect(receivedOptions).toEqual(mergedOptions)
+
+			const interceptorKeys = [
+				'request',
+				'response',
+				'result',
+			] as (keyof FetchInterceptors)[]
+
+			// make sure all interceptors (except for error) have been called
+			;[fetch.defaults?.interceptors, localOptions?.interceptors]
+				.map(interceptors =>
+					interceptorKeys.map(key => interceptors?.[key] || []),
+				)
+				.flat(2)
+				.forEach(interceptor =>
+					expect(interceptor).toHaveBeenCalledOnce(),
+				)
+			fetch.defaults = defaults
+		})
 	})
 
 	describe('interceptors', () => {
@@ -144,6 +214,83 @@ describe('fetch', () => {
 			})
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
+		})
+
+		it('should receive correct request, result & response interceptor arguments', async () => {
+			const receivedArgs = {
+				request: [] as unknown[],
+				result: [] as unknown[],
+				response: [] as unknown[],
+			}
+			const mockedInterceptors = {
+				request: [
+					(...args) => {
+						receivedArgs.request = args
+					},
+				] as FetchInterceptorRequest[],
+				result: [
+					(...args) => {
+						receivedArgs.result = args
+					},
+				] as FetchInterceptorResult[],
+				response: [
+					(...args) => {
+						receivedArgs.response = args
+					},
+				] as FetchInterceptorResponse[],
+			}
+			const options = {
+				interceptors: mockedInterceptors,
+			} as FetchOptions
+			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
+			expectedOptions.method ??= 'get'
+			const promise = fetch.get(fetchBaseUrl, {
+				interceptors: mockedInterceptors,
+			})
+			await vi.runAllTimersAsync()
+			await promise
+			expect(receivedArgs.request).toEqual([
+				fetchBaseUrl,
+				fetchBaseUrl,
+				expectedOptions,
+			])
+			expect(receivedArgs.result).toEqual([
+				expect.any(Promise),
+				fetchBaseUrl,
+				expectedOptions,
+			])
+			expect(receivedArgs.response).toEqual([
+				okResponse,
+				fetchBaseUrl,
+				expectedOptions,
+			])
+		})
+
+		it('should receive correct error interceptor arguments', async () => {
+			let receivedArgs = [] as unknown[]
+			const mockedInterceptors = {
+				error: [
+					(...args) => {
+						receivedArgs = args
+					},
+				] as FetchInterceptorError[],
+			}
+			const options = {
+				interceptors: mockedInterceptors,
+			} as FetchOptions
+			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
+			expectedOptions.method ??= 'get'
+			const url = 'an invalid url'
+			await fetch
+				.get(url, {
+					interceptors: mockedInterceptors,
+				})
+				.catch(() => {})
+			expect(receivedArgs).toEqual([
+				expect.any(FetchError),
+				url,
+				expectedOptions,
+			])
 		})
 
 		it('should execute interceptors and transform result', async () => {

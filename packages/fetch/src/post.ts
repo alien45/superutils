@@ -1,6 +1,5 @@
 import { isFn, isStr } from '@superutils/core'
 import fetch from './fetch'
-import mergeFetchOptions from './mergeFetchOptions'
 import { PostArgs } from './types'
 
 /**
@@ -30,16 +29,9 @@ import { PostArgs } from './types'
 export default function post<T = unknown>(
 	...[url = '', data, options = {}]: PostArgs
 ) {
-	return fetch<T>(
-		url,
-		mergeFetchOptions(
-			{
-				method: 'post',
-				body: isStr(data)
-					? data
-					: JSON.stringify(isFn(data) ? data() : data),
-			},
-			options,
-		),
-	)
+	options.method ??= 'post'
+	return fetch<T>(url, {
+		...options,
+		body: isStr(data) ? data : JSON.stringify(isFn(data) ? data() : data),
+	})
 }

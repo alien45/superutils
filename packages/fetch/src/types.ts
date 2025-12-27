@@ -335,11 +335,9 @@ export type FetchRetryOptions = Omit<
 /**
  * Generic fetch interceptor type
  */
-export type Interceptor<
-	T,
-	TArgs extends unknown[],
-	TArgsCb extends unknown[] = [value: T, ...TArgs],
-> = (...args: TArgsCb) => ValueOrPromise<void> | ValueOrPromise<T>
+export type Interceptor<T, TArgs extends unknown[]> = (
+	...args: [value: T, ...TArgs]
+) => ValueOrPromise<void> | ValueOrPromise<T>
 
 export type PostBody = Record<string, unknown> | BodyInit | null
 

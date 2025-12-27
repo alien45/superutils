@@ -154,6 +154,7 @@ fetch.defaults = {
 		response: [],
 		result: [],
 	},
+	/** Request timeout duration in milliseconds. Default: `0` */
 	timeout: 0,
 } as FetchOptionsDefaults
 export default fetch
