@@ -4,7 +4,11 @@
 	"exclude": [
 		"packages/ai-orchestrator/",
 		"packages/demo/",
-		"packages/template/"
+		"packages/template/",
+		// exclude until ready
+		"packages/data-storage/",
+		"packages/rx/",
+		"packages/react/"
 	],
 	"entryPointStrategy": "packages",
 	"excludeExternals": true,
