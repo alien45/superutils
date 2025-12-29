@@ -390,14 +390,6 @@ describe('fetch', () => {
 		})
 
 		it('should handle fetch fail due to network issues with linear retry', async () => {
-			// Mock the global Response constructor to allow status 0, which modern fetch polyfills disallow.
-			const MockResponse = vi.fn(() => ({
-				ok: false,
-				status: 0,
-				json: () => Promise.resolve(),
-			}))
-			vi.stubGlobal('Response', MockResponse)
-
 			const fetchNetworkError = vi.fn(() =>
 				Promise.reject(new Error('Failed to fetch')),
 			)
@@ -417,7 +409,7 @@ describe('fetch', () => {
 			await promise
 			expect(onError).toHaveBeenNthCalledWith(1, expect.any(FetchError))
 			expect(fetchNetworkError).toHaveBeenCalled()
-			expect(MockResponse).toHaveBeenCalledTimes(4) // 3 retries + first call
+			expect(fetchNetworkError).toHaveBeenCalledTimes(4) // 3 retries + first call
 		})
 	})
 

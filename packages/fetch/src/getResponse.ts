@@ -11,29 +11,22 @@ import { isPositiveInteger } from '@superutils/core'
  * @returns response
  */
 export const getResponse = async (...[url, options = {}]: FetchArgs) => {
-	let attemptCount = 0 // preserve the number of attempts made
-	const doFetch = async () => {
-		attemptCount++
+	const fetchFunc = globalThis.fetch
+	if (!isPositiveInteger(options.retry)) return fetchFunc(url, options)
 
-		return globalThis.fetch(url, options).catch((err: Error) =>
-			err.message === 'Failed to fetch'
-				? // catch network errors to allow retries
-					new Response(null, {
-						status: 0,
-						statusText: 'Network Error',
-					})
-				: Promise.reject(err),
-		)
-	}
-
-	if (!isPositiveInteger(options.retry)) return doFetch()
-
-	const response = PromisE.retry(doFetch, {
-		...options,
-		retryIf: async (res, count) =>
-			res?.ok === false
-			|| (await options?.retryIf?.(res, count)) === true,
-	}).catch(err =>
+	let attemptCount = 0
+	const response = PromisE.retry(
+		() => {
+			attemptCount++
+			return fetchFunc(url, options)
+		},
+		{
+			...options,
+			retryIf: async (res, count) =>
+				res?.ok === false
+				|| (await options?.retryIf?.(res, count)) === true,
+		},
+	).catch(err =>
 		Promise.reject(
 			new Error(`Request failed after attempt #${attemptCount}`, {
 				cause: err,

@@ -46,7 +46,6 @@ for arg in "$@"; do
 done
 
 OPTIONS="${OPTIONS[0]}" # This will be like 'core:ui' or just 'core'
-echo $OPTIONS
 if [[ "${OPTIONS}" == :* ]]; then
     export OPTIONS="*${OPTIONS}"
 fi
