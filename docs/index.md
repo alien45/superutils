@@ -27,10 +27,10 @@ features:
     - title: '@superutils/promise'
       link: /packages/@superutils/promise/
       details: An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.
-    - title: '@superutils/react'
+    - title: '@superutils/react (ToDo)'
       link: /packages/@superutils/react/
       details: A collection of React hooks and components for common UI patterns and state management.
-    - title: '@superutils/rx'
+    - title: '@superutils/rx (ToDo)'
       link: /packages/@superutils/rx/
       details: A suite of powerful operators and utilities for working with RxJS observables.
 ---

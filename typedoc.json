@@ -6,9 +6,10 @@
 		"packages/demo/",
 		"packages/template/",
 		// exclude until ready
-		"packages/data-storage/",
-		"packages/rx/",
-		"packages/react/"
+		"packages/data-storage/"
+		// Not ready but already referenced in the docs pages
+		// "packages/rx/",
+		// "packages/react/"
 	],
 	"entryPointStrategy": "packages",
 	"excludeExternals": true,
