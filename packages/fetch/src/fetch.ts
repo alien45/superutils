@@ -1,6 +1,5 @@
 import {
 	fallbackIfFails,
-	isEmpty,
 	isFn,
 	isPositiveNumber,
 	isPromise,
@@ -13,6 +12,8 @@ import getResponse from './getResponse'
 import mergeFetchOptions from './mergeFetchOptions'
 import {
 	FetchAs,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	FetchCustomOptions,
 	FetchError,
 	FetchErrMsgs,
 	type FetchOptions,
@@ -20,12 +21,31 @@ import {
 	FetchOptionsDefaults,
 } from './types'
 
+/**
+ * Extended `fetch` with timeout, retry, and other options. Automatically parses as JSON by default on success.
+ *
+ * @param url request URL
+ * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}.
+ * Default content type is 'application/json'
+ * @param options.as (optional) determines who to parse the result. Default: {@link FetchAs.json}
+ * @param options.method (optional) fetch method. Default: `'get'`
+ *
+ * @example Make a simple HTTP requests
+ * ```typescript
+ * import { fetch } from '@superutils/fetch'
+ *
+ * // no need for `response.json()` or `result.data.data` drilling
+ * fetch('https://dummyjson.com/products/1')
+ * 	   .then(product => console.log(product))
+ * ```
+ */
 export const fetch = <
 	T,
 	TOptions extends FetchOptions = FetchOptions,
-	TReturn = TOptions['as'] extends FetchAs
-		? FetchResult<T>[TOptions['as']]
-		: T,
+	TAs extends FetchAs = TOptions['as'] extends FetchAs
+		? TOptions['as']
+		: FetchAs.json,
+	TReturn = FetchResult<T>[TAs],
 >(
 	url: string | URL,
 	options: TOptions = {} as TOptions,
@@ -36,14 +56,15 @@ export const fetch = <
 	const promise = new PromisE(async (resolve, reject) => {
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
 		const _options = mergeFetchOptions(fetch.defaults, options)
-		if (isEmpty(_options.method)) _options.method = 'get'
+		_options.as ??= FetchAs.json
+		_options.method ??= 'get'
 		// avoid interceptors' mutations during interceptor calls
 		const errorInterceptors = [..._options.interceptors.error]
 		const requestInterceptors = [..._options.interceptors.request]
 		const responseInterceptors = [..._options.interceptors.response]
 		const resultInterceptors = [..._options.interceptors.result]
 		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
-		url = await executeInterceptors(url, requestInterceptors, url, _options)
+		url = await executeInterceptors(url, requestInterceptors, _options)
 		const { as: parseAs, errMsgs, timeout } = _options
 		if (isPositiveNumber(timeout)) {
 			_options.abortCtrl ??= new AbortController()
@@ -67,15 +88,14 @@ export const fetch = <
 			const { status = 0 } = response
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
+				const fallbackMsg = `${errMsgs.requestFailed} ${status}`
 				const jsonError = (await fallbackIfFails(
 					// try to parse error response as json first
 					() => response.json(),
 					[],
-					// fallback to text if json parsing fails
-					`Request failed with status code: ${status}`,
+					undefined,
 				)) as Error
-				const message =
-					jsonError?.message || `${errMsgs.requestFailed} ${status}.`
+				const message = jsonError?.message || fallbackMsg
 				throw new Error(`${message}`.replace('Error: ', ''), {
 					cause: jsonError,
 				})
@@ -89,19 +109,19 @@ export const fetch = <
 						`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
 						{ cause: err },
 					)
-					return globalThis.Promise.reject(err)
+					return Promise.reject(err)
 				}
 
 				result = parseFunc.bind(response)()
 				if (isPromise(result)) result = result.catch(handleErr)
 				// invoke global and local request interceptors to intercept and/or transform parsed `result`
-				result = await executeInterceptors(
-					result,
-					resultInterceptors,
-					url,
-					_options,
-				)
 			}
+			result = await executeInterceptors(
+				result,
+				resultInterceptors,
+				url,
+				_options,
+			)
 			resolve(result as TReturn)
 		} catch (err: unknown) {
 			const errX = err as Error
@@ -134,7 +154,6 @@ export const fetch = <
 }
 /** Default fetch options */
 fetch.defaults = {
-	as: FetchAs.json,
 	errMsgs: {
 		invalidUrl: 'Invalid URL',
 		parseFailed: 'Failed to parse response as',
@@ -157,4 +176,5 @@ fetch.defaults = {
 	/** Request timeout duration in milliseconds. Default: `0` */
 	timeout: 0,
 } as FetchOptionsDefaults
+
 export default fetch

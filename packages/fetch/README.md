@@ -13,7 +13,10 @@ This package enhances the native `fetch` API by providing a streamlined interfac
     - [`Method Specific Functions`](#methods)
     - [`fetch.get.deferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
     - [`fetch.post()`](#post): make post requests
-    - [`fetch.post.deferred()`](#post-deferred) cancellable and debounced or throttled `post()`
+    - [`fetch.post.deferred()`](#post-deferred): cancellable and debounced or throttled `post()`
+    - [`Retry`](#retry) Retry on request failure
+    - [`Timeout`](#timeout) Abort request on timeout
+    - [`Interceptors/Transformers`](#interceptors)
 
 ## Features
 
@@ -37,18 +40,14 @@ npm install @superutils/fetch
 
 ### `fetch(url, options)`
 
-Make a simple GET request. No need for `response.json()` or `result.data.theActualData` drilling.
+Use as a drop-in replacement to the built-in `fetch()`.
 
-```typescript
+```javascript
 import fetch from '@superutils/fetch'
 
-fetch('https://dummyjson.com/products/1', {
-	method: 'get', // default
-}).then(theActualData => console.log(theActualData))
-// Alternative:
-fetch
-	.get('https://dummyjson.com/products/1')
-	.then(theActualData => console.log(theActualData))
+fetch('https://dummyjson.com/products/1')
+	.then(response => response.json())
+	.then(console.log)
 ```
 
 <div id="methods"></div>
@@ -74,6 +73,16 @@ While `fetch()` provides access to all HTTP request methods by specifying it in 
 - `fetch.patch.deferred(...)`
 - `fetch.post.deferred(...)`
 - `fetch.put.deferred(...)`
+
+All method specific functions by default return result parsed as JSON. No need for `response.json()` or `result.data.data` drilling.
+
+```javascript
+import fetch from '@superutils/fetch'
+
+fetch
+	.get('https://dummyjson.com/products/1')
+	.then(product => console.log({ product }))
+```
 
 <div id="fetch-deferred"></div>
 
@@ -267,4 +276,164 @@ fetch
 // The first two calls are aborted by the debounce mechanism.
 // Only the final call executes, 300ms after it was made (at the 400ms mark).
 // The token is refreshed only once, preventing redundant network requests.
+```
+
+<div id="interceptors"></div>
+
+### Interceptors: intercept and/or transform request & result
+
+The following interceptor callbacks allow intercepting and/or transforming at different stages of the request.
+
+#### Interceptor types (executed in sequence):
+
+1. `request`: Request interceptors are executed before a HTTP request is made.
+    - To transform the URL simply return a new or modified URL.
+    - To transform `fetch` options simply modify the options parameter
+2. `response`: Response interceptors are executed after receiving a `fetch` Response regardless of the HTTP status code.
+3. `result`: Result interceptors are executed before returning the result. To transform the result simply return a new value.
+   PS: if the value of `options.as` is `FetchAs.response` (`"response"`), the value received in result will be a `Response` object.
+4. `error`: Error interceptors are executed when the request fails. Error can be transformed by returning a modified/new `FetchError`.
+
+#### Notes:
+
+- All interceptors can be either asynchronous or synchronous functions.
+- If an exception is raised while executing the interceptors, it will be gracefully ignored.
+- Value returned (transformed) by an interceptor will be carried over to the subsequent interceptor of the same type.
+- There are 2 category of interceptors:
+    - Local: interceptors provided when making a request.
+    - Global: intereptors that are executed application-wide on every request. Global interceptors can be added/accessed at `fetch.defaults.interceptors`. Global interceptors are always executed before local interceptors.
+
+    **Example: Add global request and error interceptors**
+
+    ```javascript
+    import fetch from '@superutils/fetch'
+
+    const { interceptors } = fetch.defaults
+    interceptors.request.push((url, options) => {
+    	// a headers to all requests make by the application
+    	options.headers.append('x-auth', 'token')
+    })
+
+    interceptors.error.push((err, url, options) => {
+    	// log whenever a request fails
+    	console.log('Error interceptor', err)
+    })
+    ```
+
+```javascript
+import fetch, { FetchError } from '@superutils/fetch'
+
+const interceptors = {
+	error: [
+		(err, url, options) => {
+			console.log('Request failed', err, url, options)
+			// return nothing/undefined to keep the error unchanged
+			// or return modified/new error
+			err.message = 'My custom error message!'
+			// or create a new FetchError by cloning it (make sure all the required properties are set correctly)
+			return err.clone('My custom error message!')
+		},
+	],
+	request: [
+		(url, options) => {
+			// add extra headers or modify request options here
+			options.headers.append('x-custom-header', 'some value')
+
+			// transform the URL by returning a modified URL
+			return url + '?param=value'
+		},
+	],
+	response: [
+		(response, url, options) => {
+			if (response.ok) return
+			console.log('request was successful', { url, options })
+
+			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
+			// The subsequent response interceptors will receive the returned response
+			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
+		},
+	],
+	result: [
+		(result, url, options) => {
+			const productId = Number(
+				new URL(url).pathname.split('/products/')[1],
+			)
+			if (options.method === 'get' && !Number.isNaN(productId)) {
+				result.title ??= 'Unknown title'
+			}
+			return result
+		},
+	],
+}
+fetch
+	.get('https://dummyjson.com/products/1', { interceptors })
+	.then(product => console.log({ product }))
+```
+
+<div id="retry"></div>
+
+### Retry
+
+The `retry` option provides a robust mechanism to automatically re-attempt failed requests, with support for both linear and exponential backoff strategies to gracefully handle transient network issues.
+
+```javascript
+import fetch from '@superutils/fetch'
+
+fetch.get('https://dummyjson.com/products/1', {
+	retry: 3, // Max number of retries.
+	retryBackOff: 'linear', // Backoff strategy: 'linear' or 'exponential'.
+	// Delay in milliseconds.
+	// - 'linear': Constant delay between each attempt.
+	// - 'exponential': Initial delay that doubles with each retry.
+	retryDelay: 300,
+	retryDelayJitter: true, // Add random delay to avoid thundering herd.
+	retryDelayJitterMax: 100, // Max jitter delay (ms).
+	retryIf: (response, retryCount, error) => {
+		console.log('Attempt #', retryCount + 1)
+		// re-attempt if status code not 200
+		return response.status !== 200
+	},
+})
+```
+
+<div id="timeout"></div>
+
+### Request Timeout
+
+A request can be automatically cancelled by simply providing a `timeout` duration in milliseconds. Internally, `fetch` uses an `AbortController` to cancel the request if it does not complete within the specified time.
+
+```javascript
+import fetch from '@superutils/fetch'
+
+fetch.get('https://dummyjson.com/products/1', {
+	timeout: 5000,
+})
+```
+
+<div id="fetch-as"></div>
+
+### Response Parsing
+
+By default, `fetch()` returns a `Response` object, making it a drop-in replacement for the built-in `fetch`.
+
+However, all method-specific functions (e.g., `fetch.get`, `fetch.post`, `fetch.get.deferred`) automatically parse and return the result as JSON.
+
+To retrieve the response in a different format (e.g., as text, a blob, or the raw `Response` object), set the `as` option to one of the following `FetchAs` values:
+
+- `FetchAs.json`
+- `FetchAs.text`
+- `FetchAs.blob`
+- `FetchAs.arrayBuffer`
+- `FetchAs.formData`
+- `FetchAs.bytes`
+- `FetchAs.response`
+
+> **Note:** When not using TypeScript, you can simply pass the string value (e.g., `'text'`, `'blob'`, `'response'`).
+
+```typescript
+import fetch, { FetchAs } from '@superutils/fetch'
+
+fetch.get('https://dummyjson.com/products/1', {
+	as: FetchAs.text,
+})
 ```

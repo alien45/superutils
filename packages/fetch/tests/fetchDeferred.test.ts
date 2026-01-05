@@ -2,6 +2,7 @@ import { objSort } from '@superutils/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fetch, {
 	type FetchArgs,
+	FetchAs,
 	fetchDeferred,
 	type FetchDeferredArgs,
 	mergeFetchOptions,
@@ -24,6 +25,7 @@ describe('fetchDeferred', () => {
 					fetch.defaults,
 					{
 						abortCtrl: expect.any(AbortController),
+						as: FetchAs.json,
 						method: 'get',
 						signal: expect.any(AbortSignal),
 					},

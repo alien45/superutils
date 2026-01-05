@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { isObj, isStr, objSort } from '@superutils/core'
 import PromisE from '@superutils/promise/src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
-import fetch, { postDeferred, mergeFetchOptions } from '../src'
+import fetch, { postDeferred, mergeFetchOptions, FetchAs } from '../src'
 
 describe('postDeferred', () => {
 	let mockPost200: ReturnType<typeof vi.fn>
@@ -25,6 +25,7 @@ describe('postDeferred', () => {
 						signal: expect.any(AbortSignal),
 					}),
 					...options,
+					as: FetchAs.json,
 					body: isStr(options.body)
 						? options.body
 						: JSON.stringify(options.body),

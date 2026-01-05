@@ -62,7 +62,7 @@ export type FetchErrMsgs = {
 
 /** Custom error message for fetch requests with more detailed info about the request URL, fetch options and response */
 export class FetchError extends Error {
-	options?: FetchOptions
+	options: FetchOptions
 	response?: Response
 	url: string | URL
 
@@ -81,6 +81,14 @@ export class FetchError extends Error {
 		this.response = options.response
 		this.url = options.url
 	}
+
+	clone = (newMessage: string) =>
+		new FetchError(newMessage, {
+			cause: this.cause,
+			options: this.options,
+			response: this.response,
+			url: this.url,
+		})
 }
 
 /**
@@ -128,11 +136,10 @@ export type FetchInterceptorError = Interceptor<
 >
 
 /**
- *
  * Fetch request interceptor to be invoked before making a fetch request.
  * This interceptor can also be used as a transformer:
  * 1. by returning an API URL (string/URL)
- * 2. by modifying the properties of the options object to be used before making the fetch request
+ * 2. by modifying the properties of the options parameter to be used before making the fetch request
  *
  * @example intercept and transform fetch request
  * ```typescript
@@ -152,7 +159,7 @@ export type FetchInterceptorError = Interceptor<
  */
 export type FetchInterceptorRequest = Interceptor<
 	FetchArgs[0],
-	FetchArgsInterceptor
+	[FetchArgsInterceptor[1]]
 >
 
 /**
@@ -226,7 +233,9 @@ export type FetchInterceptorResponse = Interceptor<
  * })
  * ```
  */
-export type FetchInterceptorResult = Interceptor<unknown, FetchArgsInterceptor>
+export type FetchInterceptorResult<
+	Args extends unknown[] = FetchArgsInterceptor,
+> = Interceptor<unknown, Args>
 
 /**
  * All valid interceptors for fetch requests are:
@@ -279,7 +288,7 @@ export type FetchOptions = RequestInit & FetchCustomOptions
 
 export type FetchOptionsDefaults = Omit<
 	FetchOptionsInterceptor,
-	'method' | 'retryIf'
+	'as' | 'method' | 'retryIf'
 >
 
 /**
@@ -298,7 +307,7 @@ export type FetchOptionsInterceptor = Omit<
 /**
  * Result types for specific parsers ("as": FetchAs)
  */
-export interface FetchResult<T> {
+export type FetchResult<T> = {
 	arrayBuffer: ArrayBuffer
 	blob: Blob
 	bytes: Uint8Array<ArrayBuffer>
