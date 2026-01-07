@@ -270,5 +270,5 @@ deferred.defaults = {
 	resolveError: ResolveError.REJECT,
 	/** Set the default ignored resolution behavior. See {@link ResolveIgnored} for all options. */
 	resolveIgnored: ResolveIgnored.WITH_LAST,
-} satisfies DeferredAsyncDefaults<unknown, number>
+} satisfies DeferredAsyncDefaults<unknown, 100>
 export default deferred

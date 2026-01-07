@@ -36,7 +36,7 @@ export const createFetchMethodFunc = (
 	) => {
 		args[2] ??= {}
 		args[2].method = method
-		return fetchDeferred(...args)
+		return fetchDeferred<ThisArg, Delay, GlobalUrl, CbArgs>(...args)
 	}
 
 	return methodFunc
