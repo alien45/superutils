@@ -21,7 +21,7 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
 	start?: number
 }
 /**
- * Slice an iterable list and map the values into an Array/Map
+ * Slice an iterable list and map the values into an Array/Map.
  *
  * @param data		Array, Map, Set...
  * @param options	One of the following is required to create a new list:
@@ -41,6 +41,27 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
  *   - data: original list
  *
  * @returns Array/Map
+ *
+ * @example
+ * ```javascript
+ * const data = new Map([
+ * 	[0, { age: 30, name: 'Alice' }],
+ * 	[1, { age: 25, name: 'Bob' }],
+ * 	[2, undefined],
+ * 	[3, {}],
+ * 	[4, { age: 35, name: 'Charlie' }],
+ * 	[5, { age: 28, name: 'Dave' }],
+ * 	[6, { age: 22, name: 'Eve' }],
+ * ])
+ * const result = sliceMap(data, {
+ * 	asMap: false, // whether to return the result as a Map
+ * 	end: 5, // last index (exclusive)
+ * 	ignoreEmpty: true, // ignore items with no value
+ * 	start: 1, // first index
+ * })
+ * console.log(result)
+ * // [ { age: 25, name: 'Bob' }, { age: 35, name: 'Charlie' } ]
+ * ```
  */
 export const sliceMap = <
 	Data extends IterableList,

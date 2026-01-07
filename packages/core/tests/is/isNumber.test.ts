@@ -4,7 +4,11 @@ import {
 	isPositiveInteger,
 	isPositiveNumber,
 	isNumber,
+	isNegativeInteger,
+	isNegativeNumber,
 } from '../../src'
+
+const invalidNumbers = [Infinity, -Infinity, NaN, new Map(), {}, [], '10']
 
 describe('isInteger', () => {
 	it('should return true for integers', () => {
@@ -12,30 +16,32 @@ describe('isInteger', () => {
 		expect(isInteger(-10)).toBe(true)
 	})
 	it('should return false for non-integers', () => {
-		expect(isInteger(10.5)).toBe(false)
-		expect(isInteger('10')).toBe(false)
+		;[10.5, ...invalidNumbers].every(x => expect(isInteger(x)).toBe(false))
 	})
 })
 
-describe('isPositiveInteger', () => {
-	it('should return true for positive integers', () => {
-		expect(isPositiveInteger(10)).toBe(true)
+describe('isNegativeInteger', () => {
+	it('should return true for negative numbers', () => {
+		expect(isNegativeInteger(-1)).toBe(true)
+		expect(isNegativeInteger(-10)).toBe(true)
 	})
-	it('should return false for non-positive integers', () => {
-		expect(isPositiveInteger(-10)).toBe(false)
-		expect(isPositiveInteger(0)).toBe(false)
-		expect(isPositiveInteger(10.5)).toBe(false)
+	it('should return false for non-negative & invalid numbers', () => {
+		;[0, 10.5, ...invalidNumbers].every(x =>
+			expect(isNegativeInteger(x)).toBe(false),
+		)
 	})
 })
 
-describe('isPositiveNumber', () => {
-	it('should return true for positive numbers', () => {
-		expect(isPositiveNumber(10)).toBe(true)
-		expect(isPositiveNumber(10.5)).toBe(true)
+describe('isNegativeNumber', () => {
+	it('should return true for valid numbers', () => {
+		;[-0.1, -1e-100, -10.5].every(x =>
+			expect(isNegativeNumber(x)).toBe(true),
+		)
 	})
-	it('should return false for non-positive numbers', () => {
-		expect(isPositiveNumber(-10)).toBe(false)
-		expect(isPositiveNumber(0)).toBe(false)
+	it('should return false for invalid numbers', () => {
+		;[0, 1e-100, 10.5, ...invalidNumbers].every(x =>
+			expect(isNegativeNumber(x)).toBe(false),
+		)
 	})
 })
 
@@ -45,8 +51,28 @@ describe('isNumber', () => {
 		expect(isNumber(-10.5)).toBe(true)
 	})
 	it('should return false for invalid numbers', () => {
-		expect(isNumber(Infinity)).toBe(false)
-		expect(isNumber(-Infinity)).toBe(false)
-		expect(isNumber(NaN)).toBe(false)
+		;[...invalidNumbers].every(x => expect(isNegativeNumber(x)).toBe(false))
+	})
+})
+
+describe('isPositiveInteger', () => {
+	it('should return true for positive integers', () => {
+		expect(isPositiveInteger(10)).toBe(true)
+	})
+	it('should return false for non-positive integers', () => {
+		;[0, -1, -1e-99, ...invalidNumbers].every(x =>
+			expect(isPositiveInteger(x)).toBe(false),
+		)
+	})
+})
+
+describe('isPositiveNumber', () => {
+	it('should return true for positive numbers', () => {
+		;[10, 10.5, 1e-99].every(x => expect(isPositiveNumber(x)).toBe(true))
+	})
+	it('should return false for non-positive numbers', () => {
+		;[0, -1, -1e-99, ...invalidNumbers].every(x =>
+			expect(isPositiveNumber(x)).toBe(false),
+		)
 	})
 })

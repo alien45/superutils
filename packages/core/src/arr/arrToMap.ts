@@ -17,6 +17,7 @@ import { isArr, isDefined, isFn, isNumber, isObj } from '../is'
  * 	   arr,
  * 	   (_: Item, i: number) => item.a,
  * )
+ * ```
  *
  * @example Flatten and convert Array to Map
  * ```typescript

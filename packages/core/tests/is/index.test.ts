@@ -11,6 +11,7 @@ import {
 	// isSubjectLike,
 	isSymbol,
 	noop,
+	isSubjectLike,
 } from '../../src'
 import is, * as all from '../../src/is'
 
@@ -126,34 +127,34 @@ describe('isStr', () => {
 	})
 })
 
-// describe('isSubjectLike', () => {
-// 	it('should return true for RxJS subject-like objects', () => {
-// 		const subjectLike = {
-// 			subscribe: noop,
-// 			next: noop,
-// 		}
-// 		expect(isSubjectLike(subjectLike)).toBe(true)
-// 		expect(isSubjectLike({ ...subjectLike, value: 42 }, true)).toBe(true)
-// 	})
-// 	it('should return false for non-subject-like objects when withValue is true', () => {
-// 		expect(
-// 			isSubjectLike(
-// 				{
-// 					subscribe: noop,
-// 					next: noop,
-// 				},
-// 				true,
-// 			),
-// 		).toBe(false)
-// 	})
+describe('isSubjectLike', () => {
+	it('should return true for RxJS subject-like objects', () => {
+		const subjectLike = {
+			subscribe: noop,
+			next: noop,
+		}
+		expect(isSubjectLike(subjectLike)).toBe(true)
+		expect(isSubjectLike({ ...subjectLike, value: 42 }, true)).toBe(true)
+	})
+	it('should return false for non-subject-like objects when withValue is true', () => {
+		expect(
+			isSubjectLike(
+				{
+					subscribe: noop,
+					next: noop,
+				},
+				true,
+			),
+		).toBe(false)
+	})
 
-// 	it('should return false for non-subject-like objects', () => {
-// 		expect(isSubjectLike({ subscribe: noop })).toBe(false)
-// 		expect(isSubjectLike({ next: noop })).toBe(false)
-// 		expect(isSubjectLike({})).toBe(false)
-// 		expect(isSubjectLike(null)).toBe(false)
-// 	})
-// })
+	it('should return false for non-subject-like objects', () => {
+		expect(isSubjectLike({ subscribe: noop })).toBe(false)
+		expect(isSubjectLike({ next: noop })).toBe(false)
+		expect(isSubjectLike({})).toBe(false)
+		expect(isSubjectLike(null)).toBe(false)
+	})
+})
 
 describe('isSymbol', () => {
 	it('should return true for symbols', () => {

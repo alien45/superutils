@@ -37,13 +37,13 @@ This monorepo contains the following packages. Each is independently versioned a
         </a>
       </td>
       <td>A collection of lightweight, dependency-free utility functions and types.</td>
-      <td id="coverage_core"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td id="coverage_core"><div style="color:green">&#128153;&nbsp;95%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View</a></td>
     </tr>
     <tr>
       <td><a href="https://www.npmjs.com/package/@superutils/fetch"><code>@superutils/fetch</code></a></td>
       <td>A lightweight <code>fetch</code> wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.</td>
-      <td id="coverage_fetch"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td id="coverage_fetch"><div style="color:green">&#128153;&nbsp;98.44%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View</a></td>
     </tr>
     <tr>

@@ -5,7 +5,7 @@
 	},
 	"description": "A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.",
 	"dependencies": {
-		"@superutils/core": "^1.1.4",
+		"@superutils/core": "^1.1.5",
 		"@superutils/promise": "^1.1.4"
 	},
 	"files": [
@@ -24,7 +24,7 @@
 	"main": "dist/index.js",
 	"name": "@superutils/fetch",
 	"peerDependencies": {
-		"@superutils/core": "^1.1.4",
+		"@superutils/core": "^1.1.5",
 		"@superutils/promise": "^1.1.4"
 	},
 	"publishConfig": {

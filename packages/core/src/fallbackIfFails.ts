@@ -11,19 +11,14 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  * Yes, the goal of `fallbackIfFails` is to ignore all runtime errors
  * and ensure there's always a value returned.
  *
- * ---
+ * @param target promise or function to execute
+ * @param args arguments to be supplied to `func` fuction
+ * @param fallback alternative value to be used when target throws error.
  *
- * `fallbackValue` PS:
- *
- * 1. If function provided and Error is thrown it will not be caught.
- * A fallback of the fallback is out of the scope of this function.
- * 2. If `target` a promise or async function, `fallbackValue` must either be a promise or resolve to a promise
- *
- * ---
- *
- * @param target        promise or function to execute
- * @param args			arguments to be supplied to `func` fuction
- * @param fallbackValue alternative value to be used when target throws error.
+ * - If `fallback` is a function and it raises exception, it will cause to raise an exception instead of gracefully
+ * ignoring it. A fallback of the fallback function is out of the scope of `fallbackIfFails`. However, the fallback
+ * function can still be wrapped inside a secondary `fallbackIfFails`. See the "Fallback chaining" example below.
+ * - If `target` a promise or async function, `fallback` can be either be  a value, a promise or an async function.
  *
  * @returns if func is a promise the return a promise
  *
@@ -31,7 +26,10 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  * ---
  * @example Async functions
  * Working with async functions or functions that returns a promise
+ *
  * ```typescript
+ * import { fallbackIfFails } from '@superutils/core'
+ *
  * const args = ['some value', true] as const
  * const ensureValue = async (value: string, criteria?: boolean) => {
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
@@ -47,7 +45,10 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  *
  * @example Non-async functions
  * Working synchronous function that returns value synchronously
+ *
  * ```typescript
+ * import { fallbackIfFails } from '@superutils/core'
+ *
  * const args = ['some value', true] as const
  * const ensureValue = (value: string, criteria?: boolean) => {
  *     if (criteria !== false && !value.trim()) throw new Error('No value. Should use fallback value')
@@ -63,7 +64,10 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  *
  * @example Hybrid functions
  * Working with function that returns value sync/async circumstantially
+ *
  * ```typescript
+ * import { fallbackIfFails } from '@superutils/core'
+ *
  * const getData = (useCache = true, cacheKey = 'data-cache') => {
  *     if (useCache && localStorage[cacheKey]) return localStorage[cacheKey]
  *     return fetch('https://my.domain.com/api')
@@ -78,30 +82,46 @@ export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
  * // Second call: cache available and will return data synchronously
  * const second = fallbackIfFails(getData, [true], {})
  * ```
+ *
+ * @example Fallback-chaining: gracefully handle the fallback function
+ *
+ * ```typescript
+ * import { fallbackIfFails } from '@superutils/core'
+ *
+ * const target = () => {
+ *     if (new Date().getTime() > 0) throw new Error('I will raise error')
+ * }
+ * const fallback = () => {
+ *     throw new Error('I will also raise an exception')
+ * }
+ * const value = fallbackIfFails(
+ *     target,
+ *     [],
+ * 	   // this function will only be invoked when
+ *     () => fallbackIfFails(fallback, [], undefined)
+ * )
+ *
+ * console.log({ value }) // undefined
+ * ```
  */
 export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
 	target: T | ((...args: TArgs) => T),
 	args: TArgs | (() => TArgs),
-	fallbackValue:
+	fallback:
 		| IfPromiseAddValue<T>
 		| ((reason: unknown) => IfPromiseAddValue<T>),
 ): T => {
-	let result: unknown
 	try {
-		result = !isFn(target)
+		const result: unknown = !isFn(target)
 			? target // assume value or promise received
 			: target(...(isFn(args) ? args() : args))
 		if (!isPromise(result)) return result as T
 
-		return result.catch(err => getAltValCb(err, fallbackValue)) as T
-	} catch (error) {
-		// sync function invocation failed
-		return getAltValCb(error, fallbackValue) as T
+		return result.catch(err =>
+			isFn(fallback) ? fallback(err) : fallback,
+		) as T
+	} catch (err) {
+		return (isFn(fallback) ? fallback(err) : fallback) as T
 	}
 }
 export default fallbackIfFails
-
-const getAltValCb = <T>(
-	error: unknown,
-	fallbackValue: T | ((error: unknown) => T),
-) => (isFn(fallbackValue) ? fallbackValue(error) : fallbackValue)

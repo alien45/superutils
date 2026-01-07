@@ -13,9 +13,11 @@ import isFn, { isAsyncFn } from './isFn'
 import { isMap, isMapObj } from './isMap'
 import {
 	isInteger,
+	isNegativeInteger,
+	isNegativeNumber,
+	isNumber,
 	isPositiveInteger,
 	isPositiveNumber,
-	isNumber,
 } from './isNumber'
 import isObj from './isObj'
 import isUrl, { isUrlValid } from './isUrl'
@@ -54,19 +56,19 @@ export const isSet = <T = unknown>(x: unknown): x is Set<T> => x instanceof Set
 /** Check if value is string */
 export const isStr = (x: unknown): x is string => typeof x === 'string'
 
-// /**
-//  * Check if value is similar to a RxJS subject with .subscribe & .next functions
-//  *
-//  * @param x The value to check
-//  * @param withValue When `true`, also checks if `value` property exists in `x`
-//  *
-//  * @returns `true` if the value is subject-like, `false` otherwise.
-//  */
-// export const isSubjectLike = <T>(x: unknown, withValue = false) =>
-// 	isObj<{ subscribe: unknown; next: unknown; value?: T }>(x, false)
-// 	&& isFn(x.subscribe)
-// 	&& isFn(x.next)
-// 	&& (!withValue || 'value' in x)
+/**
+ * Check if value is similar to a RxJS subject with .subscribe & .next functions
+ *
+ * @param x The value to check
+ * @param withValue When `true`, also checks if `value` property exists in `x`
+ *
+ * @returns `true` if the value is subject-like, `false` otherwise.
+ */
+export const isSubjectLike = <T>(x: unknown, withValue = false) =>
+	isObj<{ subscribe: unknown; next: unknown; value?: T }>(x, false)
+	&& isFn(x.subscribe)
+	&& isFn(x.next)
+	&& (!withValue || 'value' in x)
 
 /** Check if value is a Symbol */
 export const isSymbol = (x: unknown): x is symbol => typeof x === 'symbol'
@@ -96,6 +98,8 @@ export const is = {
 	integer: isInteger,
 	map: isMap,
 	mapObj: isMapObj,
+	negativeInteger: isNegativeInteger,
+	negativeNumber: isNegativeNumber,
 	number: isNumber,
 	obj: isObj,
 	positiveInteger: isPositiveInteger,
@@ -104,7 +108,7 @@ export const is = {
 	regExp: isRegExp,
 	set: isSet,
 	str: isStr,
-	// subjectLike: isSubjectLike,
+	subjectLike: isSubjectLike,
 	symbol: isSymbol,
 	uint8Arr: isUint8Arr,
 	url: isUrl,

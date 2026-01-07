@@ -18,6 +18,10 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
     - [`objCopy()`](#obj-copy): Deep-copy objects
     - [`search()`](#search): Search iterable collections
+        - [Advanced search options](#search-advanced)
+        - [`Ranked search`](#search-ranked): sort results by relevance
+        - [Combine `search()` with `deferred()`](#search-deferred): simulate a search input with debounce mechanism
+    - [`curry()`](#curry): Convert any function into a curried function
 
 ## Installation
 
@@ -236,6 +240,8 @@ search(data, { query: /li/i }) // Using regular expression
 // ])
 ```
 
+<div id="search-advanced"></div>
+
 #### Advanced Search Options:
 
 ```javascript
@@ -274,4 +280,97 @@ search(data, {
 //   { age: 25, name: 'Bob' },
 //   { age: 28, name: 'Dave' }
 // ]
+```
+
+<div id="search-ranked"></div>
+
+#### Search Ranked: sort results by relevance
+
+When `ranked` is set to `true`, results are sorted by relevance. In this example, "Alice" is ranked higher than "Charlie" because the match "li" appears earlier in the string.
+
+```javascript
+import { search } from '@superutils/core'
+
+// Sample colletion
+const data = new Map([
+	[2, { age: 25, name: 'Bob' }],
+	[3, { age: 35, name: 'Charlie' }],
+	[4, { age: 28, name: 'Dave' }],
+	[5, { age: 22, name: 'Eve' }],
+	[1, { age: 30, name: 'Alice' }],
+])
+const result = search(data, {
+	asMap: false, // Result type: true => Map (default, keys preserved), false => Array
+	limit: 10, // Number of items returned. Default: no limit
+	query: /li/i,
+	ranked: true,
+})
+console.log(result)
+// [ { age: 30, name: 'Alice' }, { age: 35, name: 'Charlie' } ]
+```
+
+<div id="search-deferred"></div>
+
+#### Combine `search()` with `deferred()`: simulate a search input with debounce mechanism
+
+```javascript
+import { deferred, search } from '@superutils/core'
+
+// sample colletion
+const data = new Map([
+	[1, { age: 30, name: 'Alice' }],
+	[2, { age: 25, name: 'Bob' }],
+	[3, { age: 35, name: 'Charlie' }],
+	[4, { age: 28, name: 'Dave' }],
+	[5, { age: 22, name: 'Eve' }],
+])
+
+const searchDeferred = deferred(
+	event => {
+		const result = search(data, {
+			query: {
+				name: new RegExp(event?.target?.value, 'i'),
+			},
+		})
+		// print result to console
+		console.log(result)
+	},
+	300, // debounce duration in milliseconds
+	{ leading: false }, // optional defer options
+)
+
+// ignored
+searchDeferred({ target: { value: 'l' } })
+// ignored
+setTimeout(() => searchDeferred({ target: { value: 'li' } }), 50)
+// executed: prints `Map(1) { 3 => { age: 35, name: 'Charlie' } }`
+setTimeout(() => searchDeferred({ target: { value: 'lie' } }), 200)
+// executed: prints `Map(1) { 1 => { age: 30, name: 'Alice' } }`
+setTimeout(() => searchDeferred({ target: { value: 'lic' } }), 510)
+```
+
+<div id="curry"></div>
+
+### `curry(fn, arity)`: Convert any function into a curried function
+
+```typescript
+const func = (
+	first: string,
+	second: number,
+	third?: boolean,
+	fourth?: string,
+) => `${first}-${second}-${third}-${fourth}`
+// We create a new function from the `func()` function that acts like a type-safe curry function
+// while also being flexible with the number of arguments supplied.
+const curriedFunc = curry(func)
+
+// Example 1: usage like a regular curry function and provide one argument at a time.
+// Returns a function expecting args: second, third, fourth
+const fnWith1 = curriedFunc('first')
+// Returns a function expecting args: third, fourth
+const fnWith2 = fnWith1(2)
+// returns a function epecting only fourth arg
+const fnWith3 = fnWith2(false)
+// All args are now provided, the original function is called and result is returned.
+const result = fnWith3('last')
 ```

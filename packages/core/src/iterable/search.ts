@@ -218,12 +218,13 @@ export function matchObjOrProp<K, V>( // extends Record<string, unknown>
 	)
 	// check if value matches as is
 	if (value === keyword) return 0
-	if (matchExact) return -1
+	if (matchExact && !isRegExp(keyword)) return -1
 
 	// Beyond this point only match values as string
 	let valueStr = String(value)
 	if (!valueStr.trim()) return -1
 	if (isRegExp(keyword)) return valueStr.match(keyword)?.index ?? -1
+	if (matchExact) return -1
 	if (ignoreCase) valueStr = valueStr.toLowerCase()
 
 	return valueStr.indexOf(String(keyword))
