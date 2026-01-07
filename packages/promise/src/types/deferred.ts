@@ -18,8 +18,10 @@ export type DeferredAsyncGetPromise<T> = <TResult = T>() => Promise<TResult>
 /** Default options used by `PromisE.deferred` and related functions */
 export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
 	Required<DeferredAsyncOptions<ThisArg, Delay>>,
-	'delayMs' | 'resolveError' | 'resolveIgnored'
->
+	'resolveError' | 'resolveIgnored'
+> & {
+	delayMs: number
+}
 
 /** Options for `PromisE.deferred` and other related functions */
 export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {

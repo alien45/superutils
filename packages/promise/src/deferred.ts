@@ -272,3 +272,5 @@ deferred.defaults = {
 	resolveIgnored: ResolveIgnored.WITH_LAST,
 } satisfies DeferredAsyncDefaults<unknown, 100>
 export default deferred
+
+deferred.defaults.delayMs = 0
