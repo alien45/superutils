@@ -1,3 +1,3 @@
-# @superutils/rx (`ToDo`)
+# @superutils/rx (`Planned`)
 
-A suite of powerful operators and utilities for working with RxJS observables.
+A set of small, focused utilities for working with RxJS observables and subjects.

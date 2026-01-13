@@ -108,7 +108,7 @@ async function main() {
 					: percentage <= 20
 						? 'gray'
 						: 'red'
-		const html = `<div style="color:${color}">${icon}&nbsp;${percentage <= 20 ? 'ToDo' : percentage + '%'}</div>`
+		const html = `<div style="color:${color}">${icon}&nbsp;${percentage <= 20 ? 'Planned' : percentage + '%'}</div>`
 		const regex = new RegExp(
 			`(<td id="coverage_${pkgName}">)(.*?)(<\\/td>)`,
 			'g',

@@ -16,7 +16,9 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 - [Installation](#installation)
 - [Usage](#usage)
     - [`new PromisE(executor)`](#promise-executor): Drop-in replacement for `Promise`
-    - [`new PromisE(promise)`](#promise-status): Check promise status
+        - [Status tracking](#status-tracking)
+        - [Early Finalization](#early-finalization)
+    - [`new PromisE(promise)`](#promise-status): Check status of an existing promise.
     - [`PromisE.try()`](#static-methods): Static methods
     - [`PromisE.delay()`](#delay): Async delay
     - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
@@ -45,40 +47,44 @@ Dependency: `@superutils/core` will be automatically installed by NPM
 
 ### `new PromisE(executor)`: Drop-in replacement for `Promise`
 
-The `PromisE` class can be used just like the native `Promise`. The first key difference is the addition of status properties:
+The `PromisE` class can be used just like the native `Promise`. The first key difference is the addition of status properties and early finalization:
 
-1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
+#### Status tracking:
 
-    ```javascript
-    import Promise from '@superutils/promise'
+All instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
 
-    const p = new Promise(resolve => setTimeout(() => resolve('done'), 1000))
+```javascript
+import Promise from '@superutils/promise'
 
-    console.log(p.pending) // true
+const p = new Promise(resolve => setTimeout(() => resolve('done'), 1000))
 
-    p.then(result => {
-    	console.log(result) // 'done'
-    	console.log(p.resolved) // true
-    	console.log(p.pending) // false
-    })
-    ```
+console.log(p.pending) // true
 
-2. Early finalization: all `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
+p.then(result => {
+	console.log(result) // 'done'
+	console.log(p.resolved) // true
+	console.log(p.pending) // false
+})
+```
 
-    ```javascript
-    import PromisE from '@superutils/promise'
+#### Early finalization:
 
-    const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
-    p.then(result => console.log(result))
-    // resolve the promise early
-    setTimeout(() => p.resolve('finished early'), 500)
+All `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
 
-    // Add a callback to do stuff whenever promise is finazlied externally.
-    // This will not be invoked if promise finalized naturally using the Promise executor.
-    request.onEarlyFinalize.push(((resolved, valueOrReason) =>
-    	console.log('Promise finalized externally:', { resolved, valueOrReason }),
-    ))
-    ```
+```javascript
+import PromisE from '@superutils/promise'
+
+const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
+p.then(result => console.log(result))
+// resolve the promise early
+setTimeout(() => p.resolve('finished early'), 500)
+
+// Add a callback to do stuff whenever promise is finazlied externally.
+// This will not be invoked if promise finalized naturally using the Promise executor.
+request.onEarlyFinalize.push(((resolved, valueOrReason) =>
+	console.log('Promise finalized externally:', { resolved, valueOrReason }),
+))
+```
 
 <div id="static-methods"></div>
 
@@ -101,9 +107,7 @@ p.catch(error => {
 
 <div id="promise-status"></div>
 
-### `new PromisE(promise)`
-
-Check status of an existing promise.
+### `new PromisE(promise)`: Check status of an existing promise.
 
 ```javascript
 import PromisE from '@superutils/promise'

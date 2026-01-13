@@ -1,5 +1,6 @@
 export * from './copyRxSubject'
 export * from './IntervalSubject'
+export * from './IntervalRunner'
 export * from './isSubjectLike'
 export * from './BehaviorSubject'
 export * from './subjectAsPromise'
