@@ -2,19 +2,23 @@ import { fallbackIfFails, isFn } from '@superutils/core'
 import { type Interceptor } from './types'
 
 /**
- * Gracefully execute interceptors and return un-/modified value
+ * Gracefully executes interceptors and returns the processed value.
+ * If the value is not transformed (by returning a new value) by the interceptors,
+ * the original value is returned.
  *
- * @param	value value to be passed to the interceptor. Eg: (Response, result... when using `fetch()`)
- * @param	interceprors interceptor functions
- * @param	args (optional) arguments to be supplied to the interceptor in addition to the `value' which
- * will always be the first argument.
+ * @param	value value to be passed to the interceptors
+ * @param	interceptors interceptor callbacks
+ * @param	args (optional) common arguments to be supplied to all the interceptors in addition to
+ * the `value' which will always be the first argument.
+ *
+ * Interceptor arguments: `[value, ...args]`
  */
 export const executeInterceptors = async <T, TArgs extends unknown[]>(
 	value: T,
-	interceptors: Interceptor<T, TArgs>[],
+	interceptors: Interceptor<T, TArgs>[] = [],
 	...args: TArgs
 ) => {
-	for (const interceptor of interceptors.filter(isFn)) {
+	for (const interceptor of [...(interceptors || [])].filter(isFn)) {
 		value =
 			((await fallbackIfFails(
 				interceptor,

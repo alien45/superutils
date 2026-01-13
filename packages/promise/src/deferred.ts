@@ -4,7 +4,6 @@ import {
 	isFn,
 	isPositiveNumber,
 	objCopy,
-	PositiveNumber,
 	throttled as throttledCore,
 } from '@superutils/core'
 import PromisEBase from './PromisEBase'
@@ -272,5 +271,3 @@ deferred.defaults = {
 	resolveIgnored: ResolveIgnored.WITH_LAST,
 } satisfies DeferredAsyncDefaults<unknown, 100>
 export default deferred
-
-deferred.defaults.delayMs = 0

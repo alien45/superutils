@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import createFetchMethodFunc from './createFetchMethodFunc'
-import createPostMethodFunc from './createPostMethodFunc'
+import createClient from './createClient'
+import createPostClient from './createPostClient'
 import fetchOriginal from './fetch'
 import fetchResponse from './fetchResponse'
 import { FetchCustomOptions, FetchInterceptors } from './types'
 
-const _get = createFetchMethodFunc('get')
-const _head = createFetchMethodFunc('head')
-const _options = createFetchMethodFunc('options')
+const _get = createClient({ method: 'get' })
+const _head = createClient({ method: 'head' })
+const _options = createClient({ method: 'options' })
 // Post-like methods that allow `options.body`
-const _delete = createPostMethodFunc('delete')
-const _patch = createPostMethodFunc('patch')
-const _post = createPostMethodFunc('post')
-const _put = createPostMethodFunc('put')
+const _delete = createPostClient({ method: 'delete' })
+const _patch = createPostClient({ method: 'patch' })
+const _post = createPostClient({ method: 'post' })
+const _put = createPostClient({ method: 'put' })
 
 export type FetchWithMethods = typeof fetchResponse & {
 	/** Default options */

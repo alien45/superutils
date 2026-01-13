@@ -18,12 +18,7 @@ import {
 	SubjectLike,
 } from '@superutils/rx'
 import { delay, distinctUntilChanged, throttle } from 'rxjs'
-import fetch, {
-	FetchAs,
-	FetchError,
-	ResolveIgnored,
-	postDeferred,
-} from '@superutils/fetch'
+import fetch, { FetchAs, FetchError, ResolveIgnored } from '@superutils/fetch'
 
 console.log('Started')
 

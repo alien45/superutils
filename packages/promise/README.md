@@ -34,8 +34,10 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 ## Installation
 
 ```bash
-npm install @superutils/core @superutils/promise
+npm install @superutils/promise
 ```
+
+Dependency: `@superutils/core` will be automatically installed by NPM
 
 ## Usage
 
@@ -43,31 +45,40 @@ npm install @superutils/core @superutils/promise
 
 ### `new PromisE(executor)`: Drop-in replacement for `Promise`
 
-The `PromisE` class can be used just like the native `Promise`. The key difference is the addition of status properties:
+The `PromisE` class can be used just like the native `Promise`. The first key difference is the addition of status properties:
 
-```typescript
-import { PromisE } from '@superutils/promise'
+1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
 
-const p = new PromisE(resolve => setTimeout(() => resolve('done'), 1000))
+    ```javascript
+    import Promise from '@superutils/promise'
 
-console.log(p.pending) // true
+    const p = new Promise(resolve => setTimeout(() => resolve('done'), 1000))
 
-p.then(result => {
-	console.log(result) // 'done'
-	console.log(p.resolved) // true
-	console.log(p.pending) // false
-})
-```
+    console.log(p.pending) // true
 
-and the ability to early finalize a promise:
+    p.then(result => {
+    	console.log(result) // 'done'
+    	console.log(p.resolved) // true
+    	console.log(p.pending) // false
+    })
+    ```
 
-```typescript
-import { PromisE } from '@superutils/promise'
-const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
-p.then(result => console.log(result))
-// resolve the promise early
-setTimeout(() => p.resolve('finished early'), 500)
-```
+2. Early finalization: all `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
+
+    ```javascript
+    import PromisE from '@superutils/promise'
+
+    const p = new PromisE(resolve => setTimeout(() => resolve('done'), 10000))
+    p.then(result => console.log(result))
+    // resolve the promise early
+    setTimeout(() => p.resolve('finished early'), 500)
+
+    // Add a callback to do stuff whenever promise is finazlied externally.
+    // This will not be invoked if promise finalized naturally using the Promise executor.
+    request.onEarlyFinalize.push(((resolved, valueOrReason) =>
+    	console.log('Promise finalized externally:', { resolved, valueOrReason }),
+    ))
+    ```
 
 <div id="static-methods"></div>
 
@@ -75,8 +86,8 @@ setTimeout(() => p.resolve('finished early'), 500)
 
 Drop-in replacement for all `Promise` static methods such as `.all()`, `.race()`, `.reject`, `.resolve`, `.try()`, `.withResolvers()`....
 
-```typescript
-import { PromisE } from '@superutils/promise'
+```javascript
+import PromisE from '@superutils/promise'
 
 const p = PromisE.try(() => {
 	throw new Error('Something went wrong')
@@ -94,8 +105,9 @@ p.catch(error => {
 
 Check status of an existing promise.
 
-```typescript
-import { PromisE } from '@superutils/promise'
+```javascript
+import PromisE from '@superutils/promise'
+
 const x = Promise.resolve(1)
 const p = new PromisE(x)
 console.log(p.pending) // false
@@ -109,8 +121,9 @@ console.log(p.rejected) // false
 
 Creates a promise that resolves after a specified duration, essentially a promise-based `setTimeout`.
 
-```typescript
+```javascript
 import PromisE from '@superutils/promise'
+
 // Wait until `appReady` becomes truthy but
 while (!appReady) {
 	await PromisE.delay(100)
@@ -123,16 +136,13 @@ Creates a promise that executes a function after a specified duration and return
 
 If callback returns undefined, default value will be the duration.
 
-```typescript
+```javascript
 import PromisE from '@superutils/promise'
 
-const func = async () => {
-	console.log('Waiting for app initialization or something else to be ready')
-	// wait 3 seconds before proceeding
-	await PromisE.delay(3000)
-	console.log('App ready')
-}
-func()
+console.log('Waiting for app initialization or something else to be ready')
+const onReady = () => console.log('App ready')
+
+PromisE.delay(3000, onReady)
 ```
 
 <div id="deferred"></div>
@@ -144,6 +154,8 @@ Create a function that debounces or throttles promise-returning function calls. 
 #### Debounce example:
 
 ```typescript
+import PromisE from '@superutils/promise'
+
 const example = async (options = {}) => {
 	const df = PromisE.deferred({
 		delayMs: 100,
@@ -165,7 +177,10 @@ example({ ignoreStale: true, throttle: false })
 
 #### Throttle example:
 
-```typescript
+```javascript
+import PromisE from '@superutils/promise'
+
+// Simulate an example scenario
 const example = async (options = {}) => {
 	const df = PromisE.deferred({
 		delayMs: 100,
@@ -221,7 +236,7 @@ delays.forEach(timeout =>
 #### Reject stuck or unexpectedly lenghthy promise(s) after a specified timeout:
 
 ```typescript
-import { PromisE } from '@superutils/promise'
+import PromisE from '@superutils/promise'
 
 PromisE.timeout(
 	5000, // timeout after 5000ms
@@ -233,7 +248,7 @@ PromisE.timeout(
 #### Show a message when loading is too long:
 
 ```typescript
-import { PromisE } from '@superutils/promise'
+import PromisE from '@superutils/promise'
 
 const loadUserNProducts = () => {
 	const promise = PromisE.timeout(

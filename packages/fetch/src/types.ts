@@ -8,12 +8,17 @@ export {
 	ResolveIgnored,
 } from '@superutils/promise'
 
-export type FetchArgs<OmitMethod extends boolean = false> = [
-	url: string | URL,
-	options?: OmitMethod extends true
-		? Omit<FetchOptions, 'method'>
-		: FetchOptions,
-]
+export type ExcludeOptions<
+	Target, // options to exclude
+	Options extends FetchOptions = FetchOptions,
+> = Target extends FetchOptions
+	? { headers?: Options['headers'] } & Omit<Options, 'headers' | keyof Target>
+			& Partial<Record<Exclude<keyof Target, 'headers'>, never>> // explicitly prevents excluded properties
+	: Options
+
+export type ExcludePostOptions<Target> = ExcludeOptions<Target, PostOptions>
+
+export type FetchArgs = [url: string | URL, options?: FetchOptions]
 
 export type FetchArgsInterceptor = [
 	url: string | URL,
@@ -30,6 +35,18 @@ export enum FetchAs {
 	text = 'text',
 }
 
+/** Extract `FetchAs` from `FetchOptions` */
+export type FetchAsFromOptions<
+	TOptions,
+	TFallback = FetchAs.json,
+> = TOptions extends {
+	as: infer As
+}
+	? As extends FetchAs
+		? As
+		: TFallback
+	: TFallback
+
 /** Custom fetch options (not used by built-in `fetch()`*/
 export type FetchCustomOptions = {
 	/**
@@ -38,10 +55,12 @@ export type FetchCustomOptions = {
 	 */
 	as?: FetchAs
 	abortCtrl?: AbortController
+	body?: PostBody | (() => PostBody)
 	errMsgs?: FetchErrMsgs
 	interceptors?: FetchInterceptors
 	/** Request timeout in milliseconds. */
 	timeout?: number
+	validateUrl?: boolean
 } & FetchRetryOptions
 
 /** Default args */
@@ -261,7 +280,7 @@ export type FetchInterceptorResult<
  * ---
  * 1. Any exception thrown by interceptors will gracefully ignored.
  * 2. Interceptors will be executed in the sequence they're given.
- * 3. Execution priority: global interceprors will always be executed before local interceptors.
+ * 3. Execution priority: global interceptors will always be executed before local interceptors.
  *
  *
  *
@@ -284,7 +303,7 @@ export type FetchInterceptors = {
 /**
  * Fetch request options
  */
-export type FetchOptions = RequestInit & FetchCustomOptions
+export type FetchOptions = Omit<RequestInit, 'body'> & FetchCustomOptions
 
 export type FetchOptionsDefaults = Omit<
 	FetchOptionsInterceptor,
@@ -359,32 +378,34 @@ export type PostArgs<OmitMethod = false> = [
 ]
 
 /**
- * Dynamic arguments for deffered post-like methods.
+ * Dynamic arguments for deferred post-like methods.
  *
  * @example
  * ```typescript
+ * import fetch, { type PostDeferredCbArgs } from '@superutils/fetch'
+ *
  * // test with types
- * type T1 = PostDeferredCallbackArgs<string | URL, undefined> // expected: [data, options]
- * type T2 = PostDeferredCallbackArgs<undefined, string> // expected: [url, options]
- * type T3 = PostDeferredCallbackArgs // expected: [url, data, options]
- * type T4 = PostDeferredCallbackArgs<string, string> // expected: [options]
+ * type T1 = PostDeferredCbArgs<string | URL, undefined> // expected: [data, options]
+ * type T2 = PostDeferredCbArgs<undefined, string> // expected: [url, options]
+ * type T3 = PostDeferredCbArgs // expected: [url, data, options]
+ * type T4 = PostDeferredCbArgs<string, string> // expected: [options]
  *
  * const data = { name: 'test' }
  * const url = 'https://domain.com'
- * // test with postDeferred()
- * const f1 = postDeferred({}, 'https://domain.com')
+ * // test with fetch.post.deferred()
+ * const f1 = fetch.post.deferred({}, 'https://domain.com')
  * // expected: [data, options]
  * f1({data: 1}).then(console.log, console.warn)
  *
- * const f2 = postDeferred({}, undefined, 'dome data')
+ * const f2 = fetch.post.deferred({}, undefined, 'dome data')
  * // expected: [url, options]
  * f2('https').then(console.log, console.warn)
  *
- * const f3 = postDeferred({})
+ * const f3 = fetch.post.deferred({})
  * // expected: [url, data, options]
  * f3('https://domain.com').then(console.log, console.warn)
  *
- * const f4 = postDeferred({}, 'url', 'data')
+ * const f4 = fetch.post.deferred({}, 'url', 'data')
  * // expected: [options]
  * f4().then(console.log, console.warn)
  * ```
@@ -392,19 +413,17 @@ export type PostArgs<OmitMethod = false> = [
 export type PostDeferredCbArgs<
 	TUrl = undefined,
 	TData = undefined,
-	OmitMethod extends boolean = true,
-	CbArgs extends PostArgs<OmitMethod> = PostArgs<OmitMethod>,
-	Options = CbArgs[2],
-	CbArgsReq extends unknown[] = Required<CbArgs>,
+	Options = PostOptions,
+	CbArgsReq extends unknown[] = Required<PostArgs>,
 > = [TUrl, TData] extends [CbArgsReq[0], undefined] // only URL provided
-	? [data?: CbArgs[1], options?: Options]
+	? [data?: PostArgs[1], options?: Options]
 	: [TUrl, TData] extends [undefined, CbArgsReq[1]] // only data provided
-		? [url: CbArgs[0], options?: Options]
+		? [url: PostArgs[0], options?: Options]
 		: [TUrl, TData] extends [CbArgsReq[0], CbArgsReq[1]]
 			? [options?: Options] // Both default URL and data are provided
-			: CbArgs
+			: PostArgs
 
-export type PostOptions = Omit<FetchOptions, 'method'> & {
+export type PostOptions = {
 	/** Default: `'post'` */
 	method?:
 		| 'post'
@@ -415,4 +434,4 @@ export type PostOptions = Omit<FetchOptions, 'method'> & {
 		| 'PUT'
 		| 'PATCH'
 		| 'DELETE'
-}
+} & Omit<FetchOptions, 'method'>

@@ -4,19 +4,28 @@ A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify dat
 
 This package enhances the native `fetch` API by providing a streamlined interface and integrating practical & useful features from `@superutils/promise`. It offers built-in support for automatic retries, request timeouts, interceptors, and effortless request cancellation, making complex asynchronous flows simple and manageable.
 
+<div v-if="false">
+
+For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/fetch/).
+
+</div>
+
 ## Table of Contents
 
 - Features
 - Installation
 - Usage
-    - [`fetch()`](#fetch): make HTTP requests just like built-in `fetch()`
+    - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
+    - [`PromisE Features`](#promise-features): status, early finalization etc
     - [`Method Specific Functions`](#methods)
+    - [`fetch.get()`](#fetch-get)
     - [`fetch.get.deferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
     - [`fetch.post()`](#post): make post requests
     - [`fetch.post.deferred()`](#post-deferred): cancellable and debounced or throttled `post()`
     - [`Retry`](#retry) Retry on request failure
     - [`Timeout`](#timeout) Abort request on timeout
     - [`Interceptors/Transformers`](#interceptors)
+    - [`Reusable Clients`](#reusable-clients)
 
 ## Features
 
@@ -40,7 +49,7 @@ npm install @superutils/fetch
 
 ### `fetch(url, options)`
 
-Use as a drop-in replacement to the built-in `fetch()`.
+Use as a drop-in replacement to built-in `fetch()`.
 
 ```javascript
 import fetch from '@superutils/fetch'
@@ -49,6 +58,48 @@ fetch('https://dummyjson.com/products/1')
 	.then(response => response.json())
 	.then(console.log)
 ```
+
+<div id="promise-features"></div>
+
+### PromisE Instance: status, early cancellation
+
+All fetch calls return a `PromisE` (`@superutils/promise`) instance which means they come with additional features available in `PromisE`:
+
+1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
+
+    ```javascript
+    import fetch from '@superutils/fetch'
+
+    const request = fetch('https://dummyjson.com/products/1')
+
+    console.log(request.pending) // true
+
+    request.then(() => {
+    	console.log(request.resolved) // true
+    	console.log(request.pending) // false
+    	console.log(request.rejected) // false
+    })
+    ```
+
+2. Early finalization: all `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
+
+    ```javascript
+    import fetch from '@superutils/fetch'
+
+    // Request that will take 5 seconds to resolve
+    const request = fetch('https://dummyjson.com/products?delay=5000')
+
+    request.then(result => console.log(result), console.warn)
+
+    // Add a callback to do stuff whenever request is aborted externally.
+    // This will not be invoked if fetch fails or resolves (promise finalized naturally) using the Promise executor.
+    request.onEarlyFinalize.push((resolved, valueOrReason) =>
+    	console.log('Aborted externally:', { resolved, valueOrReason }),
+    )
+
+    // resolve/reject before the promise is finalized
+    request.reject(new Error('No longer needed'))
+    ```
 
 <div id="methods"></div>
 
@@ -75,6 +126,14 @@ While `fetch()` provides access to all HTTP request methods by specifying it in 
 - `fetch.put.deferred(...)`
 
 All method specific functions by default return result parsed as JSON. No need for `response.json()` or `result.data.data` drilling.
+
+<div id="fetch-get"></div>
+
+### `fetch.get(url, options)`
+
+Performs a GET request and returns the result parsed as JSON by default.
+
+Equivalent to `fetch(url, { method: 'get', as: 'json' })`.
 
 ```javascript
 import fetch from '@superutils/fetch'
@@ -436,4 +495,37 @@ import fetch, { FetchAs } from '@superutils/fetch'
 fetch.get('https://dummyjson.com/products/1', {
 	as: FetchAs.text,
 })
+```
+
+<div id="reusable-clients"></div>
+
+### `createClient(method, )`: Reusable Clients
+
+The `createClient` utility allows you to generate pre-configured fetch functions with default options, such as headers, timeouts, or specific HTTP methods. This is ideal for creating dedicated API clients for specific services to avoid repetition.
+
+```javascript
+import { createClient } from '@superutils/fetch'
+
+// Create a client with default headers and a 5-second timeout
+const apiClient = createClient(undefined, {
+	headers: {
+		Authorization: 'Bearer my-secret-token',
+		'Content-Type': 'application/json',
+	},
+	timeout: 5000,
+})
+
+// Use it just like the standard fetch
+apiClient('https://dummyjson.com/products/1').then(console.log)
+
+// Create a specialized POST client
+const createProduct = createClient(
+	'get', // if provided will force all requests to be of this
+	{ timeout: 10000 },
+)
+
+// No need to specify method: 'post'
+createProduct('https://dummyjson.com/products/add', {
+	body: JSON.stringify({ title: 'New Product' }),
+}).then(console.log)
 ```

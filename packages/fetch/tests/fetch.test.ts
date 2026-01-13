@@ -79,7 +79,9 @@ describe('fetch', () => {
 			vi.stubGlobal('fetch', fetch400)
 
 			let error: FetchError | undefined
-			fetch.get(fetchBaseUrl).catch((err: FetchError) => (error = err))
+			fetch
+				.get(fetchBaseUrl)
+				.catch((err: FetchError) => (error = err.clone(err.message)))
 			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
 				expect.any(FetchError),
 			)
@@ -171,6 +173,8 @@ describe('fetch', () => {
 				fetch.defaults,
 				localOptions,
 			)
+			expectedOptions.abortCtrl = expect.any(AbortController)
+			expectedOptions.signal = expect.any(AbortSignal)
 			await fetch(fetchBaseUrl, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
@@ -190,6 +194,20 @@ describe('fetch', () => {
 					expect(interceptor).toHaveBeenCalledOnce(),
 				)
 			fetch.defaults = defaults
+		})
+
+		it('should abort a request externally and execute onEarlyFinalize callbacks', async () => {
+			const onEarlyFinalize = vi.fn()
+			const onReject = vi.fn()
+			const onResolve = vi.fn()
+			const request = fetch('https://dummyjson.com/products?delay=5000') // will take 5 seconds to resolve
+			// resolve/reject the before the promise is finalized
+			request.onEarlyFinalize.push(onEarlyFinalize)
+			request.reject('No longer needed')
+			await request.then(onResolve, onReject)
+			expect(onReject).toHaveBeenCalledExactlyOnceWith('No longer needed')
+			expect(onResolve).not.toHaveBeenCalled()
+			expect(onEarlyFinalize).toHaveBeenCalled()
 		})
 	})
 
@@ -232,6 +250,8 @@ describe('fetch', () => {
 			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
 			expectedOptions.as ??= FetchAs.json
 			expectedOptions.method ??= 'get'
+			expectedOptions.abortCtrl = expect.any(AbortController)
+			expectedOptions.signal = expect.any(AbortSignal)
 
 			const promise = fetch.get(fetchBaseUrl, options)
 			await vi.runAllTimersAsync()
@@ -270,6 +290,8 @@ describe('fetch', () => {
 			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
 			expectedOptions.as ??= FetchAs.json
 			expectedOptions.method ??= 'get'
+			expectedOptions.abortCtrl = expect.any(AbortController)
+			expectedOptions.signal = expect.any(AbortSignal)
 			const url = 'an invalid url'
 			await fetch.get(url, options).catch(() => {})
 			expect(receivedArgs).toEqual([

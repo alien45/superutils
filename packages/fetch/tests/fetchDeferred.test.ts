@@ -3,13 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fetch, {
 	type FetchArgs,
 	FetchAs,
-	fetchDeferred,
 	type FetchDeferredArgs,
 	mergeFetchOptions,
 } from '../src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
 
-describe('fetchDeferred', () => {
+describe('fetch.get.deferred', () => {
 	let mockFetch200: ReturnType<typeof vi.fn>
 	const fetchBaseUrl = 'https://dummyjson.com/products'
 	const getExpectedFetchResult = (
@@ -71,7 +70,7 @@ describe('fetchDeferred', () => {
 		// - runAllTimersAsync executes only the 3rd call.
 		const context = getDeferredContext()
 		const headers = new Headers({ 'x-header': 'default header' })
-		const getProduct = fetchDeferred(
+		const getProduct = fetch.get.deferred(
 			context,
 			undefined, // no default url
 			{ headers },

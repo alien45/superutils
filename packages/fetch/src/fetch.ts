@@ -54,33 +54,50 @@ export const fetch = <
 	let timeoutId: TimeoutId
 	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	const promise = new PromisE(async (resolve, reject) => {
+		let errResponse: Response | undefined
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
 		const _options = mergeFetchOptions(fetch.defaults, options)
 		_options.as ??= FetchAs.json
 		_options.method ??= 'get'
-		// avoid interceptors' mutations during interceptor calls
-		const errorInterceptors = [..._options.interceptors.error]
-		const requestInterceptors = [..._options.interceptors.request]
-		const responseInterceptors = [..._options.interceptors.response]
-		const resultInterceptors = [..._options.interceptors.result]
+		// make sure there's always an abort controller, so that request is aborted when promise is early finalized
+		_options.abortCtrl =
+			_options.abortCtrl instanceof AbortController
+				? _options.abortCtrl
+				: new AbortController()
 		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
-		url = await executeInterceptors(url, requestInterceptors, _options)
-		const { as: parseAs, errMsgs, timeout } = _options
+		url = await executeInterceptors(
+			url,
+			_options.interceptors.request,
+			_options,
+		)
+		const {
+			as: parseAs,
+			body,
+			errMsgs,
+			timeout,
+			validateUrl = true,
+		} = _options
 		if (isPositiveNumber(timeout)) {
-			_options.abortCtrl ??= new AbortController()
 			timeoutId = setTimeout(() => _options.abortCtrl?.abort(), timeout)
 		}
 		abortCtrl = _options.abortCtrl
 		if (_options.abortCtrl) _options.signal = _options.abortCtrl.signal
-		let errResponse: Response | undefined
 		try {
-			if (!isUrlValid(url, false)) throw new Error(errMsgs.invalidUrl)
+			if (validateUrl && !isUrlValid(url, false))
+				throw new Error(errMsgs.invalidUrl)
+
+			if (!['undefined', 'string'].includes(typeof body))
+				// stringify data/body
+				_options.body = JSON.stringify(
+					isFn(body) ? fallbackIfFails(body, [], undefined) : body,
+				)
+
 			// make the fetch call
 			let response = await getResponse(url, _options)
 			// invoke global and local request interceptors to intercept and/or transform `response`
 			response = await executeInterceptors(
 				response,
-				responseInterceptors,
+				_options.interceptors.response,
 				url,
 				_options,
 			)
@@ -118,11 +135,11 @@ export const fetch = <
 			}
 			result = await executeInterceptors(
 				result,
-				resultInterceptors,
+				_options.interceptors.result,
 				url,
 				_options,
 			)
-			resolve(result as TReturn)
+			resolve(result)
 		} catch (err: unknown) {
 			const errX = err as Error
 			const msg =
@@ -138,7 +155,7 @@ export const fetch = <
 			// invoke global and local request interceptors to intercept and/or transform `error`
 			error = await executeInterceptors(
 				error,
-				errorInterceptors,
+				_options.interceptors.error,
 				url,
 				_options,
 			)
@@ -175,6 +192,7 @@ fetch.defaults = {
 	},
 	/** Request timeout duration in milliseconds. Default: `0` */
 	timeout: 0,
+	validateUrl: true,
 } as FetchOptionsDefaults
 
 export default fetch

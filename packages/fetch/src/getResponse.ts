@@ -12,13 +12,14 @@ import { isPositiveInteger } from '@superutils/core'
  */
 export const getResponse = async (...[url, options = {}]: FetchArgs) => {
 	const fetchFunc = globalThis.fetch
-	if (!isPositiveInteger(options.retry)) return fetchFunc(url, options)
+	if (!isPositiveInteger(options.retry))
+		return fetchFunc(url, options as RequestInit)
 
 	let attemptCount = 0
 	const response = PromisE.retry(
 		() => {
 			attemptCount++
-			return fetchFunc(url, options)
+			return fetchFunc(url, options as RequestInit)
 		},
 		{
 			...options,

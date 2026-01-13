@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fetch, { FetchAs } from '../src'
 
-describe('post', () => {
+describe('fetch.post', () => {
 	const postUrl = 'https://dummyjson.com/products/add'
 	afterEach(() => {
 		vi.useRealTimers()

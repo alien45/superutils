@@ -1,11 +1,10 @@
-import { FetchOptions, FetchOptionsInterceptor } from './types'
 import { isEmpty, objKeys } from '@superutils/core'
+import { FetchOptions, FetchOptionsInterceptor } from './types'
 
 /**
  * Merge one or more {@link FetchOptions}
  *
  * Notes:
- * - {@link config.fetchOptions} will be added as the base and not necessary to be included
  * - item properties will be prioritized in the order of sequence they were passed in
  * - the following properties will be merged
  *     * `errMsgs`
@@ -54,3 +53,14 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 		{ headers: new Headers() },
 	) as FetchOptionsInterceptor
 export default mergeFetchOptions
+
+/** Merges partial fetch options ignoring empty or undefined. Otherwise, will return the first argument. */
+export const mergePartialOptions = (
+	...optionsAr: (Partial<FetchOptions> | undefined)[]
+) => {
+	optionsAr = optionsAr.filter(x => !isEmpty(x))
+
+	return optionsAr.length <= 1
+		? optionsAr[0]
+		: mergeFetchOptions(...(optionsAr as Partial<FetchOptions>[]))
+}

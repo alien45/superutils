@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { isObj, isStr, objSort } from '@superutils/core'
 import PromisE from '@superutils/promise/src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
-import fetch, { postDeferred, mergeFetchOptions, FetchAs } from '../src'
+import fetch, { mergeFetchOptions, FetchAs } from '../src'
 
-describe('postDeferred', () => {
+const postDeferred = fetch.post.deferred
+describe('fetch.post.deferred', () => {
 	let mockPost200: ReturnType<typeof vi.fn>
 	const fetchBaseUrl = 'https://dummyjson.com/products'
 	let mockedResponse: Record<string, unknown> | undefined
