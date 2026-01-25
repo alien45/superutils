@@ -1,8 +1,8 @@
-import fallbackIfFails from './fallbackIfFails'
-import { type DeferredOptions, type ValueOrPromise } from './types'
+import fallbackIfFails from '../fallbackIfFails'
+import { ValueOrPromise } from '../types'
+import { DebounceOptions } from './types'
 
 /**
- *
  * Returns a function that invokes the callback function after certain delay/timeout.
  * All errors will be gracefully swallowed.
  *
@@ -27,14 +27,14 @@ import { type DeferredOptions, type ValueOrPromise } from './types'
  * handleChange({ target: { value: 3 } }) // will be invoked
  * ```
  */
-export const deferred = <TArgs extends unknown[], ThisArg>(
+export const debounce = <TArgs extends unknown[], ThisArg>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
 	delay = 50,
-	config: DeferredOptions<ThisArg> = {},
+	config: DebounceOptions<ThisArg> = {},
 ) => {
 	const {
-		leading = deferred.defaults.leading,
-		onError = deferred.defaults.onError,
+		leading = debounce.defaults.leading,
+		onError = debounce.defaults.onError,
 		thisArg,
 	} = config
 	let { tid } = config
@@ -59,7 +59,7 @@ export const deferred = <TArgs extends unknown[], ThisArg>(
 		_callback(...args)
 	}
 }
-deferred.defaults = {
+debounce.defaults = {
 	/**
 	 * Set the default value of argument `leading` for the `deferred` function.
 	 * This change is applicable application-wide and only applies to any new invocation of `deferred()`.
@@ -70,5 +70,6 @@ deferred.defaults = {
 	 * This change is applicable application-wide and only applies to any new invocation of `deferred()`.
 	 */
 	onError: undefined,
-} satisfies DeferredOptions
-export default deferred
+} satisfies DebounceOptions
+
+export default debounce

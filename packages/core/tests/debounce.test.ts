@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { debounce, deferred } from '../src'
+import { deferred, debounce } from '../src'
 
-describe('deferred', () => {
+describe('debounce', () => {
 	const delayMs = 100
 	const delayMsX2 = delayMs * 2
 
@@ -17,7 +17,7 @@ describe('deferred', () => {
 		const bad = vi.fn(() => {
 			throw new Error('boom')
 		})
-		const dfn = debounce(bad, delayMs)
+		const dfn = deferred(bad, delayMs, { throttle: false })
 		expect(() => dfn()).not.toThrow()
 	})
 
@@ -26,7 +26,7 @@ describe('deferred', () => {
 		const cb = function (this: ThisArg) {}
 		const viCb = vi.fn(cb)
 		const obj = { value: 42 }
-		deferred(
+		debounce(
 			viCb as typeof cb, // casting is required for "thisArg" type-safety which vi.fn() removes
 			delayMs,
 			{ thisArg: obj },
@@ -38,7 +38,7 @@ describe('deferred', () => {
 
 	it('should debounce the callback WIHTOUT leading-edge execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = deferred(callback, delayMs, { leading: false })
+		const delayedFunc = debounce(callback, delayMs, { leading: false })
 
 		delayedFunc(1)
 		delayedFunc(2)
@@ -52,7 +52,7 @@ describe('deferred', () => {
 
 	it('should debounce the callback WITH leading-edge execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = deferred(callback, delayMs, { leading: true })
+		const delayedFunc = debounce(callback, delayMs, { leading: true })
 
 		delayedFunc(1)
 		delayedFunc(2)
@@ -71,7 +71,7 @@ describe('deferred', () => {
 
 	it('should debounce the callback WITH leading-edge global execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = deferred(callback, delayMs, { leading: 'global' })
+		const delayedFunc = debounce(callback, delayMs, { leading: 'global' })
 
 		delayedFunc(1)
 		delayedFunc(2)

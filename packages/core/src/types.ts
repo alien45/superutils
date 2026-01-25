@@ -57,16 +57,6 @@ export type CurriedArgs<
 		>
 
 /**
- * Deferred function options
- */
-export type DeferredOptions<ThisArg = unknown> = {
-	leading?: boolean | 'global'
-	onError?: (err: unknown) => ValueOrPromise<unknown>
-	thisArg?: ThisArg
-	tid?: TimeoutId
-}
-
-/**
  * Drop the first item from an array/tuple and keep the rest
  * ---
  * @example usage
@@ -111,6 +101,14 @@ export type DropLast<T extends unknown[]> = T extends [...infer Rest, unknown]
 	? Rest
 	: []
 
+/**
+ * If `T` is a promise turn it into an union type by adding the value type
+ */
+export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
+
+/**
+ * Check if a tuple/array has a finite length
+ */
 export type IsFiniteTuple<T extends unknown[]> = number extends T['length']
 	? false
 	: true
@@ -295,5 +293,8 @@ export type ValueOrFunc<Value, Args extends unknown[] = []> =
 	| Value
 	| ((...args: Args) => Value)
 
-/** Accept value a promise resolving to value */
+/**
+ * Represents a value that can be either a direct value of type `T` or a `Promise` that resolves to `T`.
+ * This is useful for functions that can handle both synchronous and asynchronous results.
+ */
 export type ValueOrPromise<T> = T | Promise<T>

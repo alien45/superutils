@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { throttled } from '../src'
+import { deferred, throttle } from '../src'
 
-describe('throttled', () => {
+describe('throttle', () => {
 	const delayMs = 100
 	const delayMsX2 = delayMs * 2
 
@@ -18,7 +18,7 @@ describe('throttled', () => {
 			throw 'boom'
 		})
 		const onError = vi.fn()
-		const fn = throttled(bad, delayMs, { onError })
+		const fn = deferred(bad, delayMs, { onError, throttle: true })
 		expect(() => fn()).not.toThrow()
 		fn()
 		fn()
@@ -33,7 +33,7 @@ describe('throttled', () => {
 		const cb = function (this: ThisArg) {}
 		const viCb = vi.fn(cb)
 		const obj = { value: 42 }
-		throttled(
+		throttle(
 			viCb as typeof cb, // casting is required for "thisArg" type-safety which vi.fn() removes
 			delayMs,
 			{ thisArg: obj },
@@ -45,7 +45,7 @@ describe('throttled', () => {
 
 	it('should throttle the callback WITH trailing-edge execution', () => {
 		const callback = vi.fn()
-		const throttledFunc = throttled(
+		const throttledFunc = throttle(
 			callback,
 			delayMs,
 			{ trailing: true }, // enables trailing-edge
@@ -79,7 +79,7 @@ describe('throttled', () => {
 
 	it('should throttle the callback WITHOUT trailing-edge execution', () => {
 		const callback = vi.fn()
-		const throttledFunc = throttled(
+		const throttledFunc = throttle(
 			callback,
 			delayMs,
 			{ trailing: false }, // disables trailing-edge

@@ -224,7 +224,6 @@ export function matchObjOrProp<K, V>( // extends Record<string, unknown>
 	let valueStr = String(value)
 	if (!valueStr.trim()) return -1
 	if (isRegExp(keyword)) return valueStr.match(keyword)?.index ?? -1
-	if (matchExact) return -1
 	if (ignoreCase) valueStr = valueStr.toLowerCase()
 
 	return valueStr.indexOf(String(keyword))

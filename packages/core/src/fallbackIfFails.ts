@@ -1,9 +1,5 @@
 import { isFn, isPromise } from './is'
-
-/**
- * If `T` is a promise turn it into an union type by adding the value type
- */
-export type IfPromiseAddValue<T> = T extends Promise<infer V> ? T | V : T
+import { IfPromiseAddValue } from './types'
 
 /**
  * @function fallbackIfFails

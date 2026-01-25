@@ -8,7 +8,7 @@ import { IterableList, type FindOptions } from './types'
  *
  * @returns first item matched or `undefined` if not found
  *
- * @example Find item using callback
+ * @example Find item using predicate callback
  * ```typescript
  * import { find } from '@superutils/core'
  *
