@@ -158,7 +158,6 @@ describe('PromisE.deferred', () => {
 
 	it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks', async () => {
 		const context = getDeferredContext()
-
 		const deferredFn = PromisE.deferred(context)
 		deferredFn(() => PromisE.delay(50, 1))
 		deferredFn(() => PromisE.delay(50, 2))
@@ -170,5 +169,41 @@ describe('PromisE.deferred', () => {
 		expect(context.data.errors).toHaveLength(1)
 		expect(context.data.errors[0]).toBe('error')
 		expect(context.data.ignored).toHaveLength(1)
+	})
+
+	it('should ignore stale promises', async () => {
+		const staleInnerFn = vi.fn()
+		const staleResultFn = vi.fn()
+		const context = getDeferredContext()
+		context.debugTag = 'd'
+		context.ignoreStale = true
+		const deferredFn = PromisE.deferred(context)
+		deferredFn(() => PromisE.delay(501)) // will be ignored by debounce
+
+		// will become stale
+		deferredFn(() => {
+			staleInnerFn()
+			return PromisE.delay(5002)
+		}).then(staleResultFn)
+
+		await vi.advanceTimersByTime(1000)
+		deferredFn(() => PromisE.delay(1003))
+
+		const last = deferredFn(() => PromisE.delay(1004))
+		await vi.runAllTimersAsync()
+		await expect(last).resolves.toBe(1004)
+		expect(context.data.ignored.length).toBe(3)
+
+		// check if stale item was resovled with the "last" item's result (as per `resolveIgnore` option)
+		expect(staleResultFn).toHaveBeenCalledWith(1004)
+
+		// check if stale item's ignore callback resolves with it's own value
+		const getStalePromise = context.data.ignored[2]
+		const stalePromise = getStalePromise()
+		await vi.runAllTimersAsync()
+		await expect(stalePromise).resolves.toBe(1003)
+
+		// make sure stale item is not re-executed when the relevant ignored function is called
+		expect(staleInnerFn).toHaveBeenCalledTimes(1)
 	})
 })

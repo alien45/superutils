@@ -18,7 +18,8 @@ import {
 
 /**
  * @function PromisE.deferred
- * The adaptation of the `deferred()` function tailored for Promises.
+ *
+ * The adaptation of the `deferred()` function from `@superutils/core` tailored for Promises.
  *
  *
  * # Notes
@@ -125,6 +126,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 	let { onError, onIgnore, onResult } = options
 	const {
 		delayMs = 0,
+		ignoreStale,
 		resolveError,
 		resolveIgnored,
 		thisArg,
@@ -132,10 +134,12 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 	} = options
 	interface QueueItem extends PromisEBase<unknown> {
 		getPromise: GetPromiseFunc<T>
+		result?: IPromisE<T>
 		started: boolean
 		sequence: number
 	}
-	let prevQItem: QueueItem | null = null
+	let lastInSeries: QueueItem | null = null
+	let lastExecuted: QueueItem
 	const queue = new Map<symbol, QueueItem>()
 	const isSequential = !isPositiveNumber(delayMs)
 
@@ -145,15 +149,19 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		onResult = onResult?.bind(thisArg)
 	}
 
-	const handleIgnore = (
-		items: [symbol, QueueItem][],
-		prevQItem: QueueItem | null,
-	) => {
+	const handleIgnore = (items: [symbol, QueueItem][]) => {
 		for (const [iId, iItem] of items) {
 			queue.delete(iId)
-			if (iItem === undefined || iItem.started) continue
+			const isStale =
+				ignoreStale && iItem.sequence < lastExecuted!.sequence
+			if (iItem.resolved || (iItem.started && !isStale)) continue
 
-			onIgnore && fallbackIfFails(onIgnore, [iItem.getPromise], 0)
+			// prevent re-executing when a function is provided for execution instead of a direct promise
+			if (iItem.started) {
+				iItem.getPromise = (() => iItem.result) as GetPromiseFunc<T>
+			}
+
+			fallbackIfFails(onIgnore, [iItem.getPromise], 0)
 
 			switch (resolveIgnored) {
 				case ResolveIgnored.WITH_UNDEFINED:
@@ -162,20 +170,18 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 					break
 				case ResolveIgnored.WITH_LAST:
 					// resolve/reject with most recent promise
-					prevQItem?.then(iItem.resolve, iItem.reject)
+					lastExecuted?.then(iItem.resolve, iItem.reject)
 					break
 				case ResolveIgnored.NEVER:
 					// leave unresovled (potential memory leak if not handled properly by consumer)
 					break
 			}
 		}
-
 		if (!queue.size) sequence = 0
 	}
-	// after a queue item is handled, decide whether to ignore or proceed with remaining items in the queue
+	// after a queue item is executed, decide whether to ignore or proceed with remaining items in the queue
 	const handleRemaining = (currentId: symbol) => {
-		const _prevQItem = prevQItem
-		prevQItem = null
+		lastInSeries = null
 
 		if (isSequential) {
 			queue.delete(currentId)
@@ -193,20 +199,20 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 			// This is because there can possibly be more calls coming in.
 			items = items.slice(0, -1)
 		}
-		handleIgnore(items, _prevQItem)
+		handleIgnore(items)
+		queue.delete(currentId)
 	}
-	let prevSeq = 0
 	const executeItem = async (id: symbol, qItem: QueueItem) => {
-		qItem.started = true
-		const _prevQItem = prevQItem
-		prevQItem = qItem
-		prevSeq = prevQItem?.sequence ?? 0
-		// execute the promise/function
 		try {
-			const result = await PromisEBase.try(qItem.getPromise)
-			const ignore =
-				!isSequential && options.ignoreStale && prevSeq > qItem.sequence
-			if (ignore) return handleIgnore([[id, qItem]], _prevQItem)
+			qItem.started = true
+			lastExecuted = qItem
+			lastInSeries = qItem
+			qItem.result ??= PromisEBase.try(qItem.getPromise) as IPromisE<T>
+			const result = await qItem.result
+			const isStale =
+				!!ignoreStale && qItem.sequence < lastExecuted!.sequence
+			if (isStale) return handleIgnore([[id, qItem]])
+
 			qItem.resolve(result)
 			onResult && fallbackIfFails(onResult, [result], undefined)
 		} catch (err) {
@@ -236,7 +242,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 				options as Parameters<typeof deferredSync>[2],
 			)
 
-	const deferredFunc = <TResult = T>(
+	return <TResult = T>(
 		promise: Promise<TResult> | (() => Promise<TResult>),
 	) => {
 		const id = Symbol('deferred-queue-item-id')
@@ -250,11 +256,10 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 
 		// Execute first item in a series.
 		// Or, in throttle/debounce mode, send to respective delay function
-		if (!prevQItem || !isSequential) handleItem(id, qItem)
+		if (!lastInSeries || !isSequential) handleItem(id, qItem)
 
 		return qItem as IPromisE<TResult>
 	}
-	return deferredFunc
 }
 /** Global default values */
 deferred.defaults = {

@@ -28,7 +28,7 @@ export const getDeferredContext = () => {
 	} as DeferredAsyncOptions & {
 		data: {
 			errors: unknown[]
-			ignored: unknown[]
+			ignored: (<T = unknown>() => Promise<T>)[]
 			results: unknown[]
 		}
 	}
