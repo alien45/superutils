@@ -1,10 +1,9 @@
 import {
-	deferred as deferredCore,
+	deferred as deferredSync,
 	fallbackIfFails,
 	isFn,
 	isPositiveNumber,
 	objCopy,
-	throttled as throttledCore,
 } from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import {
@@ -13,7 +12,7 @@ import {
 	ResolveError,
 	ResolveIgnored,
 	DeferredAsyncCallback,
-	DeferredAsyncGetPromise,
+	GetPromiseFunc,
 	DeferredAsyncDefaults,
 } from './types'
 
@@ -132,7 +131,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		throttle,
 	} = options
 	interface QueueItem extends PromisEBase<unknown> {
-		getPromise: DeferredAsyncGetPromise<T>
+		getPromise: GetPromiseFunc<T>
 		started: boolean
 		sequence: number
 	}
@@ -185,7 +184,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		}
 
 		let items = [...queue.entries()]
-		if (throttle && options.trailing) {
+		if (throttle === true && options.trailing) {
 			// in throttle mode only ignore items before the current queue item
 			const currentIndex = items.findIndex(([id]) => id === currentId)
 			items = items.slice(0, currentIndex)
@@ -228,13 +227,13 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		}
 		handleRemaining(id)
 	}
-	// handle items in one of the following modes: sequential, debounce or throttle
+	// handle items in one of the following modes: sequential or deferred (debounce or throttle)
 	const handleItem = isSequential
 		? executeItem
-		: (throttle ? throttledCore : deferredCore)(
+		: deferredSync(
 				executeItem,
 				delayMs,
-				options,
+				options as Parameters<typeof deferredSync>[2],
 			)
 
 	const deferredFunc = <TResult = T>(
@@ -244,7 +243,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		const qItem = new PromisEBase() as QueueItem
 		qItem.getPromise = (
 			isFn(promise) ? promise : () => promise
-		) as DeferredAsyncGetPromise<TResult>
+		) as GetPromiseFunc<TResult>
 		qItem.started = false
 		qItem.sequence = ++sequence
 		queue.set(id, qItem)
@@ -269,5 +268,5 @@ deferred.defaults = {
 	resolveError: ResolveError.REJECT,
 	/** Set the default ignored resolution behavior. See {@link ResolveIgnored} for all options. */
 	resolveIgnored: ResolveIgnored.WITH_LAST,
-} satisfies DeferredAsyncDefaults<unknown, 100>
+} satisfies DeferredAsyncDefaults
 export default deferred

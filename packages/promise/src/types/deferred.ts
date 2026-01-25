@@ -1,10 +1,9 @@
-import {
+import type {
 	DeferredOptions,
 	PositiveNumber,
-	ThrottleOptions,
 	ValueOrPromise,
 } from '@superutils/core'
-import { IPromisE } from './IPromisE'
+import type { IPromisE } from './IPromisE'
 
 /** Return type of `PromisE.deferred()` */
 export type DeferredAsyncCallback<TArgs extends unknown[] | [] = []> = <
@@ -13,7 +12,7 @@ export type DeferredAsyncCallback<TArgs extends unknown[] | [] = []> = <
 	promise: Promise<TResult> | ((...args: TArgs) => Promise<TResult>),
 ) => IPromisE<TResult>
 
-export type DeferredAsyncGetPromise<T> = <TResult = T>() => Promise<TResult>
+export type GetPromiseFunc<T> = <TResult = T>() => Promise<TResult>
 
 /** Default options used by `PromisE.deferred` and related functions */
 export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
@@ -43,9 +42,6 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 */
 	ignoreStale?: boolean
 
-	/** Callback invoked whenever promise/function throws error */
-	onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
-
 	/**
 	 * Whenever a promise/function is ignored when in debounce/throttle mode, `onIgnored` wil be invoked.
 	 * The promise/function will not be invoked, unless it's manually invoked using the `ignored` function.
@@ -53,7 +49,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 */
 	onIgnore?: (
 		this: ThisArg,
-		ignored: DeferredAsyncGetPromise<unknown>,
+		ignored: GetPromiseFunc<unknown>,
 	) => ValueOrPromise<unknown>
 
 	/**
@@ -76,26 +72,39 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 * See {@link ResolveError} for available options.
 	 */
 	resolveError?: ResolveError
-
-	/** The value to be used as "thisArg" whenever any of the callbacks are invoked */
-	thisArg?: ThisArg
 } & (
 	| ({
-			// Throttle mode
-			delayMs: PositiveNumber<Delay>
-			throttle: true
-	  } & Pick<ThrottleOptions, 'trailing'>)
-	| ({
-			// Debounce/deferred mode
-			delayMs?: PositiveNumber<Delay>
-			throttle?: false
-	  } & Pick<DeferredOptions, 'leading'>)
-	| {
 			// Seqential execution
 			delayMs: 0
+	  } & {
 			throttle?: false
-	  }
+			/** Callback invoked whenever promise/function throws error */
+			onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
+			/** The value to be used as "thisArg" whenever any of the callbacks are invoked */
+			thisArg?: ThisArg
+	  })
+	| ({
+			// Debounce/Throttle mode
+			delayMs?: PositiveNumber<Delay>
+	  } & DeferredOptions<ThisArg>)
 )
+// & (
+// 	| ({
+// 			// Throttle mode
+// 			delayMs?: PositiveNumber<Delay>
+// 			throttle: true
+// 	  } & Pick<ThrottleOptions, 'trailing'>)
+// 	| ({
+// 			// Debounce/deferred mode
+// 			delayMs?: PositiveNumber<Delay>
+// 			throttle?: false
+// 	  } & Pick<DebounceOptions, 'leading'>)
+// 	| {
+// 			// Seqential execution
+// 			delayMs: 0
+// 			throttle?: false
+// 	  }
+// )
 
 /** Determines what to do when deferred promise/function fails */
 export enum ResolveError {

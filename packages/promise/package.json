@@ -6,7 +6,7 @@
 	"dependencies": {
 		"@superutils/core": "^1.1.5"
 	},
-	"description": "An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.",
+	"description": "An extended Promise with additional features such as status tracking, deferred/throttled execution, timeout and retry mechanism.",
 	"files": [
 		"dist",
 		"README.md",

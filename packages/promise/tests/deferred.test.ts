@@ -101,12 +101,11 @@ describe('PromisE.deferred', () => {
 			expectError: any | typeof none,
 		) => {
 			const onError = vi.fn()
-			const conf = {
+			const deferredFn = PromisE.deferred({
 				delayMs: 100,
 				onError,
 				resolveError,
-			}
-			const deferredFn = PromisE.deferred(conf)
+			})
 			const last = deferredFn(() => PromisE.delayReject(500, 3)) // no .catch() needed bacause of `resolveError` flag
 			await vi.runAllTimersAsync()
 			expectLast !== none && expect(await last).toBe(expectLast)

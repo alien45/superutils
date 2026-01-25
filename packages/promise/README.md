@@ -2,7 +2,7 @@
 
 An extended `Promise` implementation, named `PromisE`, that provides additional features and utilities for easier asynchronous flow control in JavaScript and TypeScript applications.
 
-This package offers a drop-in replacement for the native `Promise` that includes status tracking (`.pending`, `.resolved`, `.rejected`) and a suite of practical static methods for common asynchronous patterns like deferred execution, throttling, and cancellable fetches.
+This package offers a drop-in replacement for the native `Promise` that includes status tracking (`.pending`, `.resolved`, `.rejected`) and a suite of practical static methods for common asynchronous patterns like deferred execution, throttling, auto-retry and timeout.
 
 <div v-if="false">
 
@@ -22,14 +22,15 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`PromisE.try()`](#static-methods): Static methods
     - [`PromisE.delay()`](#delay): Async delay
     - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
+        - [Debounce Example](#debounce-example)
+        - [Throttle Example](#throttle-example)
+        - [Behavior with different `options`](#behavior-with-different-options)
     - [`PromisE.timeout()`](#timeout): Reject after timeout
 
 ## Features
 
 - **Promise Status**: Easily check if a promise is `pending`, `resolved`, or `rejected`.
 - **Deferred Execution**: Defer or throttle promise-based function calls with `PromisE.deferred()`.
-- **Auto-cancellable Fetch**: Automatically abort pending requests when subsequent requests are made using `PromisE.deferredFetch()` and `PromisE.deferredPost()`.
-- **Auto-cancellable Fetch**: The `PromisE.deferredFetch` and `PromisE.deferredPost` utilities automatically abort pending requests when a new deferred/throttled call is made.
 - **Timeouts**: Wrap any promise with a timeout using `PromisE.timeout()`.
 - **Rich Utilities**: A collection of static methods like `.all()`, `.race()`, `.delay()`, and more, all returning `PromisE` instances.
 
@@ -47,14 +48,18 @@ Dependency: `@superutils/core` will be automatically installed by NPM
 
 ### `new PromisE(executor)`: Drop-in replacement for `Promise`
 
-The `PromisE` class can be used just like the native `Promise`. The first key difference is the addition of status properties and early finalization:
+The `PromisE` class is an extension of the built-in `Promise` class and can be used as a drop-in replacement. It is fully compatible with async/await and `Promise` static methods.
+
+A `PromisE` instance has the following additional features in comparison to `Promise`:
 
 #### Status tracking:
 
-All instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
+All instances come with `.pending`, `.resolved` and `.rejected` read-only properties that indicate the current state of the promise.
 
 ```javascript
 import Promise from '@superutils/promise'
+
+// Importing `PromisE` as "Promise" allows it to be used as a drop-in replacement without changing existing code
 
 const p = new Promise(resolve => setTimeout(() => resolve('done'), 1000))
 
@@ -69,7 +74,7 @@ p.then(result => {
 
 #### Early finalization:
 
-All `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
+All `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods.
 
 ```javascript
 import PromisE from '@superutils/promise'
@@ -79,16 +84,16 @@ p.then(result => console.log(result))
 // resolve the promise early
 setTimeout(() => p.resolve('finished early'), 500)
 
-// Add a callback to do stuff whenever promise is finazlied externally.
+// Add a callback to do stuff whenever promise is finalized externally.
 // This will not be invoked if promise finalized naturally using the Promise executor.
-request.onEarlyFinalize.push(((resolved, valueOrReason) =>
+p.onEarlyFinalize.push(((resolved, valueOrReason) =>
 	console.log('Promise finalized externally:', { resolved, valueOrReason }),
 ))
 ```
 
 <div id="static-methods"></div>
 
-### `PromisE.try(fn)`: Static methods
+### Static methods
 
 Drop-in replacement for all `Promise` static methods such as `.all()`, `.race()`, `.reject`, `.resolve`, `.try()`, `.withResolvers()`....
 
@@ -204,6 +209,22 @@ example({ ignoreStale: false, throttle: true })
 // `200` and `5000` will be printed in the console
 ```
 
+#### Behavior with different `options`:
+
+- **`delayMs: PositiveNumber, throttle: false`**: (default) Debounce mode.
+- **`throttle: true`**: Switches from debounce to throttle mode.
+- **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Requests are executed one after the other. Any failed promise does not affect subsequent promises.
+- **`resolveIgnored` (enum)**: Controls how an ignored promises is handled.
+    1. `ResolveIgnored.WITH_UNDEFINED`: The promise for the ignored request resolves with `undefined`.
+    2. `ResolveIgnored.WITH_LAST`: The promise for the ignored request waits (if needed) and resolves with the last/most-recent finalized promise.
+    3. `ResolveIgnored.NEVER`: The promise for the ignored request is neither resolved nor rejected. It will remain pending indefinitely.
+        > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
+- **`resolveError` (enum)**: Controls how failed requests are handled.
+    1.  `ResolveError.NEVER`: The promise for a failed request will neither resolve nor reject, causing it to remain pending indefinitely.
+        > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
+    2.  `ResolveError.WITH_ERROR`: The promise resolves with the error object instead of being rejected.
+    3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
+
 <div id="deferredCallback"></div>
 
 ### `PromisE.deferredCallback(callback, options)`: async debounced/throttled callbacks
@@ -254,11 +275,11 @@ PromisE.timeout(
 ```typescript
 import PromisE from '@superutils/promise'
 
-const loadUserNProducts = () => {
+const loadUserNProducts = async () => {
 	const promise = PromisE.timeout(
 		5000, // timeout after 5000ms
-		api.getUser(),
-		api.getProducts(),
+		fetch('https://dummyjson.com/users/1'), // fetch user
+		fetch('https://dummyjson.com/products'), // fetch products
 	)
 	const [user, products] = await promise.catch(err => {
 		// promise did not time out, but was rejected
@@ -273,5 +294,5 @@ const loadUserNProducts = () => {
 	})
 	return [user, products]
 }
-loadUserNProducts()
+loadUserNProducts().catch(console.warn)
 ```

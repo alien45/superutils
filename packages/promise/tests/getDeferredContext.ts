@@ -7,7 +7,7 @@ export const getDeferredContext = () => {
 			ignored: [],
 			results: [],
 		},
-		delayMs: 100,
+		delayMs: 100 as number,
 		onError(err) {
 			context.data.errors.push(err)
 		},

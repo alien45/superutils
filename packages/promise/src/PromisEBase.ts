@@ -5,8 +5,8 @@ export class PromisEBase<T = unknown>
 	extends Promise<T>
 	implements IPromisE<T>
 {
-	private _resolve?: (value: T | PromiseLike<T>) => void
-	private _reject?: (reason: unknown) => void
+	private _resolve: (value: T | PromiseLike<T>) => void
+	private _reject: (reason: unknown) => void
 	private _state: 0 | 1 | 2 = 0
 
 	/**
@@ -19,6 +19,8 @@ export class PromisEBase<T = unknown>
 	constructor(promise: Promise<T>)
 	/** Create a resolved promise with value */
 	constructor(value: T)
+	/** Create a promise to be resolved externally using `.resolve()` and `.reject()` methods */
+	constructor(value: undefined)
 	/**
 	 * If executor function is not provided, the promise must be resolved/rejected externally.
 	 *
@@ -33,32 +35,30 @@ export class PromisEBase<T = unknown>
 	 */
 	constructor()
 	constructor(input?: T | Promise<T> | PromiseParams<T>[0]) {
-		if (input instanceof PromisEBase) return input
-
-		let _resolve: undefined | ((resolve: T | PromiseLike<T>) => void)
-		let _reject: undefined | ((reason: unknown) => void)
+		let _resolve: (value: T | PromiseLike<T>) => void
+		let _reject: (reason: unknown) => void
 		super((resolve, reject) => {
-			_reject = (reason: unknown) => {
-				this._state = 2
+			_reject = reason => {
 				reject(reason)
+				this._state = 2
 			}
-			_resolve = (value: T | PromiseLike<T>) => {
-				this._state = 1
+			_resolve = value => {
 				resolve(value)
+				this._state = 1
 			}
-			input ??= () => {
-				/* to be finalized manually using .resolve()/.reject() */
+
+			if (isFn(input)) {
+				fallbackIfFails(input, [_resolve, _reject], _reject)
+			} else if (isPromise(input)) {
+				input.then(_resolve, _reject)
+			} else if (input !== undefined) {
+				_resolve(input as T)
 			}
-			const promise = isPromise(input)
-				? input
-				: isFn(input)
-					? new globalThis.Promise<T>(input)
-					: Promise.resolve(input)
-			promise.then(_resolve, _reject)
+			// If input is `undefined`, do nothing and expect external finalization.
 		})
 
-		this._resolve = _resolve
-		this._reject = _reject
+		this._resolve = _resolve!
+		this._reject = _reject!
 	}
 
 	//
@@ -69,17 +69,17 @@ export class PromisEBase<T = unknown>
 
 	/** Indicates if the promise is still pending/unfinalized */
 	public get pending() {
-		return this._state === 0
+		return this.state === 0
 	}
 
 	/** Indicates if the promise has been rejected */
 	public get rejected() {
-		return this._state === 2
+		return this.state === 2
 	}
 
 	/** Indicates if the promise has been resolved */
 	public get resolved() {
-		return this._state === 1
+		return this.state === 1
 	}
 
 	/**
@@ -113,12 +113,10 @@ export class PromisEBase<T = unknown>
 	public reject = (reason: unknown) => {
 		if (!this.pending) return
 
-		// queueMicrotask(() => {
 		this._reject?.(reason)
 		this.onEarlyFinalize?.forEach(fn => {
 			fallbackIfFails(fn, [false, reason], undefined)
 		})
-		// })
 	}
 
 	//

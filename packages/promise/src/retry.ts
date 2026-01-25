@@ -91,7 +91,7 @@ export const retry = async <T>(
 		retryDelay,
 		retryDelayJitter,
 		retryDelayJitterMax,
-	} = options as Required<RetryOptions>
+	} = options as Required<RetryOptions> & { retryDebug?: string }
 	let _retryDelay = retryDelay
 	let retryCount = -1
 	let result: T | undefined
@@ -103,7 +103,7 @@ export const retry = async <T>(
 		if (retryDelayJitter)
 			_retryDelay += Math.floor(Math.random() * retryDelayJitterMax)
 
-		retryCount > 0 && (await delay(_retryDelay))
+		if (retryCount > 0) await delay(_retryDelay)
 
 		try {
 			error = undefined
@@ -111,15 +111,16 @@ export const retry = async <T>(
 		} catch (err) {
 			error = err
 		}
-		shouldRetry =
-			maxRetries > 0
-			&& retryCount < maxRetries
-			&& (!!error
-				|| !!(await fallbackIfFails(
-					options.retryIf,
-					[result, retryCount],
-					false,
-				)))
+
+		if (maxRetries === 0 || retryCount >= maxRetries) break // no retry requested
+
+		shouldRetry = !!(
+			(await fallbackIfFails(
+				options.retryIf ?? error, // if `retryIf` not provided, retry on error
+				[result, retryCount, error],
+				error, // if `retryIf` throws error, default to retry on error
+			)) ?? error
+		)
 	} while (shouldRetry)
 
 	if (error !== undefined) return Promise.reject(error as Error)
