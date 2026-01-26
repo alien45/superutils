@@ -75,6 +75,9 @@ The following scripts are available at the root level to help with development:
 - `npm run lint`
   Lints the entire codebase using ESLint.
 
+- `publish:prepare`
+  Test, lint, build docs and build packages, everything needed before pushing to prod or publishing in a single command.
+
 - `npm start`
   Cleans and starts build process in watch mode.
   Uses: `build:watch` and <a href="#script-clean-purge">`clean:purge`</a>
