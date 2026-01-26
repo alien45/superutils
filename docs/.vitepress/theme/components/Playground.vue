@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { embed } from '../stackblitz'
+import { type Project } from '@stackblitz/sdk'
+import { embedPlayground } from '../stackblitz'
 
-const props = defineProps<{
-	code: string
-	dependencies?: Record<string, string>
-	type?: string
-	scripts?: string[]
-	template?: string
-}>()
+type Props = Partial<Project> & {
+	/** The code to be used in the index.ts/js file (if not provided in the `project.files`) */
+	code?: string
+	/** Additional package.json script to be added to the project */
+	scripts?: Record<string, string>
+}
+const props = defineProps<Props>()
 
 const el = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-	embedPlayground(el.value!, props)
+	embedPlayground(props, el.value)
 })
 </script>
 
