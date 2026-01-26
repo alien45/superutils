@@ -8,26 +8,26 @@ import {
 } from '@superutils/core'
 import PromisE, { type IPromisE } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
+import { getAbortCtrl } from './getAbortCtrl'
 import getResponse from './getResponse'
 import mergeFetchOptions from './mergeFetchOptions'
-import {
-	FetchAs,
+import type {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchCustomOptions,
-	FetchError,
 	FetchErrMsgs,
-	type FetchOptions,
-	type FetchResult,
+	FetchOptions,
+	FetchResult,
 	FetchOptionsDefaults,
 } from './types'
+import { FetchAs, FetchError, ContentType } from './types'
 
 /**
  * Extended `fetch` with timeout, retry, and other options. Automatically parses as JSON by default on success.
  *
  * @param url request URL
  * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}.
- * Default content type is 'application/json'
- * @param options.as (optional) determines who to parse the result. Default: {@link FetchAs.json}
+ * Default "content-type" header is 'application/json'.
+ * @param options.as (optional) determines how to parse the result. Default: {@link FetchAs.json}
  * @param options.method (optional) fetch method. Default: `'get'`
  *
  * @example Make a simple HTTP requests
@@ -48,22 +48,25 @@ export const fetch = <
 	TReturn = FetchResult<T>[TAs],
 >(
 	url: string | URL,
-	options: TOptions = {} as TOptions,
+	options: FetchOptions & TOptions = {} as TOptions,
 ) => {
-	let abortCtrl: AbortController | undefined
 	let timeoutId: TimeoutId
+	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
+	const abortCtrl: AbortController = getAbortCtrl(options)
 	// eslint-disable-next-line @typescript-eslint/no-misused-promises
 	const promise = new PromisE(async (resolve, reject) => {
 		let errResponse: Response | undefined
+
 		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
 		const _options = mergeFetchOptions(fetch.defaults, options)
 		_options.as ??= FetchAs.json
 		_options.method ??= 'get'
-		// make sure there's always an abort controller, so that request is aborted when promise is early finalized
-		_options.abortCtrl =
-			_options.abortCtrl instanceof AbortController
-				? _options.abortCtrl
-				: new AbortController()
+		let contentType = _options.headers.get('content-type')
+		if (!contentType) {
+			_options.headers.set('content-type', ContentType.APPLICATION_JSON)
+			contentType = ContentType.APPLICATION_JSON
+		}
+
 		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
 		url = await executeInterceptors(
 			url,
@@ -78,16 +81,21 @@ export const fetch = <
 			validateUrl = true,
 		} = _options
 		if (isPositiveNumber(timeout)) {
-			timeoutId = setTimeout(() => _options.abortCtrl?.abort(), timeout)
+			timeoutId = setTimeout(() => abortCtrl.abort(), timeout)
 		}
-		abortCtrl = _options.abortCtrl
 		if (_options.abortCtrl) _options.signal = _options.abortCtrl.signal
 		try {
 			if (validateUrl && !isUrlValid(url, false))
 				throw new Error(errMsgs.invalidUrl)
 
-			if (!['undefined', 'string'].includes(typeof body))
-				// stringify data/body
+			const shouldStringifyBody =
+				[
+					ContentType.APPLICATION_JSON,
+					ContentType.APPLICATION_X_WWW_FORM_URLENCODED,
+				].find(x => contentType.includes(x))
+				&& !['undefined', 'string'].includes(typeof body)
+			// stringify data/body
+			if (shouldStringifyBody)
 				_options.body = JSON.stringify(
 					isFn(body) ? fallbackIfFails(body, [], undefined) : body,
 				)
@@ -166,7 +174,7 @@ export const fetch = <
 	})
 
 	// Abort fetch, in case, if fetch promise is finalized early using non-static resolve/reject methods
-	promise.onEarlyFinalize.push(() => abortCtrl?.abort())
+	promise.onEarlyFinalize.push(() => abortCtrl.abort())
 	return promise as IPromisE<TReturn>
 }
 /** Default fetch options */
@@ -177,7 +185,7 @@ fetch.defaults = {
 		reqTimedout: 'Request timed out',
 		requestFailed: 'Request failed with status code:',
 	} as Required<FetchErrMsgs>, // all error messages must be defined here
-	headers: new Headers([['content-type', 'application/json']]),
+	headers: new Headers(),
 	/** Global interceptors for fetch requests */
 	interceptors: {
 		/**

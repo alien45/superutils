@@ -11,9 +11,10 @@ import fetch, {
 	FetchOptions,
 	mergeFetchOptions,
 } from '../src'
+import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
 
 describe('fetch', () => {
-	const fetchBaseUrl = 'https://dummyjson.com/products' // dummy URL -> not called
+	const product1Url = `${baseUrl}/1`
 	let mockedFetch
 	const okResponse = {
 		ok: true,
@@ -45,7 +46,7 @@ describe('fetch', () => {
 			vi.stubGlobal('fetch', fetchMock)
 
 			await vi.runAllTimersAsync()
-			await expect(fetch.get(fetchBaseUrl)).rejects.toThrow(
+			await expect(fetch.get(product1Url)).rejects.toThrow(
 				`TypeError: Failed to execute 'fetch' on 'Window'`,
 			)
 		})
@@ -60,7 +61,7 @@ describe('fetch', () => {
 			)
 			vi.stubGlobal('fetch', fetch200)
 
-			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
+			await expect(fetch.get(product1Url)).rejects.toEqual(
 				expect.any(FetchError),
 			)
 			expect(fetch200).toHaveBeenCalledOnce()
@@ -80,9 +81,9 @@ describe('fetch', () => {
 
 			let error: FetchError | undefined
 			fetch
-				.get(fetchBaseUrl)
+				.get(product1Url)
 				.catch((err: FetchError) => (error = err.clone(err.message)))
-			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
+			await expect(fetch.get(product1Url)).rejects.toEqual(
 				expect.any(FetchError),
 			)
 			expect(error?.message).toBe('Bad request')
@@ -100,10 +101,8 @@ describe('fetch', () => {
 			vi.stubGlobal('fetch', fetch400)
 
 			let error: FetchError | undefined
-			fetch
-				.get(fetchBaseUrl, {})
-				.catch((err: FetchError) => (error = err))
-			await expect(fetch.get(fetchBaseUrl)).rejects.toEqual(
+			fetch.get(product1Url, {}).catch((err: FetchError) => (error = err))
+			await expect(fetch.get(product1Url)).rejects.toEqual(
 				expect.any(FetchError),
 			)
 			expect(error?.message).toBe(
@@ -126,7 +125,7 @@ describe('fetch', () => {
 				}),
 			)
 			vi.stubGlobal('fetch', fetch200)
-			const promise = fetch.get(fetchBaseUrl)
+			const promise = fetch.get(product1Url)
 			await vi.runAllTimersAsync()
 			await expect(promise).resolves.toEqual({
 				age: 33,
@@ -175,7 +174,7 @@ describe('fetch', () => {
 			)
 			expectedOptions.abortCtrl = expect.any(AbortController)
 			expectedOptions.signal = expect.any(AbortSignal)
-			await fetch(fetchBaseUrl, localOptions)
+			await fetch(product1Url, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
 			const interceptorKeys = [
@@ -246,29 +245,20 @@ describe('fetch', () => {
 			}
 			const options = {
 				interceptors: mockedInterceptors,
-			} as FetchOptions
-			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
-			expectedOptions.as ??= FetchAs.json
-			expectedOptions.method ??= 'get'
-			expectedOptions.abortCtrl = expect.any(AbortController)
-			expectedOptions.signal = expect.any(AbortSignal)
+			} as Omit<FetchOptions, 'method'>
 
-			const promise = fetch.get(fetchBaseUrl, options)
+			const { args: expectedArgs } = getMockedResult('get', 1, options) // to prepare expected options
+			const promise = fetch.get(product1Url, options)
 			await vi.runAllTimersAsync()
 			await promise
-			expect(receivedInterceptorArgs.request).toEqual([
-				fetchBaseUrl,
-				expectedOptions,
-			])
+			expect(receivedInterceptorArgs.request).toEqual(expectedArgs)
 			expect(receivedInterceptorArgs.result).toEqual([
 				expect.any(Promise),
-				fetchBaseUrl,
-				expectedOptions,
+				...expectedArgs,
 			])
 			expect(receivedInterceptorArgs.response).toEqual([
 				okResponse,
-				fetchBaseUrl,
-				expectedOptions,
+				...expectedArgs,
 			])
 		})
 
@@ -286,18 +276,14 @@ describe('fetch', () => {
 			}
 			const options = {
 				interceptors: mockedInterceptors,
-			} as FetchOptions
-			const expectedOptions = mergeFetchOptions(fetch.defaults, options)
-			expectedOptions.as ??= FetchAs.json
-			expectedOptions.method ??= 'get'
-			expectedOptions.abortCtrl = expect.any(AbortController)
-			expectedOptions.signal = expect.any(AbortSignal)
+			} as Omit<FetchOptions, 'method'>
+			const { args: expectedArgs } = getMockedResult('get', 1, options) // to prepare expected options
 			const url = 'an invalid url'
+			expectedArgs[0] = url // override with invalid url
 			await fetch.get(url, options).catch(() => {})
 			expect(receivedArgs).toEqual([
 				expect.any(FetchError),
-				url,
-				expectedOptions,
+				...expectedArgs,
 			])
 		})
 
@@ -320,7 +306,7 @@ describe('fetch', () => {
 				response: [vi.fn()],
 			}
 			fetch.defaults.interceptors = mockedInterceptors
-			const promise = fetch.get(fetchBaseUrl, {
+			const promise = fetch.get(product1Url, {
 				interceptors: mockedInterceptors,
 			})
 			await vi.runAllTimersAsync()
@@ -347,7 +333,7 @@ describe('fetch', () => {
 			vi.stubGlobal('fetch', fetch500)
 			let error: FetchError | undefined
 			const promise = fetch
-				.get(fetchBaseUrl, {
+				.get(product1Url, {
 					retry,
 					retryBackOff: 'exponential',
 					retryDelayJitter: true,
@@ -382,7 +368,7 @@ describe('fetch', () => {
 
 			const onError = vi.fn()
 			const promise = fetch
-				.get(fetchBaseUrl, {
+				.get(product1Url, {
 					retry: 5,
 					retryIf: async response => {
 						const userCount = await response?.json()
@@ -405,7 +391,7 @@ describe('fetch', () => {
 
 			const onError = vi.fn()
 			const promise = fetch
-				.get(fetchBaseUrl, {
+				.get(product1Url, {
 					retry: 3,
 					retryBackOff: 'linear',
 					retryDelayJitter: true,
@@ -432,7 +418,7 @@ describe('fetch', () => {
 
 			const onError = vi.fn()
 			const promise = fetch
-				.get(fetchBaseUrl, {
+				.get(product1Url, {
 					timeout: 10_000,
 				})
 				.catch(onError)
@@ -452,7 +438,7 @@ describe('fetch', () => {
 				}),
 			)
 			vi.stubGlobal('fetch', mockedFetch)
-			const promise = fetch.get(fetchBaseUrl, { timeout: 5000 })
+			const promise = fetch.get(product1Url, { timeout: 5000 })
 			promise.onEarlyFinalize = promise.onEarlyFinalize.map(fn =>
 				vi.fn(fn),
 			)

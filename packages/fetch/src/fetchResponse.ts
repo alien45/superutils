@@ -1,17 +1,15 @@
 import { IPromisE } from '@superutils/promise'
-import fetchOriginal from './fetch'
-import { FetchAs, FetchOptions, FetchResult } from './types'
+import fetch from './fetch'
+import { FetchArgs, FetchAs, FetchOptions, FetchResult } from './types'
 
 /**
  * Drop-in replacement for built-in `fetch()` with with timeout, retry etc options and Response as default return type.
  *
  * @param url request URL
- * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}
- * @param options.as (optional) determines who to parse the result. Default: {@link FetchAs.response}
- * @param options.method (optional) fetch method. Default: `'get'`
+ * @param options (optional) Standard `fetch` options extended with "FetchCustomOptions"
  *
  * @example Make a simple HTTP requests
- * ```typescript
+ * ```javascript
  * import { fetchResponse } from '@superutils/fetch'
  *
  * fetchResponse('https://dummyjson.com/products/1')
@@ -27,10 +25,11 @@ export const fetchResponse = <
 		: FetchAs.response,
 	TReturn = FetchResult<T>[TAs],
 >(
-	...args: Parameters<typeof fetchOriginal<T, TOptions, TAs, TReturn>>
+	url: FetchArgs[0],
+	options: Parameters<typeof fetch<T, TOptions, TAs, TReturn>>[1],
 ): IPromisE<TReturn> => {
-	args[1] ??= {} as TOptions
-	args[1].as ??= FetchAs.response
-	return fetchOriginal(...args)
+	options ??= {} as TOptions
+	options.as ??= FetchAs.response
+	return fetch(url, options)
 }
 export default fetchResponse

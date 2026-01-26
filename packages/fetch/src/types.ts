@@ -1,5 +1,5 @@
 import { ValueOrPromise } from '@superutils/core'
-import { type RetryOptions } from '@superutils/promise'
+import { RetryIfFunc, type RetryOptions } from '@superutils/promise'
 
 // Export useful types from PromisE for ease of use
 export {
@@ -7,6 +7,23 @@ export {
 	ResolveError,
 	ResolveIgnored,
 } from '@superutils/promise'
+
+/** Commonly used content types for easier access */
+export const ContentType = {
+	APPLICATION_JAVASCRIPT: 'application/javascript',
+	APPLICATION_JSON: 'application/json',
+	APPLICATION_OCTET_STREAM: 'application/octet-stream',
+	APPLICATION_PDF: 'application/pdf',
+	APPLICATION_X_WWW_FORM_URLENCODED: 'application/x-www-form-urlencoded',
+	APPLICATION_XML: 'application/xml',
+	APPLICATION_ZIP: 'application/zip',
+	AUDIO_MPEG: 'audio/mpeg',
+	MULTIPART_FORM_DATA: 'multipart/form-data',
+	TEXT_CSS: 'text/css',
+	TEXT_HTML: 'text/html',
+	TEXT_PLAIN: 'text/plain',
+	VIDEO_MP4: 'video/mp4',
+} as const
 
 export type ExcludeOptions<
 	Target, // options to exclude
@@ -307,7 +324,7 @@ export type FetchOptions = Omit<RequestInit, 'body'> & FetchCustomOptions
 
 export type FetchOptionsDefaults = Omit<
 	FetchOptionsInterceptor,
-	'as' | 'method' | 'retryIf'
+	'as' | 'method'
 >
 
 /**
@@ -351,13 +368,7 @@ export type FetchRetryOptions = Omit<
 	 * Default: `0`
 	 */
 	retry?: number
-	retryIf?:
-		| null
-		| ((
-				response: Response | undefined,
-				retryCount: number,
-				error?: unknown,
-		  ) => boolean | Promise<boolean>)
+	retryIf?: RetryIfFunc<Response>
 }
 
 /**
@@ -413,16 +424,20 @@ export type PostArgs<OmitMethod = false> = [
 export type PostDeferredCbArgs<
 	TUrl = undefined,
 	TData = undefined,
-	Options = PostOptions,
+	Options = undefined,
 	CbArgsReq extends unknown[] = Required<PostArgs>,
-> = [TUrl, TData] extends [CbArgsReq[0], undefined] // only URL provided
-	? [data?: PostArgs[1], options?: Options]
-	: [TUrl, TData] extends [undefined, CbArgsReq[1]] // only data provided
-		? [url: PostArgs[0], options?: Options]
-		: [TUrl, TData] extends [CbArgsReq[0], CbArgsReq[1]]
-			? [options?: Options] // Both default URL and data are provided
-			: PostArgs
+> = [TUrl, TData] extends [CbArgsReq[0], undefined]
+	? // only URL provided
+		[data?: PostArgs[1], options?: PostArgs[2]]
+	: // only data provided
+		[TUrl, TData] extends [undefined, CbArgsReq[1]]
+		? [url: PostArgs[0], options?: PostArgs[2]]
+		: // Both default URL and data are provided
+			[TUrl, TData] extends [CbArgsReq[0], CbArgsReq[1]]
+			? [options?: PostArgs[2]]
+			: [TUrl, TData, Options]
 
+/** Request options for POST-like methods that allow "options.body" */
 export type PostOptions = {
 	/** Default: `'post'` */
 	method?:

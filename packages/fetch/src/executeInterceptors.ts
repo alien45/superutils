@@ -15,10 +15,10 @@ import { type Interceptor } from './types'
  */
 export const executeInterceptors = async <T, TArgs extends unknown[]>(
 	value: T,
-	interceptors: Interceptor<T, TArgs>[] = [],
+	interceptors?: Interceptor<T, TArgs>[],
 	...args: TArgs
 ) => {
-	for (const interceptor of [...(interceptors || [])].filter(isFn)) {
+	for (const interceptor of [...(interceptors ?? [])].filter(isFn)) {
 		value =
 			((await fallbackIfFails(
 				interceptor,

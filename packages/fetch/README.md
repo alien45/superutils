@@ -193,10 +193,11 @@ setTimeout(() => {
     3. `ResolveIgnored.NEVER`: The promise for the aborted "iphone" request is neither resolved nor rejected.
        It will remain pending indefinitely.
 - **`resolveError` (enum)**: Controls how failed requests are handled.
-    1.  `ResolveError.NEVER`: Never resolve ignored promises. Caution: make sure this doesn't cause any memory leaks.
-    2.  `ResolveError.WITH_LAST`: (default) resolve with active promise result, the one that caused the current promise/callback to be ignored.
-    3.  `ResolveError.WITH_UNDEFINED`: resolve failed requests with `undefined` value
-    4.  `ResolveError.WITH_ERROR`: The promise for the aborted "iphone" request is rejected with a `FetchError`.
+    1.  `ResolveError.NEVER`: The promise for a failed request will neither resolve nor reject, causing it to remain pending indefinitely.
+        > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
+    2.  `ResolveError.WITH_ERROR`: The promise resolves with the `FetchError` object instead of being rejected.
+    3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
+    4.  `ResolveError.REJECT`: (Default) The promise is rejected with a `FetchError`, adhering to standard promise behavior.
 
 #### Using defaults to reduce redundancy
 
@@ -314,6 +315,7 @@ const requestNewToken = fetch.post.deferred(
 )
 
 // First authenticate user to get the initial refresh token and then request new referesh tokens
+// First authenticate user to get the initial refresh token and then request new refresh tokens
 fetch
 	.post<{ refreshToken: string }>(
 		'https://dummyjson.com/auth/login',
@@ -360,74 +362,86 @@ The following interceptor callbacks allow intercepting and/or transforming at di
 - Value returned (transformed) by an interceptor will be carried over to the subsequent interceptor of the same type.
 - There are 2 category of interceptors:
     - Local: interceptors provided when making a request.
-    - Global: intereptors that are executed application-wide on every request. Global interceptors can be added/accessed at `fetch.defaults.interceptors`. Global interceptors are always executed before local interceptors.
 
-    **Example: Add global request and error interceptors**
+    **Example: Interceptor usage**
 
     ```javascript
-    import fetch from '@superutils/fetch'
+    import fetch, { FetchError } from '@superutils/fetch'
 
-    const { interceptors } = fetch.defaults
-    interceptors.request.push((url, options) => {
-    	// a headers to all requests make by the application
-    	options.headers.append('x-auth', 'token')
-    })
+    const interceptors = {
+    	error: [
+    		(err, url, options) => {
+    			console.log('Request failed', err, url, options)
+    			// return nothing/undefined to keep the error unchanged
+    			// or return modified/new error
+    			err.message = 'My custom error message!'
+    			// or create a new FetchError by cloning it (make sure all the required properties are set correctly)
+    			return err.clone('My custom error message!')
+    		},
+    	],
+    	request: [
+    		(url, options) => {
+    			// add extra headers or modify request options here
+    			options.headers.append('x-custom-header', 'some value')
 
-    interceptors.error.push((err, url, options) => {
-    	// log whenever a request fails
-    	console.log('Error interceptor', err)
-    })
+    			// transform the URL by returning a modified URL
+    			return url + '?param=value'
+    		},
+    	],
+    	response: [
+    		(response, url, options) => {
+    			if (response.ok) return
+    			console.log('request was successful', { url, options })
+
+    			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
+    			// You can transform the response by returning different `Response` object or even make a completely new HTTP request.
+    			// The subsequent response interceptors will receive the returned response
+    			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
+    		},
+    	],
+    	result: [
+    		(result, url, options) => {
+    			const productId = Number(
+    				new URL(url).pathname.split('/products/')[1],
+    			)
+    			if (options.method === 'get' && !Number.isNaN(productId)) {
+    				result.title ??= 'Unknown title'
+    			}
+    			return result
+    		},
+    	],
+    }
+    fetch
+    	.get('https://dummyjson.com/products/1', { interceptors })
+    	.then(product => console.log({ product }))
     ```
 
-```javascript
-import fetch, { FetchError } from '@superutils/fetch'
+    - Global: interceptors that are executed application-wide on every request. Global interceptors can be added/accessed at `fetch.defaults.interceptors`. Global interceptors are always executed before local interceptors.
 
-const interceptors = {
-	error: [
-		(err, url, options) => {
-			console.log('Request failed', err, url, options)
-			// return nothing/undefined to keep the error unchanged
-			// or return modified/new error
-			err.message = 'My custom error message!'
-			// or create a new FetchError by cloning it (make sure all the required properties are set correctly)
-			return err.clone('My custom error message!')
-		},
-	],
-	request: [
-		(url, options) => {
-			// add extra headers or modify request options here
-			options.headers.append('x-custom-header', 'some value')
+        **Example: Add global request and error interceptors**
 
-			// transform the URL by returning a modified URL
-			return url + '?param=value'
-		},
-	],
-	response: [
-		(response, url, options) => {
-			if (response.ok) return
-			console.log('request was successful', { url, options })
+        ```javascript
+        import fetch from '@superutils/fetch'
 
-			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
-			// The subsequent response interceptors will receive the returned response
-			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
-		},
-	],
-	result: [
-		(result, url, options) => {
-			const productId = Number(
-				new URL(url).pathname.split('/products/')[1],
-			)
-			if (options.method === 'get' && !Number.isNaN(productId)) {
-				result.title ??= 'Unknown title'
-			}
-			return result
-		},
-	],
-}
-fetch
-	.get('https://dummyjson.com/products/1', { interceptors })
-	.then(product => console.log({ product }))
-```
+        const { interceptors } = fetch.defaults
+
+        interceptors.request.push((url, options) => {
+        	// a headers to all requests make by the application
+        	// add headers to all requests made by the application
+        	options.headers.append('x-auth', 'token')
+        })
+
+        interceptors.error.push((err, url, options) => {
+        	// log whenever a request fails
+        	console.log('Error interceptor', err)
+        })
+
+        // Each time a requst is made using @superutils/fetch, the above interceptors will be executed when appropriate
+        fetch('https://dummyjson.com/products/1').then(
+        	console.log,
+        	console.warn,
+        )
+        ```
 
 <div id="retry"></div>
 
@@ -499,33 +513,91 @@ fetch.get('https://dummyjson.com/products/1', {
 
 <div id="reusable-clients"></div>
 
-### `createClient(method, )`: Reusable Clients
+### `createClient(fixedOptions, commonOptions, commonDeferOptions)`: Reusable Clients
 
-The `createClient` utility allows you to generate pre-configured fetch functions with default options, such as headers, timeouts, or specific HTTP methods. This is ideal for creating dedicated API clients for specific services to avoid repetition.
+The `createClient` utility streamlines the creation of dedicated API clients by generating pre-configured fetch functions. These functions can be equipped with default options like headers, timeouts, or a specific HTTP method, which minimizes code repetition across your application. If a method is not specified during creation, the client will default to `GET`.
+
+The returned client also includes a `.deferred()` method, providing the same debounce, throttle, and sequential execution capabilities found in functions like `fetch.get.deferred()`.
 
 ```javascript
 import { createClient } from '@superutils/fetch'
 
-// Create a client with default headers and a 5-second timeout
-const apiClient = createClient(undefined, {
-	headers: {
-		Authorization: 'Bearer my-secret-token',
-		'Content-Type': 'application/json',
+// Create a "GET" client with default headers and a 5-second timeout
+const apiClient = createClient(
+	{
+		// fixed options cannot be overridden
+		method: 'get',
 	},
-	timeout: 5000,
-})
+	{
+		// default options can be overridden
+		headers: {
+			Authorization: 'Bearer my-secret-token',
+			'Content-Type': 'application/json',
+		},
+		timeout: 5000,
+	},
+	{
+		// default defer options (can be overridden)
+		delayMs: 300,
+		retry: 2, // If request fails, retry up to two more times
+	},
+)
 
 // Use it just like the standard fetch
-apiClient('https://dummyjson.com/products/1').then(console.log)
+apiClient('https://dummyjson.com/products/1', {
+	// The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
+	// In TypeScript, the compiler will not allow this property.
+	// In Javascript, it will simply be ignored.
+	// method: 'post',
+	timeout: 3000, // The 'timeout' property can be overridden
+}).then(console.log, console.warn)
 
-// Create a specialized POST client
-const createProduct = createClient(
-	'get', // if provided will force all requests to be of this
+// create a deferred client using "apiClient"
+const deferredClient = apiClient.deferred(
+	{ retry: 0 }, // disable retrying by overriding the `retry` defer option
+	'https://dummyjson.com/products/1',
+	{ timeout: 3000 },
+)
+deferredClient({ timeout: 10000 }) // timeout is overridden by individual request
+	.then(console.log, console.warn)
+```
+
+### `createPostClient(mandatoryOptions, commonOptions, commonDeferOptions)`: Reusable Post-like Clients
+
+While `createClient()` is versatile enough for any HTTP method, `createPostClient()` is specifically designed for methods that require a request body, such as `DELETE`, `PATCH`, `POST`, and `PUT`. If a method is not provided, it defaults to `POST`. The generated client accepts an additional second parameter (`data`) for the request payload.
+
+Similar to `createClient`, the returned function comes equipped with a `.deferred()` method, enabling debounced, throttled, or sequential execution.
+
+```javascript
+import { createPostClient, FetchAs } from '@superutils/fetch'
+
+// Create a POST client with 10-second as the default timeout
+const postClient = createPostClient(
+	{
+		method: 'post',
+		headers: { 'content-type': 'application/json' },
+	},
 	{ timeout: 10000 },
 )
 
-// No need to specify method: 'post'
-createProduct('https://dummyjson.com/products/add', {
-	body: JSON.stringify({ title: 'New Product' }),
-}).then(console.log)
+// Invoking `postClient()` automatically applies the pre-configured options
+postClient(
+	'https://dummyjson.com/products/add',
+	{ title: 'New Product' }, // data/body
+	{}, // other options
+).then(console.log)
+
+// create a deferred client using "postClient"
+const updateProduct = postClient.deferred(
+	{
+		delayMs: 300, // debounce duration
+	},
+	'https://dummyjson.com/products/1',
+	{
+		method: 'patch',
+		timeout: 3000,
+	},
+)
+updateProduct({ title: 'New title 1' }) // ignored by debounce
+updateProduct({ title: 'New title 2' }) // executed
 ```

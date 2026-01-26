@@ -1,41 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { isObj, isStr, objSort } from '@superutils/core'
+import { isObj, objSort } from '@superutils/core'
 import PromisE from '@superutils/promise/src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
-import fetch, { mergeFetchOptions, FetchAs } from '../src'
+import fetch from '../src'
+import { productsBaseUrl, getMockedResult } from './utils'
 
 const postDeferred = fetch.post.deferred
 describe('fetch.post.deferred', () => {
 	let mockPost200: ReturnType<typeof vi.fn>
-	const fetchBaseUrl = 'https://dummyjson.com/products'
 	let mockedResponse: Record<string, unknown> | undefined
-	const getMockedPostResult = (
-		productId: number,
-		options: Record<string, any> = {},
-		success = true,
-		withSignal = true,
-	) => ({
-		// if response/data is not mocked, simply return the fetch args and success
-		args: [
-			`${fetchBaseUrl}/${productId}`,
-			mergeFetchOptions(
-				fetch.defaults,
-				objSort({
-					...(withSignal && {
-						abortCtrl: expect.any(AbortController),
-						signal: expect.any(AbortSignal),
-					}),
-					...options,
-					as: FetchAs.json,
-					body: isStr(options.body)
-						? options.body
-						: JSON.stringify(options.body),
-					method: 'post',
-				}),
-			),
-		],
-		success,
-	})
 
 	beforeEach(() => {
 		mockPost200 = vi.fn((url: any, options: any) =>
@@ -83,7 +56,7 @@ describe('fetch.post.deferred', () => {
 			}),
 		)
 		vi.stubGlobal('fetch', fetch200)
-		const promise = fetch.post(`${fetchBaseUrl}`, { id: 'adam' })
+		const promise = fetch.post(`${productsBaseUrl}`, { id: 'adam' })
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toEqual({
 			age: 33,
@@ -101,29 +74,31 @@ describe('fetch.post.deferred', () => {
 		// 3. The 4th call is made, which is queued.
 		const context = getDeferredContext()
 		const saveProduct = postDeferred(context)
-		saveProduct(`${fetchBaseUrl}/1`, { name: 'Product 1' })
+		saveProduct(`${productsBaseUrl}/1`, { name: 'Product 1' })
 		let delay = PromisE.delay(100)
 		await vi.runAllTimersAsync()
 		await delay
 		expect(mockPost200).toHaveBeenCalledTimes(1)
 		expect(context.data.results).toHaveLength(1)
-		saveProduct(`${fetchBaseUrl}/2`, { name: 'Product 2' })
-		saveProduct(`${fetchBaseUrl}/2a`, { name: 'Product 2a' })
-		saveProduct(`${fetchBaseUrl}/2b`, { name: 'Product 2b' })
-		saveProduct(`${fetchBaseUrl}/3`, 'Product 3')
+		saveProduct(`${productsBaseUrl}/2`, { name: 'Product 2' })
+		saveProduct(`${productsBaseUrl}/2a`, { name: 'Product 2a' })
+		saveProduct(`${productsBaseUrl}/2b`, { name: 'Product 2b' })
+		saveProduct(`${productsBaseUrl}/3`, 'Product 3')
 		delay = PromisE.delay(100)
 		vi.runAllTimersAsync()
 		await delay
 		expect(mockPost200).toHaveBeenCalledTimes(2)
 		expect(context.data.results).toHaveLength(2)
-		const result1 = getMockedPostResult(1, { body: { name: 'Product 1' } })
-		const result2 = getMockedPostResult(3, { body: 'Product 3' })
+		const result1 = getMockedResult('post', 1, {
+			body: { name: 'Product 1' },
+		})
+		const result2 = getMockedResult('post', 3, { body: 'Product 3' })
 		expect(context.data.results).toEqual([result1, result2])
 	})
 
 	it('should debounce post requests and use global data', async () => {
 		const context = getDeferredContext()
-		const saveProduct = postDeferred(context, `${fetchBaseUrl}/1`, {
+		const saveProduct = postDeferred(context, `${productsBaseUrl}/1`, {
 			name: 'Product 1',
 		})
 		saveProduct()
@@ -139,7 +114,9 @@ describe('fetch.post.deferred', () => {
 		await delay
 		expect(mockPost200).toHaveBeenCalledTimes(2)
 		expect(context.data.results).toHaveLength(2)
-		const result = getMockedPostResult(1, { body: { name: 'Product 1' } })
+		const result = getMockedResult('post', 1, {
+			body: { name: 'Product 1' },
+		})
 		expect(context.data.results).toEqual([result, result])
 	})
 

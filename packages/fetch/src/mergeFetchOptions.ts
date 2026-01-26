@@ -1,4 +1,4 @@
-import { isEmpty, objKeys } from '@superutils/core'
+import { isEmpty, isObj, objKeys } from '@superutils/core'
 import { FetchOptions, FetchOptionsInterceptor } from './types'
 
 /**
@@ -16,11 +16,12 @@ import { FetchOptions, FetchOptionsInterceptor } from './types'
  */
 export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 	allOptions.reduce(
-		(o1, o2) => {
-			const { errMsgs = {}, headers, interceptors: ints1 = {} } = o1
-			const { errMsgs: msgs2 = {}, interceptors: ints2 = {} } = o2
-			o2.headers
-				&& new Headers(o2.headers).forEach((value, key) => {
+		(merged, next) => {
+			next = isObj(next) ? next : {}
+			const { errMsgs = {}, headers, interceptors: ints1 = {} } = merged
+			const { errMsgs: msgs2 = {}, interceptors: ints2 = {} } = next
+			next.headers
+				&& new Headers(next.headers).forEach((value, key) => {
 					headers && (headers as Headers).set(key, value)
 				})
 			for (const key of objKeys(msgs2)) {
@@ -28,8 +29,8 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 				if (!isEmpty(msgs2[key])) errMsgs[key] = msgs2[key]
 			}
 			return {
-				...o1,
-				...o2,
+				...merged,
+				...next,
 				errMsgs,
 				headers,
 				interceptors: {
@@ -47,7 +48,7 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 						...(ints2?.result ?? []),
 					],
 				},
-				timeout: o2.timeout ?? o1.timeout ?? 0,
+				timeout: next.timeout ?? merged.timeout ?? 0,
 			}
 		},
 		{ headers: new Headers() },

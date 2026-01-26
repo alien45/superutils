@@ -5,32 +5,27 @@ import fetchOriginal from './fetch'
 import fetchResponse from './fetchResponse'
 import { FetchCustomOptions, FetchInterceptors } from './types'
 
-const _get = createClient({ method: 'get' })
-const _head = createClient({ method: 'head' })
-const _options = createClient({ method: 'options' })
-// Post-like methods that allow `options.body`
-const _delete = createPostClient({ method: 'delete' })
-const _patch = createPostClient({ method: 'patch' })
-const _post = createPostClient({ method: 'post' })
-const _put = createPostClient({ method: 'put' })
+const methods = {
+	/** Make HTTP requests with method GET */
+	get: createClient({ method: 'get' }),
 
-export type FetchWithMethods = typeof fetchResponse & {
-	/** Default options */
-	defaults: typeof fetchOriginal.defaults
-	/** Make HTTP `DELETE` request, result automatically parsed as JSON */
-	delete: typeof _delete
-	/** Make HTTP `GET` request, result automatically parsed as JSON */
-	get: typeof _get
-	/** Make HTTP `HEAD` request, result automatically parsed as JSON */
-	head: typeof _head
-	/** Make HTTP `OPTIONS` request, result automatically parsed as JSON */
-	options: typeof _options
-	/** Make HTTP `PATCH` request, result automatically parsed as JSON */
-	patch: typeof _patch
-	/** Make HTTP `POST` request, result automatically parsed as JSON */
-	post: typeof _post
-	/** Make HTTP `PUT` request, result automatically parsed as JSON */
-	put: typeof _put
+	/** Make HTTP requests with method HEAD */
+	head: createClient({ method: 'head' }),
+
+	/** Make HTTP requests with method OPTIONS */
+	options: createClient({ method: 'options' }),
+
+	/** Make HTTP requests with method DELETE */
+	delete: createPostClient({ method: 'delete' }),
+
+	/** Make HTTP requests with method PATCH */
+	patch: createPostClient({ method: 'patch' }),
+
+	/** Make HTTP requests with method POST */
+	post: createPostClient({ method: 'post' }),
+
+	/** Make HTTP requests with method PUT */
+	put: createPostClient({ method: 'put' }),
 }
 
 /**
@@ -74,14 +69,47 @@ export type FetchWithMethods = typeof fetchResponse & {
  * - FetchAs.json: `unknown`
  * - FetchAs.text: `string`
  * - FetchAs.response: `Response`
+ *
  * @param url
  * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}
- * @param options.as (optional) determines who to parse the result. Default: {@link FetchAs.response}
+ * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
+ * @param options.as (optional) (optional) specify how to parse the result. Default: {@link FetchAs.json}
+ * For raw `Response` use {@link FetchAs.response}
  * @param options.headers (optional) request headers
- * Default: `{ 'content-type': `'application/json' }` (unless changed in the fetch.defaults).
+ * Default: `{ 'content-type': 'application/json' }` (or whaterver is set in the `fetch.defaults`).
+ * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
  * @param options.method (optional) fetch method. Default: `'get'`
+ * @param options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
  *
- * Options' default values (excluding `as`, `method` and `retryIf`) can be configured to be EFFECTIVE GLOBALLY.
+ *
+ * @example Drop-in replacement for built-in fetch
+ * ```javascript
+ * import fetch from '@superutils/fetch'
+ *
+ * fetch('https://dummyjson.com/products/1')
+ *     .then(response => response.json())
+ *     .then(console.log, console.error)
+ * ```
+ *
+ * @example Method specific function with JSON parsing by default
+ * ```javascript
+ * import fetch from '@superutils/fetch'
+ *
+ * // no need for `response.json()` or `result.data.data` drilling
+ * fetch.get('https://dummyjson.com/products/1')
+ *     .then(product => console.log(product))
+ * fetch.get('https://dummyjson.com/products/1')
+ *     .then(product => console.log(product))
+ *
+ *
+ * fetch.post('https://dummyjson.com/products/add', { title: 'Product title' })
+ *     .then(product => console.log(product))
+ * ```
+ *
+ *
+ * @example Set default options.
+ *
+ * Options' default values (excluding `as` and `method`) can be configured to be EFFECTIVE GLOBALLY.
  *
  * ```typescript
  * import fetch from '@superutils/fetch'
@@ -105,42 +133,9 @@ export type FetchWithMethods = typeof fetchResponse & {
  *     //........
  * }
  * ```
- *
- * @property options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
- * @property options.headers (optional) request headers. Default: `{ 'content-type' : 'application/json'}`
- * @property options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
- * @property options.method (optional) Default: `"get"`
- * @property options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
- * @property options.parse (optional) specify how to parse the result.
- * Default: {@link FetchAs.json}
- * For raw `Response` use {@link FetchAs.response}
- *
- * @example Drop-in replacement for built-in `fetch`
- * ```typescript
- * import fetch from '@superutils/fetch'
- *
- * fetch('https://dummyjson.com/products/1')
- *     .then(response => response.json())
- *     .then(console.log, console.error)
- * ```
- *
- * @example Method specific function with JSON parsing by default
- * ```typescript
- * import fetch from '@superutils/fetch'
- *
- * // no need for `response.json()` or `result.data.data` drilling
- * fetch.get('https://dummyjson.com/products/1')
- *     .then(product => console.log(product))
- * fetch.get('https://dummyjson.com/products/1')
- *     .then(product => console.log(product))
- *
- *
- * fetch.post('https://dummyjson.com/products/add', { title: 'Product title' })
- *     .then(product => console.log(product))
- * ```
  */
-const fetchDefault = fetchResponse as FetchWithMethods
-// Makes sure defaults are synced with `fetchOriginal.defaults`
+const fetchDefault = fetchResponse as typeof fetchResponse & typeof methods
+// Makes sure defaults are synced with `fetch.defaults`
 Object.defineProperty(fetchDefault, 'defaults', {
 	get() {
 		return fetchOriginal.defaults
@@ -149,12 +144,12 @@ Object.defineProperty(fetchDefault, 'defaults', {
 		fetchOriginal.defaults = newDefaults
 	},
 })
-fetchDefault.delete = _delete
-fetchDefault.get = _get
-fetchDefault.head = _head
-fetchDefault.options = _options
-fetchDefault.patch = _patch
-fetchDefault.post = _post
-fetchDefault.put = _put
+fetchDefault.delete = methods.delete
+fetchDefault.get = methods.get
+fetchDefault.head = methods.head
+fetchDefault.options = methods.options
+fetchDefault.patch = methods.patch
+fetchDefault.post = methods.post
+fetchDefault.put = methods.put
 
 export default fetchDefault

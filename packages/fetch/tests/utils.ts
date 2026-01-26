@@ -1,0 +1,59 @@
+import { isStr, objSort } from '@superutils/core'
+import { expect } from 'vitest'
+import fetch, {
+	ContentType,
+	FetchAs,
+	FetchOptions,
+	mergeFetchOptions,
+} from '../src'
+
+export const productsBaseUrl = 'https://dummyjson.com/products'
+
+/**
+ * Generate mocked result for fetch calls.
+ *
+ * @returns mocked result object:
+ * ```typescript
+ * {
+ *   success: boolean,
+ *   args: [url: string, options: FetchOptions]
+ * }
+ * ```
+ */
+export const getMockedResult = (
+	method = 'get',
+	productId: number,
+	options: FetchOptions = {},
+	success = true,
+) => ({
+	success,
+	args: [
+		`${productsBaseUrl}/${productId}`,
+		objSort(
+			mergeFetchOptions(fetch.defaults, {
+				abortCtrl: expect.any(AbortController),
+				as: FetchAs.json,
+				method,
+				signal: expect.any(AbortSignal),
+				...options,
+				headers: (() => {
+					const headers = new Headers(options?.headers)
+					!headers.get('content-type')
+						&& headers.set(
+							'content-type',
+							ContentType.APPLICATION_JSON,
+						)
+					return headers
+				})(),
+				...(['delete', 'patch', 'post', 'put'].includes(
+					String(method).toLowerCase(),
+				)
+					&& options.body !== undefined && {
+						body: isStr(options.body)
+							? options.body
+							: JSON.stringify(options.body),
+					}),
+			}),
+		),
+	],
+})

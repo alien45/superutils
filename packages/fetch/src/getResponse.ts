@@ -1,6 +1,6 @@
+import { fallbackIfFails, isPositiveInteger } from '@superutils/core'
 import PromisE from '@superutils/promise'
 import { FetchArgs } from './types'
-import { isPositiveInteger } from '@superutils/core'
 
 /**
  * Execute built-in `fetch()` and retry if request fails and `options.retry > 0`.
@@ -10,7 +10,10 @@ import { isPositiveInteger } from '@superutils/core'
  *
  * @returns response
  */
-export const getResponse = async (...[url, options = {}]: FetchArgs) => {
+export const getResponse = async (
+	url: FetchArgs[0],
+	options: FetchArgs[1] = {},
+) => {
 	const fetchFunc = globalThis.fetch
 	if (!isPositiveInteger(options.retry))
 		return fetchFunc(url, options as RequestInit)
@@ -23,9 +26,17 @@ export const getResponse = async (...[url, options = {}]: FetchArgs) => {
 		},
 		{
 			...options,
-			retryIf: async (res, count) =>
-				res?.ok === false
-				|| (await options?.retryIf?.(res, count)) === true,
+			retryIf: async (res, count, error) => {
+				const failed = !!error || !res?.ok
+
+				return !!(
+					(await fallbackIfFails(
+						options?.retryIf ?? failed,
+						[res, count, error],
+						failed,
+					)) ?? failed
+				)
+			},
 		},
 	).catch(err =>
 		Promise.reject(

@@ -1,39 +1,11 @@
 import { objSort } from '@superutils/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import fetch, {
-	type FetchArgs,
-	FetchAs,
-	type FetchDeferredArgs,
-	mergeFetchOptions,
-} from '../src'
+import fetch, { type FetchArgs } from '../src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
+import { productsBaseUrl, getMockedResult } from './utils'
 
 describe('fetch.get.deferred', () => {
 	let mockFetch200: ReturnType<typeof vi.fn>
-	const fetchBaseUrl = 'https://dummyjson.com/products'
-	const getExpectedFetchResult = (
-		productId: number,
-		options: FetchDeferredArgs[1] = {},
-		success = true,
-	) => ({
-		success,
-		args: [
-			`${fetchBaseUrl}/${productId}`,
-			objSort(
-				mergeFetchOptions(
-					fetch.defaults,
-					{
-						abortCtrl: expect.any(AbortController),
-						as: FetchAs.json,
-						method: 'get',
-						signal: expect.any(AbortSignal),
-					},
-					options,
-				),
-			),
-		],
-	})
-
 	const mockFetch =
 		(status = 200, ok = status >= 200 && status < 300) =>
 		(...[url, options = {}]: FetchArgs) =>
@@ -75,10 +47,10 @@ describe('fetch.get.deferred', () => {
 			undefined, // no default url
 			{ headers },
 		)
-		getProduct(`${fetchBaseUrl}/1`)
+		getProduct(`${productsBaseUrl}/1`)
 		await vi.runAllTimersAsync()
-		getProduct(`${fetchBaseUrl}/2`)
-		const last = getProduct(`${fetchBaseUrl}/3`, {
+		getProduct(`${productsBaseUrl}/2`)
+		const last = getProduct(`${productsBaseUrl}/3`, {
 			timeout: 5000,
 			abortCtrl: new AbortController(),
 		})
@@ -87,10 +59,16 @@ describe('fetch.get.deferred', () => {
 		expect(context.data.results).toHaveLength(2)
 		expect(context.data.ignored).toHaveLength(1) // First two calls are ignored
 		expect(context.data.errors).toHaveLength(0)
-		const firstResult = getExpectedFetchResult(1, { headers }, true)
-		const lastResult = getExpectedFetchResult(3, { headers, timeout: 5000 })
-		expect(context.data.results).toEqual([firstResult, lastResult])
-		await expect(last).resolves.toEqual(lastResult)
+		const expected1stResult = getMockedResult('get', 1, { headers }, true)
+		const expectedLastResult = getMockedResult('get', 3, {
+			headers,
+			timeout: 5000,
+		})
+		expect(context.data.results).toEqual([
+			expected1stResult,
+			expectedLastResult,
+		])
+		await expect(last).resolves.toEqual(expectedLastResult)
 	})
 
 	it('should merge headers', async () => {
@@ -102,12 +80,12 @@ describe('fetch.get.deferred', () => {
 		fetch.defaults.headers = globalHeaders
 		const getProduct = fetch.get.deferred(
 			context,
-			`${fetchBaseUrl}/1`, // default url
+			`${productsBaseUrl}/1`, // default url
 			{ headers: commonHeaders },
 		)
 		const promise = getProduct({ headers: localHeaders })
 		await vi.runAllTimersAsync() // Executes the last call
-		const expResult = getExpectedFetchResult(1, {
+		const expResult = getMockedResult('get', 1, {
 			headers: new Headers({ ...commonHeaders, ...localHeaders }),
 		})
 		await expect(promise).resolves.toEqual(expResult)
