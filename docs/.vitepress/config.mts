@@ -40,7 +40,8 @@ export default defineConfig({
 				color: black;
 				text-decoration: unset;
 				transform: translateY(-1px);
-			}`,
+			}
+			`,
 		],
 	],
 	ignoreDeadLinks: 'localhostLinks',

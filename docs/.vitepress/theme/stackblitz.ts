@@ -39,7 +39,7 @@ export const embedPlayground = (
 	element?: string | HTMLElement,
 	embedOptions: EmbedOptions = {},
 ) => {
-	embedOptions.crossOriginIsolated ??= true
+	embedOptions.crossOriginIsolated ??= false
 	if (!element) {
 		// if element or selector is not provided, open playground on a modal
 		const modal = document.createElement('div')

@@ -67,39 +67,39 @@ All fetch calls return a `PromisE` (`@superutils/promise`) instance which means 
 
 1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
 
-    ```javascript
-    import fetch from '@superutils/fetch'
+```javascript
+import fetch from '@superutils/fetch'
 
-    const request = fetch('https://dummyjson.com/products/1')
+const request = fetch('https://dummyjson.com/products/1')
 
-    console.log(request.pending) // true
+console.log(request.pending) // true
 
-    request.then(() => {
-    	console.log(request.resolved) // true
-    	console.log(request.pending) // false
-    	console.log(request.rejected) // false
-    })
-    ```
+request.then(() => {
+	console.log(request.resolved) // true
+	console.log(request.pending) // false
+	console.log(request.rejected) // false
+})
+```
 
 2. Early finalization: all `PromisE` instances expose `.resolve()` and `.reject()` methods that allow early finalization and `.onEarlyFinalize` array that allows adding callbacks to be executed when the promise is finalized externally using these methods. Fetch promises utilize this to abort the request when appropriate.
 
-    ```javascript
-    import fetch from '@superutils/fetch'
+```javascript
+import fetch from '@superutils/fetch'
 
-    // Request that will take 5 seconds to resolve
-    const request = fetch('https://dummyjson.com/products?delay=5000')
+// Request that will take 5 seconds to resolve
+const request = fetch('https://dummyjson.com/products?delay=5000')
 
-    request.then(result => console.log(result), console.warn)
+request.then(result => console.log(result), console.warn)
 
-    // Add a callback to do stuff whenever request is aborted externally.
-    // This will not be invoked if fetch fails or resolves (promise finalized naturally) using the Promise executor.
-    request.onEarlyFinalize.push((resolved, valueOrReason) =>
-    	console.log('Aborted externally:', { resolved, valueOrReason }),
-    )
+// Add a callback to do stuff whenever request is aborted externally.
+// This will not be invoked if fetch fails or resolves (promise finalized naturally) using the Promise executor.
+request.onEarlyFinalize.push((resolved, valueOrReason) =>
+	console.log('Aborted externally:', { resolved, valueOrReason }),
+)
 
-    // resolve/reject before the promise is finalized
-    request.reject(new Error('No longer needed'))
-    ```
+// resolve/reject before the promise is finalized
+request.reject(new Error('No longer needed'))
+```
 
 <div id="methods"></div>
 
@@ -362,86 +362,82 @@ The following interceptor callbacks allow intercepting and/or transforming at di
 - Value returned (transformed) by an interceptor will be carried over to the subsequent interceptor of the same type.
 - There are 2 category of interceptors:
     - Local: interceptors provided when making a request.
-
-    **Example: Interceptor usage**
-
-    ```javascript
-    import fetch, { FetchError } from '@superutils/fetch'
-
-    const interceptors = {
-    	error: [
-    		(err, url, options) => {
-    			console.log('Request failed', err, url, options)
-    			// return nothing/undefined to keep the error unchanged
-    			// or return modified/new error
-    			err.message = 'My custom error message!'
-    			// or create a new FetchError by cloning it (make sure all the required properties are set correctly)
-    			return err.clone('My custom error message!')
-    		},
-    	],
-    	request: [
-    		(url, options) => {
-    			// add extra headers or modify request options here
-    			options.headers.append('x-custom-header', 'some value')
-
-    			// transform the URL by returning a modified URL
-    			return url + '?param=value'
-    		},
-    	],
-    	response: [
-    		(response, url, options) => {
-    			if (response.ok) return
-    			console.log('request was successful', { url, options })
-
-    			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
-    			// You can transform the response by returning different `Response` object or even make a completely new HTTP request.
-    			// The subsequent response interceptors will receive the returned response
-    			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
-    		},
-    	],
-    	result: [
-    		(result, url, options) => {
-    			const productId = Number(
-    				new URL(url).pathname.split('/products/')[1],
-    			)
-    			if (options.method === 'get' && !Number.isNaN(productId)) {
-    				result.title ??= 'Unknown title'
-    			}
-    			return result
-    		},
-    	],
-    }
-    fetch
-    	.get('https://dummyjson.com/products/1', { interceptors })
-    	.then(product => console.log({ product }))
-    ```
-
     - Global: interceptors that are executed application-wide on every request. Global interceptors can be added/accessed at `fetch.defaults.interceptors`. Global interceptors are always executed before local interceptors.
 
-        **Example: Add global request and error interceptors**
+**Example: Interceptor usage**
 
-        ```javascript
-        import fetch from '@superutils/fetch'
+```javascript
+import fetch, { FetchError } from '@superutils/fetch'
 
-        const { interceptors } = fetch.defaults
+const interceptors = {
+	error: [
+		(err, url, options) => {
+			console.log('Request failed', err, url, options)
+			// return nothing/undefined to keep the error unchanged
+			// or return modified/new error
+			err.message = 'My custom error message!'
+			// or create a new FetchError by cloning it (make sure all the required properties are set correctly)
+			return err.clone('My custom error message!')
+		},
+	],
+	request: [
+		(url, options) => {
+			// add extra headers or modify request options here
+			options.headers.append('x-custom-header', 'some value')
 
-        interceptors.request.push((url, options) => {
-        	// a headers to all requests make by the application
-        	// add headers to all requests made by the application
-        	options.headers.append('x-auth', 'token')
-        })
+			// transform the URL by returning a modified URL
+			return url + '?param=value'
+		},
+	],
+	response: [
+		(response, url, options) => {
+			if (response.ok) return
+			console.log('request was successful', { url, options })
 
-        interceptors.error.push((err, url, options) => {
-        	// log whenever a request fails
-        	console.log('Error interceptor', err)
-        })
+			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
+			// You can transform the response by returning different `Response` object or even make a completely new HTTP request.
+			// The subsequent response interceptors will receive the returned response
+			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
+		},
+	],
+	result: [
+		(result, url, options) => {
+			const productId = Number(
+				new URL(url).pathname.split('/products/')[1],
+			)
+			if (options.method === 'get' && !Number.isNaN(productId)) {
+				result.title ??= 'Unknown title'
+			}
+			return result
+		},
+	],
+}
+fetch
+	.get('https://dummyjson.com/products/1', { interceptors })
+	.then(product => console.log({ product }))
+```
 
-        // Each time a requst is made using @superutils/fetch, the above interceptors will be executed when appropriate
-        fetch('https://dummyjson.com/products/1').then(
-        	console.log,
-        	console.warn,
-        )
-        ```
+**Example: Add global request and error interceptors**
+
+```javascript
+import fetch from '@superutils/fetch'
+
+const { interceptors } = fetch.defaults
+
+interceptors.request.push((url, options) => {
+	// a headers to all requests make by the application
+	// add headers to all requests made by the application
+	options.headers.append('x-auth', 'token')
+})
+
+interceptors.error.push((err, url, options) => {
+	// log whenever a request fails
+	console.log('Error interceptor', err)
+})
+
+// Each time a requst is made using @superutils/fetch, the above interceptors will be executed when appropriate
+fetch('https://dummyjson.com/products/1').then(console.log, console.warn)
+```
 
 <div id="retry"></div>
 
