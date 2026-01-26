@@ -47,8 +47,9 @@ import {
  * const updateProduct = postClient.deferred(
  * 	{
  * 		delayMs: 300, // debounce duration
+ * 		onResult: console.log, // prints only successful results
  * 	},
- * 	'https://dummyjson.com/products/1',
+ * 	'https://dummyjson.com/products/add',
  * 	{
  * 		method: 'patch',
  * 		timeout: 3000,
