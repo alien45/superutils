@@ -26,7 +26,7 @@ export const fetchResponse = <
 	TReturn = FetchResult<T>[TAs],
 >(
 	url: FetchArgs[0],
-	options: Parameters<typeof fetch<T, TOptions, TAs, TReturn>>[1],
+	options?: Parameters<typeof fetch<T, TOptions, TAs, TReturn>>[1],
 ): IPromisE<TReturn> => {
 	options ??= {} as TOptions
 	options.as ??= FetchAs.response

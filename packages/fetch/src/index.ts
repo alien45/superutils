@@ -8,8 +8,6 @@ export * from './getAbortCtrl'
 export * from './getResponse'
 export * from './mergeFetchOptions'
 export * from './types'
-import fetchDefault from './fetchDefault'
+import fetch from './fetchDefault'
 
-export default fetchDefault
-
-fetchDefault.get
+export default fetch
