@@ -41,7 +41,41 @@ export default defineConfig({
 				text-decoration: unset;
 				transform: translateY(-1px);
 			}
-			`,
+			.VPHero {
+				position: relative;
+				background-image: url(/superutils/assets/hero.png);
+				background-size: cover;
+				background-position: center;
+				max-height: 500px;
+				color: white;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 50px;
+			}
+			.VPHero::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: rgba(0, 0, 0, 0.4);
+				z-index: 1;
+			}
+			html:not(.dark) .VPHero::before {
+				background-color: rgba(0, 0, 0, 0.4);
+			}
+			.VPHero > .container .tagline {
+				color: white;
+			}
+			.VPHero > .container {
+				text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+			}
+			.VPNavBarTitle:not(.has-sidebar) a.title span {
+				color: #ffffff;
+			}
+		`,
 		],
 	],
 	ignoreDeadLinks: 'localhostLinks',

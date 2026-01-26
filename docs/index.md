@@ -5,7 +5,10 @@ layout: home
 hero:
     name: 'Superutils'
     text: 'Code, Supercharged.'
-    tagline: A suite of powerful, opinionated, and modular utilities for TypeScript, React, and RxJS.
+    # image:
+    #     src: /assets/hero.png
+    #     alt: supertutils background
+    tagline: A suite of useful, opinionated, and modular utilities for TypeScript, React, and RxJS.
     actions:
         - theme: brand
           text: What is Superutils?
