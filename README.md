@@ -95,7 +95,7 @@ This monorepo contains the following packages. Each is independently versioned a
         </a>
       </td>
       <td>
-        An extended Promise with extra features such as status tracking, deferred/throttled execution, timeout and retry mechanism.
+        An extended Promise with additional features such as status tracking, deferred/throttled execution, timeout and retry mechanism.
         <br />
         <b><i>Why:</i></b> provide shared async primitives used across higher-level utilities.
       </td>
@@ -146,7 +146,7 @@ console.log({
 	resolved: dp.resolved,
 })
 // Prints: { pending: true, resolved: false, rejected: false }
-await dp // waits 1 seconds
+await dp // waits 1 second
 console.log({
 	pending: dp.pending,
 	rejected: dp.rejected,

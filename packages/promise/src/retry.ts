@@ -91,7 +91,7 @@ export const retry = async <T>(
 		retryDelay,
 		retryDelayJitter,
 		retryDelayJitterMax,
-	} = options as Required<RetryOptions> & { retryDebug?: string }
+	} = options as Required<RetryOptions>
 	let _retryDelay = retryDelay
 	let retryCount = -1
 	let result: T | undefined

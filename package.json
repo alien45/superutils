@@ -45,6 +45,7 @@
 		"docs:preview": "vitepress preview docs",
 		"lint": "eslint . --ext .ts,.tsx",
 		"publish:packages": "lerna publish  --no-private",
+		"publish:prepare": "npm run test :1 && npm run lint && npm run docs:build && npm run build",
 		"start": "npm run clean:purge && npm run build && npm run build:watch",
 		"test": "bash scripts/test.sh",
 		"vitest": "vitest",

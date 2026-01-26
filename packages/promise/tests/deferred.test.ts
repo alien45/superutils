@@ -175,7 +175,6 @@ describe('PromisE.deferred', () => {
 		const staleInnerFn = vi.fn()
 		const staleResultFn = vi.fn()
 		const context = getDeferredContext()
-		context.debugTag = 'd'
 		context.ignoreStale = true
 		const deferredFn = PromisE.deferred(context)
 		deferredFn(() => PromisE.delay(501)) // will be ignored by debounce

@@ -6,7 +6,6 @@ import {
 	reverse,
 	randomInt,
 	deferred,
-	throttled,
 } from '@superutils/core'
 import { PromisE, IPromisE, DeferredAsyncOptions } from '@superutils/promise'
 
@@ -17,52 +16,52 @@ import {
 	subjectAsPromise,
 	SubjectLike,
 } from '@superutils/rx'
-import { delay, distinctUntilChanged, throttle } from 'rxjs'
+import { delay, distinctUntilChanged } from 'rxjs'
 import fetch, { FetchAs, FetchError, ResolveIgnored } from '@superutils/fetch'
 
 console.log('Started')
 
-fetch
-	.get('https://dummyjson.com/products/1', {
-		interceptors: {
-			error: [
-				(err, url, options) => {
-					console.log('Request failed', err, url, options)
-					// return nothing/undefined to keep the error unchanged
-					// or return modified/new error
-					err.message = 'My custom error message!'
-					return err
-				},
-			],
-			request: [
-				(url, options) => {
-					// add extra headers or modify request options here
-					options.headers.append('x-custom-header', 'some value')
+// fetch
+// 	.get('https://dummyjson.com/products/1', {
+// 		interceptors: {
+// 			error: [
+// 				(err, url, options) => {
+// 					console.log('Request failed', err, url, options)
+// 					// return nothing/undefined to keep the error unchanged
+// 					// or return modified/new error
+// 					err.message = 'My custom error message!'
+// 					return err
+// 				},
+// 			],
+// 			request: [
+// 				(url, options) => {
+// 					// add extra headers or modify request options here
+// 					options.headers.append('x-custom-header', 'some value')
 
-					// transform the URL by returning a modified URL
-					return url + '?param=value'
-				},
-			],
-			response: [
-				async (response, url, options) => {
-					if (response.ok)
-						console.log('request was successful', { url, options })
-				},
-			],
-			result: [
-				(result, url, options) => {
-					const productId = Number(
-						new URL(url).pathname.split('/products/')[1],
-					)
-					if (options.method === 'get' && !Number.isNaN(productId)) {
-						;(result as { title: string }).title ??= 'Unknown title'
-					}
-					return result
-				},
-			],
-		},
-	})
-	.then(product => console.log({ product }))
+// 					// transform the URL by returning a modified URL
+// 					return url + '?param=value'
+// 				},
+// 			],
+// 			response: [
+// 				async (response, url, options) => {
+// 					if (response.ok)
+// 						console.log('request was successful', { url, options })
+// 				},
+// 			],
+// 			result: [
+// 				(result, url, options) => {
+// 					const productId = Number(
+// 						new URL(url).pathname.split('/products/')[1],
+// 					)
+// 					if (options.method === 'get' && !Number.isNaN(productId)) {
+// 						;(result as { title: string }).title ??= 'Unknown title'
+// 					}
+// 					return result
+// 				},
+// 			],
+// 		},
+// 	})
+// 	.then(product => console.log({ product }))
 
 // ----------------------------------------------------------------
 // // Create a throttled function to fetch a random quote.

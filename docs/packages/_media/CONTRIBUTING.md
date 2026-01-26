@@ -175,7 +175,7 @@ Here are a few examples:
 - A bug fix in the 'core' package
 
     ```bash
-    fix(core): correct type inference for isObject functio. Fixes #123.
+    fix(core): correct type inference for isObject function. Fixes #123.
     ```
 
 - A documentation update for the 'react' package
