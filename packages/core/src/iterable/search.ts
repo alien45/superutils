@@ -65,11 +65,11 @@ export const search = <
 ): Result => {
 	const ignore = !getSize(data) || isEmpty(options?.query) // object: no properties | string: only whitespaces
 	const result = isMap(options?.result) ? options.result : new Map()
-	const asMap = options?.asMap ?? search.defaultOptions.asMap
+	const asMap = options?.asMap ?? search.defaults.asMap
 	if (ignore) return (asMap ? result : getValues(result)) as Result
 
 	options = objCopy(
-		search.defaultOptions,
+		search.defaults,
 		options,
 		[],
 		'empty', // override `option` property with default value when "empty" (undefined, null, '',....)
@@ -158,7 +158,7 @@ export const search = <
 
 	return (asMap ? result : getValues(result)) as Result
 }
-search.defaultOptions = {
+search.defaults = {
 	asMap: true,
 	ignoreCase: true,
 	limit: Infinity,

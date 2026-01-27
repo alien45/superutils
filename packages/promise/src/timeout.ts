@@ -160,7 +160,7 @@ export function timeout<
 
 	return promise
 }
-timeout.defaultOptions = {
+timeout.defaults = {
 	func: 'all',
 	timeout: 10_000,
 } as Required<TimeoutOptions>

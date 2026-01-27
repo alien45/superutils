@@ -106,7 +106,7 @@ export function sort<
 	if (!dataType) return data
 
 	const { ignoreCase, newInstance, reverse, undefinedFirst } = {
-		...sort.defaultOptions,
+		...sort.defaults,
 		...(isObj(options)
 			? options
 			: isObj<SortOptions>(keyOrFn)
@@ -173,7 +173,7 @@ export function sort<
 	return data
 }
 /** Default sort options */
-sort.defaultOptions = {
+sort.defaults = {
 	ignoreCase: true,
 	newInstance: false,
 	reverse: false,
