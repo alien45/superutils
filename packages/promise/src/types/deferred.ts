@@ -3,7 +3,7 @@ import type {
 	PositiveNumber,
 	ValueOrPromise,
 } from '@superutils/core'
-import type { IPromisE } from './IPromisE'
+import type { IPromisE } from './PromisEBase'
 
 /** Return type of `PromisE.deferred()` */
 export type DeferredAsyncCallback<TArgs extends unknown[] | [] = []> = <

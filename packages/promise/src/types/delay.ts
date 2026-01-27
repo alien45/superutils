@@ -1,27 +1,5 @@
-import { TimeoutId, ValueOrPromise } from '@superutils/core'
-
-export interface IPromisE<T = unknown> extends Promise<T> {
-	/** 0: pending, 1: resolved, 2: rejected */
-	readonly state: 0 | 1 | 2
-
-	/** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
-	onEarlyFinalize: OnEarlyFinalize<T>[]
-
-	/** Indicates if the promise is still pending/unfinalized */
-	readonly pending: boolean
-
-	/** Reject pending promise early. */
-	reject: (reason: unknown) => void
-
-	/** Indicates if the promise has been rejected */
-	readonly rejected: boolean
-
-	/** Resovle pending promise early. */
-	resolve: (value: T | PromiseLike<T>) => void
-
-	/** Indicates if the promise has been resolved */
-	readonly resolved: boolean
-}
+import { TimeoutId } from '@superutils/core'
+import { IPromisE } from './PromisEBase'
 
 /* Describes a delay PromisE and it's additional properties. */
 export interface IPromisE_Delay<T = unknown> extends Promise<T>, IPromisE<T> {
@@ -68,29 +46,3 @@ export interface IPromisE_Delay<T = unknown> extends Promise<T>, IPromisE<T> {
 	/** Timeout ID */
 	timeoutId: TimeoutId
 }
-
-/**
- * Descibes a timeout PromisE and it's additional properties.
- */
-export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
-	/** Clearing the timeout will prevent it from timing out */
-	clearTimeout: () => void
-	/** The result/data promise. If more than one supplied in `args` result promise will be a combined `PromisE.all` */
-	data: IPromisE<T>
-	/** A shorthand getter to check if the promise has timed out. Same as `promise.timeout.rejected`. */
-	readonly timedout: boolean
-	/** The timeout promise */
-	timeout: IPromisE_Delay<T>
-}
-
-export type OnEarlyFinalize<T> = <
-	TResolved extends boolean,
-	TValue = TResolved extends true ? T : unknown,
->(
-	resolved: TResolved,
-	resultOrReason: TValue,
-) => ValueOrPromise<unknown>
-
-export type PromiseParams<T = unknown> = ConstructorParameters<
-	typeof Promise<T>
->

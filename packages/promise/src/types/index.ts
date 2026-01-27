@@ -1,4 +1,5 @@
-export * from './IPromisE'
+export * from './PromisEBase'
 export * from './deferred'
+export * from './delay'
 export * from './retry'
 export * from './timeout'

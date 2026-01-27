@@ -1,4 +1,4 @@
-import { fallbackIfFails, isFn } from '@superutils/core'
+import { fallbackIfFails } from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
@@ -48,14 +48,14 @@ import { IPromisE_Delay } from './types'
  */
 export function delay<T = number, TReject extends boolean = boolean>(
 	duration = delay.defaults.duration,
-	result: T | (() => T) = duration as T,
+	result?: T | (() => T),
 	asRejected: TReject = false as TReject,
 ) {
 	const promise = new PromisEBase() as unknown as IPromisE_Delay<T>
 	const finalize = (result?: unknown) => {
-		if (isFn(result))
-			result = fallbackIfFails(result, [], undefined) ?? duration
-		if (!asRejected) return promise.resolve(result as T)
+		result = // if a function is provided execute it and turn it into a promise
+			fallbackIfFails(result, [], (err: Error) => Promise.reject(err))
+		if (!asRejected) return promise.resolve((result ?? duration) as T)
 
 		promise.reject(
 			(duration !== result && result !== undefined

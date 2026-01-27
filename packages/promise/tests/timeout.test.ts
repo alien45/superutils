@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE from '../src'
+import PromisE, { PromisEBase } from '../src'
 
 describe('PromisE.timeout', () => {
 	beforeEach(() => {
@@ -10,62 +10,153 @@ describe('PromisE.timeout', () => {
 		vi.useRealTimers()
 	})
 
-	it('should use default timeout duration', async () => {
-		const p = PromisE.timeout(null as any, 999)
-		await vi.runAllTimersAsync()
-		await expect(p).resolves.toBe(999)
-	})
-
-	it('should use default batch promise func even when wrong value is provided', async () => {
-		const p = PromisE.timeout(
-			{ func: 'Invalid PromisEBase method' as any },
-			999,
-		)
-		await vi.runAllTimersAsync()
-		await expect(p).resolves.toBe(999)
-	})
-
-	it('should create a promise that resolves after the specified timeout', async () => {
-		const p = PromisE.timeout(500, PromisE.delay(300, 'value'))
-		await vi.runAllTimersAsync()
-		await expect(p).resolves.toBe('value')
-	})
-
-	it('should create a promise that rejects after the specified timeout', async () => {
-		const p = PromisE.timeout(3000, PromisE.delay(5000))
-		const start = new Date()
-		p.catch(() => {
-			const diff = new Date().getTime() - start.getTime()
-			expect(diff).toBeGreaterThanOrEqual(3000)
-		})
-		await vi.runAllTimersAsync()
-		await expect(p).rejects.toEqual(new Error('Timed out after 3000ms'))
-		expect(p.timedout).toBe(true)
-	})
-
-	it('should use specified batch promise func (all, race...)', async () => {
-		const values = [999, 9999, '99999']
-		const funcRes = [
-			['all', values],
-			[
-				'allSettled',
-				values.map(value => ({
-					status: 'fulfilled',
-					value,
-				})),
-			],
-			['any', values[1]],
-			['race', values[1]],
-		] as const
-		for (const [func, expected] of funcRes) {
-			const promises = [
-				PromisE.delay(3000, values[0]),
-				PromisE.delay(1000, values[1]),
-				PromisE.delay(4000, values[2]),
-			] as const
-			const result = PromisE.timeout({ func }, ...promises)
+	describe('timeout', () => {
+		it('should use default timeout duration', async () => {
+			const p = PromisE.timeout('not a valid number' as any, 999)
 			await vi.runAllTimersAsync()
-			await expect(result).resolves.toEqual(expected)
-		}
+			await expect(p).resolves.toBe(999)
+			expect(p.data).instanceOf(PromisEBase)
+			expect(p.timeout).instanceOf(PromisEBase)
+		})
+
+		it('should use default batch promise func even when wrong value is provided', async () => {
+			const p = PromisE.timeout(
+				{ func: 'Invalid PromisEBase method' as any },
+				999,
+				99,
+			)
+			await vi.runAllTimersAsync()
+			await expect(p).resolves.toEqual([999, 99])
+		})
+
+		it('should create a promise that resolves after the specified timeout', async () => {
+			const p = PromisE.timeout(500, PromisE.delay(300, 'value'))
+			await vi.runAllTimersAsync()
+			await expect(p).resolves.toBe('value')
+		})
+
+		it('should create a promise that rejects after the specified timeout', async () => {
+			const p = PromisE.timeout(3000, PromisE.delay(5000))
+			const start = new Date()
+			p.catch(() => {
+				const diff = new Date().getTime() - start.getTime()
+				expect(diff).toBeGreaterThanOrEqual(3000)
+			})
+			await vi.advanceTimersByTimeAsync(3000)
+			await vi.runAllTimersAsync()
+			await expect(p).rejects.toEqual(expect.any(Error))
+			expect(p.timedout).toBe(true)
+		})
+
+		it('should use specified batch promise func (all, race...)', async () => {
+			const values = [999, 9999, '99999']
+			const funcRes = [
+				['all', values],
+				[
+					'allSettled',
+					values.map(value => ({
+						status: 'fulfilled',
+						value,
+					})),
+				],
+				['any', values[1]],
+				['race', values[1]],
+			] as const
+			for (const [func, expected] of funcRes) {
+				const promises = [
+					PromisE.delay(3000, values[0]),
+					PromisE.delay(1000, values[1]),
+					PromisE.delay(4000, values[2]),
+				] as const
+				const result = PromisE.timeout({ func }, ...promises)
+				await vi.runAllTimersAsync()
+				await expect(result).resolves.toEqual(expected)
+			}
+		})
+	})
+
+	describe('funtions', () => {
+		it('should accepts & invoke funtions with PromisE.try', async () => {
+			const values = new Array(10).fill(0).map((_, i) => i)
+			const p = PromisE.timeout(
+				{ func: 'all' },
+				...values.map(i => () => i),
+			)
+			await vi.runAllTimersAsync()
+			await expect(p).resolves.toEqual(values)
+		})
+
+		it('should should invoke functions and throw error', async () => {
+			const handleErr = vi.fn()
+			const values = new Array(10).fill(0).map((_, i) => async () => {
+				if (i !== 5) return i
+
+				throw new Error('five')
+			})
+			const p = PromisE.timeout({ func: 'all' }, ...values)
+			p.catch(() => {})
+			await vi.runAllTimersAsync()
+			await p.catch(handleErr)
+
+			expect(handleErr).toHaveBeenCalledExactlyOnceWith(new Error('five'))
+		})
+	})
+
+	describe('AbortSignal', () => {
+		it('should externally abort using AbortController', async () => {
+			const abortCtrl = new AbortController()
+			const p = PromisE.timeout({ abortCtrl, timeout: 5000 }, async () =>
+				PromisE.delay(30000),
+			)
+			abortCtrl.abort()
+			p.catch(() => {}) // avoid unhandled rejection
+			await vi.runAllTimersAsync()
+			await expect(p).rejects.toEqual(expect.any(Error))
+		})
+
+		it('should externally abort using AbortSignal', async () => {
+			const abortCtrl = new AbortController()
+			const p = PromisE.timeout(
+				{ signal: abortCtrl.signal, timeout: 5000 },
+				PromisE.delay(30000),
+			)
+			abortCtrl.abort()
+			p.catch(() => {}) // avoid unhandled rejection
+			await vi.runAllTimersAsync()
+			await expect(p).rejects.toEqual(expect.any(Error))
+			expect(p.aborted).toBe(true)
+			expect(p.timedout).toBe(false)
+		})
+
+		it('should externally abort using AbortSignal and abort provided secondary AbortController', async () => {
+			const abortCtrlExt = new AbortController()
+			const abortCtrl = new AbortController()
+			const p = PromisE.timeout(
+				{ abortCtrl, signal: abortCtrlExt.signal, timeout: 5000 },
+				PromisE.delay(1000),
+			)
+			abortCtrlExt.abort()
+			p.catch(() => {}) // avoid unhandled rejection
+			await vi.runAllTimersAsync()
+			await expect(p).rejects.toEqual(expect.any(Error))
+			// when one controller is aborted, the other should be too
+			expect(abortCtrl.signal.aborted).toBe(true)
+			expect(p.aborted).toBe(true)
+			expect(p.timedout).toBe(false)
+		})
+
+		it('should should progagate abort signal when promise times out', async () => {
+			const abortCtrl = new AbortController()
+			const p = PromisE.timeout(
+				{ abortCtrl, timeout: 5000 },
+				PromisE.delay(30000),
+			)
+			p.catch(() => {}) // avoid unhandled rejection
+			await vi.runAllTimersAsync()
+			await expect(p).rejects.toEqual(expect.any(Error))
+			expect(abortCtrl.signal.aborted).toBe(true)
+			expect(p.aborted).toBe(true)
+			expect(p.timedout).toBe(true)
+		})
 	})
 })
