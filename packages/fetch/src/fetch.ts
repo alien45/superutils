@@ -6,7 +6,10 @@ import {
 	isUrlValid,
 	type TimeoutId,
 } from '@superutils/core'
-import PromisE, { type IPromisE } from '@superutils/promise'
+import PromisE, {
+	type IPromisE,
+	timeout as PromisE_timeout,
+} from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import { getAbortCtrl } from './getAbortCtrl'
 import getResponse from './getResponse'

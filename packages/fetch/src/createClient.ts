@@ -1,4 +1,4 @@
-import PromisE, { IPromisE } from '@superutils/promise'
+import { deferredCallback, IPromisE } from '@superutils/promise'
 import fetch from './fetch'
 import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
@@ -157,7 +157,7 @@ export const createClient = <
 			return promise as IPromisE<TReturn>
 		}
 
-		return PromisE.deferredCallback(fetchCb, {
+		return deferredCallback(fetchCb, {
 			...commonDeferOptions,
 			...deferOptions,
 		} as typeof deferOptions) as typeof fetchCb
