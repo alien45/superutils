@@ -565,7 +565,7 @@ While `createClient()` is versatile enough for any HTTP method, `createPostClien
 Similar to `createClient`, the returned function comes equipped with a `.deferred()` method, enabling debounced, throttled, or sequential execution.
 
 ```javascript
-import { createPostClient, FetchAs } from '@superutils/fetch'
+import { createPostClient } from '@superutils/fetch'
 
 // Create a POST client with 10-second as the default timeout
 const postClient = createPostClient(

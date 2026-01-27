@@ -171,7 +171,3 @@ export const createPostClient = <
 	return client
 }
 export default createPostClient
-
-const client = createPostClient()
-
-client.deferred()
