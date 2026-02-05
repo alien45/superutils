@@ -25,7 +25,7 @@
 	"name": "@superutils/fetch",
 	"peerDependencies": {
 		"@superutils/core": "^1.2.0",
-		"@superutils/core": "^1.2.0"
+		"@superutils/promise": "^1.2.0"
 	},
 	"publishConfig": {
 		"access": "public"
