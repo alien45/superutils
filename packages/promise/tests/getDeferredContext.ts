@@ -1,13 +1,15 @@
 import { DeferredAsyncOptions, ResolveError, ResolveIgnored } from '../src/'
 
-export const getDeferredContext = () => {
+export const getDeferredContext = <Delay extends number>(
+	delayMs: Delay = 100 as Delay,
+) => {
 	const context = {
 		data: {
 			errors: [],
 			ignored: [],
 			results: [],
 		},
-		delayMs: 100 as number,
+		delayMs,
 		onError(err) {
 			context.data.errors.push(err)
 		},
@@ -25,7 +27,7 @@ export const getDeferredContext = () => {
 		get thisArg() {
 			return this
 		},
-	} as DeferredAsyncOptions & {
+	} as DeferredAsyncOptions<unknown, Delay> & {
 		data: {
 			errors: unknown[]
 			ignored: (<T = unknown>() => Promise<T>)[]

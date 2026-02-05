@@ -9,6 +9,12 @@ describe('PromisE.delay', () => {
 		vi.useFakeTimers()
 	})
 
+	it('should resolve immediately when invalid duration provided', async () => {
+		const promise = PromisE.delay(null as any, 0)
+		await vi.advanceTimersByTime(1)
+		expect(promise.resolved).toBe(true)
+	})
+
 	it('should create a promise that resolves after predefined delay', async () => {
 		const promise = PromisE.delay(10_000, 'done')
 		expect(promise.pending).toBe(true)
@@ -21,7 +27,7 @@ describe('PromisE.delay', () => {
 	})
 
 	it('should resolve delayed promise with the duration provided', async () => {
-		const promise = PromisE.delay(10_000, () => undefined)
+		const promise = PromisE.delay(10_000, () => {})
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toBe(10_000)
 	})

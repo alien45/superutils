@@ -151,8 +151,9 @@ export class PromisEBase<T = unknown>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {
-		const { promise, reject } = PromisEBase.withResolvers<T>()
-		queueMicrotask(() => reject(reason)) // required to avoid unhandled rejection
+		const promise = new PromisEBase<T>()
+		// queueMicrotask required to avoid unhandled rejection
+		queueMicrotask(() => promise.reject(reason as Error))
 		return promise
 	}
 
@@ -206,13 +207,7 @@ export class PromisEBase<T = unknown>
 	 */
 	static withResolvers = <T = unknown>() => {
 		const promise = new PromisEBase<T>() as IPromisE<T>
-
 		return { promise, reject: promise.reject, resolve: promise.resolve }
 	}
-	// static withResolvers = <T = unknown>() => {
-	// 	const pwr = globalThis.Promise.withResolvers<T>()
-	// 	const promise = new PromisEBase<T>(pwr.promise) as IPromisE<T>
-	// 	return { ...pwr, promise }
-	// }
 }
 export default PromisEBase

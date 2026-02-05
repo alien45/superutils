@@ -1,5 +1,5 @@
-export * from './PromisEBase'
 export * from './deferred'
 export * from './delay'
+export * from './PromisEBase'
 export * from './retry'
 export * from './timeout'

@@ -1,6 +1,7 @@
+import { ValueOrPromise } from '@superutils/core'
 import PromisEBase from '../PromisEBase'
-import { IPromisE_Delay } from './delay'
-import { IPromisE } from './PromisEBase'
+import type { IPromisE_Delay } from './delay'
+import type { IPromisE } from './PromisEBase'
 
 /**
  * Descibes a timeout PromisE and it's additional properties.
@@ -8,7 +9,7 @@ import { IPromisE } from './PromisEBase'
 export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
 	readonly aborted: boolean
 	/**
-	 * Removes event listeners attached to the abort signal, effectively disabling external cancellation via AbortController.
+	 * Removes `abortCtrl/signal` listeners, effectively disabling external cancellation via AbortController.
 	 */
 	cancelAbort: () => void
 	/**
@@ -23,6 +24,20 @@ export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
 	timeout: IPromisE_Delay<T>
 }
 
+export type TimeoutResult<
+	T extends unknown[],
+	TFunc extends keyof TimeoutFunc<T>,
+	Values extends unknown[] = {
+		-readonly [P in keyof T]: T[P] extends (
+			...args: unknown[]
+		) => infer ReturnType
+			? ReturnType
+			: T[P]
+	},
+> = Awaited<
+	T['length'] extends 1 ? Values[0] : ReturnType<TimeoutFunc<Values>[TFunc]>
+>
+
 export type TimeoutFunc<T extends unknown[] = []> = {
 	all: typeof PromisEBase.all<T>
 	allSettled: typeof PromisEBase.allSettled<T>
@@ -31,7 +46,7 @@ export type TimeoutFunc<T extends unknown[] = []> = {
 }
 
 /**
- * `PromisE.timeout` options
+ * Options for `PromisE.timeout()`
  *
  * @param func (optional) name of the supported `PromiEBase` static method to be used to resolve
  * when more than one promise/function is provided. Default: `"all"`
@@ -44,9 +59,28 @@ export type TimeoutOptions<
 	Func extends string = 'all',
 > = {
 	abortCtrl?: AbortController
-	abortMsg?: string
-	func?: T['length'] extends 0 ? never : T['length'] extends 1 ? never : Func
+	func?: T['length'] extends 0
+		? // no values provided
+			never
+		: T['length'] extends 1
+			? // only value
+				never
+			: Func
+	/**
+	 * Callback invoked when the promise is rejected due to an abort signal.
+	 * Optionally, return an `Error` object to reject the promise with a custom error.
+	 */
+	onAbort?: () => ValueOrPromise<void | Error>
+	/**
+	 * Callback invoked when the promise times out.
+	 * Optionally, return an `Error` object to reject the promise with a custom error.
+	 */
+	onTimeout?: () => ValueOrPromise<void | Error>
 	signal?: AbortSignal
 	timeout?: number
-	timeoutMsg?: string
 }
+
+/** Default options for `PromisE.timeout()` */
+export type TimeoutOptionsDefault = Required<
+	Omit<TimeoutOptions<unknown[], keyof TimeoutFunc>, 'abortCtrl' | 'signal'>
+>

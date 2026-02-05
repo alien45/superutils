@@ -23,7 +23,7 @@ export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
 }
 
 /** Options for `PromisE.deferred` and other related functions */
-export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
+export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
 	/**
 	 * Delay in milliseconds, used for `debounce` and `throttle` modes. Use `0` for sequential execution.
 	 *
@@ -31,7 +31,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 *
 	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delayMs`)
 	 */
-	delayMs?: 0 | PositiveNumber<Delay>
+	delayMs?: number | PositiveNumber<Delay>
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
@@ -74,8 +74,10 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	resolveError?: ResolveError
 } & (
 	| ({
-			// Seqential execution
-			delayMs: 0
+			delayMs?: PositiveNumber<Delay> // Debounce/Throttle mode
+	  } & DeferredOptions<ThisArg>)
+	| ({
+			delayMs: 0 // Seqential execution
 	  } & {
 			throttle?: false
 			/** Callback invoked whenever promise/function throws error */
@@ -83,28 +85,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 			/** The value to be used as "thisArg" whenever any of the callbacks are invoked */
 			thisArg?: ThisArg
 	  })
-	| ({
-			// Debounce/Throttle mode
-			delayMs?: PositiveNumber<Delay>
-	  } & DeferredOptions<ThisArg>)
 )
-// & (
-// 	| ({
-// 			// Throttle mode
-// 			delayMs?: PositiveNumber<Delay>
-// 			throttle: true
-// 	  } & Pick<ThrottleOptions, 'trailing'>)
-// 	| ({
-// 			// Debounce/deferred mode
-// 			delayMs?: PositiveNumber<Delay>
-// 			throttle?: false
-// 	  } & Pick<DebounceOptions, 'leading'>)
-// 	| {
-// 			// Seqential execution
-// 			delayMs: 0
-// 			throttle?: false
-// 	  }
-// )
 
 /** Determines what to do when deferred promise/function fails */
 export enum ResolveError {

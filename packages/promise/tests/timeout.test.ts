@@ -86,7 +86,7 @@ describe('PromisE.timeout', () => {
 			await expect(p).resolves.toEqual(values)
 		})
 
-		it('should should invoke functions and throw error', async () => {
+		it('should should accept & invoke functions and throw error', async () => {
 			const handleErr = vi.fn()
 			const values = new Array(10).fill(0).map((_, i) => async () => {
 				if (i !== 5) return i
@@ -117,12 +117,15 @@ describe('PromisE.timeout', () => {
 		it('should externally abort using AbortSignal', async () => {
 			const abortCtrl = new AbortController()
 			const p = PromisE.timeout(
-				{ signal: abortCtrl.signal, timeout: 5000 },
+				{
+					signal: abortCtrl.signal,
+					timeout: 5000,
+				},
 				PromisE.delay(30000),
 			)
 			abortCtrl.abort()
 			p.catch(() => {}) // avoid unhandled rejection
-			await vi.runAllTimersAsync()
+			await vi.advanceTimersByTimeAsync(1)
 			await expect(p).rejects.toEqual(expect.any(Error))
 			expect(p.aborted).toBe(true)
 			expect(p.timedout).toBe(false)
@@ -137,7 +140,7 @@ describe('PromisE.timeout', () => {
 			)
 			abortCtrlExt.abort()
 			p.catch(() => {}) // avoid unhandled rejection
-			await vi.runAllTimersAsync()
+			await vi.advanceTimersByTimeAsync(1)
 			await expect(p).rejects.toEqual(expect.any(Error))
 			// when one controller is aborted, the other should be too
 			expect(abortCtrl.signal.aborted).toBe(true)

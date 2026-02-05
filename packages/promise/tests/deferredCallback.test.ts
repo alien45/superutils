@@ -12,8 +12,7 @@ describe('PromisE.deferredCallback', () => {
 	})
 
 	it('should bind callbacks to thisArg and invoke callbacks: onResult, onError & onIgnore callbacks', async () => {
-		const context = getDeferredContext()
-		context.delayMs = 100
+		const context = getDeferredContext(100)
 		context.throttle = false
 		context.resolveIgnored = ResolveIgnored.NEVER
 		context.resolveError = ResolveError.REJECT

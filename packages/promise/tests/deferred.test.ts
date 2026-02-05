@@ -27,8 +27,7 @@ describe('PromisE.deferred', () => {
 	})
 
 	it('should allow sequential execution without debounce or throttle', async () => {
-		const context = getDeferredContext()
-		context.delayMs = 0 // disable debounce/throttle for sequential execution
+		const context = getDeferredContext(0) // disable debounce/throttle for sequential execution
 		const deferredFn = PromisE.deferred(context)
 		const delays = [1000, 150, 550, 2000, 0]
 		delays.forEach((delay, i) =>

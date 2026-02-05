@@ -1,4 +1,4 @@
-import { fallbackIfFails } from '@superutils/core'
+import { fallbackIfFails, isFn } from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import { IPromisE_Delay } from './types'
 
@@ -48,22 +48,32 @@ import { IPromisE_Delay } from './types'
  */
 export function delay<T = number, TReject extends boolean = boolean>(
 	duration = delay.defaults.duration,
-	result?: T | (() => T),
+	result?: T | (() => T | Promise<T>),
 	asRejected: TReject = false as TReject,
 ) {
 	const promise = new PromisEBase() as unknown as IPromisE_Delay<T>
 	const finalize = (result?: unknown) => {
-		result = // if a function is provided execute it and turn it into a promise
-			fallbackIfFails(result, [], (err: Error) => Promise.reject(err))
-		if (!asRejected) return promise.resolve((result ?? duration) as T)
-
-		promise.reject(
-			(duration !== result && result !== undefined
-				? result
-				: new Error(
-						`${delay.defaults.delayTimeoutMsg} ${duration}ms`,
-					)) as Error,
+		// turn it into a promise
+		const _result = fallbackIfFails(
+			async () => {
+				const _result: unknown = await (isFn(result)
+					? result()
+					: result)
+				return !asRejected
+					? (_result ?? duration)
+					: (_result
+							?? new Error(
+								`${delay.defaults.delayTimeoutMsg} ${duration}ms`,
+							))
+			},
+			[],
+			// when result is a function and it fails/rejects,
+			// promise will reject even if `asRejected = false`
+			(err: Error) => Promise.reject(err),
 		)
+		!asRejected
+			? promise.resolve(_result as T)
+			: _result.then(promise.reject, promise.reject)
 	}
 	promise.timeoutId = setTimeout(() => finalize(result), duration)
 	promise.pause = () => clearTimeout(promise.timeoutId)
@@ -72,6 +82,8 @@ export function delay<T = number, TReject extends boolean = boolean>(
 			/* avoid unhandled rejections here when asRejected is true */
 		})
 		.finally(() => promise.pause())
+
+	promise.onEarlyFinalize.push(() => promise.pause())
 	return promise
 }
 /** Global default values */
