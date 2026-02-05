@@ -23,7 +23,7 @@
 		"@superutils/core": "^1.1.7"
 	},
 	"publishConfig": {
-		"access": "public"
+		"access": "restricted"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
