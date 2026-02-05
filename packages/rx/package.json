@@ -3,7 +3,7 @@
 	"description": "RxJS utilities and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "^1.1.7",
-		"@superutils/core": "^1.1.7",
+		"@superutils/promise": "^1.1.7",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
 		"rxjs": "^7.0.0"
@@ -25,10 +25,10 @@
 	"name": "@superutils/rx",
 	"peerDependencies": {
 		"@superutils/core": "^1.1.7",
-		"@superutils/core": "^1.1.7"
+		"@superutils/promise": "^1.1.7"
 	},
 	"publishConfig": {
-		"access": "public"
+		"access": "restricted"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",

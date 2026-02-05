@@ -21,6 +21,19 @@ import fetch, { FetchAs, FetchError, ResolveIgnored } from '@superutils/fetch'
 
 console.log('Started')
 
+const abortCtrl = new AbortController()
+setTimeout(() => abortCtrl.abort(), 1500)
+fetch
+	.get('https://dummyjson.com/products/1?delay=3000', { abortCtrl })
+	.then(console.log, (err: FetchError) => {
+		console.log({
+			options: err.options,
+			response: err.response,
+			url: err.url,
+		})
+		console.log(err)
+	})
+
 // fetch
 // 	.get('https://dummyjson.com/products/1', {
 // 		interceptors: {
