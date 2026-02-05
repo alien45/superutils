@@ -44,6 +44,8 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
  *
  * @example
  * ```javascript
+ * import { sliceMap } from '@superutils/core'
+ *
  * const data = new Map([
  * 	[0, { age: 30, name: 'Alice' }],
  * 	[1, { age: 25, name: 'Bob' }],

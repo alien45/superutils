@@ -1,12 +1,12 @@
-export type ReadOnlyAllowAddFn<T> = (
+export type ObjReadOnlyAllowAddFn<T> = (
 	obj: T,
 	key: string | symbol,
-	valule: unknown,
+	value: unknown,
 ) => boolean
 
-export type ReadOnlyConfig<T, Revocable extends true | false = false> = {
+export type ObjReadOnlyConfig<T, Revocable extends true | false = false> = {
 	/** Whether to allow adding new properties. Default: `false` */
-	add?: boolean | ReadOnlyAllowAddFn<T>
+	add?: boolean | ObjReadOnlyAllowAddFn<T>
 	/** Default: `false` */
 	revocable?: Revocable
 	/** Whether to throw error when a write operation is rejected. Default: `true` */

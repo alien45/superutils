@@ -34,23 +34,32 @@ import { IterableList, SearchOptions } from './types'
  * @returns A `Map` or an `Array` containing the matched items, based on the `asMap` option.
  *
  * @example
- * ```typescript
+ * ```javascript
+ * import { search } from '@superutils/core'
+ *
  * const users = [
  *   { id: 1, name: 'John Doe', city: 'New York' },
  *   { id: 2, name: 'Jane Doe', city: 'London' },
  *   { id: 3, name: 'Peter Jones', city: 'New York' },
- * ];
+ * ]
  *
  * // Simple string search (case-insensitive, partial match by default)
- * const doeUsers = search(users, { query: 'doe' });
- * // Returns: [{ id: 1, ... }, { id: 2, ... }]
+ * const doeUsers = search(users, { query: 'doe' })
+ * console.log({ doeUsers })
+ * // Map(2) {
+ * //     0 => { id: 1, name: 'John Doe', city: 'New York' },
+ * //     1 => { id: 2, name: 'Jane Doe', city: 'London' }
+ * //   }
+ * // }
  *
  * // Field-specific search, requiring all fields to match
  * const peterInNY = search(users, {
+ * 	 asMap: false, // return result as array
  *   query: { name: 'Peter', city: 'New York' },
  *   matchAll: true,
- * });
- * // Returns: [{ id: 3, ... }]
+ * })
+ * console.log({ peterInNY })
+ * // [ { id: 3, name: 'Peter Jones', city: 'New York' } ]
  * ```
  */
 export const search = <

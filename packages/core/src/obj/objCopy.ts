@@ -36,6 +36,40 @@ const clone = <T>(value: T, fallback = 'null') =>
  *
  *
  * @returns copied and/or merged object
+ *
+ * ```javascript
+ * import { objCopy } from '@superutils/core'
+ *
+ * const source = {
+ * 	a: 1,
+ * 	b: 2,
+ * 	c: 3,
+ * 	x: {
+ * 		a: 1,
+ * 		b: 2,
+ * 	},
+ * }
+ * const dest = {
+ * 	d: 4,
+ * 	e: 5,
+ * }
+ * const copied = objCopy(
+ * 	source,
+ * 	dest,
+ * 	['a', 'x.b'], // exclude source property
+ * 	'empty', // only override if dest doesn't have the property or value is "empty" (check `is.emtpy()`)
+ * 	true, // recursively copies child objects. If false, child objects are copied by reference.
+ * )
+ * console.log({ copied })
+ * // Result:
+ * // {
+ * //     b: 2,
+ * //     c: 33,
+ * //     d: 4,
+ * //     e: 5,
+ * // }
+ * console.log(dest === copied) // true (dest is returned)
+ * ```
  */
 export const objCopy = <
 	Key extends PropertyKey,

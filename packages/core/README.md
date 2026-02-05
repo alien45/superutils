@@ -77,14 +77,14 @@ import {
 } from '@superutils/core'
 ```
 
-<div id="debouce"></div>
+<div id="debounce"></div>
 
-### `debouce(fn, delay, options)`: debounce callbacks
+### `debounce(fn, delay, options)`: debounce callbacks
 
 ```javascript
-import { debouce } from '@superutils/core'
+import { debounce } from '@superutils/core'
 
-const handleChange = debouce(
+const handleChange = debounce(
 	event => console.log(event.target.value),
 	300, // debounce delay in milliseconds
 	{
@@ -196,6 +196,10 @@ const source = {
 	a: 1,
 	b: 2,
 	c: 3,
+	x: {
+		a: 1,
+		b: 2,
+	},
 }
 const dest = {
 	d: 4,
@@ -204,9 +208,11 @@ const dest = {
 const copied = objCopy(
 	source,
 	dest,
-	['a'], // exclude source property
+	['a', 'x.b'], // exclude source property
 	'empty', // only override if dest doesn't have the property or value is "empty" (check `is.emtpy()`)
+	true, // recursively copies child objects. If false, child objects are copied by reference.
 )
+console.log({ copied })
 // Result:
 // {
 //     b: 2,
@@ -281,7 +287,7 @@ const data = new Map([
 	[4, { age: 28, name: 'Dave' }],
 	[5, { age: 22, name: 'Eve' }],
 ])
-search(data, {
+const result = search(data, {
 	asMap: false, // Result type: true => Map (default, keys preserved), false => Array
 	ignoreCase: false, // For text case-sensitivity
 	limit: 10, // Number of items returned. Default: no limit
@@ -300,6 +306,7 @@ search(data, {
 		return `${value}`
 	},
 })
+console.log({ result })
 // Result:
 // [
 //   { age: 30, name: 'Alice' },
@@ -379,7 +386,9 @@ setTimeout(() => searchDeferred({ target: { value: 'lic' } }), 510)
 
 ### `curry(fn, arity)`: Convert any function into a curried function
 
-```typescript
+```javascript
+import { curry } from '@superutils/core'
+
 const func = (
 	first: string,
 	second: number,
@@ -399,4 +408,6 @@ const fnWith2 = fnWith1(2)
 const fnWith3 = fnWith2(false)
 // All args are now provided, the original function is called and result is returned.
 const result = fnWith3('last')
+console.log({ result })
+// Result: 'first-2-false-last'
 ```

@@ -8,7 +8,9 @@ import { IterableList, type FindOptions } from './types'
  *
  * @returns first item matched or `undefined` if not found
  *
- * @example Find item using predicate callback
+ * @example Example 1:
+ * Find item using predicate callback
+ *
  * ```typescript
  * import { find } from '@superutils/core'
  *
@@ -17,11 +19,14 @@ import { IterableList, type FindOptions } from './types'
  * 	[2, { name: 'Bob', age: 25 }],
  * 	[3, { name: 'Charlie', age: 35 }],
  * ])
- * const result = mapFind(testMap, ({ name }) => name === 'Bob')
+ * const result = find(map, ({ name }) => name === 'Bob')
+ * console.log({ result })
  * // result: { name: 'Bob', age: 25 }
  * ```
  *
- * @example Find item using search options
+ * @example Example 2:
+ * Find item using search options
+ *
  * ```typescript
  * import { find } from '@superutils/core'
  *
@@ -30,10 +35,10 @@ import { IterableList, type FindOptions } from './types'
  * 	[2, { name: 'Bob', age: 25 }],
  * 	[3, { name: 'Charlie', age: 35 }],
  * ])
- *	const result = mapFind(testmap, {
- *		query: 'Bob',
- *		key: 'name',
+ *	const result = find(map, {
+ *		query: { name: 'Bob' }
  *	})
+ * console.log({ result })
  * // result: { name: 'Bob', age: 25 }
  * ```
  */

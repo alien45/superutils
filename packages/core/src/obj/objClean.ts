@@ -7,6 +7,20 @@ import { isArr, isObj, isSymbol } from '../is'
  * @param obj
  * @param keys property names to keep
  * @param ignoreIfNotExist (optional) if truthy, will ignore non-existent `keys`. Default: `true`
+ *
+ * @example
+ * ```javascript
+ * import { objClean } from '@superutils/core'
+ *
+ * const obj = {
+ * 	a: 1,
+ * 	b: 2,
+ * 	c: 3,
+ * 	d: 4
+ * }
+ * console.log(objClean(obj, [ 'a', 'b']))
+ * // { a: 1, b: 2 }
+ * ```
  */
 export const objClean = <
 	T extends Record<PropertyKey, unknown>,

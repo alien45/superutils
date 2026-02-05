@@ -8,26 +8,23 @@ import { isArr2D, isMap } from '../is'
  * @returns new combined Map
  *
  * @example Join two Maps
- * ```typescript
+ * ```javascript
  * import { mapJoin } from '@superutils/core'
  *
- * const maps = [
- * 	new Map([['a', 1]]),
- * 	new Map([['b', 2]]),
- * ]
- * const joined = mapJoin(...maps)
+ * const map1 = new Map([['a', 1]])
+ * const map2 = new Map([['b', 2]])
+ * console.log(mapJoin(map1, map2))
  * // Result: Map(2) {'a' => 1, 'b' => 2}
  * ```
  *
  * @example Join entries and Maps into a single Map
- * ```typescript
+ * ```javascript
  * import { mapJoin } from '@superutils/core'
  *
- * const joined = mapJoin(
- * 	new Map([['a', 1]]),
- * 	[['b', 2]],
- * 	new Map([['c', 3]]),
- * )
+ * const map1 = new Map([['a', 1]])
+ * const entries = [['b', 2], ['c', 2]]
+ * const map2 =	new Map([['c', 3]])
+ * console.log(mapJoin(map1, entries, map2))
  * // Result: Map(2) {'a' => 1, 'b' => 2, 'c' => 3}
  * ```
  */

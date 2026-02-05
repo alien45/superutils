@@ -9,20 +9,26 @@ import { isArr, isObj } from '../is'
  * @param result (optional) An existing object to add or overwrite properties on. If not provided, a new object is created.
  * @returns The newly created object, or the `result` object merged with the new properties.
  *
- * @example Creating a new object from keys and values
- * ```typescript
- * const keys = ['a', 'b', 'c'];
- * const values = [1, 2, 3];
- * const newObj = objCreate(keys, values);
+ * @example Creating a new object from arrays of keys and values
+ * ```javascript
+ * import { objCreate } from '@superutils/core'
+ *
+ * const keys = ['a', 'b', 'c']
+ * const values = [1, 2, 3]
+ * const newObj = objCreate(keys, values)
+ * console.log(newObj)
  * // newObj is { a: 1, b: 2, c: 3 }
  * ```
  *
  * @example Merging into an existing object
  * ```typescript
- * const existingObj = { a: 0, d: 4 };
- * const keys = ['b', 'c'];
- * const values = [2, 3];
- * objCreate(keys, values, existingObj);
+ * import { objCreate } from '@superutils/core'
+ *
+ * const existingObj = { a: 0, d: 4 }
+ * const keys = ['b', 'c']
+ * const values = [2, 3]
+ * const newObj = objCreate(keys, values, existingObj)
+ * console.log(newObj)
  * // existingObj is now { a: 0, d: 4, b: 2, c: 3 }
  * ```
  */

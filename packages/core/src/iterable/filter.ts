@@ -27,6 +27,7 @@ import { IterableList } from './types'
  * ])
  *
  * const filtered = filter(map, item => item.age >= 30)
+ * console.log({ filtered })
  * // result: Map(2) {
  * //   1 => { name: 'Alice', age: 30 },
  * //   3 => { name: 'Charlie', age: 35 }

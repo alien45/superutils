@@ -27,26 +27,28 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  * @returns sorted map
  *
  * @example sort map of simple values (string/number/boolean)
- * ```typescript
+ * ```javascript
  * import { sort } from '@superutils/core'
+ *
  * const map = new Map([
  * 	   [1, 1],
  * 	   [2, 2],
  *     [0, 0],
  * ])
- * sort(map)
+ * console.log(sort(map))
  * // result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
  * ```
  *
  * @example sort map of objects
- * ```typescript
+ * ```javascript
  * import { sort } from '@superutils/core'
+ *
  * const map = new Map([
  *     [0, { name: 'Charlie' }],
  *     [1, { name: 'Alice' }],
  *     [2, { name: 'Bob' }],
  * ])
- * sort(map, 'name')
+ * console.log(sort(map, 'name'))
  * // result: Map(3) {
  * //   1 => { name: 'Alice' },
  * //   2 => { name: 'Bob' },

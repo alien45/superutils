@@ -15,9 +15,9 @@ import { DebounceOptions } from './types'
  *
  * @example Debounce function calls
  * ```javascript
- * import { deferred } from '@superutils/core'
+ * import { debounce } from '@superutils/core'
  *
- * const handleChange = deferred(
+ * const handleChange = debounce(
  *     event => console.log('Value:', event.target.value),
  *     300 // debounce delay in milliseconds
  * )

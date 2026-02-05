@@ -6,6 +6,25 @@ import { isArr, isEmpty, isObj } from '../is'
  * @param input
  * @param keys
  * @param requireValue (optional) whether each property should have some value.
+ *
+ * @example
+ * ```javascript
+ * import { objHasKeys } from '@superutils/core'
+ *
+ * const obj = { a: 1, b: null, c: 0 }
+ * console.log(objHasKeys(obj, ['a', 'b']))
+ * // true
+ *
+ * console.log(
+ * 	objHasKeys(
+ * 		obj,
+ * 		['a', 'b'],
+ * 		true // check if all the respective values of the provided keys are not "empty". Uses `ìsEmpty()`.
+ * 	)
+ * )
+ * // false
+ *
+ * ```
  */
 export function objHasKeys(
 	input: object | unknown[] = {},

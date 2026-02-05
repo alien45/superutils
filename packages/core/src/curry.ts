@@ -19,7 +19,9 @@ import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
 
  *
  * @example Convert any function into a curried function
- * ```typescript
+ * ```javascript
+ * import { curry } from '@superutils/core'
+ * 
  * const func = (
  *     first: string,
  *     second: number,
@@ -39,24 +41,49 @@ import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
  * const fnWith3 = fnWith2(false)
  * // All args are now provided, the original function is called and result is returned.
  * const result = fnWith3('last')
+ * console.log({ result })
+ * // Result: 'first-2-false-last'
  * ```
  * 
  * @example Flexible curried function arguments
- * ```typescript
+ * ```javascript
+ * import { curry } from '@superutils/core'
+ * 
+ * const func = (
+ *     first: string,
+ *     second: number,
+ *     third?: boolean,
+ *     fourth?: string
+ * ) => `${first}-${second}-${third}-${fourth}`
+ * const curriedFunc = curry(func)
+ * 
  * // Provide as many arguments as you wish. Upto the limit of the original function.
  * // Returns a function expecting only the remaining argument(s)
  * const fnWith3 = curriedFunc('first', 2, false)
  * // All args provided, returns the result
  * const result = fnWith3('last')
+ * console.log({ result })
+ * // Result: 
  * ```
  * 
  * @example Early invocation using "arity".
  * Useful when a function has
  *  - non-finite arguments (eg: number[])
  *  - optional arguments and you do not want to avoid one or more optional arguments
- * ```typescript
+ * 
+ * ```javascript
+ * import { curry } from '@superutils/core'
+ * 
+ * const func = (
+ *     first: string,
+ *     second: number,
+ *     third?: boolean,
+ *     fourth?: string
+ * ) => `${first}-${second}-${third}-${fourth}` 
  * const curriedWArity3 = curry(func, 3)
  * const result = curriedWArity3('first', 2, false)
+ * console.log({ result })
+ * // Result: 'first-2-false-undefined'
  * ```
  */
 export function curry<

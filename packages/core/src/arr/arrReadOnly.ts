@@ -1,4 +1,4 @@
-import { objReadOnly, type ReadOnlyConfig } from '../obj'
+import { objReadOnly, type ObjReadOnlyConfig } from '../obj'
 
 /**
  * Sugar for `objReadOnly()` for an Array
@@ -13,7 +13,7 @@ import { objReadOnly, type ReadOnlyConfig } from '../obj'
  */
 export const arrReadOnly = <T>(
 	arr: T[],
-	config: Omit<ReadOnlyConfig<T[]>, 'revoke'> = {},
+	config: Omit<ObjReadOnlyConfig<T[]>, 'revoke'> = {},
 ) => objReadOnly(new ReadOnlyArrayHelper(config, arr) as T[], config)
 
 export default arrReadOnly
@@ -27,7 +27,7 @@ export default arrReadOnly
  */
 export class ReadOnlyArrayHelper<T> extends Array<T> {
 	constructor(
-		readonly config: Omit<ReadOnlyConfig<T[]>, 'revoke'>,
+		readonly config: Omit<ObjReadOnlyConfig<T[]>, 'revoke'>,
 		arr: T[],
 	) {
 		config.silent ??= true
