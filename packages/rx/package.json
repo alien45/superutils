@@ -27,8 +27,9 @@
 		"@superutils/core": "^1.1.7",
 		"@superutils/promise": "^1.1.7"
 	},
+	"private": true,
 	"publishConfig": {
-		"access": "restricted"
+		"access": "public"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
