@@ -51,7 +51,6 @@ export type TimeoutFunc<T extends unknown[] = []> = {
  * @param func (optional) name of the supported `PromiEBase` static method to be used to resolve
  * when more than one promise/function is provided. Default: `"all"`
  * @param timeout (optional) timeout duration in milliseconds. Default: `10_000` (10 seconds)
- * @param timeoutMsg (optional) timeout error message. Default: `"Timed out after 10000ms"`
  *
  */
 export type TimeoutOptions<

@@ -106,7 +106,6 @@ export function timeout<
  *
  * @param options An options object can be passed with one or more of the following properties:
  * @param options.abortCtrl (optional) AbortController to manually reject promise externally and/or to sync abort with timeout rejection
- * @param options.abortMsg (optional) error message when promise is rejected by abort controller/signal
  * @param options.func (optional) Name of the `PromisE` static method to be used to combine the `values`.
  * Only used when more than one promise is provided. Default: `"all"`
  *
@@ -115,9 +114,12 @@ export function timeout<
  * 2. `'allSettled'`: for `PromisE.allSettled`
  * 3. `'any'`: for `PromisE.any`
  * 4. `'race'`: for `PromisE.race`
+ * @param options.onAbort (optional) Callback invoked when the promise is rejected due to an abort signal.
+ * Optionally, return an `Error` object to reject the promise with a custom error.
+ * @param options.onTimeout (optional) Callback invoked when the promise times out.
+ * Optionally, return an `Error` object to reject the promise with a custom error.
  * @param options.signal (optional) AbortSignal to manually reject promise externally
  * @param options.timeout (optional) timeout duration in milliseconds. If positive number is not provided, the default value will be used. Default: `10_000` (10 seconds)
- * @param options.timeoutMsg (optional) custom error message to be used when promises timeout.
  *
  * @param values Mix of promises, values and/or functions
  *
@@ -130,7 +132,6 @@ export function timeout<
  *     { // instead of `timeout: number` an object can be used for additional options
  *         func: 'race', // tells PromisE.timeout to use `PromisE.race(promises)`
  *         timeout: 5000, // timeout after 5000ms
- *         timeoutMsg: 'My custom timed out message',
  *     },
  *     PromisE.delay(1000), // resolves after 1000ms with value 1000
  *     () => PromisE.delay(2000), // resolves after 2000ms with value 2000

@@ -35,7 +35,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
-	 * In debouce/throttle mode, when an older promise is resolved after a newly resolved promise,
+	 * In debounce/throttle mode, when an older promise is resolved after a newly resolved promise,
 	 * the older one is considered stale.
 	 *
 	 * Default: `false`
