@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"dependencies": {
 		"@superutils/core": "^1.1.7",
-		"@superutils/core": "^1.1.7",
+		"@superutils/promise": "^1.1.7",
 		"@superutils/rx": "^0.1.0"
 	},
 	"devDependencies": {
@@ -26,9 +26,10 @@
 	"name": "@superutils/demo",
 	"peerDependencies": {
 		"@superutils/core": "^1.1.7",
-		"@superutils/core": "^1.1.7",
+		"@superutils/promise": "^1.1.7",
 		"@superutils/rx": "^0.1.0"
 	},
+	"private": true,
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_start": "npm run --workspace=@superutils/demo@0.1.0",

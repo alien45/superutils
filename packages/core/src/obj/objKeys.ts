@@ -12,6 +12,7 @@ export const objKeys = <T extends object, Include extends true | false = true>(
 	sorted = true,
 	includeSymbols: Include = true as Include,
 ) =>
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 	fallbackIfFails(
 		() => [
 			...((includeSymbols && Object.getOwnPropertySymbols(obj)) || []),

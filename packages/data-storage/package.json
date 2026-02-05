@@ -22,6 +22,7 @@
 	"peerDependencies": {
 		"@superutils/core": "^1.1.7"
 	},
+	"private": true,
 	"publishConfig": {
 		"access": "public"
 	},
