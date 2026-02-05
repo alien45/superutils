@@ -1,7 +1,7 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
 	"dependencies": {
-		"@superutils/core": "^1.1.7"
+		"@superutils/core": "^1.2.0"
 	},
 	"description": "JSON data storage helper for LocalStorage",
 	"files": [
@@ -20,8 +20,9 @@
 	"main": "dist/index.js",
 	"name": "@superutils/data-storage",
 	"peerDependencies": {
-		"@superutils/core": "^1.1.7"
+		"@superutils/core": "^1.2.0"
 	},
+	"private": true,
 	"publishConfig": {
 		"access": "public"
 	},

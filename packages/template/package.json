@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "template",
 	"dependencies": {
-		"@superutils/core": "^1.1.7"
+		"@superutils/core": "^1.2.0"
 	},
 	"files": [
 		"dist",
@@ -20,8 +20,9 @@
 	"main": "dist/index.js",
 	"name": "@superutils/template",
 	"peerDependencies": {
-		"@superutils/core": "^1.1.7"
+		"@superutils/core": "^1.2.0"
 	},
+	"private": true,
 	"publishConfig": {
 		"access": "public"
 	},
