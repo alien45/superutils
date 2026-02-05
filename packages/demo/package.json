@@ -1,8 +1,8 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
 	"dependencies": {
-		"@superutils/core": "^1.1.7",
-		"@superutils/promise": "^1.1.7",
+		"@superutils/core": "^1.2.0",
+		"@superutils/core": "^1.2.0",
 		"@superutils/rx": "^0.1.0"
 	},
 	"devDependencies": {
@@ -25,8 +25,8 @@
 	"main": "dist/index.js",
 	"name": "@superutils/demo",
 	"peerDependencies": {
-		"@superutils/core": "^1.1.7",
-		"@superutils/promise": "^1.1.7",
+		"@superutils/core": "^1.2.0",
+		"@superutils/core": "^1.2.0",
 		"@superutils/rx": "^0.1.0"
 	},
 	"private": true,
