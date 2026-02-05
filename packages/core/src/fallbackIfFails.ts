@@ -100,24 +100,66 @@ import { IfPromiseAddValue } from './types'
  * console.log({ value }) // undefined
  * ```
  */
-export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
+// export const fallbackIfFails = <T, TArgs extends unknown[] = unknown[]>(
+// 	target: T | ((...args: TArgs) => T),
+// 	args: TArgs | (() => TArgs),
+// 	fallback:
+// 		| IfPromiseAddValue<T>
+// 		| ((reason: unknown) => IfPromiseAddValue<T>),
+// ): T => {
+// 	try {
+// 		const result: unknown = !isFn(target)
+// 			? target // assume value or promise received
+// 			: target(...(isFn(args) ? args() : args))
+// 		if (!isPromise(result))
+// 			return result as T
+
+// 		return result.catch(err =>
+// 			isFn(fallback) ? fallback(err) : fallback,
+// 		) as T
+// 	} catch (err) {
+// 		return (isFn(fallback) ? fallback(err) : fallback) as T
+// 	}
+// }
+// export default fallbackIfFails
+
+export const fallbackIfFails = <
+	T,
+	TArgs extends unknown[] = unknown[],
+	TFB = T,
+	TFBVal = TFB extends (...args: unknown[]) => infer V ? V : TFB,
+	Result = (T extends Promise<unknown> ? true : never) extends never
+		? T | TFBVal
+		: Promise<Awaited<T | TFBVal>>,
+>(
 	target: T | ((...args: TArgs) => T),
 	args: TArgs | (() => TArgs),
 	fallback:
-		| IfPromiseAddValue<T>
-		| ((reason: unknown) => IfPromiseAddValue<T>),
-): T => {
+		| IfPromiseAddValue<TFB>
+		| ((reason: unknown) => IfPromiseAddValue<TFB>),
+): Result => {
 	try {
 		const result: unknown = !isFn(target)
 			? target // assume value or promise received
 			: target(...(isFn(args) ? args() : args))
-		if (!isPromise(result)) return result as T
+		if (!isPromise(result)) return result as Result
 
-		return result.catch(err =>
+		return result.catch((err: unknown) =>
 			isFn(fallback) ? fallback(err) : fallback,
-		) as T
+		) as Result
 	} catch (err) {
-		return (isFn(fallback) ? fallback(err) : fallback) as T
+		return (isFn(fallback) ? fallback(err) : fallback) as Result
 	}
 }
 export default fallbackIfFails
+
+// // examples
+// const x = fallbackIfFails(() => Promise.resolve('sdfsd'), [], 'dd')
+// const y = fallbackIfFails(
+// 	() => Promise.resolve('sdfsd'),
+// 	[],
+// 	() => Promise.resolve('dd'),
+// )
+// const z = fallbackIfFails(() => Promise.resolve('sdfsd'), [], 'dd')
+
+// const xu = fallbackIfFails(() => Promise.resolve('sdfsd'), [], undefined)

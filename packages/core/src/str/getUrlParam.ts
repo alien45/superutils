@@ -79,13 +79,12 @@ const getUrlParamRegex = (
 ) => {
 	url ??= fallbackIfFails(() => window.location.href, [], '')
 
-	// if (!url) return
 	if (isUrl(url)) url = url.toString()
 
 	const params: Record<string, string | string[]> = {}
 	const regex = /[?&]+([^=&]+)=([^&]*)/gi
 
-	url.replace(regex, (_, name: string, value: string) => {
+	url?.replace(regex, (_, name: string, value: string) => {
 		value = decodeURIComponent(value)
 		if (asArray.includes(name) || params[name] !== undefined) {
 			params[name] = isArr(params[name]) ? params[name] : [params[name]]

@@ -85,7 +85,7 @@ export const search = <
 
 	const qIsStr = isStr(query)
 	const qIsRegExp = isRegExp(query)
-	const qKeys = fallbackIfFails(Object.keys, [query], [])
+	const qKeys = fallbackIfFails(Object.keys, [query], [] as string[])
 	// Pre-process keywords for case-insensitivity outside the main loop
 	if (ignoreCase && !matchExact && !qIsRegExp) {
 		query = qIsStr
