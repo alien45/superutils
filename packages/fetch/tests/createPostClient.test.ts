@@ -1,12 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-	createClient,
-	createPostClient,
-	FetchArgs,
-	FetchAs,
-	FetchOptions,
-	PostOptions,
-} from '../src'
+import { createPostClient, FetchArgs, FetchAs, PostOptions } from '../src'
 import { productsBaseUrl } from './utils'
 
 describe('createClient', () => {

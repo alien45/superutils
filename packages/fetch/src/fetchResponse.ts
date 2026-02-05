@@ -1,6 +1,12 @@
-import { IPromisE } from '@superutils/promise'
+import { IPromisE_Timeout } from '@superutils/promise'
 import fetch from './fetch'
-import { FetchArgs, FetchAs, FetchOptions, FetchResult } from './types'
+import {
+	FetchArgs,
+	FetchAs,
+	FetchOptions,
+	FetchOptionsDefault,
+	FetchResult,
+} from './types'
 
 /**
  * Drop-in replacement for built-in `fetch()` with with timeout, retry etc options and Response as default return type.
@@ -27,9 +33,19 @@ export const fetchResponse = <
 >(
 	url: FetchArgs[0],
 	options?: Parameters<typeof fetch<T, TOptions, TAs, TReturn>>[1],
-): IPromisE<TReturn> => {
+): IPromisE_Timeout<TReturn> => {
 	options ??= {} as TOptions
 	options.as ??= FetchAs.response
-	return fetch(url, options)
+	return fetch<TReturn>(url, options)
 }
+fetchResponse.defaults = fetch.defaults
+// Sync with fetch.defaults
+Object.defineProperty(fetchResponse, 'defaults', {
+	get() {
+		return fetch.defaults
+	},
+	set(newDefaults: FetchOptionsDefault) {
+		fetch.defaults = newDefaults
+	},
+})
 export default fetchResponse

@@ -12,14 +12,16 @@ import fetch, {
 	mergeFetchOptions,
 } from '../src'
 import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
+import { noop } from '@superutils/core'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
 	let mockedFetch
+	const mockedResult = { id: 1, title: 'mocked product' }
 	const okResponse = {
 		ok: true,
 		status: 200,
-		json: () => Promise.resolve(),
+		json: () => Promise.resolve(mockedResult),
 	}
 
 	afterEach(() => {
@@ -44,11 +46,14 @@ describe('fetch', () => {
 				),
 			)
 			vi.stubGlobal('fetch', fetchMock)
-
+			let error: FetchError
+			const handleErr = vi.fn((err: FetchError) => (error = err))
+			fetch.get(product1Url).catch(handleErr)
 			await vi.runAllTimersAsync()
-			await expect(fetch.get(product1Url)).rejects.toThrow(
-				`TypeError: Failed to execute 'fetch' on 'Window'`,
-			)
+			expect(handleErr).toHaveBeenCalledWith(expect.any(FetchError))
+			expect(error!.options).not.toBe(undefined)
+			expect(error!.response).toBe(undefined)
+			expect(error!.url).not.toBe(undefined)
 		})
 
 		it('should handle parse error', async () => {
@@ -137,19 +142,6 @@ describe('fetch', () => {
 		})
 
 		it('should merge options global and local options', async () => {
-			const { defaults } = fetch
-			fetch.defaults = {
-				headers: new Headers({
-					'content-type': 'application/json',
-				}),
-				errMsgs: defaults.errMsgs,
-				interceptors: {
-					error: [vi.fn()],
-					request: [vi.fn()],
-					response: [vi.fn()],
-					result: [vi.fn()],
-				},
-			}
 			let receivedOptions: FetchOptions | undefined
 			const localOptions = {
 				as: FetchAs.json,
@@ -192,18 +184,18 @@ describe('fetch', () => {
 				.forEach(interceptor =>
 					expect(interceptor).toHaveBeenCalledOnce(),
 				)
-			fetch.defaults = defaults
 		})
 
 		it('should abort a request externally and execute onEarlyFinalize callbacks', async () => {
 			const onEarlyFinalize = vi.fn()
 			const onReject = vi.fn()
 			const onResolve = vi.fn()
-			const request = fetch('https://dummyjson.com/products?delay=5000') // will take 5 seconds to resolve
+			const request = fetch('https://dummyjson.com/products?delay=5000')
 			// resolve/reject the before the promise is finalized
 			request.onEarlyFinalize.push(onEarlyFinalize)
 			request.reject('No longer needed')
-			await request.then(onResolve, onReject)
+			request.then(onResolve, onReject)
+			await vi.runAllTimersAsync()
 			expect(onReject).toHaveBeenCalledExactlyOnceWith('No longer needed')
 			expect(onResolve).not.toHaveBeenCalled()
 			expect(onEarlyFinalize).toHaveBeenCalled()
@@ -253,7 +245,7 @@ describe('fetch', () => {
 			await promise
 			expect(receivedInterceptorArgs.request).toEqual(expectedArgs)
 			expect(receivedInterceptorArgs.result).toEqual([
-				expect.any(Promise),
+				mockedResult,
 				...expectedArgs,
 			])
 			expect(receivedInterceptorArgs.response).toEqual([
@@ -280,7 +272,7 @@ describe('fetch', () => {
 			const { args: expectedArgs } = getMockedResult('get', 1, options) // to prepare expected options
 			const url = 'an invalid url'
 			expectedArgs[0] = url // override with invalid url
-			await fetch.get(url, options).catch(() => {})
+			await fetch.get(url, options).catch(noop)
 			expect(receivedArgs).toEqual([
 				expect.any(FetchError),
 				...expectedArgs,
@@ -409,45 +401,31 @@ describe('fetch', () => {
 
 	describe('timeout', () => {
 		it('should reject after timeout', async () => {
-			mockedFetch = vi.fn(async (url, { timeout = 0 }) => {
+			mockedFetch = vi.fn(async (url, { timeout }) => {
 				const abortError = new Error('The user aborted a request.')
 				abortError.name = 'AbortError'
 				return PromisE.delayReject(timeout, abortError)
 			})
 			vi.stubGlobal('fetch', mockedFetch)
-
-			const onError = vi.fn()
-			const promise = fetch
-				.get(product1Url, {
-					timeout: 10_000,
-				})
-				.catch(onError)
-			await vi.runAllTimersAsync()
-			await promise
+			const promise = fetch.get(product1Url, {
+				debugTag: 'timeout_null',
+				timeout: -1, // test invalid value => falls back to default
+			})
+			await vi.advanceTimersByTimeAsync(fetch.defaults.timeout)
 			expect(mockedFetch).toHaveBeenCalled()
-			expect(onError).toHaveBeenCalledWith(expect.any(FetchError))
+			await expect(promise).rejects.toEqual(expect.any(FetchError))
 		})
 
 		it('should abort the fetch request when promise is resolved before finalization', async () => {
-			vi.useFakeTimers()
-			const mockedFetch = vi.fn(() =>
-				PromisE.delay(10_000, {
-					ok: true,
-					status: 200,
-					json: () => Promise.resolve('original value'),
-				}),
-			)
+			const mockedFetch = vi.fn(() => PromisE.delay(10_000, okResponse))
 			vi.stubGlobal('fetch', mockedFetch)
 			const promise = fetch.get(product1Url, { timeout: 5000 })
-			promise.onEarlyFinalize = promise.onEarlyFinalize.map(fn =>
-				vi.fn(fn),
-			)
+			const cbIndex = promise.onEarlyFinalize.length
+			promise.onEarlyFinalize.push(vi.fn())
 			await vi.advanceTimersByTimeAsync(1_000)
 			promise.resolve('resolved early')
-			await vi.runAllTimersAsync()
 			await expect(promise).resolves.toBe('resolved early')
-			expect(promise.onEarlyFinalize[0]).toHaveBeenCalled()
-			vi.useRealTimers()
+			expect(promise.onEarlyFinalize[cbIndex]).toHaveBeenCalled()
 		})
 	})
 })

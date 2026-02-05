@@ -4,10 +4,9 @@ import {
 	isPositiveNumber,
 	isPromise,
 	isUrlValid,
-	type TimeoutId,
 } from '@superutils/core'
-import PromisE, {
-	type IPromisE,
+import {
+	IPromisE_Timeout,
 	timeout as PromisE_timeout,
 } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
@@ -17,13 +16,19 @@ import mergeFetchOptions from './mergeFetchOptions'
 import type {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchCustomOptions,
-	FetchErrMsgs,
 	FetchOptions,
 	FetchResult,
-	FetchOptionsDefaults,
 } from './types'
-import { FetchAs, FetchError, ContentType } from './types'
+import {
+	ContentType,
+	FetchAs,
+	FetchErrMsgs,
+	FetchError,
+	FetchOptionsDefault,
+} from './types'
 
+/** Node.js setTimeout limit is 2147483647 (2^31-1). Larger values fire immediately. */
+export const MAX_TIMEOUT = 2147483647
 /**
  * Extended `fetch` with timeout, retry, and other options. Automatically parses as JSON by default on success.
  *
@@ -52,44 +57,58 @@ export const fetch = <
 >(
 	url: string | URL,
 	options: FetchOptions & TOptions = {} as TOptions,
-) => {
-	let timeoutId: TimeoutId
+): IPromisE_Timeout<TReturn> => {
+	let errResponse: Response | undefined
+	// invoke global and local request interceptors to intercept and/or transform `url` and `options`
+	const _options = mergeFetchOptions(fetch.defaults, options)
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
-	const abortCtrl: AbortController = getAbortCtrl(options)
-	// eslint-disable-next-line @typescript-eslint/no-misused-promises
-	const promise = new PromisE(async (resolve, reject) => {
-		let errResponse: Response | undefined
+	_options.abortCtrl = getAbortCtrl(_options)
+	_options.as ??= FetchAs.json
+	_options.method ??= 'get'
+	_options.signal ??= _options.abortCtrl.signal
+	_options.timeout = Math.min(
+		isPositiveNumber(_options.timeout)
+			? _options.timeout
+			: fetch.defaults.timeout,
+		MAX_TIMEOUT,
+	)
+	const { abortCtrl, as: parseAs, headers, timeout } = _options
+	let contentType = headers.get('content-type')
+	if (!contentType) {
+		headers.set('content-type', ContentType.APPLICATION_JSON)
+		contentType = ContentType.APPLICATION_JSON
+	}
 
-		// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-		const _options = mergeFetchOptions(fetch.defaults, options)
-		_options.as ??= FetchAs.json
-		_options.method ??= 'get'
-		let contentType = _options.headers.get('content-type')
-		if (!contentType) {
-			_options.headers.set('content-type', ContentType.APPLICATION_JSON)
-			contentType = ContentType.APPLICATION_JSON
-		}
-
-		// invoke global and local response interceptors to intercept and/or transform `url` and `options`
-		url = await executeInterceptors(
+	const processErr = (err: Error) => {
+		let msg = err?.message ?? err
+		if (err?.name === 'AbortError') msg = _options.errMsgs?.aborted ?? msg
+		// invoke global and local request interceptors to intercept and/or transform `error`
+		return executeInterceptors(
+			new FetchError(msg, {
+				cause: err?.cause ?? err,
+				response: errResponse,
+				options: _options,
+				url,
+			}),
+			undefined, // should execute regardless of abort status
+			_options.interceptors?.error,
 			url,
-			_options.interceptors.request,
 			_options,
-		)
-		const {
-			as: parseAs,
-			body,
-			errMsgs,
-			timeout,
-			validateUrl = true,
-		} = _options
-		if (isPositiveNumber(timeout)) {
-			timeoutId = setTimeout(() => abortCtrl.abort(), timeout)
-		}
-		if (_options.abortCtrl) _options.signal = _options.abortCtrl.signal
+		).then(err => Promise.reject(err))
+	}
+	const start = async () => {
 		try {
+			// invoke global and local response interceptors to intercept and/or transform `url` and `options`
+			url = await executeInterceptors(
+				url,
+				abortCtrl.signal,
+				_options.interceptors?.request,
+				_options,
+			)
+			const { body, errMsgs, validateUrl = true } = _options
+			_options.signal ??= abortCtrl.signal
 			if (validateUrl && !isUrlValid(url, false))
-				throw new Error(errMsgs.invalidUrl)
+				return processErr(new Error(errMsgs.invalidUrl))
 
 			const shouldStringifyBody =
 				[
@@ -108,7 +127,8 @@ export const fetch = <
 			// invoke global and local request interceptors to intercept and/or transform `response`
 			response = await executeInterceptors(
 				response,
-				_options.interceptors.response,
+				abortCtrl.signal,
+				_options.interceptors?.response,
 				url,
 				_options,
 			)
@@ -116,94 +136,76 @@ export const fetch = <
 			const { status = 0 } = response
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
-				const fallbackMsg = `${errMsgs.requestFailed} ${status}`
-				const jsonError = (await fallbackIfFails(
+				const jsonError: unknown = await fallbackIfFails(
 					// try to parse error response as json first
 					() => response.json(),
 					[],
 					undefined,
-				)) as Error
-				const message = jsonError?.message || fallbackMsg
-				throw new Error(`${message}`.replace('Error: ', ''), {
-					cause: jsonError,
-				})
+				)
+				throw new Error(
+					(jsonError as Error)?.message
+						|| `${errMsgs.requestFailed} ${status}`,
+					{ cause: jsonError },
+				)
 			}
 
-			let result: unknown = response
 			const parseFunc = response[parseAs as keyof typeof response]
-			if (isFn(parseFunc)) {
-				const handleErr = (err: Error) => {
-					err = new Error(
-						`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
-						{ cause: err },
-					)
-					return Promise.reject(err)
-				}
-
-				result = parseFunc.bind(response)()
-				if (isPromise(result)) result = result.catch(handleErr)
-				// invoke global and local request interceptors to intercept and/or transform parsed `result`
-			}
+			let result: unknown = !isFn(parseFunc)
+				? response
+				: parseFunc.bind(response)()
+			if (isPromise(result))
+				result = await result.catch((err: Error) =>
+					Promise.reject(
+						new Error(
+							`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
+							{ cause: err },
+						),
+					),
+				)
+			// invoke global and local request interceptors to intercept and/or transform parsed `result`
 			result = await executeInterceptors(
 				result,
-				_options.interceptors.result,
+				abortCtrl.signal,
+				_options.interceptors?.result,
 				url,
 				_options,
 			)
-			resolve(result)
-		} catch (err: unknown) {
-			const errX = err as Error
-			const msg =
-				errX?.name === 'AbortError'
-					? errMsgs.reqTimedout
-					: (err as Error)?.message
-			let error = new FetchError(msg, {
-				cause: errX?.cause ?? err,
-				response: errResponse,
-				options: _options,
-				url,
-			})
-			// invoke global and local request interceptors to intercept and/or transform `error`
-			error = await executeInterceptors(
-				error,
-				_options.interceptors.error,
-				url,
-				_options,
-			)
-
-			reject(error)
+			return result as TReturn
+		} catch (_err: unknown) {
+			return processErr(_err as Error)
 		}
-		timeoutId && clearTimeout(timeoutId)
-	})
-
-	// Abort fetch, in case, if fetch promise is finalized early using non-static resolve/reject methods
-	promise.onEarlyFinalize.push(() => abortCtrl.abort())
-	return promise as IPromisE<TReturn>
+	}
+	return PromisE_timeout(
+		{
+			...options,
+			abortCtrl,
+			onAbort: () => processErr(new Error(_options.errMsgs.aborted)),
+			onTimeout: async () =>
+				processErr(new Error(_options.errMsgs.timedout)),
+			signal: _options.signal,
+			timeout,
+		},
+		start,
+	) as IPromisE_Timeout<TReturn>
 }
 /** Default fetch options */
 fetch.defaults = {
 	errMsgs: {
+		aborted: 'Request aborted',
 		invalidUrl: 'Invalid URL',
 		parseFailed: 'Failed to parse response as',
-		reqTimedout: 'Request timed out',
+		timedout: 'Request timed out',
 		requestFailed: 'Request failed with status code:',
 	} as Required<FetchErrMsgs>, // all error messages must be defined here
 	headers: new Headers(),
-	/** Global interceptors for fetch requests */
 	interceptors: {
-		/**
-		 * Global error interceptors to be invoked whenever an exception occurs
-		 * Returning an
-		 */
 		error: [],
-		/** Interceptors to be invoked before making fetch requests */
 		request: [],
 		response: [],
 		result: [],
 	},
-	/** Request timeout duration in milliseconds. Default: `0` */
-	timeout: 0,
+	timeout: 30_000,
 	validateUrl: true,
-} as FetchOptionsDefaults
+} as FetchOptionsDefault
 
 export default fetch

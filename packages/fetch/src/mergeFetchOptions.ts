@@ -48,7 +48,7 @@ export const mergeFetchOptions = (...allOptions: FetchOptions[]) =>
 						...(ints2?.result ?? []),
 					],
 				},
-				timeout: next.timeout ?? merged.timeout ?? 0,
+				timeout: next.timeout ?? merged.timeout,
 			}
 		},
 		{ headers: new Headers() },

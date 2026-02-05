@@ -12,7 +12,7 @@ describe('mergeFetchOptions', () => {
 				response: [],
 				result: [],
 			},
-			timeout: 0,
+			timeout: undefined,
 		})
 	})
 
@@ -49,7 +49,7 @@ describe('mergeFetchOptions', () => {
 				result: [],
 			},
 			method: 'post',
-			timeout: 0,
+			timeout: undefined,
 		})
 	})
 })

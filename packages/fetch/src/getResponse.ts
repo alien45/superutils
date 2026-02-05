@@ -1,5 +1,5 @@
 import { fallbackIfFails, isPositiveInteger } from '@superutils/core'
-import PromisE from '@superutils/promise'
+import { retry } from '@superutils/promise'
 import { FetchArgs } from './types'
 
 /**
@@ -14,12 +14,12 @@ export const getResponse = async (
 	url: FetchArgs[0],
 	options: FetchArgs[1] = {},
 ) => {
-	const fetchFunc = globalThis.fetch
+	const { abortCtrl, fetchFunc = globalThis.fetch } = options
 	if (!isPositiveInteger(options.retry))
 		return fetchFunc(url, options as RequestInit)
 
 	let attemptCount = 0
-	const response = PromisE.retry(
+	const response = retry(
 		() => {
 			attemptCount++
 			return fetchFunc(url, options as RequestInit)
@@ -27,6 +27,7 @@ export const getResponse = async (
 		{
 			...options,
 			retryIf: async (res, count, error) => {
+				if (abortCtrl?.signal.aborted) return false
 				const failed = !!error || !res?.ok
 
 				return !!(

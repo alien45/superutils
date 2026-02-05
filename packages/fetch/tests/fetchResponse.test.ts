@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchResponse } from '../src'
+import fetch, { fetchResponse } from '../src'
 
 describe('fetchResponse', () => {
 	const fetchBaseUrl = 'https://dummyjson.com/products' // dummy URL -> not called
@@ -51,5 +51,14 @@ describe('fetchResponse', () => {
 			name: 'Adam',
 		})
 		expect(fetch200).toHaveBeenCalledOnce()
+	})
+
+	it('should set new default options and sync with fetch.defaults', () => {
+		const defualts = fetchResponse.defaults
+		fetchResponse.defaults = { timeout: 0 } as any
+		expect(fetch.defaults).toEqual({ timeout: 0 })
+
+		fetchResponse.defaults = defualts
+		expect(fetch.defaults).toEqual(defualts)
 	})
 })

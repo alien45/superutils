@@ -32,6 +32,7 @@ describe('createClient', () => {
 				method: 'POST' as any, // this should be ignored
 			},
 		)
+
 		const promise = client<ResultType>(productsBaseUrl + '/1', {
 			method: 'PUT' as any, // this should be ignored
 			headers: {
@@ -45,7 +46,19 @@ describe('createClient', () => {
 		expect(url).toBe(productsBaseUrl + '/1')
 		expect(options.method).toBe('GET')
 
+		// test the deferred variant
 		const deferredClient = client.deferred({})
-		deferredClient().then(console.log, console.error)
+		const promiseDC = deferredClient<ResultType>(productsBaseUrl + '/1', {
+			method: 'PUT' as any, // this should be ignored
+			headers: {
+				'x-custom-header': 'custom-value',
+			},
+		})
+		await vi.runAllTimersAsync()
+		const {
+			args: [url2, options2],
+		} = await promiseDC
+		expect(url2).toBe(productsBaseUrl + '/1')
+		expect(options2.method).toBe('GET')
 	})
 })

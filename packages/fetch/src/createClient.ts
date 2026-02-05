@@ -1,4 +1,4 @@
-import { deferredCallback, IPromisE } from '@superutils/promise'
+import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
 import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
@@ -95,14 +95,14 @@ export const createClient = <
 		url: FetchArgs[0],
 		options?: TOptions,
 	) => {
-		return fetch(
+		return fetch<TReturn>(
 			url,
 			mergePartialOptions(
 				commonOptions,
 				options,
 				fixedOptions,
 			) as TOptions,
-		) as unknown as IPromisE<TReturn>
+		)
 	}
 
 	/** Make requests with debounce/throttle behavior */
@@ -147,14 +147,14 @@ export const createClient = <
 			// ensure AbortController is present in options and propagete external abort signal if provided
 			_abortCtrl = getAbortCtrl(options)
 
-			const promise = fetch(
+			const promise = fetch<TReturn>(
 				(defaultUrl ?? args[0]) as FetchArgs[0],
 				options,
 			)
 			// abort fetch request if promise is finalized manually before completion
 			// by invoking `promise.reject()` or `promise.resolve()
 			promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
-			return promise as IPromisE<TReturn>
+			return promise
 		}
 
 		return deferredCallback(fetchCb, {

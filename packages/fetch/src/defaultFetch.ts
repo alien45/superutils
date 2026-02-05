@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import createClient from './createClient'
 import createPostClient from './createPostClient'
-import fetchOriginal from './fetch'
 import fetchResponse from './fetchResponse'
 import { FetchCustomOptions, FetchInterceptors } from './types'
 
@@ -73,16 +72,29 @@ const methods = {
  * @param url
  * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}
  * @param options.abortCtrl (optional) if not provided `AbortController` will be instantiated when `timeout` used.
- * @param options.as (optional) (optional) specify how to parse the result. Default: {@link FetchAs.json}
- * For raw `Response` use {@link FetchAs.response}
- * @param options.headers (optional) request headers
- * Default: `{ 'content-type': 'application/json' }` (or whaterver is set in the `fetch.defaults`).
- * @param options.interceptors (optional) request interceptor callbacks.  See {@link FetchInterceptors} for details.
- * @param options.method (optional) fetch method. Default: `'get'`
- * @param options.timeout (optional) duration in milliseconds to abort the request if it takes longer.
  *
+ * Default: `new AbortController()`
+ * @param options.as (optional) (optional) specify how to parse the result.
+ * For raw `Response` use {@link FetchAs.response}
+ *
+ * Default: {@link FetchAs.json}
+ * @param options.headers (optional) request headers
+ *
+ * Default: `{ 'content-type': 'application/json' }`
+ * @param options.interceptors (optional) request interceptor/transformer callbacks.
+ * See {@link FetchInterceptors} for details.
+ * @param options.method (optional) fetch method.
+ *
+ * Default: `'get'`
+ * @param options.timeout (optional) duration in milliseconds to abort the request.
+ * This duration includes the execution of all interceptors/transformers.
+ *
+ * Default: `30_000`
+ *
+ * ---
  *
  * @example Drop-in replacement for built-in fetch
+ *
  * ```javascript
  * import fetch from '@superutils/fetch'
  *
@@ -114,42 +126,38 @@ const methods = {
  * ```typescript
  * import fetch from '@superutils/fetch'
  *
- * fetch.defaults = {
- *     errMsgs: {
- *        invalidUrl: 'Invalid URL',
- *        parseFailed: 'Failed to parse response as',
- *        reqTimedout: 'Request timed out',
- *        requestFailed: 'Request failed with status code:',
- *     },
- *     headers: new Headers([['content-type', 'application/json']]),
- * 	   // Global/application-wide Interceptor & Transfermers
- *     interceptors: {
- *     	   error: [],
- *     	   request: [],
- *     	   response: [],
- *     	   result: [],
- *     },
- *     timeout: 0,
- *     //........
- * }
+ * const { defaults, errorMsgs, interceptors } = fetch
+ *
+ * // set default request timeout duration in milliseconds
+ * defaults.timeout = 40_000
+ *
+ * // default headers
+ * defaults.headers = { 'content-type': 'text/plain' }
+ *
+ * // override error messages
+ * errorMsgs.invalidUrl = 'URL is not valid'
+ * errorMsgs.timedout = 'Request took longer than expected'
+ *
+ * // add an interceptor to log all request failures.
+ * const fetchLogger = (fetchErr, url, options) => console.log('Fetch error log', fetchErr)
+ * interceptors.error.push(fetchLogger)
+ *
+ * // add an interceptor to conditionally include header before making requests
+ * interceptors.request.push((url, options) => {
+ * 		// ignore login requests
+ *     if (`${url}`.includes('/login')) return
+ *
+ *     options.headers.set('x-auth-token', 'my-auth-token')
+ * })
  * ```
  */
-const fetchDefault = fetchResponse as typeof fetchResponse & typeof methods
-// Makes sure defaults are synced with `fetch.defaults`
-Object.defineProperty(fetchDefault, 'defaults', {
-	get() {
-		return fetchOriginal.defaults
-	},
-	set(newDefaults: typeof fetchOriginal.defaults) {
-		fetchOriginal.defaults = newDefaults
-	},
-})
-fetchDefault.delete = methods.delete
-fetchDefault.get = methods.get
-fetchDefault.head = methods.head
-fetchDefault.options = methods.options
-fetchDefault.patch = methods.patch
-fetchDefault.post = methods.post
-fetchDefault.put = methods.put
+const defaultFetch = fetchResponse as typeof fetchResponse & typeof methods
+defaultFetch.delete = methods.delete
+defaultFetch.get = methods.get
+defaultFetch.head = methods.head
+defaultFetch.options = methods.options
+defaultFetch.patch = methods.patch
+defaultFetch.post = methods.post
+defaultFetch.put = methods.put
 
-export default fetchDefault
+export default defaultFetch

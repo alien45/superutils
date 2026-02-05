@@ -1,4 +1,4 @@
-import { deferredCallback, IPromisE } from '@superutils/promise'
+import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
 import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
@@ -12,6 +12,7 @@ import {
 	PostDeferredCbArgs,
 	PostOptions,
 } from './types'
+import { IPromisE_Timeout } from '@superutils/promise'
 
 /**
  * Create a reusable fetch client with shared options. The returned function comes attached with a
@@ -92,7 +93,7 @@ export const createPostClient = <
 		url: PostArgs[0],
 		data?: PostArgs[1],
 		options?: TOptions,
-	) => {
+	): IPromisE_Timeout<TReturn> => {
 		const _options = mergePartialOptions(
 			commonOptions,
 			options,
@@ -100,7 +101,7 @@ export const createPostClient = <
 		) as PostOptions
 		_options.body = data
 		_options.method ??= 'post'
-		return fetch(url, _options) as unknown as IPromisE<TReturn>
+		return fetch<TReturn>(url, _options)
 	}
 
 	/**
@@ -136,7 +137,7 @@ export const createPostClient = <
 			TReturn = FetchResult<TResult>[TAs],
 		>(
 			...args: PostDeferredCbArgs<DefaultUrl, DefaultData, TOptions>
-		) => {
+		): IPromisE_Timeout<TReturn> => {
 			// add default url to the beginning of the array
 			if (defaultUrl !== undefined) args.splice(0, 0, defaultUrl)
 			// add default data after the url
@@ -155,11 +156,11 @@ export const createPostClient = <
 			// attach body to options
 			options.body = (args[1] ?? options.body) as PostArgs[1]
 			options.method ??= 'post'
-			const promise = fetch(args[0] as PostArgs[0], options)
+			const promise = fetch<TReturn>(args[0] as PostArgs[0], options)
 			// abort fetch request if promise is finalized manually before completion
 			// by invoking `promise.reject()` or `promise.resolve()
 			promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
-			return promise as IPromisE<TReturn>
+			return promise
 		}
 
 		return deferredCallback(postCb, {
