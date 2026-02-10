@@ -5,5 +5,5 @@
 		"rootDir": "./src"
 	},
 	"extends": "../../tsconfig.base.json",
-	"include": ["src"] //["src/**/*"]
+	"include": ["src"]
 }
