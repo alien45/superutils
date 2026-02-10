@@ -1,4 +1,4 @@
-import { arrUnique, fallbackIfFails } from '@superutils/core'
+import { arrUnique, fallbackIfFails, isObj } from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import type {
 	IPromisE,
@@ -32,14 +32,14 @@ export class TimeoutPromise<T>
 	) {
 		super(data)
 		this.data = data
-		this.options = options
+		this.options = isObj(options) ? options : {}
 		this.timeout = timeout
 		this._signals = _signals
 		this._setup()
 	}
 
 	get abortCtrl() {
-		return this.options?.abortCtrl
+		return this.options.abortCtrl
 	}
 
 	get aborted() {

@@ -12,9 +12,9 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 ## Table of Contents
 
-- Features
-- Installation
-- Usage
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
     - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
     - [`PromisE Features`](#promise-features): status, early finalization etc
     - [`Method Specific Functions`](#methods)

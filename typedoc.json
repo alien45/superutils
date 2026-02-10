@@ -21,8 +21,6 @@
 	"markdownItOptions": {
 		"html": true
 	},
-	// "inlineTags": ["@playground"],
-
 	"out": "docs/packages/",
 	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
 	// "readme": "packages/README.md",

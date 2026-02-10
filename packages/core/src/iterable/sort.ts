@@ -200,11 +200,3 @@ sort.defaults = {
 	undefinedFirst: false,
 } satisfies SortOptions
 export default sort
-
-const map = new Map([
-	[1, 1],
-	[11, 11],
-	[2, 2],
-	[0, 0],
-])
-console.log(sort(map, true, { asString: false }))

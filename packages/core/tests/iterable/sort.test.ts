@@ -97,6 +97,13 @@ describe('sort', () => {
 				['f', null],
 			])
 			const result = sort(mapOfNumbers, {
+				asString: true,
+				newInstance: true,
+				undefinedFirst: true,
+			})
+			const result2 = sort(mapOfNumbers, {
+				asString: false,
+				newInstance: true,
 				undefinedFirst: true,
 			})
 			const expected = new Map([
@@ -108,6 +115,7 @@ describe('sort', () => {
 				['c', 8],
 			])
 			compareMap(result, expected)
+			compareMap(result2, expected)
 		})
 
 		it('should sort by map-key when "byKey" is true', () => {
