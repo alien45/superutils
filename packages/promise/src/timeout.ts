@@ -1,26 +1,22 @@
-import {
-	arrUnique,
-	fallbackIfFails,
-	isFn,
-	isObj,
-	isPositiveNumber,
-	noop,
-	objCopy,
-} from '@superutils/core'
-import delayReject from './delayReject'
-import PromisEBase from './PromisEBase'
 import type {
-	IPromisE,
-	IPromisE_Delay,
 	IPromisE_Timeout,
-	TimeoutFunc,
+	BatchFuncs,
 	TimeoutOptions,
 	TimeoutOptionsDefault,
 	TimeoutResult,
+	IPromisE,
 } from './types'
-
-/** Timeout duration (in milliseconds) used as a fallback when positive number is not provided to {@link timeout} */
-export const FALLBACK_TIMEOUT = 10_000
+import TimeoutPromise, { TIMEOUT_FALLBACK, TIMEOUT_MAX } from './TimeoutPromise'
+import {
+	arrUnique,
+	isFn,
+	isNumber,
+	isObj,
+	isPositiveNumber,
+	objCopy,
+} from '@superutils/core'
+import PromisEBase from './PromisEBase'
+import delayReject from './delayReject'
 
 /**
  * Creates a new promise that wraps one or more promises and rejects if they do not settle within a
@@ -142,149 +138,70 @@ export function timeout<
  */
 export function timeout<
 	T extends unknown[],
-	TFunc extends keyof TimeoutFunc<T> = keyof TimeoutFunc<T>,
+	TFunc extends keyof BatchFuncs<T> = keyof BatchFuncs<T>,
 >(
 	options: TimeoutOptions<T, TFunc>,
 	...values: T
 ): IPromisE_Timeout<TimeoutResult<T, TFunc>>
 export function timeout<
 	T extends unknown[],
-	TFunc extends keyof TimeoutFunc<T> = keyof TimeoutFunc<T>,
+	TFunc extends keyof BatchFuncs<T> = keyof BatchFuncs<T>,
 	Result = TimeoutResult<T, TFunc>,
 >(
-	timeoutOrOptions: number | TimeoutOptions<T, TFunc>,
+	options: number | TimeoutOptions<T, TFunc>,
 	...values: T
 ): IPromisE_Timeout<Result> {
 	// use defualts when option is empty (undefined or '')
-	const options = objCopy(
-		timeout.defaults,
-		isObj(timeoutOrOptions)
-			? timeoutOrOptions
-			: { timeout: timeoutOrOptions },
+	const opts = objCopy(
+		timeout.defaults as Record<string, unknown>,
+		(isNumber(options)
+			? { timeout: options }
+			: isObj(options)
+				? options
+				: {}) as Record<string, unknown>,
 		[],
 		'empty',
-	) as Required<TimeoutOptions>
-	const { func, onTimeout } = options
-	const duration = isPositiveNumber(options.timeout)
-		? options.timeout
-		: FALLBACK_TIMEOUT
+	) as TimeoutOptions
+	opts.timeout = Math.min(
+		isPositiveNumber(opts.timeout) ? opts.timeout : TIMEOUT_FALLBACK,
+		TIMEOUT_MAX,
+	)
 
 	// convert function to promises
-	const arrPromises = values.map(v => (isFn(v) ? PromisEBase.try(v) : v))
-	const dataPromise = (
-		arrPromises.length <= 1
+	const promises = values.map(v =>
+		isFn(v) ? PromisEBase.try(v as () => unknown) : v,
+	)
+	const dataPromise =
+		promises.length <= 1
 			? // single promise resolves to a single result
-				arrPromises[0] instanceof PromisEBase
-				? arrPromises[0]
-				: new PromisEBase<T[0]>(arrPromises[0])
+				promises[0] instanceof PromisEBase
+				? promises[0]
+				: new PromisEBase(promises[0])
 			: // multiple promises resolve to an array of results
-				(isFn(PromisEBase[func]) ? PromisEBase[func] : PromisEBase.all)(
-					arrPromises,
-				)
-	) as PromisEBase<Result> // array of promises resolves to an array of results
-
-	// promise that times out after given duration
-	const timeoutPromise = delayReject<Result>(duration, onTimeout)
-	const promise = PromisEBase.race([
-		dataPromise,
+				(isFn(PromisEBase[opts.batchFunc!])
+					? PromisEBase[opts.batchFunc!]
+					: PromisEBase.all)(promises)
+	const timeoutPromise = delayReject<Result>(opts.timeout, opts.onTimeout)
+	const promise = new TimeoutPromise<Result>(
+		PromisEBase.race([dataPromise, timeoutPromise]) as IPromisE<Result>,
 		timeoutPromise,
-	]) as IPromisE_Timeout<Result>
-
-	addPropsNListeners(promise, dataPromise, timeoutPromise, options)
+		opts as unknown as TimeoutOptions,
+		arrUnique(
+			[opts.abortCtrl?.signal, opts.signal].filter(Boolean),
+		) as AbortSignal[],
+	)
 
 	return promise
 }
-timeout.defaults = {
-	func: 'all',
-	timeout: FALLBACK_TIMEOUT,
-} as TimeoutOptionsDefault
-
 export default timeout
 
-const addPropsNListeners = <T extends unknown[], TFunc extends string, Result>(
-	promise: IPromisE_Timeout<Result>,
-	dataPromise: IPromisE<Result>,
-	timeoutPromise: IPromisE_Delay<Result>,
-	options: Required<TimeoutOptions<T, TFunc>>,
-) => {
-	const { abortCtrl, onAbort, signal } = options
-	const signals = arrUnique([abortCtrl?.signal, signal].filter(Boolean))
-
-	// eslint-disable-next-line @typescript-eslint/no-floating-promises
-	Object.defineProperties(promise, {
-		aborted: {
-			get() {
-				return promise.rejected && !!signals.find(s => s.aborted)
-			},
-		},
-		cancelAbort: {
-			get() {
-				return () => {
-					signals?.forEach(signal =>
-						signal.removeEventListener('abort', handleAbort),
-					)
-				}
-			},
-		},
-		clearTimeout: {
-			get() {
-				return () => clearTimeout(timeoutPromise.timeoutId)
-			},
-		},
-		data: {
-			get() {
-				return dataPromise
-			},
-		},
-		timeout: {
-			get() {
-				return timeoutPromise
-			},
-		},
-		timedout: {
-			get() {
-				return promise.rejected && timeoutPromise.rejected
-			},
-		},
-	})
-
-	const cleanup = () => {
-		// remove all event listeners and timeouts
-		promise.cancelAbort()
-		promise.clearTimeout()
-	}
-
-	// if promise is finalized externally remove all listeners and clear timeout
-	promise.onEarlyFinalize.push(cleanup)
-
-	// cleanup after execution
-	promise
-		.catch(() => {
-			/* avoid unhandled rejections here */
-			if (!timeoutPromise.rejected && !signals.find(x => x.aborted))
-				return
-			// abort if abortCtrl provided
-			abortCtrl?.signal?.aborted === false && abortCtrl.abort()
-		})
-		.finally(cleanup)
-
-	if (!signals.length) return
-
-	const started = new Date()
-	function handleAbort() {
-		if (!promise.pending) return
-
-		fallbackIfFails(async () => await onAbort?.(), [], undefined).then(
-			err => {
-				err ??= new Error(
-					`Aborted after ${new Date().getTime() - started.getTime()}ms`,
-				)
-				err.name ??= 'AbortError'
-				promise.reject(err)
-			},
-			noop,
-		)
-	}
-	// listen to controller/signal events and reject when appropriate
-	signals.forEach(signal => signal.addEventListener('abort', handleAbort))
-}
+timeout.defaults = TimeoutPromise.defaults
+/** Keep defaults in sync */
+Object.defineProperty(timeout, 'defaults', {
+	get() {
+		return TimeoutPromise.defaults
+	},
+	set(newDefaults: TimeoutOptionsDefault) {
+		TimeoutPromise.defaults = newDefaults
+	},
+})

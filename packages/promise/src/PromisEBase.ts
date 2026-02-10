@@ -1,5 +1,5 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
-import { OnEarlyFinalize, PromiseParams, IPromisE } from './types'
+import { PromiseParams, IPromisE, OnEarlyFinalize, OnFinalize } from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
@@ -11,7 +11,8 @@ export class PromisEBase<T = unknown>
 
 	/**
 	 * callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
-	public onEarlyFinalize: OnEarlyFinalize<T>[] = []
+	public onEarlyFinalize = [] as OnEarlyFinalize<T>[]
+	public onFinalize = [] as OnFinalize<T>[]
 
 	/** Create a PromisE instance as a drop-in replacement for Promise */
 	constructor(...args: PromiseParams<T>)
@@ -41,10 +42,16 @@ export class PromisEBase<T = unknown>
 			_reject = reason => {
 				reject(reason)
 				this._state = 2
+				this.onFinalize.forEach(fn =>
+					fallbackIfFails(fn, [undefined, reason], undefined),
+				)
 			}
 			_resolve = value => {
 				resolve(value)
 				this._state = 1
+				this.onFinalize.forEach(fn =>
+					fallbackIfFails(fn, [value, undefined], undefined),
+				)
 			}
 
 			if (isFn(input)) {

@@ -6,6 +6,7 @@ export * from './PromisE'
 export * from './PromisEBase'
 export * from './retry'
 export * from './timeout'
+export * from './TimeoutPromise'
 export * from './types'
 import PromisE from './PromisE'
 
