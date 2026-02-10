@@ -9,6 +9,8 @@ import { isArr, isObj, isSymbol } from '../is'
  * @param ignoreIfNotExist (optional) if truthy, will ignore non-existent `keys`. Default: `true`
  *
  * @example
+ * #### Create a new object from an existing object by only extracting specified keys and relevant values
+ *
  * ```javascript
  * import { objClean } from '@superutils/core'
  *

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect } from 'vitest'
 import { getEntries } from '../../src'
 
+export type MapKey = string
 export type MapEntry = { age: number; name: string }
 
 /** Deep-compare two maps' entries */
@@ -17,13 +18,6 @@ export const prepareMapOfObjects = () => {
 	})
 
 	beforeEach(() => {
-		// prepared.mapOfObjects = new Map([
-		// 	[1, { age: 30, name: 'Alice' }],
-		// 	[2, { age: 25, name: 'Bob' }],
-		// 	[3, { age: 35, name: 'Charlie' }],
-		// 	[4, { age: 28, name: 'Dave' }],
-		// 	[5, { age: 22, name: 'Eve' }],
-		// ])
 		prepared.mapOfObjects = new Map([
 			['alice', { age: 30, name: 'Alice' }],
 			['bob', { age: 25, name: 'Bob' }],

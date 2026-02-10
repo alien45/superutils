@@ -10,7 +10,8 @@ import { isArr, isObj } from '../is'
  *
  * @returns {Object}
  *
- * @example Create a new object excluding specific properties
+ * @example
+ * #### Create a new object excluding specific properties
  *
  * ```javascript
  * import { objWithoutKeys } from '@superutils/core'
@@ -19,7 +20,8 @@ import { isArr, isObj } from '../is'
  * console.log(result) // { a: 1 }
  * ```
  *
- * @example Copy one object's properties to another while ignoring specific properties
+ * @example
+ * #### Copy one object's properties to another while ignoring specific properties
  *
  * ```javascript
  * import { objWithoutKeys } from '@superutils/core'

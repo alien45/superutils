@@ -1,7 +1,28 @@
 import { isObj } from '../is'
 import objKeys from './objKeys'
 
-/** create a new object with properties sorted by key */
+/**
+ * Create a new object with properties sorted by key
+ *
+ * @example
+ * #### Sort an object recursively
+ *
+ * ```javascript
+ * import { objSort } from '@superutils/core'
+ *
+ * const d = Symbol('d')
+ * const obj = { c: 3, a: 1, [d]: 4, b: 2, e: { g: 1, f: 2 } }
+ * console.log(objSort(obj))
+ * // Result:
+ * // {
+ * //     a: 1,
+ * //     b: 2,
+ * //     c: 3,
+ * //     [d]: 4,
+ * //     e: { f: 2, g: 1 },
+ * // }
+ * ```
+ */
 export const objSort = <T>(
 	obj: T,
 	recursive = true,

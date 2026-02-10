@@ -1,6 +1,5 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
-import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
 import {
 	DeferredAsyncOptions,
@@ -145,7 +144,7 @@ export const createClient = <
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
-			_abortCtrl = getAbortCtrl(options)
+			_abortCtrl = new AbortController()
 
 			const promise = fetch<TReturn>(
 				(defaultUrl ?? args[0]) as FetchArgs[0],
@@ -153,7 +152,7 @@ export const createClient = <
 			)
 			// abort fetch request if promise is finalized manually before completion
 			// by invoking `promise.reject()` or `promise.resolve()
-			promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
+			// promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
 			return promise
 		}
 

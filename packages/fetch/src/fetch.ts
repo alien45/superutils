@@ -10,7 +10,6 @@ import {
 	timeout as PromisE_timeout,
 } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
-import { getAbortCtrl } from './getAbortCtrl'
 import getResponse from './getResponse'
 import mergeFetchOptions from './mergeFetchOptions'
 import type {
@@ -207,5 +206,34 @@ fetch.defaults = {
 	timeout: 30_000,
 	validateUrl: true,
 } as FetchOptionsDefault
+
+/**
+ * Add AbortController to options if not present and propagate external abort signal if provided.
+ *
+ * @param options The fetch options object.
+ *
+ * @returns The AbortController instance associated with the options.
+ */
+const getAbortCtrl = (options: Partial<FetchOptions>): AbortController => {
+	options ??= {}
+	if (!(options.abortCtrl instanceof AbortController))
+		options.abortCtrl = new AbortController()
+
+	const { abortCtrl, signal } = options
+
+	if (signal instanceof AbortSignal && !signal.aborted) {
+		// propagate abort signal
+		const handleAbort = () => abortCtrl.abort()
+		signal.addEventListener('abort', handleAbort, { once: true })
+
+		abortCtrl.signal.addEventListener(
+			'abort',
+			() => signal.removeEventListener('abort', handleAbort),
+			{ once: true },
+		)
+	}
+
+	return abortCtrl
+}
 
 export default fetch

@@ -1,6 +1,5 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
-import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
 import {
 	DeferredAsyncOptions,
@@ -151,7 +150,7 @@ export const createPostClient = <
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
-			_abortCtrl = getAbortCtrl(options)
+			_abortCtrl = new AbortController()
 
 			// attach body to options
 			options.body = (args[1] ?? options.body) as PostArgs[1]

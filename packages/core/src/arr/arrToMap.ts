@@ -9,7 +9,8 @@ import { isArr, isDefined, isFn, isNumber, isObj } from '../is'
  *
  * @returns Converted Map
  *
- * @example Convert Array to Map
+ * @example
+ * #### Convert Array to Map
  * ```typescript
  * type Item = { a: number }
  * const arr: Item[] = [{ a: 1 }, { a: 2 }, { a: 3 }, [{ a: 4 }]]
@@ -19,7 +20,8 @@ import { isArr, isDefined, isFn, isNumber, isObj } from '../is'
  * )
  * ```
  *
- * @example Flatten and convert Array to Map
+ * @example
+ * #### Flatten and convert Array to Map
  * ```typescript
  * type Item = { key: number; value: string }
  * const arr: (Item | Item[])[] = [

@@ -20,6 +20,7 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
 	/** Start index. Default: `0` */
 	start?: number
 }
+
 /**
  * Slice an iterable list and map the values into an Array/Map.
  *
@@ -40,9 +41,10 @@ export type SliceMapOptions<Data, Value, Key, AsMap extends boolean = false> = {
  *   - key: index/key of the current item
  *   - data: original list
  *
- * @returns Array/Map
+ * @returns Array/Map depending on `options.asMap`
  *
  * @example
+ * #### Slice a list of items and map values into new array
  * ```javascript
  * import { sliceMap } from '@superutils/core'
  *

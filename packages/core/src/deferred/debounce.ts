@@ -6,14 +6,15 @@ import { DebounceOptions } from './types'
  * Returns a function that invokes the callback function after certain delay/timeout.
  * All errors will be gracefully swallowed.
  *
- * @param	callback 	function to be invoked after timeout
- * @param	delay		(optional) timeout duration in milliseconds. Default: 50
- * @param   config.onError (optional)
- * @param   config.leading (optional) if true, will enable leading-edge debounce mechanism.
- * @param   config.thisArg (optional) the special `thisArgs` to be used when invoking the callback.
- * @param	config.tid	   (optional) Timeout Id. If provided, will clear the timeout on first invocation.
+ * @param callback 	function to be invoked after timeout
+ * @param delay		(optional) timeout duration in milliseconds. Default: 50
+ * @param config.onError (optional)
+ * @param config.leading (optional) if true, will enable leading-edge debounce mechanism.
+ * @param config.thisArg (optional) the special `thisArgs` to be used when invoking the callback.
+ * @param config.tid	   (optional) Timeout Id. If provided, will clear the timeout on first invocation.
  *
- * @example Debounce function calls
+ * @example
+ * #### Debounce function calls
  * ```javascript
  * import { debounce } from '@superutils/core'
  *

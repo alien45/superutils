@@ -1,7 +1,7 @@
 import { objSort } from '@superutils/core'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import fetch, { type FetchArgs } from '../src'
 import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import fetch, { ResolveIgnored, type FetchArgs } from '../src'
 import { productsBaseUrl, getMockedResult } from './utils'
 
 describe('fetch.get.deferred', () => {
@@ -93,5 +93,41 @@ describe('fetch.get.deferred', () => {
 		expect(context.data.results).toEqual([expResult])
 		// set original headers back
 		fetch.defaults.headers = globalHeadersOrg
+	})
+
+	it('should correctly handle debounced subsequent session calls', async () => {
+		const fetchProductsDeferred = fetch.get.deferred(
+			{
+				delayMs: 300,
+				resolveIgnored: ResolveIgnored.WITH_LAST,
+				throttle: false,
+			},
+			'https://dummyjson.com/products?limit=1000',
+		)
+		// session 1
+		const promise1 = fetchProductsDeferred()
+		await vi.runAllTimersAsync()
+		await expect(promise1).resolves.toEqual({
+			success: true,
+			args: [
+				'https://dummyjson.com/products?limit=1000',
+				expect.any(Object),
+			],
+		})
+
+		// end session 1
+		await vi.advanceTimersByTime(1000)
+
+		// session 2
+		const promises = [
+			fetchProductsDeferred(),
+			fetchProductsDeferred(),
+			fetchProductsDeferred(),
+		]
+		await vi.runAllTimersAsync()
+
+		const [result2, result3, result4] = await Promise.all(promises)
+		expect(result2).toEqual(result3)
+		expect(result2).toEqual(result4)
 	})
 })

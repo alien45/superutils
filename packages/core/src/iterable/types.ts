@@ -23,6 +23,9 @@ export type IterableList<K = unknown, V = unknown> = {
 
 /** Configuration for sorting iterables */
 export type SortOptions = {
+	/** Whether to treat the value as string. Default: `true` */
+	asString?: boolean
+	/** case-insensitive sort for strings. Default: `true` */
 	ignoreCase?: boolean
 	/**
 	 * Whether to create a new instance of preserve original reference

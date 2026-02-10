@@ -21,8 +21,8 @@
  * - `null`, `undefined`, `NaN`, `Infinity`
  * - primitive: String, Number, BigInt...
  *
- * @example Examples
- * ```typescript
+ * @example
+ * ```javascript
  * import { isObj } from '@superutils/core'
  *
  * console.log(isObj(null)) // false
@@ -36,7 +36,7 @@
  * console.log(isObj(new Map(), false)) // true (non-strict)
  * console.log(isObj(new Error('error'))) // false (strict)
  * console.log(isObj(new Error('error'), false)) // true (non-strict)
- * class Test { a = 1 }) // a custom class
+ * class Test { a = 1 } // a custom class
  * console.log(isObj(new Test())) // false
  * console.log(isObj(new Test(), false)) // true
  * ```

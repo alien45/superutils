@@ -5,21 +5,18 @@ import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
  * called with one or more or all arguments at a time. Once all arguments have been
  * supplied, the original function is executed.
  *
- * ---
- *
- * PS:
+ * Note:
  * ---
  * To get around Typescript's limitations, all optional parameters to will be
  * turned required and unioned with `undefined`.
- *
- * ---
  *
  * @param func The function to curry.
  * @returns A new, curried function that is fully type-safe.
 
  *
- * @example Convert any function into a curried function
- * ```javascript
+ * @example
+ * #### Convert any function into a curried function
+ * ```typescript
  * import { curry } from '@superutils/core'
  * 
  * const func = (
@@ -45,8 +42,9 @@ import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
  * // Result: 'first-2-false-last'
  * ```
  * 
- * @example Flexible curried function arguments
- * ```javascript
+ * @example
+ * #### Flexible curried function arguments
+ * ```typescript
  * import { curry } from '@superutils/core'
  * 
  * const func = (
@@ -63,15 +61,16 @@ import { CurriedArgs, Curry, IsFiniteTuple, TupleMaxLength } from './types'
  * // All args provided, returns the result
  * const result = fnWith3('last')
  * console.log({ result })
- * // Result: 
+ * // Result: 'first-2-false-last'
  * ```
  * 
- * @example Early invocation using "arity".
+ * @example
+ * #### Early invocation using "arity".
  * Useful when a function has
  *  - non-finite arguments (eg: number[])
  *  - optional arguments and you do not want to avoid one or more optional arguments
  * 
- * ```javascript
+ * ```typescript
  * import { curry } from '@superutils/core'
  * 
  * const func = (

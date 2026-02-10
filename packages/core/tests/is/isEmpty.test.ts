@@ -73,7 +73,7 @@ describe('isEmpty', () => {
 		expect(locals.every(Boolean)).toBe(true)
 
 		/**
-		 * inter-realm value type not recognized
+		 * inter-realm value types not recognized
 		 */
 		const otherRealm = [
 			'new Map()',
@@ -85,8 +85,13 @@ describe('isEmpty', () => {
 				class CustomClass {}
 				return new CustomClass()
 			})()`,
-		].map(x => isEmpty(runInVm(x)))
-		expect(otherRealm.every(x => !x)).toBe(true)
+		]
+		expect(
+			otherRealm.every(x => {
+				const vmValue = runInVm(x)
+				return !isEmpty(vmValue) // not recognized, therefore treated as not-empty
+			}),
+		).toBe(true)
 	})
 })
 

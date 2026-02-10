@@ -16,9 +16,11 @@ import { isNumber } from './isNumber'
  * @param fallback (optional) value to return when type is unrecognized.
  * Default: `false`
  *
- * @example Check strings
- * ```typescript
+ * @example
+ * #### Check strings
+ * ```javascript
  * import { isEmpty } from '@superutils/core'
+ *
  * isEmpty('') // true
  * isEmpty(' ') // true
  * isEmpty(`
@@ -33,18 +35,21 @@ import { isNumber } from './isNumber'
  * `) // false
  * ```
  *
- * @example check numbers
- * ```typescript
+ * @example
+ * #### check numbers
+ * ```javascript
  * import { isEmpty } from '@superutils/core'
+ *
  * isEmpty(NaN) // true
  * isEmpty(Infinity) // true
  * isEmpty(0) // false
  * ```
  *
- *
- * @example check objects (includes arrays, maps & sets)
- * ```typescript
+ * @example
+ * #### check objects (includes arrays, maps & sets)
+ * ```javascript
  * import { isEmpty } from '@superutils/core'
+ *
  * isEmpty({}) // true
  * isEmpty([]) // true
  * isEmpty(new Map()) // true

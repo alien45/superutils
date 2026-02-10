@@ -7,7 +7,8 @@ import { isArr2D, isMap } from '../is'
  *
  * @returns new combined Map
  *
- * @example Join two Maps
+ * @example
+ * #### Join two Maps
  * ```javascript
  * import { mapJoin } from '@superutils/core'
  *
@@ -17,7 +18,8 @@ import { isArr2D, isMap } from '../is'
  * // Result: Map(2) {'a' => 1, 'b' => 2}
  * ```
  *
- * @example Join entries and Maps into a single Map
+ * @example
+ * #### Join entries and Maps into a single Map
  * ```javascript
  * import { mapJoin } from '@superutils/core'
  *

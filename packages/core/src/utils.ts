@@ -105,7 +105,8 @@
 //  *
 //  * @returns	{String}
 //  *
-//  * @example ```JavaScript
+//  * @example
+//  * ```JavaScript
 //  * const isSection = false
 //  * const isIcon = true
 //  * const withBorder = false
@@ -155,7 +156,6 @@
 
 //     return output
 // }
-
 
 // /**
 //  * @name	objToUrlParams

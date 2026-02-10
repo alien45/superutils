@@ -181,7 +181,7 @@ search.defaults = {
 >
 
 /**
- * Utility for use with {@link search} function
+ * Internal utility for use with {@link search} function
  *
  * @returns match index (`-1` means didn't match)
  */
@@ -217,7 +217,7 @@ export function matchObjOrProp<K, V>( // extends Record<string, unknown>
 					? propVal // Allow direct value/reference matching
 					: isObj(propVal, false)
 						? JSON.stringify(
-								isArrLike(propVal)
+								isArrLike<K, V>(propVal)
 									? [...propVal.values()]
 									: Object.values(propVal),
 							)
