@@ -1,7 +1,7 @@
 import {
 	fallbackIfFails,
+	isError,
 	isFn,
-	isPositiveNumber,
 	isPromise,
 	isUrlValid,
 } from '@superutils/core'
@@ -16,6 +16,7 @@ import type {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchCustomOptions,
 	FetchOptions,
+	FetchOptionsInterceptor,
 	FetchResult,
 } from './types'
 import {
@@ -56,58 +57,65 @@ export const fetch = <
 >(
 	url: string | URL,
 	options: FetchOptions & TOptions = {} as TOptions,
-): IPromisE_Timeout<TReturn> => {
-	let errResponse: Response | undefined
-	// invoke global and local request interceptors to intercept and/or transform `url` and `options`
-	const _options = mergeFetchOptions(fetch.defaults, options)
+) => {
+	let response: Response | undefined
+	// merge `defaults` with `options` to make sure default values are used where appropriate
+	const opts = mergeFetchOptions(fetch.defaults, options)
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
-	_options.abortCtrl = getAbortCtrl(_options)
-	_options.as ??= FetchAs.json
-	_options.method ??= 'get'
-	_options.signal ??= _options.abortCtrl.signal
-	_options.timeout = Math.min(
-		isPositiveNumber(_options.timeout)
-			? _options.timeout
-			: fetch.defaults.timeout,
-		MAX_TIMEOUT,
-	)
-	const { abortCtrl, as: parseAs, headers, timeout } = _options
-	let contentType = headers.get('content-type')
-	if (!contentType) {
-		headers.set('content-type', ContentType.APPLICATION_JSON)
-		contentType = ContentType.APPLICATION_JSON
-	}
+	opts.abortCtrl =
+		opts.abortCtrl instanceof AbortController
+			? opts.abortCtrl
+			: new AbortController()
+	opts.as ??= FetchAs.json
+	opts.method ??= 'get'
+	opts.signal ??= opts.abortCtrl.signal
+	const { abortCtrl, as: parseAs, headers, onAbort, onTimeout } = opts
+	opts.onAbort = async () => {
+		const err: Error =
+			(await fallbackIfFails(onAbort, [], undefined))
+			?? opts.abortCtrl?.signal?.reason
+			?? opts.signal?.reason
+			?? opts.errMsgs.aborted
 
-	const processErr = (err: Error) => {
-		let msg = err?.message ?? err
-		if (err?.name === 'AbortError') msg = _options.errMsgs?.aborted ?? msg
-		// invoke global and local request interceptors to intercept and/or transform `error`
-		return executeInterceptors(
-			new FetchError(msg, {
-				cause: err?.cause ?? err,
-				response: errResponse,
-				options: _options,
-				url,
-			}),
-			undefined, // should execute regardless of abort status
-			_options.interceptors?.error,
+		if (isError(err) && err.name === 'AbortError') {
+			err.message = ['This operation was aborted'].includes(err.message)
+				? opts.errMsgs.aborted
+				: err.message
+		}
+		return await interceptErr(
+			isError(err) ? err : new Error(err),
 			url,
-			_options,
-		).then(err => Promise.reject(err))
+			opts,
+			response,
+		)
 	}
-	const start = async () => {
+	opts.onTimeout = async () => {
+		const err = await fallbackIfFails(onTimeout, [], undefined)
+		return await interceptErr(
+			err ?? new Error(opts.errMsgs.timedout),
+			url,
+			opts,
+			response,
+		)
+	}
+	return PromisE_timeout(opts, async () => {
 		try {
+			let contentType = headers.get('content-type')
+			if (!contentType) {
+				headers.set('content-type', ContentType.APPLICATION_JSON)
+				contentType = ContentType.APPLICATION_JSON
+			}
 			// invoke global and local response interceptors to intercept and/or transform `url` and `options`
 			url = await executeInterceptors(
 				url,
 				abortCtrl.signal,
-				_options.interceptors?.request,
-				_options,
+				opts.interceptors?.request,
+				opts,
 			)
-			const { body, errMsgs, validateUrl = true } = _options
-			_options.signal ??= abortCtrl.signal
+			const { body, errMsgs, validateUrl = true } = opts
+			opts.signal ??= abortCtrl.signal
 			if (validateUrl && !isUrlValid(url, false))
-				return processErr(new Error(errMsgs.invalidUrl))
+				throw new Error(errMsgs.invalidUrl)
 
 			const shouldStringifyBody =
 				[
@@ -117,27 +125,26 @@ export const fetch = <
 				&& !['undefined', 'string'].includes(typeof body)
 			// stringify data/body
 			if (shouldStringifyBody)
-				_options.body = JSON.stringify(
+				opts.body = JSON.stringify(
 					isFn(body) ? fallbackIfFails(body, [], undefined) : body,
 				)
 
 			// make the fetch call
-			let response = await getResponse(url, _options)
+			response = await getResponse(url, opts)
 			// invoke global and local request interceptors to intercept and/or transform `response`
 			response = await executeInterceptors(
 				response,
 				abortCtrl.signal,
-				_options.interceptors?.response,
+				opts.interceptors?.response,
 				url,
-				_options,
+				opts,
 			)
-			errResponse = response
 			const { status = 0 } = response
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
 				const jsonError: unknown = await fallbackIfFails(
 					// try to parse error response as json first
-					() => response.json(),
+					() => response!.json(),
 					[],
 					undefined,
 				)
@@ -165,30 +172,25 @@ export const fetch = <
 			result = await executeInterceptors(
 				result,
 				abortCtrl.signal,
-				_options.interceptors?.result,
+				opts.interceptors?.result,
 				url,
-				_options,
+				opts,
 			)
 			return result as TReturn
 		} catch (_err: unknown) {
-			return processErr(_err as Error)
+			let err = _err as Error
+
+			err = await interceptErr(_err as Error, url, opts, response)
+			return Promise.reject(err as FetchError)
 		}
+	}) as Omit<IPromisE_Timeout<TReturn>, 'abortCtrl'> & {
+		/** An `AbortController` instance to control the request.  */
+		abortCtrl: AbortController
 	}
-	return PromisE_timeout(
-		{
-			...options,
-			abortCtrl,
-			onAbort: () => processErr(new Error(_options.errMsgs.aborted)),
-			onTimeout: async () =>
-				processErr(new Error(_options.errMsgs.timedout)),
-			signal: _options.signal,
-			timeout,
-		},
-		start,
-	) as IPromisE_Timeout<TReturn>
 }
 /** Default fetch options */
 fetch.defaults = {
+	abortOnEarlyFinalize: true,
 	errMsgs: {
 		aborted: 'Request aborted',
 		invalidUrl: 'Invalid URL',
@@ -207,33 +209,26 @@ fetch.defaults = {
 	validateUrl: true,
 } as FetchOptionsDefault
 
-/**
- * Add AbortController to options if not present and propagate external abort signal if provided.
- *
- * @param options The fetch options object.
- *
- * @returns The AbortController instance associated with the options.
- */
-const getAbortCtrl = (options: Partial<FetchOptions>): AbortController => {
-	options ??= {}
-	if (!(options.abortCtrl instanceof AbortController))
-		options.abortCtrl = new AbortController()
-
-	const { abortCtrl, signal } = options
-
-	if (signal instanceof AbortSignal && !signal.aborted) {
-		// propagate abort signal
-		const handleAbort = () => abortCtrl.abort()
-		signal.addEventListener('abort', handleAbort, { once: true })
-
-		abortCtrl.signal.addEventListener(
-			'abort',
-			() => signal.removeEventListener('abort', handleAbort),
-			{ once: true },
-		)
-	}
-
-	return abortCtrl
+const interceptErr = async (
+	err: Error,
+	url: string | URL,
+	options: FetchOptionsInterceptor,
+	response?: Response,
+) => {
+	// invoke global and local request interceptors to intercept and/or transform `error`
+	const fErr = await executeInterceptors(
+		new FetchError(err?.message ?? err, {
+			cause: err?.cause ?? err,
+			response: response,
+			options: options,
+			url,
+		}),
+		undefined, // should execute regardless of abort status
+		options.interceptors?.error,
+		url,
+		options,
+	)
+	return fErr
 }
 
 export default fetch

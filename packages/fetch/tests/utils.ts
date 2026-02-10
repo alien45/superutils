@@ -33,7 +33,10 @@ export const getMockedResult = (
 			mergeFetchOptions(fetch.defaults, {
 				abortCtrl: expect.any(AbortController),
 				as: FetchAs.json,
+				batchFunc: 'all' as any,
 				method,
+				onAbort: expect.any(Function),
+				onTimeout: expect.any(Function),
 				signal: expect.any(AbortSignal),
 				...options,
 				headers: (() => {

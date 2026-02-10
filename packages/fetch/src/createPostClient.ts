@@ -11,7 +11,6 @@ import {
 	PostDeferredCbArgs,
 	PostOptions,
 } from './types'
-import { IPromisE_Timeout } from '@superutils/promise'
 
 /**
  * Create a reusable fetch client with shared options. The returned function comes attached with a
@@ -66,12 +65,13 @@ export const createPostClient = <
 		FixedOpts,
 		undefined
 	>,
+	CommonDelay extends number = number,
 >(
 	/** Mandatory fetch options that cannot be overriden by individual request */
 	fixedOptions?: FixedOpts,
 	/** Common fetch options that can be overriden by individual request */
 	commonOptions?: PostOptions & CommonOpts,
-	commonDeferOptions?: DeferredAsyncOptions<unknown, unknown>,
+	commonDeferOptions?: DeferredAsyncOptions<unknown, CommonDelay>,
 ) => {
 	/**
 	 * Executes the HTTP request using the configured client options.
@@ -92,7 +92,7 @@ export const createPostClient = <
 		url: PostArgs[0],
 		data?: PostArgs[1],
 		options?: TOptions,
-	): IPromisE_Timeout<TReturn> => {
+	) => {
 		const _options = mergePartialOptions(
 			commonOptions,
 			options,
@@ -111,16 +111,14 @@ export const createPostClient = <
 	 */
 	client.deferred = <
 		ThisArg,
-		Delay extends number,
-		DefaultUrl extends PostArgs[0] | undefined,
-		DefaultData extends PostArgs[1] = undefined,
+		Delay extends CommonDelay | number,
 		DefaultOptions extends ExcludePostOptions<FixedOpts> | undefined =
-			undefined,
+			| ExcludePostOptions<FixedOpts>
+			| undefined,
+		DefaultUrl extends PostArgs[0] | undefined = PostArgs[0] | undefined,
+		DefaultData extends PostArgs[1] = PostArgs[1],
 	>(
-		deferOptions: DeferredAsyncOptions<
-			ThisArg,
-			Delay
-		> = {} as DeferredAsyncOptions<ThisArg, Delay>,
+		deferOptions = {} as DeferredAsyncOptions<ThisArg, Delay>,
 		defaultUrl?: DefaultUrl,
 		defaultData?: DefaultData,
 		defaultOptions?: DefaultOptions,
@@ -129,24 +127,25 @@ export const createPostClient = <
 		const postCb = <
 			TResult = unknown,
 			TOptions extends ExcludePostOptions<FixedOpts> | undefined =
-				ExcludePostOptions<FixedOpts>, // | undefined,
+				| ExcludePostOptions<FixedOpts>
+				| undefined,
 			TAs extends FetchAs = FixedAs extends FetchAs
 				? FixedAs
 				: FetchAsFromOptions<TOptions, FetchAsFromOptions<CommonOpts>>,
 			TReturn = FetchResult<TResult>[TAs],
 		>(
 			...args: PostDeferredCbArgs<DefaultUrl, DefaultData, TOptions>
-		): IPromisE_Timeout<TReturn> => {
+		) => {
 			// add default url to the beginning of the array
 			if (defaultUrl !== undefined) args.splice(0, 0, defaultUrl)
 			// add default data after the url
 			if (defaultData !== undefined) args.splice(1, 0, defaultData)
-			const options = mergePartialOptions(
+			const options = (mergePartialOptions(
 				commonOptions,
 				defaultOptions,
 				args[2] as TOptions,
 				fixedOptions,
-			) as PostOptions
+			) ?? {}) as PostOptions
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
@@ -156,9 +155,6 @@ export const createPostClient = <
 			options.body = (args[1] ?? options.body) as PostArgs[1]
 			options.method ??= 'post'
 			const promise = fetch<TReturn>(args[0] as PostArgs[0], options)
-			// abort fetch request if promise is finalized manually before completion
-			// by invoking `promise.reject()` or `promise.resolve()
-			promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
 			return promise
 		}
 

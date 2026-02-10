@@ -1,4 +1,8 @@
-import type { RetryIfFunc, RetryOptions } from '@superutils/promise'
+import type {
+	RetryIfFunc,
+	RetryOptions,
+	TimeoutOptions,
+} from '@superutils/promise'
 import { FetchAs } from './constants'
 import type { FetchInterceptors } from './interceptors'
 
@@ -13,7 +17,7 @@ export type ExcludeOptions<
 	Target, // options to exclude
 	Options extends FetchOptions = FetchOptions,
 > = Target extends FetchOptions
-	? { headers?: Options['headers'] } & Omit<Options, 'headers' | keyof Target>
+	? { headers?: Options['headers'] } & Omit<Options, 'headers' | keyof Target> //always allow headers // exclude props
 			& Partial<Record<Exclude<keyof Target, 'headers'>, never>> // explicitly prevents excluded properties
 	: Options
 
@@ -66,18 +70,19 @@ export type FetchCustomOptions = {
 	 *
 	 * Default: `globalThis.fetch`
 	 */
-	fetchFunc?: (...args: FetchArgs) => Promise<Response>
+	fetchFunc?: FetchFunc
 	errMsgs?: FetchErrMsgs
 	/**
 	 * Interceptor/transformer callback executed at different stages of the request.
 	 * See {@link FetchInterceptors} for more details.
 	 */
 	interceptors?: FetchInterceptors
-	/** Request timeout in milliseconds */
-	timeout?: number
+	// /** Request timeout in milliseconds */
+	// timeout?: number
 	/** Whether to validate URL before making the request. Default: `true` */
 	validateUrl?: boolean
 } & FetchRetryOptions
+	& TimeoutOptions<[]>
 
 /** Default args */
 export type FetchDeferredArgs<OmitMethod extends boolean = false> = [
@@ -100,6 +105,8 @@ export type FetchErrMsgs = {
 	/** Error message to be used when request fails */
 	requestFailed?: string
 }
+
+export type FetchFunc = (...args: FetchArgs) => Promise<Response>
 
 /**
  * Fetch request options
