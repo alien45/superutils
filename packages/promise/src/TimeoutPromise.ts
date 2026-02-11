@@ -105,17 +105,14 @@ export class TimeoutPromise<T>
 	}
 	// cleanup after execution
 	private _handleFinalize = ((_?: T, err?: Error) => {
-		const failed =
-			!this.timeout.rejected && !this._signals?.find(x => x?.aborted)
-		if (failed) return
-
-		// abort if abortCtrl provided
-		this.options?.abortCtrl?.signal?.aborted === false
-			&& this.options?.abortCtrl.abort(err)
-
 		// remove all event listeners and timeouts
 		this.cancelAbort()
 		this.clearTimeout()
+		if (!this.timeout.rejected && !this._signals?.find(x => x?.aborted))
+			return
+		// abort if abortCtrl provided
+		this.options?.abortCtrl?.signal?.aborted === false
+			&& this.options?.abortCtrl.abort(err)
 	}) as OnFinalize<T>
 
 	static defaults = {

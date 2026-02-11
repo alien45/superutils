@@ -47,8 +47,9 @@ describe('PromisE.timeout', () => {
 
 		it('should create a promise that resolves after the specified timeout', async () => {
 			const p = PromisE.timeout(500, PromisE.delay(300, 'value'))
-			await vi.runAllTimersAsync()
+			await vi.advanceTimersByTimeAsync(300)
 			await expect(p).resolves.toBe('value')
+			await vi.runAllTimersAsync()
 		})
 
 		it('should create a promise that rejects after the specified timeout', async () => {
