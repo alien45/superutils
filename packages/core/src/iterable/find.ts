@@ -4,12 +4,12 @@ import search from './search'
 import { IterableList, type FindOptions } from './types'
 
 /**
- * Finds a first item matching criteria in an {@link IterableList}.
+ * Finds a first item using predicate in an iterable list (Array, Map or Set).
  *
  * @returns first item matched or `undefined` if not found
  *
- * @example Example 1:
- * Find item using predicate callback
+ * @example
+ * #### Find item using predicate callback
  *
  * ```typescript
  * import { find } from '@superutils/core'
@@ -23,9 +23,24 @@ import { IterableList, type FindOptions } from './types'
  * console.log({ result })
  * // result: { name: 'Bob', age: 25 }
  * ```
+ */
+export function find<
+	K,
+	V extends Record<string, unknown>,
+	IncludeKey extends boolean = false,
+	Return = undefined | (IncludeKey extends true ? [K, V] : V),
+>(
+	data: IterableList<K, V>,
+	predicate: Parameters<typeof filter<K, V>>[1],
+): Return
+/**
+ * Find the first item in an iterable list (Array, Map or Set) using `search()` function
  *
- * @example Example 2:
- * Find item using search options
+ * @param data items to search
+ * @param options filter options. See {@link FindOptions}
+ *
+ * @example
+ * #### Find item using search options
  *
  * ```typescript
  * import { find } from '@superutils/core'
@@ -42,15 +57,6 @@ import { IterableList, type FindOptions } from './types'
  * // result: { name: 'Bob', age: 25 }
  * ```
  */
-export function find<
-	K,
-	V extends Record<string, unknown>,
-	IncludeKey extends boolean = false,
-	Return = undefined | (IncludeKey extends true ? [K, V] : V),
->(
-	data: IterableList<K, V>,
-	callback: Parameters<typeof filter<K, V>>[1],
-): Return
 export function find<
 	K,
 	V extends Record<string, unknown>,

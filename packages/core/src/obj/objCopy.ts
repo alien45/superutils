@@ -37,6 +37,9 @@ const clone = <T>(value: T, fallback = 'null') =>
  *
  * @returns copied and/or merged object
  *
+ * @example
+ * #### Copy or merge objects
+ *
  * ```javascript
  * import { objCopy } from '@superutils/core'
  *

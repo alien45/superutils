@@ -1,4 +1,3 @@
-import { IPromisE_Timeout } from '@superutils/promise'
 import fetch from './fetch'
 import {
 	FetchArgs,
@@ -33,7 +32,7 @@ export const fetchResponse = <
 >(
 	url: FetchArgs[0],
 	options?: Parameters<typeof fetch<T, TOptions, TAs, TReturn>>[1],
-): IPromisE_Timeout<TReturn> => {
+) => {
 	options ??= {} as TOptions
 	options.as ??= FetchAs.response
 	return fetch<TReturn>(url, options)

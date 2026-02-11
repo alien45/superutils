@@ -10,9 +10,10 @@ export const isFn = <T extends (...args: any[]) => any>(x: unknown): x is T =>
  * Check if value is an Async function.
  * Caution: May not work at runtime when Babel/Webpack is used due to code compilation.
  *
- * ---
- * @example usage
- * ```typescript
+ * @example
+ * ```javascript
+ * import { isAsyncFn } from '@superutils/core'
+ *
  * isAsyncFn(async () => {}) // result: true
  * isAsyncFn(() => {}) // result: false
  * ```

@@ -3,22 +3,24 @@ import { isDateValid } from './is'
 /**
  * Convert timestamp to `input["datetime-local"]` compatible format.
  *
- * ---
- * @example Convert ISO datetime string
- * ```typescript
+ * @example
+ * #### Convert ISO datetime string
+ * ```javascript
  * toDatetimeLocal('2000-01-01T01:01:01.001Z')
  * // result: "2000-01-01T01:01" // assuming local timezone is UTC+0
  * ```
  *
- * @example Convert Date object
- * ```typescript
+ * @example
+ * #### Convert Date object
+ * ```javascript
  * const date = new Date('2000-01-01T01:01:01.001Z')
  * toDatetimeLocal(date)
  * // result: "2000-01-01T01:01" // assuming local timezone is UTC+0
  * ```
  *
- * @example Convert Unix Timestamp (epoch time) number
- * ```typescript
+ * @example
+ * #### Convert Unix Timestamp (epoch time) number
+ * ```javascript
  * const epoch = new Date('2000-01-01T01:01:01.001Z').getTime()
  * toDatetimeLocal(epoch)
  * // result: "2000-01-01T01:01" // assuming local timezone is UTC+0

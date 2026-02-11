@@ -23,7 +23,7 @@ export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
 }
 
 /** Options for `PromisE.deferred` and other related functions */
-export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
+export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	/**
 	 * Delay in milliseconds, used for `debounce` and `throttle` modes. Use `0` for sequential execution.
 	 *
@@ -31,7 +31,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
 	 *
 	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delayMs`)
 	 */
-	delayMs?: number | PositiveNumber<Delay>
+	delayMs?: 0 | PositiveNumber<Delay>
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
@@ -72,20 +72,15 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
 	 * See {@link ResolveError} for available options.
 	 */
 	resolveError?: ResolveError
-} & (
-	| ({
-			delayMs?: PositiveNumber<Delay> // Debounce/Throttle mode
-	  } & DeferredOptions<ThisArg>)
-	| ({
-			delayMs: 0 // Seqential execution
-	  } & {
+} & (Delay extends 0
+	? {
 			throttle?: false
 			/** Callback invoked whenever promise/function throws error */
 			onError?: (this: ThisArg, err: unknown) => ValueOrPromise<unknown>
 			/** The value to be used as "thisArg" whenever any of the callbacks are invoked */
 			thisArg?: ThisArg
-	  })
-)
+		}
+	: DeferredOptions<ThisArg>)
 
 /** Determines what to do when deferred promise/function fails */
 export enum ResolveError {

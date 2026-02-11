@@ -9,10 +9,9 @@ import fetch, {
 	FetchInterceptorResult,
 	FetchInterceptors,
 	FetchOptions,
-	mergeFetchOptions,
 } from '../src'
 import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
-import { noop } from '@superutils/core'
+import { fallbackIfFails, noop } from '@superutils/core'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
@@ -160,12 +159,9 @@ describe('fetch', () => {
 				},
 				method: 'post',
 			} as FetchOptions
-			const expectedOptions = mergeFetchOptions(
-				fetch.defaults,
-				localOptions,
-			)
-			expectedOptions.abortCtrl = expect.any(AbortController)
-			expectedOptions.signal = expect.any(AbortSignal)
+			const {
+				args: [_, expectedOptions],
+			} = getMockedResult('get', 1, localOptions)
 			await fetch(product1Url, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
@@ -399,7 +395,7 @@ describe('fetch', () => {
 		})
 	})
 
-	describe('timeout', () => {
+	describe('timeout & abort', () => {
 		it('should reject after timeout', async () => {
 			mockedFetch = vi.fn(async (url, { timeout }) => {
 				const abortError = new Error('The user aborted a request.')
@@ -408,9 +404,9 @@ describe('fetch', () => {
 			})
 			vi.stubGlobal('fetch', mockedFetch)
 			const promise = fetch.get(product1Url, {
-				debugTag: 'timeout_null',
 				timeout: -1, // test invalid value => falls back to default
 			})
+			promise.catch(noop) // avoid unhandled rejection
 			await vi.advanceTimersByTimeAsync(fetch.defaults.timeout)
 			expect(mockedFetch).toHaveBeenCalled()
 			await expect(promise).rejects.toEqual(expect.any(FetchError))
@@ -426,6 +422,32 @@ describe('fetch', () => {
 			promise.resolve('resolved early')
 			await expect(promise).resolves.toBe('resolved early')
 			expect(promise.onEarlyFinalize[cbIndex]).toHaveBeenCalled()
+			expect(mockedFetch).toHaveBeenCalledTimes(1)
+			// request did not reject beause of abort
+			expect(promise.aborted).toBe(false)
+			// abortCtrl aborted because of early finalization
+			expect(promise.abortCtrl?.signal.aborted).toBe(true)
+		})
+
+		it('should abort the fetch request externally', async () => {
+			const mockedFetch = vi.fn(() => PromisE.delay(10_000, okResponse))
+			vi.stubGlobal('fetch', mockedFetch)
+			const promise = fetch.get(product1Url, {
+				timeout: 5000,
+			})
+			promise.catch(() => {}) // avoid unhandled rejection
+			promise.abortCtrl.abort()
+			await vi.advanceTimersByTimeAsync(100)
+			await expect(promise).rejects.toEqual(expect.any(Error))
+			const err: FetchError = await fallbackIfFails(
+				promise,
+				[],
+				(err: Error) => err,
+			)
+			expect(err).instanceOf(Error) // should be FetchError
+			expect(mockedFetch).toHaveBeenCalledTimes(1)
+			expect(promise.aborted).toBe(true)
+			expect(promise.abortCtrl?.signal.aborted).toBe(true)
 		})
 	})
 })

@@ -1,15 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sort } from '../../src'
-import { type MapEntry, compareMap, prepareMapOfObjects } from './prepareMap'
+import {
+	type MapEntry,
+	type MapKey,
+	compareMap,
+	prepareMapOfObjects,
+} from './prepareMap'
 
 describe('sort', () => {
 	const prepared = prepareMapOfObjects()
-	let mapOfObjectsSortedByAge: Map<number, MapEntry>
+	let mapOfObjectsSortedByAge: Map<MapKey, MapEntry>
 	afterEach(() => {
 		mapOfObjectsSortedByAge.clear()
 	})
 	beforeEach(() => {
-		mapOfObjectsSortedByAge = new Map<number, MapEntry>(
+		mapOfObjectsSortedByAge = new Map<MapKey, MapEntry>(
 			[...prepared.mapOfObjects.entries()].sort(
 				(a, b) => a[1].age - b[1].age,
 			),
@@ -75,6 +80,13 @@ describe('sort', () => {
 			expect(result === mapOfNumbers).toBe(true)
 		})
 
+		it('should sort map of objects by number value (asString = false)', () => {
+			const result = sort(prepared.mapOfObjects, 'age', {
+				asString: false,
+			})
+			compareMap(result, mapOfObjectsSortedByAge)
+		})
+
 		it('should place null/undefined values at the begining', () => {
 			const mapOfNumbers = new Map([
 				['a', 5],
@@ -85,6 +97,13 @@ describe('sort', () => {
 				['f', null],
 			])
 			const result = sort(mapOfNumbers, {
+				asString: true,
+				newInstance: true,
+				undefinedFirst: true,
+			})
+			const result2 = sort(mapOfNumbers, {
+				asString: false,
+				newInstance: true,
 				undefinedFirst: true,
 			})
 			const expected = new Map([
@@ -96,19 +115,22 @@ describe('sort', () => {
 				['c', 8],
 			])
 			compareMap(result, expected)
+			compareMap(result2, expected)
 		})
 
 		it('should sort by map-key when "byKey" is true', () => {
 			const sorted = sort(prepared.mapOfObjects, true)
 			const expected = new Map(
-				[...prepared.mapOfObjects].sort((a, b) => a[0] - b[0]),
+				[...prepared.mapOfObjects].sort((a, b) =>
+					a[0] > b[0] ? 1 : -1,
+				),
 			)
 			compareMap(sorted, expected)
 		})
 
 		it('should sort map by value using comparator function', () => {
 			const comparatorFn = vi.fn(
-				(a: [number, MapEntry], b: [number, MapEntry]) =>
+				(a: [MapKey, MapEntry], b: [MapKey, MapEntry]) =>
 					a[1].age - b[1].age,
 			)
 			const result = sort(prepared.mapOfObjects, comparatorFn)

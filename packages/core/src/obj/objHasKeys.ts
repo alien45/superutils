@@ -8,6 +8,7 @@ import { isArr, isEmpty, isObj } from '../is'
  * @param requireValue (optional) whether each property should have some value.
  *
  * @example
+ * #### Check if object contains specified properties
  * ```javascript
  * import { objHasKeys } from '@superutils/core'
  *
@@ -23,7 +24,6 @@ import { isArr, isEmpty, isObj } from '../is'
  * 	)
  * )
  * // false
- *
  * ```
  */
 export function objHasKeys(

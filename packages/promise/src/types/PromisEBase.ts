@@ -7,6 +7,8 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	/** callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve/reject methods */
 	onEarlyFinalize: OnEarlyFinalize<T>[]
 
+	onFinalize: OnFinalize<T>[]
+
 	/** Indicates if the promise is still pending/unfinalized */
 	readonly pending: boolean
 
@@ -30,6 +32,11 @@ export type OnEarlyFinalize<T> = <
 	resolved: TResolved,
 	resultOrReason: TValue,
 ) => ValueOrPromise<unknown>
+
+export type OnFinalize<T> = (
+	result?: T | PromiseLike<T>,
+	error?: unknown,
+) => ValueOrPromise<void>
 
 export type PromiseParams<T = unknown> = ConstructorParameters<
 	typeof Promise<T>

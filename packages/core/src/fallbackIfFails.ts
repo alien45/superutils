@@ -19,8 +19,8 @@ import { IfPromiseAddValue } from './types'
  * @returns A `Promise` is returned if the `target` is a `Promise` or returns one.
  * Otherwise, the direct value is returned.
  *
- * @example Example 1:
- * Async functions: working with async functions or functions that returns a promise
+ * @example
+ * #### Async functions: working with async functions or functions that returns a promise
  *
  * ```typescript
  * import { fallbackIfFails } from '@superutils/core'
@@ -39,8 +39,8 @@ import { IfPromiseAddValue } from './types'
  * console.log({ value }) // 'some value'
  * ```
  *
- * @example Example 2:
- * Non-async functions: working synchronous function that returns value synchronously
+ * @example
+ * #### Non-async functions: working synchronous function that returns value synchronously
  *
  * ```typescript
  * import { fallbackIfFails } from '@superutils/core'
@@ -59,8 +59,8 @@ import { IfPromiseAddValue } from './types'
  * console.log({ value }) // 'some value'
  * ```
  *
- * @example Example 3:
- * Hybrid functions: working with function that returns value sync/async circumstantially
+ * @example
+ * #### Hybrid functions: working with function that returns value sync/async circumstantially
  *
  * ```typescript
  * import { fallbackIfFails } from '@superutils/core'
@@ -83,8 +83,8 @@ import { IfPromiseAddValue } from './types'
  * console.log({ second }) // { fallback: true }
  * ```
  *
- * @example Example 4:
- * Fallback-chaining: gracefully handle the fallback function
+ * @example
+ * #### Fallback-chaining: gracefully handle the fallback function
  *
  * ```javascript
  * import { fallbackIfFails } from '@superutils/core'

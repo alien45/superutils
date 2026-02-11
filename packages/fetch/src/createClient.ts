@@ -1,6 +1,5 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
-import { getAbortCtrl } from './getAbortCtrl'
 import { mergePartialOptions } from './mergeFetchOptions'
 import {
 	DeferredAsyncOptions,
@@ -75,15 +74,16 @@ export const createClient = <
 		FixedOpts,
 		undefined
 	>,
+	CommonDelay extends number = number,
 >(
 	/** Mandatory fetch options that cannot be overriden by individual request */
 	fixedOptions?: FixedOpts,
 	/** Common fetch options that can be overriden by individual request */
 	commonOptions?: FetchOptions & CommonOpts,
-	commonDeferOptions?: DeferredAsyncOptions<unknown, unknown>,
+	commonDeferOptions?: DeferredAsyncOptions<unknown, CommonDelay>,
 ) => {
 	const func = <
-		T,
+		T = unknown,
 		TOptions extends ExcludeOptions<FixedOpts> | undefined =
 			| ExcludeOptions<FixedOpts>
 			| undefined,
@@ -107,17 +107,14 @@ export const createClient = <
 
 	/** Make requests with debounce/throttle behavior */
 	func.deferred = <
-		ThisArg = unknown,
-		Delay extends number = number,
+		ThisArg,
+		Delay extends CommonDelay | number,
 		DefaultUrl extends FetchArgs[0] | undefined = FetchArgs[0] | undefined,
 		DefaultOptions extends ExcludeOptions<FixedOpts> | undefined =
 			| ExcludeOptions<FixedOpts>
 			| undefined,
 	>(
-		deferOptions: DeferredAsyncOptions<
-			ThisArg,
-			Delay
-		> = {} as DeferredAsyncOptions<ThisArg, Delay>,
+		deferOptions = {} as DeferredAsyncOptions<ThisArg, Delay>,
 		defaultUrl?: DefaultUrl,
 		defaultOptions?: DefaultOptions,
 	) => {
@@ -136,31 +133,28 @@ export const createClient = <
 				? [url: FetchArgs[0], options?: TOptions]
 				: [options?: TOptions]
 		) => {
-			const options = mergePartialOptions(
+			const options = (mergePartialOptions(
 				commonOptions,
 				defaultOptions,
 				(defaultUrl === undefined ? args[1] : args[0]) as TOptions,
 				fixedOptions,
-			) as FetchOptions
+			) ?? {}) as FetchOptions
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
-			_abortCtrl = getAbortCtrl(options)
+			_abortCtrl = new AbortController()
 
 			const promise = fetch<TReturn>(
 				(defaultUrl ?? args[0]) as FetchArgs[0],
 				options,
 			)
-			// abort fetch request if promise is finalized manually before completion
-			// by invoking `promise.reject()` or `promise.resolve()
-			promise.onEarlyFinalize.push(() => _abortCtrl?.abort())
 			return promise
 		}
 
 		return deferredCallback(fetchCb, {
 			...commonDeferOptions,
 			...deferOptions,
-		} as typeof deferOptions) as typeof fetchCb
+		} as DeferredAsyncOptions<ThisArg, CommonDelay>) as typeof fetchCb
 	}
 
 	return func

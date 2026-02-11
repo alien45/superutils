@@ -1,41 +1,41 @@
 import { fallbackIfFails, isPositiveInteger } from '@superutils/core'
 import { retry } from '@superutils/promise'
-import { FetchArgs } from './types'
+import { FetchArgs, FetchFunc } from './types'
 
 /**
- * Execute built-in `fetch()` and retry if request fails and `options.retry > 0`.
+ * Executes the built-in `fetch()` (or a custom `fetchFunc` if provided) with support for automatic retries.
  *
- * @param url request URL
- * @param options (optional)
+ * If `options.retry` is greater than 0, the request will be retried if it fails or if the response is not OK,
+ * unless overridden by `options.retryIf`.
  *
- * @returns response
+ * @param url The request URL.
+ * @param options (optional) Fetch options, including retry settings.
+ *
+ * @returns A promise resolving to the Response.
  */
-export const getResponse = async (
-	url: FetchArgs[0],
-	options: FetchArgs[1] = {},
-) => {
-	const { abortCtrl, fetchFunc = globalThis.fetch } = options
-	if (!isPositiveInteger(options.retry))
-		return fetchFunc(url, options as RequestInit)
+export const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
+	const fetchFunc = options.fetchFunc ?? (globalThis.fetch as FetchFunc)
+	if (!isPositiveInteger(options.retry)) return fetchFunc(url, options)
 
 	let attemptCount = 0
 	const response = retry(
 		() => {
 			attemptCount++
-			return fetchFunc(url, options as RequestInit)
+			return fetchFunc(url, options)
 		},
 		{
 			...options,
 			retryIf: async (res, count, error) => {
-				if (abortCtrl?.signal.aborted) return false
-				const failed = !!error || !res?.ok
+				const { abortCtrl, retryIf, signal } = options
+				if (abortCtrl?.signal.aborted || signal?.aborted) return false
 
 				return !!(
 					(await fallbackIfFails(
-						options?.retryIf ?? failed,
+						retryIf,
 						[res, count, error],
-						failed,
-					)) ?? failed
+						undefined,
+					))
+					?? (!!error || !res?.ok)
 				)
 			},
 		},

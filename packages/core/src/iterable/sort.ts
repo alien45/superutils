@@ -15,7 +15,8 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  * - `function`: comparator function. Recommended for performance.
  * - `true`: indicates to sort by Map keys instead of values.
  * @param options (optional) extra sorting opitons
- * @param options.ignoreCase	(optional) case-insensitive sort for strings. Default: `true`
+ * @param options.asString (optonal) whether to convert values to string for sorting purposes only. Default: `true`
+ * @param options.ignoreCase (optional) case-insensitive sort for strings. Default: `true`
  * @param options.reverse (optional) True: accending sort. False: descending sort. Default: `false`
  * @param options.undefinedFirst (optional) Where to place undefined/null values.
  * Not avaible when `comparator` function is used.
@@ -26,20 +27,8 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  *
  * @returns sorted map
  *
- * @example sort map of simple values (string/number/boolean)
- * ```javascript
- * import { sort } from '@superutils/core'
- *
- * const map = new Map([
- * 	   [1, 1],
- * 	   [2, 2],
- *     [0, 0],
- * ])
- * console.log(sort(map))
- * // result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
- * ```
- *
- * @example sort map of objects
+ * @example
+ * #### Sort map of objects
  * ```javascript
  * import { sort } from '@superutils/core'
  *
@@ -61,10 +50,27 @@ export function sort<
 	V extends Record<PropertyKey, unknown>,
 	T extends IterableList<K, V>,
 >(data: T, propertyName: keyof V & string, options?: SortOptions): T
-/** Sort `Map` by map-keys `K` */
+/**
+ * Sort `Map` by map-keys `K`
+ *
+ * @example
+ * #### Sort map of simple values (string/number/boolean)
+ * ```javascript
+ * import { sort } from '@superutils/core'
+ *
+ * const map = new Map([
+ * 	   [1, 1],
+ * 	   [2, 2],
+ *     [0, 0],
+ * ])
+ * console.log(sort(map, false, { asString: false }))
+ * // result: Map(3) { 0 => 0, 1 => 1, 2 => 2 }
+ * ```
+ */
 export function sort<K, V>(
 	data: Map<K, V>,
-	byKey: true,
+	/** Whether to sort by key or Value */
+	byKey?: boolean,
 	options?: SortOptions,
 ): Map<K, V>
 /** Sort `Map` with comparator function */
@@ -98,7 +104,7 @@ export function sort<
 >(
 	data: T,
 	keyOrFn?:
-		| true
+		| boolean
 		| (keyof V & string)
 		| SortOptions
 		| (T extends V[] ? ArrayComparator<V> : EntryComparator<K, V>),
@@ -107,7 +113,7 @@ export function sort<
 	const dataType = isArr(data) ? 1 : isMap(data) ? 2 : isSet(data) ? 3 : 0
 	if (!dataType) return data
 
-	const { ignoreCase, newInstance, reverse, undefinedFirst } = {
+	const { asString, ignoreCase, newInstance, reverse, undefinedFirst } = {
 		...sort.defaults,
 		...(isObj(options)
 			? options
@@ -125,7 +131,13 @@ export function sort<
 		)
 	}
 
-	const alt = undefinedFirst ? '' : 'Z'.repeat(10)
+	const alt = asString
+		? undefinedFirst
+			? ''
+			: 'Z'.repeat(10)
+		: undefinedFirst
+			? -Infinity
+			: Infinity
 	const sorted = isFn(keyOrFn)
 		? arrReverse(
 				// handle Set with comparator function
@@ -134,13 +146,16 @@ export function sort<
 				false, // not required because of entries() & spread
 			)
 		: (() => {
-				const key = keyOrFn as keyof V
-				const getVal = (obj: unknown) => {
-					const value = `${((isObj(obj) && key ? obj[key as keyof typeof obj] : obj) as string) ?? alt}`
+				let index = 1
+				const getVal = (target: unknown) => {
+					const val =
+						isObj(target) && index !== 0
+							? target[keyOrFn as keyof typeof target]
+							: target
+					if (!asString) return val as V[keyof V]
+					const value = `${(val as string) ?? alt}`
 					return ignoreCase ? value.toLowerCase() : value
 				}
-				// 0 => sort by map-key, 1 => sort by map-value
-				const index = keyOrFn === true ? 0 : 1
 				const [gt, lt] = reverse ? [-1, 1] : [1, -1]
 
 				// hande Array & Set
@@ -153,6 +168,8 @@ export function sort<
 				}
 
 				// handle Map
+				// 0 => sort by map-key, 1 => sort by map-value
+				index = keyOrFn === true ? 0 : 1
 				return [...data.entries()].sort((a: [K, V], b: [K, V]) =>
 					getVal(a?.[index]) > getVal(b?.[index]) ? gt : lt,
 				)
@@ -176,6 +193,7 @@ export function sort<
 }
 /** Default sort options */
 sort.defaults = {
+	asString: true,
 	ignoreCase: true,
 	newInstance: false,
 	reverse: false,

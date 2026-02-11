@@ -7,14 +7,16 @@ export type AsyncFn<TOut = unknown, TArgs extends unknown[] = []> = (
 
 /**
  * Create a tuple of specific type with given length
- * ---
- * @example Create a new tuple
+ *
+ * @example
+ * #### Create a new tuple
  * ```typescript
  * type CreatedTuple =  CreateTuple<number, 3>
  * // Result: [number, number, number]
  * ```
  *
- * @example Create a new tuple by extending an existing tuple
+ * @example
+ * #### Create a new tuple by extending an existing tuple
  * ```typescript
  * type ExtendedTuple = CreateTuple<string, 6, CreatedTuple>
  * // Result: [number, number, number, string, string, string]
@@ -58,8 +60,8 @@ export type CurriedArgs<
 
 /**
  * Drop the first item from an array/tuple and keep the rest
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWOFirst = DropFirst<MyTuple> // result: [second: number, third: boolean]
@@ -71,8 +73,8 @@ export type DropFirst<T extends unknown[]> = T extends [unknown, ...infer Rest]
 
 /**
  * Drop first N items from an array/tuple and keep the rest
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWO2 = DropFirstN<MyTuple, 2> // result: [third: boolean]
@@ -90,8 +92,8 @@ export type DropFirstN<
 			: never
 /**
  * Drop the last item from an array/tuple and keep the rest
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWOLast = DropLast<MyTuple> // result: [first: string, second: number]
@@ -119,8 +121,8 @@ export type IsOptional<T, K extends keyof T> =
 
 /**
  * Keep the first item from an array/tuple and drop the rest
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWFirst = KeepFirst<MyTuple> // result: [first: string]
@@ -135,8 +137,8 @@ export type KeepFirst<T extends unknown[]> = T extends readonly [
 
 /**
  * Keep first N items from an array/tuple and drop the rest
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [first: string, second: number, third: boolean]
  * type MyTupleWith1st2 = KeepFirstN<MyTuple, 2> // result: [first: string, second: number]
@@ -157,7 +159,7 @@ export type KeepFirstN<T extends readonly unknown[], N extends number = 1> =
  * Defaults to `false`
  * @template TAlt   (optional) Defaults to `undefined`
  *
- * @example usage
+ * @example
  * ```typescript
  * import { KeepOptionals } from '@superutils/core
  * type MyTuple = [first: string, second?: number, third?: boolean]
@@ -218,8 +220,8 @@ export type MakeOptional<
 
 /**
  * Create a new slices tuple from an existing tuple
- * ---
- * @example usage
+ *
+ * @example
  * ```typescript
  * type MyTuple = [a: string, b: boolean, c: number, d: Record<string, unknown>]
  * type FirstHalf = Slice<MyTuple, 0, 2>
@@ -247,8 +249,7 @@ export type TimeoutId = Parameters<typeof clearTimeout>[0]
  *
  * This is particularly useful when a tuple (or function paramenters) contains optional members.
  *
- * ---
- * @example usage
+ * @example
  * ```typescript
  * type MyTuple = [string, number?, boolean?]
  * type Lengths = MyTuple['length'] // 1 | 2 | 3 // union because of optional parameters
@@ -260,8 +261,7 @@ export type TupleMaxLength<T extends readonly unknown[]> = Required<T>['length']
 /**
  * Add alt type to all members of a tuple.
  *
- * ---
- * @example usage
+ * @example
  * ```typescript
  * type MyTuple = [first: boolean, second: string]
  * type MyTupleWithUndefined = TupleWithAlt<MyTuple>
@@ -277,9 +277,7 @@ export type TupleWithAlt<Tuple extends unknown[], TAlt = undefined> = {
 /**
  * Accept value or a function that returns the value
  *
- * Examples:
- * ---
- * @example usage
+ * @example
  * ```typescript
  * import { isFn, ValueOrFunc } from '@superutils/core'
  * const print = (value: ValueOrFunc<string>) => isFn(value)

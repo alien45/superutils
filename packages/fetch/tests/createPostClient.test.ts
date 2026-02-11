@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPostClient, FetchArgs, FetchAs, PostOptions } from '../src'
+import getClientDeferredSimulator from './client-deferred-simulator'
 import { productsBaseUrl } from './utils'
 
 describe('createClient', () => {
+	const product1Url = productsBaseUrl + '/1'
 	type ResultType = { success: boolean; args: [string | URL, PostOptions] }
+	const simulateClientCalls = getClientDeferredSimulator(true)
 	afterEach(() => {
 		// Setup global fetch mock
 		vi.unstubAllGlobals()
@@ -32,7 +35,7 @@ describe('createClient', () => {
 				method: 'POST' as any, // this should be ignored
 			},
 		)
-		const promise = client<ResultType>(productsBaseUrl + '/1', {
+		const promise = client<ResultType>(product1Url, {
 			method: 'PUT' as any, // this should be ignored
 			headers: {
 				'x-custom-header': 'custom-value',
@@ -42,7 +45,7 @@ describe('createClient', () => {
 		const {
 			args: [url, options],
 		} = await promise
-		expect(url).toBe(productsBaseUrl + '/1')
+		expect(url).toBe(product1Url)
 		expect(options.method).toBe('patch')
 	})
 
@@ -55,7 +58,7 @@ describe('createClient', () => {
 			{
 				delayMs: 99,
 			},
-			productsBaseUrl + '/1',
+			product1Url,
 			undefined,
 			{ method: 'patch' as any },
 		)
@@ -66,7 +69,23 @@ describe('createClient', () => {
 		const {
 			args: [url, options],
 		} = await promise
-		expect(url).toBe(productsBaseUrl + '/1')
+		expect(url).toBe(product1Url)
 		expect(options.method).toBe('post')
+	})
+
+	it('should correctly handle `debounce+leading` post calls', async () => {
+		await simulateClientCalls({ throttle: false, leading: true })
+	})
+
+	it('should correctly handle `debounce-leading` post calls', async () => {
+		await simulateClientCalls({ throttle: false, leading: false })
+	})
+
+	it('should correctly handle `throttle+trailing` post calls', async () => {
+		await simulateClientCalls({ throttle: true, trailing: true })
+	})
+
+	it('should correctly handle `throttle-trailing` post calls', async () => {
+		await simulateClientCalls({ throttle: true, trailing: false })
 	})
 })

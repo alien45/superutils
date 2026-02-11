@@ -180,6 +180,7 @@ export const tryBtnClickHandler = (event: PointerEvent) => {
 	if (!target.classList.contains('try-button')) return
 
 	event.preventDefault()
+
 	const parent = target.closest('.try-button-wrap')
 	const className = `temp-${new Date().getTime()}`
 	parent.classList.add(className)

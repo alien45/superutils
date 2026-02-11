@@ -7,6 +7,8 @@ import type { IPromisE } from './PromisEBase'
  * Descibes a timeout PromisE and it's additional properties.
  */
 export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
+	readonly abortCtrl?: AbortController
+	/** Read-only property indicating if the promise rejected because of external abort. */
 	readonly aborted: boolean
 	/**
 	 * Removes `abortCtrl/signal` listeners, effectively disabling external cancellation via AbortController.
@@ -26,7 +28,7 @@ export type IPromisE_Timeout<T = unknown> = IPromisE<T> & {
 
 export type TimeoutResult<
 	T extends unknown[],
-	TFunc extends keyof TimeoutFunc<T>,
+	BatchFunc extends keyof BatchFuncs<T>,
 	Values extends unknown[] = {
 		-readonly [P in keyof T]: T[P] extends (
 			...args: unknown[]
@@ -35,10 +37,13 @@ export type TimeoutResult<
 			: T[P]
 	},
 > = Awaited<
-	T['length'] extends 1 ? Values[0] : ReturnType<TimeoutFunc<Values>[TFunc]>
+	T['length'] extends 1
+		? Values[0]
+		: ReturnType<BatchFuncs<Values>[BatchFunc]>
 >
 
-export type TimeoutFunc<T extends unknown[] = []> = {
+/** Suported function names for batch operations */
+export type BatchFuncs<T extends unknown[] = []> = {
 	all: typeof PromisEBase.all<T>
 	allSettled: typeof PromisEBase.allSettled<T>
 	any: typeof PromisEBase.any<T>
@@ -55,31 +60,61 @@ export type TimeoutFunc<T extends unknown[] = []> = {
  */
 export type TimeoutOptions<
 	T extends unknown[] = [],
-	Func extends string = 'all',
+	BatchFuncName extends string = 'all',
 > = {
+	/**
+	 * An `AbortController` instance.
+	 *
+	 * If provided:
+	 * - It will be aborted automatically when the timeout occurs.
+	 * - If it is aborted externally, the promise will be rejected and the timeout will be cleared.
+	 */
 	abortCtrl?: AbortController
-	func?: T['length'] extends 0
+	/**
+	 * Whether to call `abortCtrl.abort()` if the promise is finalized externally
+	 * (resolved or rejected before timeout or abort).
+	 *
+	 * Default: `true`
+	 */
+	abortOnEarlyFinalize?: boolean
+	/**
+	 * The name of the `PromisEBase` static method to use for resolving multiple promises/functions.
+	 *
+	 * Only applicable when more than one promise/function is provided.
+	 */
+	batchFunc?: T['length'] extends 0
 		? // no values provided
 			never
 		: T['length'] extends 1
 			? // only value
 				never
-			: Func
+			: BatchFuncName
 	/**
 	 * Callback invoked when the promise is rejected due to an abort signal.
-	 * Optionally, return an `Error` object to reject the promise with a custom error.
+	 *
+	 * Can be used to transform the abort error by returning a custom `Error` object.
 	 */
 	onAbort?: () => ValueOrPromise<void | Error>
 	/**
 	 * Callback invoked when the promise times out.
-	 * Optionally, return an `Error` object to reject the promise with a custom error.
+	 *
+	 * Can be used to transform the timeout error by returning a custom `Error` object.
 	 */
 	onTimeout?: () => ValueOrPromise<void | Error>
+	/**
+	 * An `AbortSignal` to listen to.
+	 *
+	 * If aborted:
+	 * - The promise will be rejected.
+	 * - The `abortCtrl` (if provided and distinct) will be aborted.
+	 * - The timeout will be cleared.
+	 */
 	signal?: AbortSignal
+	/** Timeout duration in milliseconds. */
 	timeout?: number
 }
 
 /** Default options for `PromisE.timeout()` */
 export type TimeoutOptionsDefault = Required<
-	Omit<TimeoutOptions<unknown[], keyof TimeoutFunc>, 'abortCtrl' | 'signal'>
+	Omit<TimeoutOptions<unknown[], keyof BatchFuncs>, 'abortCtrl' | 'signal'>
 >

@@ -20,7 +20,8 @@ import { ThrottleOptions } from './types'
  * @param config.thisArg (optional) the special `thisArgs` to be used when invoking the callback.
  * @param config.trailing (optional) whether to enable trailing edge execution. Default: `true`
  *
- * @example Throttle function calls
+ * @example
+ * #### Throttle function calls
  * ```javascript
  * import { throttle } from '@superutils/core'
  *
@@ -38,7 +39,8 @@ import { ThrottleOptions } from './types'
  * }, 400)
  * ```
  *
- * @example Throttle with trailing enabled
+ * @example
+ * #### Throttle with trailing enabled
  * ```javascript
  * import { throttle } from '@superutils/core'
  *
