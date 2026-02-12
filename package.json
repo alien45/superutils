@@ -41,7 +41,7 @@
 		"old-docs": "npm run docs:build-packages && node scripts/docs-try-button.js && vitepress dev docs",
 		"old-docs:build": "npm run docs:coverage && npm run docs:build-packages && node scripts/docs-try-button.js && vitepress build docs && cp docs/assets/* docs/.vitepress/dist/assets/",
 		"docs": "npm run docs:build-packages && vitepress dev docs",
-		"docs:build": "npm run docs:coverage && npm run docs:build-packages && vitepress build docs && cp docs/assets/* docs/.vitepress/dist/assets/",
+		"docs:build": "npm run docs:coverage && npm run docs:build-packages && vitepress build docs && cp -r docs/assets/* docs/.vitepress/dist/assets/",
 		"docs:build-packages": "typedoc",
 		"docs:coverage": "node ./scripts/inject-coverage-data.js",
 		"docs:preview": "vitepress preview docs",
