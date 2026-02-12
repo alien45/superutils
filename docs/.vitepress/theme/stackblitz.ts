@@ -182,7 +182,7 @@ export const embedPlayground = async (
 		.map(x =>
 			x.startsWith('./')
 				? window.location.href + x.substring(2) //relative path to file
-				: x.startsWith('/superutils')
+				: x.startsWith('/')
 					? `${window.location.protocol}//${window.location.host}${x}`
 					: x,
 		)
