@@ -136,13 +136,6 @@ npm install @superutils/promise
 
 Once installed, you can import the utilities directly into your project.
 
-
-<div class="try-button-wrap">
-  <a href="#" class="try-button" data-template="typescript">
-    <svg style="display: inline-block" viewBox="0 0 28 28" aria-hidden="true" class="StackBlitzLogo-boltIcon-FmCUV StackBlitzLogo-boltIcon_blue-NgOER" height="18" width="18"><path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5l3.671-10.227z"></path></svg> Try Now!
-  </a>
-</div>
-
 ```typescript
 import PromisE from '@superutils/promise'
 
