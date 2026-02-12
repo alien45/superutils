@@ -13,11 +13,8 @@ export default defineConfig({
 		[
 			'style',
 			{},
-			`.try-button-wrap {
-				margin: 16px 0;
-				position: relative;
-			}
-			.try-button {
+			`
+			.try-button-wrap .try-button {
 				display: inline-block;
 				margin-top: 10px;
 				padding: 6px 12px;
@@ -34,12 +31,15 @@ export default defineConfig({
 				right: 70px;
 				margin-top: 13px;
 			}
-			.try-button:hover {
+			.try-button-wrap .try-button:hover {
 				background: #0a68c9;
 				box-shadow: 0 2px 8px rgba(10, 104, 201, 0.3);
 				color: black;
 				text-decoration: unset;
 				transform: translateY(-1px);
+			}
+			.playground-full-height iframe {
+				height: 100vh;
 			}
 			.VPHero {
 				position: relative;
@@ -163,6 +163,10 @@ export default defineConfig({
 							text: 'License',
 							link: '/LICENSE#' + pkgItem.text,
 						},
+						pkgItem.text === '@superutils/fetch' && {
+							text: 'Demo',
+							link: '/demo/fetch-deferred',
+						},
 					].filter(Boolean) as any
 					return pkgItem
 				}),
@@ -170,6 +174,7 @@ export default defineConfig({
 		],
 		socialLinks: [
 			{ icon: 'github', link: 'https://github.com/alien45/superutils' },
+			{ icon: 'npm', link: 'https://npmjs.com/org/superutils' },
 			{ icon: 'linkedin', link: 'https://linkedin.com/in/toufiq' },
 		],
 	},

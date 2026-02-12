@@ -1,18 +1,22 @@
+import { onContentUpdated } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
-import Playground from './components/Playground.vue'
-import { embedPlayground, tryBtnClickHandler } from './stackblitz'
 import { h, onMounted, onUnmounted, defineComponent } from 'vue'
+import Playground from './components/Playground.vue'
+import { addTryNowBtnNListen } from './stackblitz'
 
 export default {
 	...DefaultTheme,
 	Layout: defineComponent({
 		setup(_props, { slots }) {
 			onMounted(() => {
-				;(window as any).embedPlayground = embedPlayground
-				document.body.addEventListener('click', tryBtnClickHandler)
+				// do stuff on first application mount
+				onContentUpdated(() => {
+					addTryNowBtnNListen()
+				})
+				addTryNowBtnNListen()
 			})
 			onUnmounted(() => {
-				document.body.removeEventListener('click', tryBtnClickHandler)
+				// do stuff on application unmount
 			})
 			// Render the default theme's layout with our hooks attached.
 			return () => h(DefaultTheme.Layout, null, slots)
