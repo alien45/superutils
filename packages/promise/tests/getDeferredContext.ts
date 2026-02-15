@@ -1,7 +1,7 @@
 import { DeferredAsyncOptions, ResolveError, ResolveIgnored } from '../src/'
 
 export const getDeferredContext = <Delay extends number>(
-	delayMs: Delay = 100 as Delay,
+	delay: Delay = 100 as Delay,
 ) => {
 	const context = {
 		data: {
@@ -9,7 +9,7 @@ export const getDeferredContext = <Delay extends number>(
 			ignored: [],
 			results: [],
 		},
-		delayMs,
+		delay,
 		onError(err) {
 			context.data.errors.push(err)
 		},

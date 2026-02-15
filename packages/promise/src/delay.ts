@@ -12,7 +12,7 @@ import { IPromisE_Delay } from './types'
  *
  * Alternatively, a function (with no arguments) can be provided that returns the result.
  *
- * Default: `delayMs` when resolved or timed out error when rejected
+ * Default: `100` (same as `duration`)
  * @param asRejected (optional) if `true`, will reject the promise after the delay.
  *
  * @returns promise
