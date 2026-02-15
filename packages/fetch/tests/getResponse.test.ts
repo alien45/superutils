@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { FetchArgs, getResponse } from '../src'
+import { type FetchArgs } from '../src'
+import getResponse from '../src/getResponse'
 import { productsBaseUrl } from './utils'
 
 describe('getResponse', () => {

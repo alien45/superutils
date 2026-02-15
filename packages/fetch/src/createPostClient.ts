@@ -1,11 +1,11 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
-import { mergePartialOptions } from './mergeFetchOptions'
+import mergeOptions from './mergeOptions'
 import {
 	DeferredAsyncOptions,
 	ExcludePostOptions,
 	FetchAs,
-	FetchAsFromOptions,
+	ExtractFetchAs,
 	FetchResult,
 	PostArgs,
 	PostDeferredCbArgs,
@@ -61,10 +61,8 @@ import {
 export const createPostClient = <
 	FixedOpts extends PostOptions | undefined,
 	CommonOpts extends ExcludePostOptions<FixedOpts> | undefined,
-	FixedAs extends FetchAs | undefined = FetchAsFromOptions<
-		FixedOpts,
-		undefined
-	>,
+	FixedAs extends FetchAs | undefined = ExtractFetchAs<FixedOpts, undefined>,
+	CommonAs extends FetchAs = ExtractFetchAs<CommonOpts>,
 	CommonDelay extends number = number,
 >(
 	/** Mandatory fetch options that cannot be overriden by individual request */
@@ -84,23 +82,25 @@ export const createPostClient = <
 		TOptions extends ExcludePostOptions<FixedOpts> | undefined =
 			| ExcludePostOptions<FixedOpts>
 			| undefined,
-		TAs extends FetchAs = FixedAs extends FetchAs
-			? FixedAs
-			: FetchAsFromOptions<TOptions, FetchAsFromOptions<CommonOpts>>,
+		TAs extends FetchAs = ExtractFetchAs<
+			FixedAs,
+			ExtractFetchAs<TOptions, CommonAs>
+		>,
 		TReturn = FetchResult<T>[TAs],
 	>(
 		url: PostArgs[0],
 		data?: PostArgs[1],
 		options?: TOptions,
 	) => {
-		const _options = mergePartialOptions(
+		const mergedOptions = mergeOptions(
 			commonOptions,
 			options,
-			fixedOptions,
+			fixedOptions, // fixed options will always override other options
 		) as PostOptions
-		_options.body = data
-		_options.method ??= 'post'
-		return fetch<TReturn>(url, _options)
+		mergedOptions.as ??= FetchAs.json
+		mergedOptions.body = data
+		mergedOptions.method ??= 'post'
+		return fetch<TReturn>(url, mergedOptions)
 	}
 
 	/**
@@ -129,9 +129,10 @@ export const createPostClient = <
 			TOptions extends ExcludePostOptions<FixedOpts> | undefined =
 				| ExcludePostOptions<FixedOpts>
 				| undefined,
-			TAs extends FetchAs = FixedAs extends FetchAs
-				? FixedAs
-				: FetchAsFromOptions<TOptions, FetchAsFromOptions<CommonOpts>>,
+			TAs extends FetchAs = ExtractFetchAs<
+				FixedAs,
+				ExtractFetchAs<TOptions, CommonAs>
+			>,
 			TReturn = FetchResult<TResult>[TAs],
 		>(
 			...args: PostDeferredCbArgs<DefaultUrl, DefaultData, TOptions>
@@ -140,21 +141,25 @@ export const createPostClient = <
 			if (defaultUrl !== undefined) args.splice(0, 0, defaultUrl)
 			// add default data after the url
 			if (defaultData !== undefined) args.splice(1, 0, defaultData)
-			const options = (mergePartialOptions(
+			const mergedOptions = (mergeOptions(
 				commonOptions,
 				defaultOptions,
 				args[2] as TOptions,
-				fixedOptions,
+				fixedOptions, // fixed options will always override other options
 			) ?? {}) as PostOptions
+			mergedOptions.as ??= FetchAs.json
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
 			_abortCtrl = new AbortController()
 
 			// attach body to options
-			options.body = (args[1] ?? options.body) as PostArgs[1]
-			options.method ??= 'post'
-			const promise = fetch<TReturn>(args[0] as PostArgs[0], options)
+			mergedOptions.body = (args[1] ?? mergedOptions.body) as PostArgs[1]
+			mergedOptions.method ??= 'post'
+			const promise = fetch<TReturn>(
+				args[0] as PostArgs[0],
+				mergedOptions,
+			)
 			return promise
 		}
 

@@ -36,6 +36,37 @@ describe('fetch', () => {
 	})
 
 	describe('general', () => {
+		it('should return `Response` by default', async () => {
+			const fetch200 = vi.fn((...args: any[]) =>
+				Promise.resolve(
+					new Response(
+						JSON.stringify({
+							age: 33,
+							id: 'adam',
+							location: 'heaven',
+							name: 'Adam',
+						}),
+						{
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						},
+					),
+				),
+			)
+			vi.stubGlobal('fetch', fetch200)
+			const promise = fetch<Response>(product1Url)
+			await vi.runAllTimersAsync()
+			const response = await promise
+			expect(response).instanceOf(Response)
+			await expect(response.json()).resolves.toEqual({
+				age: 33,
+				id: 'adam',
+				location: 'heaven',
+				name: 'Adam',
+			})
+			expect(fetch200).toHaveBeenCalledOnce()
+		})
+
 		it(`should handle "Failed to execute 'fetch' on 'Window'"`, async () => {
 			const fetchMock = vi.fn(async () =>
 				Promise.reject(

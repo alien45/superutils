@@ -8,7 +8,7 @@ import {
 import { productsBaseUrl } from './utils'
 
 /**
- * Returns a function that simulates debounced and throttled calls with variables of
+ * Returns a function that simulates debounced and throttled calls with variations of
  * leading and trailing options by creating  post/get client making sure that the returned
  * results are consistent by invoking deferred callbacks `100` times each in batches of `4`.
  * Total 400 calls are made.
@@ -72,9 +72,8 @@ const getClientDeferredSimulator = (postClient = false) => {
 			await vi.advanceTimersByTime(delayMs)
 		}
 
-		for (let i = 1; i <= 1; i++) await simulateSeriesOfCalls()
+		for (let i = 1; i <= 10; i++) await simulateSeriesOfCalls()
 		vi.useRealTimers()
-		// vi.unstubAllGlobals()
 	}
 	return simulateClientCalls
 }

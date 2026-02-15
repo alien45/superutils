@@ -5,19 +5,17 @@ import {
 	isPromise,
 	isUrlValid,
 } from '@superutils/core'
-import {
-	IPromisE_Timeout,
-	timeout as PromisE_timeout,
-} from '@superutils/promise'
+import { timeout as PromisE_timeout } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
-import mergeFetchOptions from './mergeFetchOptions'
+import mergeOptions from './mergeOptions'
 import type {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	FetchCustomOptions,
 	FetchOptions,
 	FetchOptionsInterceptor,
 	FetchResult,
+	IPromise_Fetch,
 } from './types'
 import {
 	ContentType,
@@ -27,8 +25,6 @@ import {
 	FetchOptionsDefault,
 } from './types'
 
-/** Node.js setTimeout limit is 2147483647 (2^31-1). Larger values fire immediately. */
-export const MAX_TIMEOUT = 2147483647
 /**
  * Extended `fetch` with timeout, retry, and other options. Automatically parses as JSON by default on success.
  *
@@ -47,12 +43,12 @@ export const MAX_TIMEOUT = 2147483647
  * 	   .then(product => console.log(product))
  * ```
  */
-export const fetch = <
+const fetch = <
 	T,
 	TOptions extends FetchOptions = FetchOptions,
 	TAs extends FetchAs = TOptions['as'] extends FetchAs
 		? TOptions['as']
-		: FetchAs.json,
+		: FetchAs.response,
 	TReturn = FetchResult<T>[TAs],
 >(
 	url: string | URL,
@@ -60,13 +56,13 @@ export const fetch = <
 ) => {
 	let response: Response | undefined
 	// merge `defaults` with `options` to make sure default values are used where appropriate
-	const opts = mergeFetchOptions(fetch.defaults, options)
+	const opts = mergeOptions(fetch.defaults, options)
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
 	opts.abortCtrl =
 		opts.abortCtrl instanceof AbortController
 			? opts.abortCtrl
 			: new AbortController()
-	opts.as ??= FetchAs.json
+	opts.as ??= FetchAs.response
 	opts.method ??= 'get'
 	opts.signal ??= opts.abortCtrl.signal
 	const { abortCtrl, as: parseAs, headers, onAbort, onTimeout } = opts
@@ -183,10 +179,7 @@ export const fetch = <
 			err = await interceptErr(_err as Error, url, opts, response)
 			return Promise.reject(err as FetchError)
 		}
-	}) as Omit<IPromisE_Timeout<TReturn>, 'abortCtrl'> & {
-		/** An `AbortController` instance to control the request.  */
-		abortCtrl: AbortController
-	}
+	}) as IPromise_Fetch<TReturn>
 }
 /** Default fetch options */
 fetch.defaults = {

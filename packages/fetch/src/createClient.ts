@@ -1,12 +1,12 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
-import { mergePartialOptions } from './mergeFetchOptions'
+import mergeOptions from './mergeOptions'
 import {
 	DeferredAsyncOptions,
 	ExcludeOptions,
 	FetchArgs,
 	FetchAs,
-	FetchAsFromOptions,
+	ExtractFetchAs,
 	FetchOptions,
 	FetchResult,
 } from './types'
@@ -70,10 +70,8 @@ import {
 export const createClient = <
 	FixedOpts extends FetchOptions | undefined,
 	CommonOpts extends ExcludeOptions<FixedOpts> | undefined,
-	FixedAs extends FetchAs | undefined = FetchAsFromOptions<
-		FixedOpts,
-		undefined
-	>,
+	FixedAs extends FetchAs | undefined = ExtractFetchAs<FixedOpts, undefined>,
+	CommonAs extends FetchAs = ExtractFetchAs<CommonOpts>,
 	CommonDelay extends number = number,
 >(
 	/** Mandatory fetch options that cannot be overriden by individual request */
@@ -87,22 +85,22 @@ export const createClient = <
 		TOptions extends ExcludeOptions<FixedOpts> | undefined =
 			| ExcludeOptions<FixedOpts>
 			| undefined,
-		TAs extends FetchAs = FixedAs extends FetchAs
-			? FixedAs
-			: FetchAsFromOptions<TOptions, FetchAsFromOptions<CommonOpts>>,
+		TAs extends FetchAs = ExtractFetchAs<
+			FixedAs,
+			ExtractFetchAs<TOptions, CommonAs>
+		>,
 		TReturn = FetchResult<T>[TAs],
 	>(
 		url: FetchArgs[0],
 		options?: TOptions,
 	) => {
-		return fetch<TReturn>(
-			url,
-			mergePartialOptions(
-				commonOptions,
-				options,
-				fixedOptions,
-			) as TOptions,
+		const mergedOptions = mergeOptions(
+			commonOptions,
+			options,
+			fixedOptions, // fixed options will always override other options
 		)
+		mergedOptions.as ??= FetchAs.json
+		return fetch<TReturn>(url, mergedOptions)
 	}
 
 	/** Make requests with debounce/throttle behavior */
@@ -124,21 +122,23 @@ export const createClient = <
 			TOptions extends ExcludeOptions<FixedOpts> | undefined =
 				| ExcludeOptions<FixedOpts>
 				| undefined,
-			TAs extends FetchAs = FixedAs extends FetchAs
-				? FixedAs
-				: FetchAsFromOptions<TOptions, FetchAsFromOptions<CommonOpts>>,
+			TAs extends FetchAs = ExtractFetchAs<
+				FixedAs,
+				ExtractFetchAs<TOptions, CommonAs>
+			>,
 			TReturn = FetchResult<TResult>[TAs],
 		>(
 			...args: DefaultUrl extends undefined
 				? [url: FetchArgs[0], options?: TOptions]
 				: [options?: TOptions]
 		) => {
-			const options = (mergePartialOptions(
+			const mergedOptions = (mergeOptions(
 				commonOptions,
 				defaultOptions,
 				(defaultUrl === undefined ? args[1] : args[0]) as TOptions,
-				fixedOptions,
+				fixedOptions, // fixed options will always override other options
 			) ?? {}) as FetchOptions
+			mergedOptions.as ??= FetchAs.json
 			// make sure to abort any previously pending request
 			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
@@ -146,7 +146,7 @@ export const createClient = <
 
 			const promise = fetch<TReturn>(
 				(defaultUrl ?? args[0]) as FetchArgs[0],
-				options,
+				mergedOptions,
 			)
 			return promise
 		}

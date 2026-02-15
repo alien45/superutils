@@ -4,24 +4,27 @@ import type {
 	TimeoutOptions,
 } from '@superutils/promise'
 import { FetchAs } from './constants'
-import type { FetchInterceptors } from './interceptors'
+import type { FetchInterceptors, FetchInterceptorsMerged } from './interceptors'
 
-// Export useful types from PromisE for ease of use
-export {
-	type DeferredAsyncOptions,
-	ResolveError,
-	ResolveIgnored,
-} from '@superutils/promise'
-
+/** Exclude properties of `Target` from `Options`. `headers` will always be included */
 export type ExcludeOptions<
-	Target, // options to exclude
+	Target,
 	Options extends FetchOptions = FetchOptions,
 > = Target extends FetchOptions
 	? { headers?: Options['headers'] } & Omit<Options, 'headers' | keyof Target> //always allow headers // exclude props
 			& Partial<Record<Exclude<keyof Target, 'headers'>, never>> // explicitly prevents excluded properties
 	: Options
 
+/** Exclude properties of `Target` from {@link PostOptions} */
 export type ExcludePostOptions<Target> = ExcludeOptions<Target, PostOptions>
+
+export type ExtractFetchAs<T, TFallback = FetchAs.json> = T extends FetchAs
+	? T
+	: T extends { as: infer As }
+		? As extends FetchAs
+			? As
+			: TFallback
+		: TFallback
 
 export type FetchArgs = [url: string | URL, options?: FetchOptions]
 
@@ -29,18 +32,6 @@ export type FetchArgsInterceptor = [
 	url: string | URL,
 	options: FetchOptionsInterceptor,
 ]
-
-/** Extract `FetchAs` from `FetchOptions` */
-export type FetchAsFromOptions<
-	TOptions,
-	TFallback = FetchAs.json,
-> = TOptions extends {
-	as: infer As
-}
-	? As extends FetchAs
-		? As
-		: TFallback
-	: TFallback
 
 /** Custom fetch options (not used by built-in `fetch()`*/
 export type FetchCustomOptions = {
@@ -140,7 +131,7 @@ export type FetchOptionsInterceptor = Omit<
 	errMsgs: Required<FetchErrMsgs>
 	headers: Headers
 	/** Interceptors/transformers for fetch requests. See {@link FetchInterceptors} for more details. */
-	interceptors: Required<FetchInterceptors>
+	interceptors: FetchInterceptorsMerged
 	timeout: number
 } & FetchRetryOptions
 
