@@ -10,7 +10,7 @@ sidebar: false
             'main.js': { src: '/superutils/assets/demo/fetch-deferred/main.js' },
         }"
         :embedOptions="{ 'height' : '1000', 'view': 'default' }" 
-        :indexFile="'index.js'"
+        :indexFile="'main.js'"
         :language="'html'"
         :zenMode="true"
     />
