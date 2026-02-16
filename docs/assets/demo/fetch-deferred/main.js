@@ -20,7 +20,7 @@ let products_local = [
 ]
 const productsUrl = "https://dummyjson.com/products?limit=1000"
 const deferOptions = {
-    delayMs: 300,
+    delay: 300,
     ignoreStale: true,
     resolveError: ResolveError.WITH_UNDEFINED,
     resolveIgnored: ResolveIgnored.NEVER,
@@ -122,12 +122,12 @@ document
         const delayIn = document.getElementById('delay')
         const edgeIn = document.getElementsByName('edge')[0]
         const delayInVal = Number(delayIn.value)
-        let delayMs = delayInVal > 0 ? delayInVal : 300
+        let delay = delayInVal > 0 ? delayInVal : 300
         switch (target.name) {
             case 'delay': break
             case 'edge':
                 deferOptions[deferOptions.throttle ? 'trailing' : 'leading'] = checked
-                delayMs = delayInVal // preserve the value
+                delay = delayInVal // preserve the value
                 break
             case 'mode':
                 const { value } = target
@@ -142,7 +142,7 @@ document
                         edgeIn.closest('label').querySelector('span').textContent = 'Trailing'
                         break
                     case 'sequential':
-                        delayMs = 0
+                        delay = 0
                         deferOptions.throttle = false
                         disabled = true
                         break
@@ -152,8 +152,8 @@ document
                 edgeIn.disabled = disabled
                 break
         }
-        deferOptions.delayMs = delayMs
-        if (delayMs !== delayInVal) delayIn.value = delayMs
+        deferOptions.delay = delay
+        if (delay !== delayInVal) delayIn.value = delay
         getProducts = fetch.get.deferred(deferOptions, productsUrl, fetchOptions)
     })
 
@@ -211,7 +211,7 @@ setTimeout(getProducts)
 // // create a deferred client using "postClient"
 // const updateProduct = postClient.deferred(
 //     {
-//         delayMs: 300, // debounce duration
+//         delay: 300, // debounce duration
 //         onResult: console.log, // prints only successful results
 //     },
 //     "https://dummyjson.com/products/add",
