@@ -2,13 +2,13 @@
 // import PromisE, { ResolveError, ResolveIgnored } from "https://unpkg.com/@superutils/promise@latest/dist/index.js";
 // import fetch, { createPostClient, FetchAs } from "https://unpkg.com/@superutils/fetch@latest/dist/index.js";
 
-import { deferred, getValues, search, sort, throttle } from "@superutils/core";
-import PromisE, { ResolveError, ResolveIgnored } from "@superutils/promise";
-import fetch, { createPostClient, FetchAs } from "@superutils/fetch";
+// import { deferred, getValues, search, sort, throttle } from "@superutils/core";
+// import PromisE, { ResolveError, ResolveIgnored } from "@superutils/promise";
+// import fetch, { createPostClient, FetchAs } from "@superutils/fetch";
 
-setTimeout(() => {
-    console.log('index.js')
-}, 3000)
+const { getValues, sort } = superutils.core
+const { fetch } = superutils
+const { FetchAs, ResolveError, ResolveIgnored } = fetch
 let products = []
 let products_local = [
     {
@@ -32,19 +32,19 @@ const fetchOptions = {
     abortOnEarlyFinalize: true,
     timeout: 5000,
     interceptors: {
-        error: [err => {
+        error: err => {
             setVisibility(true, ['.messages .error', '.messages'])
             const elErrMsg = document.querySelector('.error .message')
             if (elErrMsg) elErrMsg.textContent = err.message
 
             setVisibility(false, ['.loading', 'table'])
-        }],
-        request: [() => {
+        },
+        request: () => {
             console.log('loading products...')
             // show loading spinner before making a request
             setLoading('Loading products...')
-        }],
-        result: [result => {
+        },
+        result: result => {
             products = new Map(
                 sort([...result.products, ...products_local], (a, b) => a.id > b.id ? 1 : -1)
                     .map(x => [x.id, x])
@@ -80,7 +80,7 @@ const fetchOptions = {
                 `).join('')
             setVisibility(true, ['table'])
             setVisibility(false, ['.messages'])
-        }]
+        }
     }
 }
 let getProducts = fetch.get.deferred(deferOptions, productsUrl, fetchOptions)

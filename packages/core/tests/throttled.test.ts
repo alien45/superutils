@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deferred, throttle } from '../src'
 
 describe('throttle', () => {
-	const delayMs = 100
-	const delayMsX2 = delayMs * 2
+	const delay = 100
+	const delayX2 = delay * 2
 
 	beforeEach(() => {
 		vi.useFakeTimers()
@@ -18,13 +18,13 @@ describe('throttle', () => {
 			throw 'boom'
 		})
 		const onError = vi.fn()
-		const fn = deferred(bad, delayMs, { onError, throttle: true })
+		const fn = deferred(bad, delay, { onError, throttle: true })
 		expect(() => fn()).not.toThrow()
 		fn()
 		fn()
 		fn()
 		fn()
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(onError).toHaveBeenCalledTimes(1)
 	})
 
@@ -35,10 +35,10 @@ describe('throttle', () => {
 		const obj = { value: 42 }
 		throttle(
 			viCb as typeof cb, // casting is required for "thisArg" type-safety which vi.fn() removes
-			delayMs,
+			delay,
 			{ thisArg: obj },
 		)()
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		const cbThisValue = viCb.mock.instances[0]
 		expect(cbThisValue).toBe(obj)
 	})
@@ -47,7 +47,7 @@ describe('throttle', () => {
 		const callback = vi.fn()
 		const throttledFunc = throttle(
 			callback,
-			delayMs,
+			delay,
 			{ trailing: true }, // enables trailing-edge
 		)
 
@@ -57,7 +57,7 @@ describe('throttle', () => {
 		throttledFunc(3)
 		throttledFunc(4)
 		throttledFunc(5)
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledTimes(2)
 		expect(callback).toHaveBeenCalledWith(1)
 		expect(callback).toHaveBeenLastCalledWith(5)
@@ -71,7 +71,7 @@ describe('throttle', () => {
 		throttledFunc(8)
 		throttledFunc(9)
 		throttledFunc(10)
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).not.toHaveBeenCalledTimes(7)
 		expect(callback).not.toHaveBeenCalledTimes(9)
 		expect(callback).toHaveBeenLastCalledWith(10)
@@ -81,7 +81,7 @@ describe('throttle', () => {
 		const callback = vi.fn()
 		const throttledFunc = throttle(
 			callback,
-			delayMs,
+			delay,
 			{ trailing: false }, // disables trailing-edge
 		)
 
@@ -94,11 +94,11 @@ describe('throttle', () => {
 		throttledFunc(4)
 		throttledFunc(5)
 
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledExactlyOnceWith(1)
 
 		// series 2
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		throttledFunc(6)
 		vi.advanceTimersByTime(1)
 		expect(callback).toHaveBeenLastCalledWith(6)
@@ -106,7 +106,7 @@ describe('throttle', () => {
 		throttledFunc(8)
 		throttledFunc(9)
 		throttledFunc(10)
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledTimes(2)
 		expect(callback).toHaveBeenLastCalledWith(6)
 	})

@@ -19,7 +19,7 @@ export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
 	Required<DeferredAsyncOptions<ThisArg, Delay>>,
 	'resolveError' | 'resolveIgnored'
 > & {
-	delayMs: number
+	delay: number
 }
 
 /** Options for `PromisE.deferred` and other related functions */
@@ -29,9 +29,9 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 *
 	 * Use `0` to disable debounce/throttle and execute all operations sequentially.
 	 *
-	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delayMs`)
+	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delay`)
 	 */
-	delayMs?: 0 | PositiveNumber<Delay>
+	delay?: 0 | PositiveNumber<Delay>
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.

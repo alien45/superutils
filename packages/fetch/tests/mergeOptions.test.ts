@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { ContentType, mergeFetchOptions } from '../src'
+import { ContentType, mergeOptions } from '../src'
 
-describe('mergeFetchOptions', () => {
+describe('mergeOptions', () => {
 	it('should ignore non-object values', () => {
-		expect(mergeFetchOptions(null as any, undefined as any)).toEqual({
+		expect(mergeOptions(null as any, undefined as any)).toEqual({
 			errMsgs: {},
 			headers: new Headers(),
 			interceptors: {
@@ -17,7 +17,7 @@ describe('mergeFetchOptions', () => {
 	})
 
 	it('should merge fetch options correctly', () => {
-		const merged = mergeFetchOptions(
+		const merged = mergeOptions(
 			{
 				headers: new Headers([
 					['content-type', ContentType.APPLICATION_JSON],

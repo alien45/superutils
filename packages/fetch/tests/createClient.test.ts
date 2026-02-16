@@ -36,7 +36,6 @@ describe('createClient', () => {
 			{ as: FetchAs.json, method: 'GET' },
 			{ method: 'POST' as any }, // this should be ignored
 		)
-
 		const promise = client<ResultType>(product1Url, {
 			method: 'PUT' as any, // this should be ignored
 			headers: { 'x-custom-header': 'custom-value' },
@@ -74,22 +73,25 @@ describe('createClient', () => {
 		expect(promise.aborted).toBe(false) // only true when promsie was rejected because of abort
 	})
 
-	// it('should allow setting delayMs', async () => {
-	// 	const client1 = createClient({}, {}, { delayMs: 99 })
-	// 	const deferredClient1 = client1.deferred({ delayMs: 99 }, '')
+	it('should allow setting delay', async () => {
+		const client1 = createClient({}, {}, { delay: 99 })
+		const deferredClient1 = client1.deferred({ delay: 99 }, '')
 
-	// 	const client2 = createClient({}, {}, { delayMs: undefined })
-	// 	const deferredClient2 = client2.deferred({ delayMs: 99 })
+		const client2 = createClient({}, {}, { delay: undefined })
+		const deferredClient2 = client2.deferred({ delay: 99 })
 
-	// 	const client3 = createClient({}, {}, { delayMs: 0 })
-	// 	const deferredClient3 = client3.deferred({ delayMs: 99 })
+		const client3 = createClient({}, {}, { delay: 0 })
+		const deferredClient3 = client3.deferred({ delay: 99 })
 
-	// 	const client4 = createClient({}, {}, { delayMs: 99 })
-	// 	const deferredClient4 = client4.deferred({ delayMs: undefined })
-	// })
+		const client4 = createClient({}, {}, { delay: 99 })
+		const deferredClient4 = client4.deferred({ delay: undefined })
+	})
 
 	it('should correctly handle `debounce+leading` fetch calls', async () => {
-		await simulateClientCalls({ throttle: false, leading: true })
+		await simulateClientCalls({
+			throttle: false,
+			leading: true,
+		})
 	})
 
 	it('should correctly handle `debounce-leading` fetch calls', async () => {

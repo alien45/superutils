@@ -21,7 +21,6 @@
 		"hooks"
 	],
 	"license": "MIT",
-	"main": "dist/index.js",
 	"name": "@superutils/react",
 	"peerDependencies": {
 		"@superutils/core": "^1.2.0",
@@ -39,7 +38,16 @@
 		"test": "cd ../../ && npm run test promise"
 	},
 	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
 	"type": "module",
-	"types": "dist/index.d.ts",
+	"types": "./dist/index.d.ts",
 	"version": "0.1.0"
 }

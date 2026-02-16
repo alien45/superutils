@@ -8,13 +8,13 @@ import {
 import { productsBaseUrl } from './utils'
 
 /**
- * Returns a function that simulates debounced and throttled calls with variables of
+ * Returns a function that simulates debounced and throttled calls with variations of
  * leading and trailing options by creating  post/get client making sure that the returned
- * results are consistent by invoking deferred callbacks `100` times each in batches of `4`.
+ * results are consistent by invoking deferred callbacks `10` times each in batches of `4`.
  * Total 400 calls are made.
  */
 const getClientDeferredSimulator = (postClient = false) => {
-	const delayMs = 600
+	const delay = 600
 	const _createClient = postClient
 		? (createPostClient as typeof createClient)
 		: createClient
@@ -22,7 +22,7 @@ const getClientDeferredSimulator = (postClient = false) => {
 		{}, // fixed and common options are not being tested here
 		{},
 		{
-			delayMs,
+			delay,
 			resolveIgnored: ResolveIgnored.WITH_LAST,
 		},
 	)
@@ -32,7 +32,6 @@ const getClientDeferredSimulator = (postClient = false) => {
 		leading = false,
 		trailing = false,
 	}) => {
-		vi.useFakeTimers()
 		const getProductsDeferred = client.deferred(
 			{
 				throttle,
@@ -41,42 +40,43 @@ const getClientDeferredSimulator = (postClient = false) => {
 			},
 			productsBaseUrl + '/1',
 		)
-
 		const simulateSeriesOfCalls = async () => {
-			// use count to make expectedResult easier to predict by localizing for each batch of calls
-			let count = 0
-			const fetchFunc = vi.fn((...args: FetchArgs) =>
-				Promise.resolve({
-					ok: true,
-					status: 200,
-					json: async () => ++count,
-				} as unknown as Response),
-			)
-			vi.stubGlobal('fetch', fetchFunc)
-			const expectedResult =
-				throttle && trailing
-					? [1, 2, 2, 2]
-					: !throttle && leading
-						? [1, 1, 1, 2]
-						: [1, 1, 1, 1]
+			vi.useFakeTimers()
+			const expectedResult = throttle
+				? trailing
+					? [1, 4, 4, 4]
+					: [1, 1, 1, 1]
+				: leading
+					? [1, 1, 1, 4]
+					: [4, 4, 4, 4]
 			// start series calls
-			const promises = Promise.all([
-				getProductsDeferred(),
-				getProductsDeferred(),
-				getProductsDeferred(),
-				getProductsDeferred(),
-			])
+			const promises = Promise.all(
+				[1, 2, 3, 4].map(n =>
+					getProductsDeferred(
+						...[
+							postClient && {},
+							{ fetchFunc: fetchFunc(n), debugTag: n },
+						].filter(Boolean),
+					),
+				),
+			)
 			await vi.runAllTimersAsync()
 			await expect(promises).resolves.toEqual(expectedResult)
 			// end series by timing it out
-			await vi.advanceTimersByTime(delayMs)
+			await vi.advanceTimersByTime(delay)
 		}
 
-		for (let i = 1; i <= 1; i++) await simulateSeriesOfCalls()
-		vi.useRealTimers()
-		// vi.unstubAllGlobals()
+		for (let i = 1; i <= 10; i++) await simulateSeriesOfCalls()
 	}
 	return simulateClientCalls
 }
 
+const fetchFunc =
+	(n = 0) =>
+	() =>
+		Promise.resolve({
+			ok: true,
+			status: 200,
+			json: async () => n,
+		} as unknown as Response)
 export default getClientDeferredSimulator

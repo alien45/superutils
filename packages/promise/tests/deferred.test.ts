@@ -13,7 +13,7 @@ describe('PromisE.deferred', () => {
 
 	it('should accept promises, async funcions and regular functions that returns a promise', async () => {
 		const onResult = vi.fn()
-		const deferredFn = PromisE.deferred({ delayMs: 0, onResult })
+		const deferredFn = PromisE.deferred({ delay: 0, onResult })
 
 		deferredFn(() => PromisE.delay(50, 1))
 		deferredFn(PromisE.delay(150, 2))
@@ -58,7 +58,7 @@ describe('PromisE.deferred', () => {
 
 	it('should throttle calls, only execute first & last and all ignored will resolve with `undefined`', async () => {
 		const deferredFn = PromisE.deferred({
-			delayMs: 100,
+			delay: 100,
 			resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
 			throttle: true,
 			trailing: true,
@@ -101,7 +101,7 @@ describe('PromisE.deferred', () => {
 		) => {
 			const onError = vi.fn()
 			const deferredFn = PromisE.deferred({
-				delayMs: 100,
+				delay: 100,
 				onError,
 				resolveError,
 			})
@@ -139,7 +139,7 @@ describe('PromisE.deferred', () => {
 
 	it('should resolve ignored promises with undefined', async () => {
 		const deferredFn = PromisE.deferred({
-			delayMs: 100,
+			delay: 100,
 			resolveIgnored: ResolveIgnored.WITH_UNDEFINED,
 		})
 		const all = Promise.all([

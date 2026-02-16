@@ -1,4 +1,4 @@
-import { fallbackIfFails, isPositiveInteger } from '@superutils/core'
+import { fallbackIfFails, isFn, isPositiveInteger } from '@superutils/core'
 import { retry } from '@superutils/promise'
 import { FetchArgs, FetchFunc } from './types'
 
@@ -13,8 +13,10 @@ import { FetchArgs, FetchFunc } from './types'
  *
  * @returns A promise resolving to the Response.
  */
-export const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
-	const fetchFunc = options.fetchFunc ?? (globalThis.fetch as FetchFunc)
+const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
+	const fetchFunc = isFn(options.fetchFunc)
+		? options.fetchFunc
+		: (globalThis.fetch as FetchFunc)
 	if (!isPositiveInteger(options.retry)) return fetchFunc(url, options)
 
 	let attemptCount = 0

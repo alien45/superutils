@@ -1,7 +1,7 @@
 import { objSort } from '@superutils/core'
-import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
+import { getDeferredContext } from '../../promise/tests/getDeferredContext'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import fetch, { ResolveIgnored, type FetchArgs } from '../src'
+import fetch, { type FetchArgs } from '../src'
 import { productsBaseUrl, getMockedResult } from './utils'
 
 describe('fetch.get.deferred', () => {

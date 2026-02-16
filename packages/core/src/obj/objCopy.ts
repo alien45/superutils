@@ -93,11 +93,10 @@ export const objCopy = <
 		  ) => boolean) = false,
 	recursive = true,
 ) => {
-	const _output = (isObj(output) ? output : {}) as Record<
-		PropertyKey,
-		unknown
-	>
-	if (!isObj(input)) return _output
+	const _output = (
+		isObj(output, false) || isFn(output) ? output : {}
+	) as Record<PropertyKey, unknown>
+	if (!isObj(input, false) && !isFn(output)) return _output
 
 	const _ignoreKeys = new Set(ignoreKeys ?? [])
 	const inKeys = objKeys(input, true, true).filter(

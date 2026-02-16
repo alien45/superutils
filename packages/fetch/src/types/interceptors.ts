@@ -196,11 +196,18 @@ export type FetchInterceptorResult<
  */
 export type FetchInterceptors = {
 	/** Request error interceptors/transformers. See {@link FetchInterceptorError} for more details. */
-	error?: FetchInterceptorError[]
+	error?: FetchInterceptorError | FetchInterceptorError[]
 	/** Request request interceptors/transformers. See {@link FetchInterceptorRequest} for more details. */
-	request?: FetchInterceptorRequest[]
+	request?: FetchInterceptorRequest | FetchInterceptorRequest[]
 	/** Request response interceptors/transformers. See {@link FetchInterceptorResponse} for more details. */
-	response?: FetchInterceptorResponse[]
+	response?: FetchInterceptorResponse | FetchInterceptorResponse[]
 	/** Request result interceptors/transformers. See {@link FetchInterceptorResult} for more details. */
-	result?: FetchInterceptorResult[]
+	result?: FetchInterceptorResult | FetchInterceptorResult[]
+}
+/** Interceptors after merging should only be array of functions  */
+export type FetchInterceptorsMerged = {
+	error: FetchInterceptorError[]
+	request: FetchInterceptorRequest[]
+	response: FetchInterceptorResponse[]
+	result: FetchInterceptorResult[]
 }

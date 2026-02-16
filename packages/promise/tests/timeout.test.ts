@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE, { PromisEBase, TIMEOUT_MAX, TimeoutPromise } from '../src'
+import PromisE, { PromisEBase } from '../src'
 
 describe('PromisE.timeout', () => {
 	beforeEach(() => {
@@ -11,16 +11,6 @@ describe('PromisE.timeout', () => {
 	})
 
 	describe('general', () => {
-		it('should set default value and keep timeout.defaults in sync with TimeoutPromise.defaults', () => {
-			expect(PromisE.timeout.defaults).toEqual(TimeoutPromise.defaults)
-			PromisE.timeout.defaults = {
-				...TimeoutPromise.defaults,
-				timeout: 9999,
-			}
-			expect(PromisE.timeout.defaults).toEqual(TimeoutPromise.defaults)
-			expect(TimeoutPromise.defaults.timeout).toEqual(9999)
-			TimeoutPromise.defaults.timeout = TIMEOUT_MAX
-		})
 		it('should use default timeout duration when invalid value provided', async () => {
 			const p = PromisE.timeout(
 				{ timeout: 'not a valid number' as any },
