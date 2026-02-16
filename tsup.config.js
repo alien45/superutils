@@ -35,7 +35,7 @@ export default defineConfig((options = {}) => {
 				options.outdir = undefined
 			},
 			globalName: `superutils.${pkgName}`,
-			minify: false,
+			minify: true,
 			noExternal: [/^@superutils\/.*/],
 			outDir: 'dist/browser',
 			platform: 'browser',
