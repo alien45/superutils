@@ -154,7 +154,7 @@ import fetch from '@superutils/fetch'
 
 // Create a debounced search function with a 300ms delay.
 const searchProducts = fetch.get.deferred({
-	delayMs: 300, // Debounce delay
+	delay: 300, // Debounce delay
 	resolveIgnored: 'WITH_UNDEFINED', // Ignored (aborted) promises will resolve with `undefined`
 })
 
@@ -183,7 +183,7 @@ setTimeout(() => {
 
 - **`throttle: true`**: Switches from debounce to throttle mode. The first request for "iphone" would
   execute immediately. The second request for "iphone 12", made within the 300ms throttle window, would be ignored.
-- **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Both requests ("iphone"
+- **`delay: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Both requests ("iphone"
   and "iphone 12") would execute, but one after the other, never simultaneously.
 - **`resolveIgnored` (enum)**: Controls how the promise for an aborted request (like the first "iphone" call) resolves.
     1. `ResolveIgnored.WITH_UNDEFINED` (used in the example): The promise for the aborted "iphone"
@@ -208,7 +208,7 @@ import fetch from '@superutils/fetch'
 // The URL and a 3-second timeout are set as defaults, creating a reusable client.
 const getRandomQuote = fetch.get.deferred(
 	{
-		delayMs: 300, // Throttle window
+		delay: 300, // Throttle window
 		throttle: true,
 		// Ignored calls will resolve with the result of the last successful call.
 		resolveIgnored: 'WITH_LAST',
@@ -261,7 +261,7 @@ import PromisE from '@superutils/promise'
 // Create a throttled function to auto-save product updates.
 const saveProductThrottled = fetch.post.deferred(
 	{
-		delayMs: 1000, // Throttle window of 1 second
+		delay: 1000, // Throttle window of 1 second
 		throttle: true,
 		trailing: true, // Ensures the very last update is always saved
 		onResult: product => console.log(`[Saved] Product: ${product.title}`),
@@ -299,7 +299,7 @@ let currentRefreshToken = ''
 // It waits 300ms after the last call before executing.
 const requestNewToken = fetch.post.deferred(
 	{
-		delayMs: 300, // debounce delay
+		delay: 300, // debounce delay
 		onResult: ({ refreshToken = '' }) => {
 			console.log(
 				`Auth token successfully refreshed at ${new Date().toISOString()}`,
@@ -534,7 +534,7 @@ const apiClient = createClient(
 	},
 	{
 		// default defer options (can be overridden)
-		delayMs: 300,
+		delay: 300,
 		retry: 2, // If request fails, retry up to two more times
 	},
 )
@@ -586,7 +586,7 @@ postClient(
 // create a deferred client using "postClient"
 const updateProduct = postClient.deferred(
 	{
-		delayMs: 300, // debounce duration
+		delay: 300, // debounce duration
 		onResult: console.log, // prints only successful results
 	},
 	'https://dummyjson.com/products/add',

@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deferred, debounce } from '../src'
 
 describe('debounce', () => {
-	const delayMs = 100
-	const delayMsX2 = delayMs * 2
+	const delay = 100
+	const delayX2 = delay * 2
 
 	beforeEach(() => {
 		vi.useFakeTimers()
@@ -17,7 +17,7 @@ describe('debounce', () => {
 		const bad = vi.fn(() => {
 			throw new Error('boom')
 		})
-		const dfn = deferred(bad, delayMs, { throttle: false })
+		const dfn = deferred(bad, delay, { throttle: false })
 		expect(() => dfn()).not.toThrow()
 	})
 
@@ -28,17 +28,17 @@ describe('debounce', () => {
 		const obj = { value: 42 }
 		debounce(
 			viCb as typeof cb, // casting is required for "thisArg" type-safety which vi.fn() removes
-			delayMs,
+			delay,
 			{ thisArg: obj },
 		)()
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		const cbThisValue = viCb.mock.instances[0]
 		expect(cbThisValue).toBe(obj)
 	})
 
 	it('should debounce the callback WIHTOUT leading-edge execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = debounce(callback, delayMs, { leading: false })
+		const delayedFunc = debounce(callback, delay, { leading: false })
 
 		delayedFunc(1)
 		delayedFunc(2)
@@ -46,13 +46,13 @@ describe('debounce', () => {
 		delayedFunc(4)
 		delayedFunc(5)
 
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledExactlyOnceWith(5)
 	})
 
 	it('should debounce the callback WITH leading-edge execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = debounce(callback, delayMs, { leading: true })
+		const delayedFunc = debounce(callback, delay, { leading: true })
 
 		delayedFunc(1)
 		delayedFunc(2)
@@ -60,7 +60,7 @@ describe('debounce', () => {
 		delayedFunc(4)
 		delayedFunc(5)
 
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledTimes(2)
 		expect(callback).toHaveBeenCalledWith(1)
 		expect(callback).not.toHaveBeenCalledWith(2)
@@ -71,20 +71,20 @@ describe('debounce', () => {
 
 	it('should debounce the callback WITH leading-edge global execution', () => {
 		const callback = vi.fn()
-		const delayedFunc = debounce(callback, delayMs, { leading: 'global' })
+		const delayedFunc = debounce(callback, delay, { leading: 'global' })
 
 		delayedFunc(1)
 		delayedFunc(2)
 		delayedFunc(3)
 		delayedFunc(4)
 		delayedFunc(5)
-		vi.advanceTimersByTime(delayMs)
+		vi.advanceTimersByTime(delay)
 		delayedFunc(6)
 		delayedFunc(7)
 		delayedFunc(8)
 		delayedFunc(9)
 		delayedFunc(10)
-		vi.advanceTimersByTime(delayMsX2)
+		vi.advanceTimersByTime(delayX2)
 		expect(callback).toHaveBeenCalledTimes(3)
 		expect(callback).toHaveBeenCalledWith(1)
 		expect(callback).toHaveBeenCalledWith(5)

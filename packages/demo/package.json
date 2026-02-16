@@ -35,7 +35,7 @@
 		"_start": "npm run --workspace=@superutils/demo@0.1.0",
 		"_watch": "tsc -p tsconfig.json --watch",
 		"_tsc": "tsc src/index.ts",
-		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
+		"build": "tsup --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
 		"start": "npm run build && node dist/index.js",
 		"test": "cd ../../ && npm run test promise"

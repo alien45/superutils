@@ -232,9 +232,10 @@ describe('fetch', () => {
 	describe('interceptors', () => {
 		it('should throw error when invalid URL is provided', async () => {
 			const errorIntercepror = vi.fn()
-			const promise = fetch('some invalid url', {
+			const promise = fetch('an invalid url', {
 				interceptors: { error: [errorIntercepror] },
 			})
+			promise.catch(noop)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
 		})
@@ -461,9 +462,11 @@ describe('fetch', () => {
 		})
 
 		it('should abort the fetch request externally', async () => {
-			const mockedFetch = vi.fn(() => PromisE.delay(10_000, okResponse))
-			vi.stubGlobal('fetch', mockedFetch)
+			const mockedFetch = vi.fn(() => {
+				return PromisE.delay(10_000, okResponse)
+			})
 			const promise = fetch.get(product1Url, {
+				fetchFunc: mockedFetch as any,
 				timeout: 5000,
 			})
 			promise.catch(() => {}) // avoid unhandled rejection

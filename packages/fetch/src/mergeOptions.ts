@@ -1,4 +1,4 @@
-import { isArr, isEmpty, isFn, isObj, objCopy, objKeys } from '@superutils/core'
+import { isArr, isFn, isObj, objCopy } from '@superutils/core'
 import { FetchOptions, FetchOptionsInterceptor } from './types'
 
 /**

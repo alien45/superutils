@@ -1,16 +1,24 @@
 import { deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
 import mergeOptions from './mergeOptions'
-import {
+import type {
 	DeferredAsyncOptions,
+	ExtractAs,
 	ExcludeOptions,
 	FetchArgs,
-	FetchAs,
-	ExtractFetchAs,
 	FetchOptions,
-	FetchResult,
+	GetFetchResult,
+	IPromise_Fetch,
 } from './types'
+import { FetchAs } from './types'
 
+/**
+ * Defines client generic parameter T based on fixed options.
+ *
+ * If `fixedOptions.as` is defined and not `FetcAs.json`, then `T` will be `never`.
+ */
+export type ClientData<FixedOptions> =
+	ExtractAs<[FixedOptions]> extends FetchAs.json ? unknown : never // disallow providing T
 /**
  * Create a reusable fetch client with shared options. The returned function comes attached with a
  * `.deferred()` function for debounce and throttle behavior.
@@ -43,7 +51,7 @@ import {
  * 	},
  * 	{
  * 		// default defer options (can be overridden)
- * 		delayMs: 300,
+ * 		delay: 300,
  * 		retry: 2, // If request fails, retry up to two more times
  * 	},
  * )
@@ -68,70 +76,60 @@ import {
  * ```
  */
 export const createClient = <
-	FixedOpts extends FetchOptions | undefined,
-	CommonOpts extends ExcludeOptions<FixedOpts> | undefined,
-	FixedAs extends FetchAs | undefined = ExtractFetchAs<FixedOpts, undefined>,
-	CommonAs extends FetchAs = ExtractFetchAs<CommonOpts>,
-	CommonDelay extends number = number,
+	FixedOptions extends FetchOptions | undefined,
+	CommonOptions extends ExcludeOptions<FixedOptions> | undefined,
+	CommonDelay extends number,
 >(
 	/** Mandatory fetch options that cannot be overriden by individual request */
-	fixedOptions?: FixedOpts,
+	fixedOptions?: FixedOptions,
 	/** Common fetch options that can be overriden by individual request */
-	commonOptions?: FetchOptions & CommonOpts,
+	commonOptions?: FetchOptions & CommonOptions,
 	commonDeferOptions?: DeferredAsyncOptions<unknown, CommonDelay>,
 ) => {
-	const func = <
-		T = unknown,
-		TOptions extends ExcludeOptions<FixedOpts> | undefined =
-			| ExcludeOptions<FixedOpts>
+	function client<
+		T extends ClientData<FixedOptions> = never,
+		TOptions extends ExcludeOptions<FixedOptions> | undefined =
+			| ExcludeOptions<FixedOptions>
 			| undefined,
-		TAs extends FetchAs = ExtractFetchAs<
-			FixedAs,
-			ExtractFetchAs<TOptions, CommonAs>
-		>,
-		TReturn = FetchResult<T>[TAs],
-	>(
-		url: FetchArgs[0],
-		options?: TOptions,
-	) => {
+		Result = GetFetchResult<[FixedOptions, TOptions, CommonOptions], T>,
+	>(url: FetchArgs[0], options?: TOptions): IPromise_Fetch<Result> {
 		const mergedOptions = mergeOptions(
 			commonOptions,
 			options,
 			fixedOptions, // fixed options will always override other options
 		)
 		mergedOptions.as ??= FetchAs.json
-		return fetch<TReturn>(url, mergedOptions)
+		return fetch(url, mergedOptions)
 	}
 
 	/** Make requests with debounce/throttle behavior */
-	func.deferred = <
+	client.deferred = <
 		ThisArg,
 		Delay extends CommonDelay | number,
 		DefaultUrl extends FetchArgs[0] | undefined = FetchArgs[0] | undefined,
-		DefaultOptions extends ExcludeOptions<FixedOpts> | undefined =
-			| ExcludeOptions<FixedOpts>
+		DefaultOptions extends ExcludeOptions<FixedOptions> | undefined =
+			| ExcludeOptions<FixedOptions>
 			| undefined,
 	>(
-		deferOptions = {} as DeferredAsyncOptions<ThisArg, Delay>,
+		deferOptions?: DeferredAsyncOptions<ThisArg, Delay>,
 		defaultUrl?: DefaultUrl,
 		defaultOptions?: DefaultOptions,
 	) => {
 		let _abortCtrl: AbortController | undefined
 		const fetchCb = <
-			TResult = unknown,
-			TOptions extends ExcludeOptions<FixedOpts> | undefined =
-				| ExcludeOptions<FixedOpts>
+			T extends ClientData<FixedOptions> = never,
+			TOptions extends ExcludeOptions<FixedOptions> | undefined =
+				| ExcludeOptions<FixedOptions>
 				| undefined,
-			TAs extends FetchAs = ExtractFetchAs<
-				FixedAs,
-				ExtractFetchAs<TOptions, CommonAs>
+			Result = GetFetchResult<
+				[FixedOptions, TOptions, DefaultOptions, CommonOptions],
+				T
 			>,
-			TReturn = FetchResult<TResult>[TAs],
 		>(
 			...args: DefaultUrl extends undefined
 				? [url: FetchArgs[0], options?: TOptions]
 				: [options?: TOptions]
-		) => {
+		): IPromise_Fetch<Result> => {
 			const mergedOptions = (mergeOptions(
 				commonOptions,
 				defaultOptions,
@@ -140,15 +138,14 @@ export const createClient = <
 			) ?? {}) as FetchOptions
 			mergedOptions.as ??= FetchAs.json
 			// make sure to abort any previously pending request
-			_abortCtrl?.signal?.aborted === false && _abortCtrl?.abort?.()
+			_abortCtrl?.abort?.()
 			// ensure AbortController is present in options and propagete external abort signal if provided
 			_abortCtrl = new AbortController()
 
-			const promise = fetch<TReturn>(
+			return fetch(
 				(defaultUrl ?? args[0]) as FetchArgs[0],
 				mergedOptions,
-			)
-			return promise
+			) as unknown as IPromise_Fetch<Result>
 		}
 
 		return deferredCallback(fetchCb, {
@@ -157,6 +154,6 @@ export const createClient = <
 		} as DeferredAsyncOptions<ThisArg, CommonDelay>) as typeof fetchCb
 	}
 
-	return func
+	return client
 }
 export default createClient

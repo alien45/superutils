@@ -3,7 +3,7 @@ import { createPostClient, FetchArgs, FetchAs, PostOptions } from '../src'
 import getClientDeferredSimulator from './client-deferred-simulator'
 import { productsBaseUrl } from './utils'
 
-describe('createClient', () => {
+describe('createPostClient', () => {
 	const product1Url = productsBaseUrl + '/1'
 	type ResultType = { success: boolean; args: [string | URL, PostOptions] }
 	const simulateClientCalls = getClientDeferredSimulator(true)
@@ -56,7 +56,7 @@ describe('createClient', () => {
 		})
 		const deferredClient = client.deferred(
 			{
-				delayMs: 99,
+				delay: 99,
 			},
 			product1Url,
 			undefined,

@@ -5,6 +5,7 @@ import type {
 } from '@superutils/promise'
 import { FetchAs } from './constants'
 import type { FetchInterceptors, FetchInterceptorsMerged } from './interceptors'
+import { DropFirst } from '@superutils/core'
 
 /** Exclude properties of `Target` from `Options`. `headers` will always be included */
 export type ExcludeOptions<
@@ -17,6 +18,20 @@ export type ExcludeOptions<
 
 /** Exclude properties of `Target` from {@link PostOptions} */
 export type ExcludePostOptions<Target> = ExcludeOptions<Target, PostOptions>
+
+/** Extract the first macthing `FetchAs` from `T` array. If none matches, use `Fallback` */
+export type ExtractAs<
+	T extends unknown[], //FetchOptions/FetchAs/...
+	Fallback = FetchAs.json,
+> = T['length'] extends 0
+	? Fallback
+	: T[0] extends FetchAs
+		? T[0]
+		: T[0] extends { as: infer OptAs } // fetch options
+			? OptAs extends FetchAs
+				? OptAs
+				: ExtractAs<DropFirst<T>, Fallback>
+			: ExtractAs<DropFirst<T>, Fallback>
 
 export type ExtractFetchAs<T, TFallback = FetchAs.json> = T extends FetchAs
 	? T
@@ -76,12 +91,9 @@ export type FetchCustomOptions = {
 	& TimeoutOptions<[]>
 
 /** Default args */
-export type FetchDeferredArgs<OmitMethod extends boolean = false> = [
+export type FetchDeferredArgs = [
 	url?: string | URL,
-	options?: Omit<
-		FetchOptions,
-		'abortCtrl' | (OmitMethod extends true ? 'method' : never)
-	>,
+	options?: Omit<FetchOptions, 'abortCtrl'>,
 ]
 
 export type FetchErrMsgs = {
@@ -138,7 +150,7 @@ export type FetchOptionsInterceptor = Omit<
 /**
  * Result types for specific parsers ("as": FetchAs)
  */
-export type FetchResult<T> = {
+export type FetchResult<T = unknown> = {
 	arrayBuffer: ArrayBuffer
 	blob: Blob
 	bytes: Uint8Array<ArrayBuffer>
@@ -147,6 +159,14 @@ export type FetchResult<T> = {
 	text: string
 	response: Response
 }
+
+export type GetFetchResult<As = unknown, T = never> = [T] extends [never]
+	? FetchResult[As extends unknown[]
+			? ExtractAs<As>
+			: As extends FetchAs
+				? As
+				: FetchAs.json]
+	: T
 
 /**
  * Fetch retry options
@@ -168,12 +188,10 @@ export type FetchRetryOptions = Omit<
 
 export type PostBody = Record<string, unknown> | BodyInit | null
 
-export type PostArgs<OmitMethod = false> = [
+export type PostArgs = [
 	url: string | URL,
 	data?: PostBody | (() => PostBody),
-	options?: OmitMethod extends true
-		? Omit<FetchOptions, 'method'>
-		: PostOptions,
+	options?: PostOptions,
 ]
 
 /**
@@ -210,20 +228,23 @@ export type PostArgs<OmitMethod = false> = [
  * ```
  */
 export type PostDeferredCbArgs<
-	TUrl = undefined,
-	TData = undefined,
-	Options = undefined,
-	CbArgsReq extends unknown[] = Required<PostArgs>,
-> = [TUrl, TData] extends [CbArgsReq[0], undefined]
+	DefaultUrl = undefined,
+	DefaultData = undefined,
+	Options = PostArgs[2],
+	PostArgsReq extends unknown[] = Required<PostArgs>,
+	// avoid `string | undefined` not matching `undefined`
+	_url = undefined extends DefaultUrl ? undefined : DefaultUrl,
+	_data = undefined extends DefaultData ? undefined : DefaultData,
+> = [_url, _data] extends [PostArgsReq[0], undefined]
 	? // only URL provided
 		[data?: PostArgs[1], options?: PostArgs[2]]
 	: // only data provided
-		[TUrl, TData] extends [undefined, CbArgsReq[1]]
+		[_url, _data] extends [undefined, PostArgsReq[1]]
 		? [url: PostArgs[0], options?: PostArgs[2]]
 		: // Both default URL and data are provided
-			[TUrl, TData] extends [CbArgsReq[0], CbArgsReq[1]]
+			[_url, _data] extends [PostArgsReq[0], PostArgsReq[1]]
 			? [options?: PostArgs[2]]
-			: [TUrl, TData, Options]
+			: [url: PostArgs[0], data?: PostArgs[1], options?: Options]
 
 /** Request options for POST-like methods that allow "options.body" */
 export type PostOptions = {

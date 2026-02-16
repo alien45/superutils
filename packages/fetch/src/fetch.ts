@@ -44,7 +44,7 @@ import {
  * ```
  */
 const fetch = <
-	T,
+	T = unknown,
 	TOptions extends FetchOptions = FetchOptions,
 	TAs extends FetchAs = TOptions['as'] extends FetchAs
 		? TOptions['as']
@@ -135,7 +135,7 @@ const fetch = <
 				url,
 				opts,
 			)
-			const { status = 0 } = response
+			const status = response?.status ?? 0
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
 				const jsonError: unknown = await fallbackIfFails(
