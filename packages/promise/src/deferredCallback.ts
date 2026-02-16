@@ -18,7 +18,7 @@ import { IPromisE, DeferredAsyncOptions } from './types'
  * 	   console.log(e.target.value)
  * // Change handler with `PromisE.deferred()`
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
- * 	   delayMs: 300,
+ * 	   delay: 300,
  * 	   throttle: false,
  * })
  * // Simulate input change events after prespecified delays

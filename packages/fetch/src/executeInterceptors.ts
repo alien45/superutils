@@ -23,7 +23,7 @@ export const executeInterceptors = async <T, TArgs extends unknown[]>(
 	...args: TArgs
 ) => {
 	for (const interceptor of [...(interceptors ?? [])].filter(isFn)) {
-		if (signal?.aborted) return value
+		if (signal?.aborted) break
 		value =
 			((await fallbackIfFails(
 				interceptor,

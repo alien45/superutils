@@ -22,7 +22,6 @@
 		"node"
 	],
 	"license": "MIT",
-	"main": "dist/index.js",
 	"name": "@superutils/core",
 	"publishConfig": {
 		"access": "public"
@@ -34,13 +33,22 @@
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_watch": "tsc -p tsconfig.json --watch",
-		"build": "tsup src/index.ts --format esm --dts --clean --config ../../tsup.config.js",
+		"build": "tsup --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
 		"start": "npm run build -- --watch",
 		"test": "cd ../../ && npm run test core"
 	},
 	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
 	"type": "module",
-	"types": "dist/index.d.ts",
-	"version": "1.2.1"
+	"types": "./dist/index.d.ts",
+	"version": "1.2.2"
 }

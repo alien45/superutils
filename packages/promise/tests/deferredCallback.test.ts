@@ -40,7 +40,7 @@ describe('PromisE.deferredCallback', () => {
 			values.push(e.target.value),
 		)
 		const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
-			delayMs: 300,
+			delay: 300,
 			throttle: false, // throttle with delay duration set in `defer`
 		})
 		// simulate click events by setting up triggers with specific delays

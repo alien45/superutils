@@ -36,6 +36,37 @@ describe('fetch', () => {
 	})
 
 	describe('general', () => {
+		it('should return `Response` by default', async () => {
+			const fetch200 = vi.fn((...args: any[]) =>
+				Promise.resolve(
+					new Response(
+						JSON.stringify({
+							age: 33,
+							id: 'adam',
+							location: 'heaven',
+							name: 'Adam',
+						}),
+						{
+							status: 200,
+							headers: { 'Content-Type': 'application/json' },
+						},
+					),
+				),
+			)
+			vi.stubGlobal('fetch', fetch200)
+			const promise = fetch<Response>(product1Url)
+			await vi.runAllTimersAsync()
+			const response = await promise
+			expect(response).instanceOf(Response)
+			await expect(response.json()).resolves.toEqual({
+				age: 33,
+				id: 'adam',
+				location: 'heaven',
+				name: 'Adam',
+			})
+			expect(fetch200).toHaveBeenCalledOnce()
+		})
+
 		it(`should handle "Failed to execute 'fetch' on 'Window'"`, async () => {
 			const fetchMock = vi.fn(async () =>
 				Promise.reject(
@@ -201,9 +232,10 @@ describe('fetch', () => {
 	describe('interceptors', () => {
 		it('should throw error when invalid URL is provided', async () => {
 			const errorIntercepror = vi.fn()
-			const promise = fetch('some invalid url', {
+			const promise = fetch('an invalid url', {
 				interceptors: { error: [errorIntercepror] },
 			})
+			promise.catch(noop)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
 		})
@@ -430,9 +462,11 @@ describe('fetch', () => {
 		})
 
 		it('should abort the fetch request externally', async () => {
-			const mockedFetch = vi.fn(() => PromisE.delay(10_000, okResponse))
-			vi.stubGlobal('fetch', mockedFetch)
+			const mockedFetch = vi.fn(() => {
+				return PromisE.delay(10_000, okResponse)
+			})
 			const promise = fetch.get(product1Url, {
+				fetchFunc: mockedFetch as any,
 				timeout: 5000,
 			})
 			promise.catch(() => {}) // avoid unhandled rejection

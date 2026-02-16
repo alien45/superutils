@@ -6,7 +6,6 @@ import type {
 	IPromisE_Timeout,
 	OnFinalize,
 	TimeoutOptions,
-	TimeoutOptionsDefault,
 } from './types'
 
 /** Timeout duration (in milliseconds) used as a fallback when positive number is not provided to {@link timeout} */
@@ -14,6 +13,7 @@ export const TIMEOUT_FALLBACK = 10_000
 /** Node.js setTimeout limit is 2147483647 (2^31-1). Larger values fire immediately. */
 export const TIMEOUT_MAX = 2147483647
 
+/** Utility class used by `PromisE.timeout()`. */
 export class TimeoutPromise<T>
 	extends PromisEBase<T>
 	implements IPromisE_Timeout<T>
@@ -114,11 +114,5 @@ export class TimeoutPromise<T>
 		this.options?.abortCtrl?.signal?.aborted === false
 			&& this.options?.abortCtrl.abort(err)
 	}) as OnFinalize<T>
-
-	static defaults = {
-		abortOnEarlyFinalize: true,
-		batchFunc: 'all',
-		timeout: TIMEOUT_FALLBACK,
-	} as TimeoutOptionsDefault
 }
 export default TimeoutPromise

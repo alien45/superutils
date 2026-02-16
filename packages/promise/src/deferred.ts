@@ -29,7 +29,7 @@ import {
  * - `PromisE.deferred` is to be used with promises/functions.
  * `PromisE.deferredCallback` is for use with callback functions.
  * - There is no specific time delay.
- * - If a request takes longer than `delayMs`, the following request will be added to queue
+ * - If a request takes longer than `delay`, the following request will be added to queue
  * and either be ignored or exectued based on the debounce/throttle configuration.
  * - If not throttled:
  *     1. Once a request is handled, all previous requests will be ignored and pool starts anew.
@@ -48,12 +48,12 @@ import {
  * The properties' default values can be overridden to be EFFECTIVE GLOBALLY:
  * ```typescript
  * deferred.defaults = {
- *     delayMs: 100,
+ *     delay: 100,
  *     resolveError: ResolveError.REJECT,
  *     resolveIgnored: ResolveIgnored.WITH_LAST,
  * }
  * ```
- * @property options.delayMs   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
+ * @property options.delay   (optional) delay in milliseconds to be used with debounce & throttle modes. When `undefined` or `>= 0`, execution will be sequential.
  * @property options.onError   (optional)
  * @property options.onIgnore  (optional) invoked whenever callback invocation is ignored by a newer invocation
  * @property options.onResult  (optional)
@@ -65,15 +65,15 @@ import {
  * Default: `false`
  *
  * @returns Callback function that can be invoked in one of the followin 3 methods:
- * - sequential: when `delayMs <= 0`
- * - debounced: when `delayMs > 0` and `throttle = false`
- * - throttled: when `delayMs > 0` and `throttle = true`
+ * - sequential: when `delay <= 0`
+ * - debounced: when `delay > 0` and `throttle = false`
+ * - throttled: when `delay > 0` and `throttle = true`
  *
  * @example Debounce calls
  * ```typescript
  * const example = async (options = {}) => {
  * 	const df = PromisE.deferred({
- * 		delayMs: 100,
+ * 		delay: 100,
  * 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
  * 		...options,
  * 	})
@@ -94,7 +94,7 @@ import {
  * ```typescript
  * const example = async (options = {}) => {
  * 	const df = PromisE.deferred({
- * 		delayMs: 100,
+ * 		delay: 100,
  * 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
  * 		...options,
  * 	})
@@ -125,7 +125,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 	) as DeferredAsyncOptions<ThisArg, Delay>
 	let { onError, onIgnore, onResult } = options
 	const {
-		delayMs = 0,
+		delay = 0,
 		ignoreStale,
 		resolveError,
 		resolveIgnored,
@@ -141,7 +141,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 	let lastInSeries: QueueItem | null = null
 	let lastExecuted: QueueItem
 	const queue = new Map<symbol, QueueItem>()
-	const isSequential = !isPositiveNumber(delayMs)
+	const isSequential = !isPositiveNumber(delay)
 
 	if (thisArg !== undefined) {
 		onError = onError?.bind(thisArg)
@@ -238,7 +238,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		? executeItem
 		: deferredSync(
 				executeItem,
-				delayMs,
+				delay,
 				options as Parameters<typeof deferredSync>[2],
 			)
 
@@ -268,7 +268,7 @@ deferred.defaults = {
 	 *
 	 * Use `0` (or negative number) to disable debounce/throttle and execute all operations sequentially.
 	 */
-	delayMs: 100,
+	delay: 100,
 	/** Set the default error resolution behavior. {@link ResolveError} for all options. */
 	resolveError: ResolveError.REJECT,
 	/** Set the default ignored resolution behavior. See {@link ResolveIgnored} for all options. */

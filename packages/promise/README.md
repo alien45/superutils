@@ -167,7 +167,7 @@ import PromisE from '@superutils/promise'
 
 const example = async (options = {}) => {
 	const df = PromisE.deferred({
-		delayMs: 100,
+		delay: 100,
 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
 		...options,
 	})
@@ -192,7 +192,7 @@ import PromisE from '@superutils/promise'
 // Simulate an example scenario
 const example = async (options = {}) => {
 	const df = PromisE.deferred({
-		delayMs: 100,
+		delay: 100,
 		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
 		...options,
 	})
@@ -211,9 +211,9 @@ example({ ignoreStale: false, throttle: true })
 
 #### Behavior with different `options`:
 
-- **`delayMs: PositiveNumber, throttle: false`**: (default) Debounce mode.
+- **`delay: PositiveNumber, throttle: false`**: (default) Debounce mode.
 - **`throttle: true`**: Switches from debounce to throttle mode.
-- **`delayMs: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Requests are executed one after the other. Any failed promise does not affect subsequent promises.
+- **`delay: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Requests are executed one after the other. Any failed promise does not affect subsequent promises.
 - **`resolveIgnored` (enum)**: Controls how an ignored promises is handled.
     1. `ResolveIgnored.WITH_UNDEFINED`: The promise for the ignored request resolves with `undefined`.
     2. `ResolveIgnored.WITH_LAST`: The promise for the ignored request waits (if needed) and resolves with the last/most-recent finalized promise.
@@ -239,7 +239,7 @@ const handleChange = (e: { target: { value: number } }) =>
 	console.log(e.target.value)
 // Change handler with `PromisE.deferred()`
 const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
-	delayMs: 300,
+	delay: 300,
 	throttle: false,
 })
 // Simulate input change events after prespecified delays

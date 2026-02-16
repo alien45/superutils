@@ -1,3 +1,11 @@
+import {
+	arrUnique,
+	isFn,
+	isNumber,
+	isObj,
+	isPositiveNumber,
+	objCopy,
+} from '@superutils/core'
 import type {
 	IPromisE_Timeout,
 	BatchFuncs,
@@ -7,14 +15,6 @@ import type {
 	IPromisE,
 } from './types'
 import TimeoutPromise, { TIMEOUT_FALLBACK, TIMEOUT_MAX } from './TimeoutPromise'
-import {
-	arrUnique,
-	isFn,
-	isNumber,
-	isObj,
-	isPositiveNumber,
-	objCopy,
-} from '@superutils/core'
 import PromisEBase from './PromisEBase'
 import delayReject from './delayReject'
 
@@ -102,7 +102,7 @@ export function timeout<
  *
  * @param options An options object can be passed with one or more of the following properties:
  * @param options.abortCtrl (optional) AbortController to manually reject promise externally and/or to sync abort with timeout rejection
- * @param options.func (optional) Name of the `PromisE` static method to be used to combine the `values`.
+ * @param options.batchFunc (optional) Name of the `PromisE` static method to be used to combine the `values`.
  * Only used when more than one promise is provided. Default: `"all"`
  *
  * Accepted values:
@@ -191,14 +191,10 @@ export function timeout<
 		) as AbortSignal[],
 	)
 }
-timeout.defaults = TimeoutPromise.defaults
-/** Keep defaults in sync */
-Object.defineProperty(timeout, 'defaults', {
-	get() {
-		return TimeoutPromise.defaults
-	},
-	set(newDefaults: TimeoutOptionsDefault) {
-		TimeoutPromise.defaults = newDefaults
-	},
-})
+timeout.defaults = {
+	abortOnEarlyFinalize: true,
+	batchFunc: 'all',
+	timeout: TIMEOUT_FALLBACK,
+} as TimeoutOptionsDefault
+
 export default timeout

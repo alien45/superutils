@@ -13,13 +13,16 @@
 		<!-- for dynamic styles. eg: min-h-[100px] -->
 		<!-- <script src="https://cdn.tailwindcss.com"></script> -->
 		
-		<title>Script importmap example</title>
+		<title>@superutils/fetch demo</title>
 	</head>
 	<body>
 		<div class="max-w-4xl h-screen p-4 mx-auto">
 			<h1 class="text-4xl font-bold text-center">
-				Script importmap example
+				@superutils/fetch demo
 			</h1>
+			<div>
+				
+			</div>
 			<div>
 				<h2 class="text-3xl font-bold my-2">
 					Products
@@ -109,7 +112,7 @@
     		</div>
     	</div>
     </body>
-	<script type="importmap">
+	<!-- <script type="importmap">
 		{
 			"imports": {
 				"@superutils/core": "https://unpkg.com/@superutils/core@latest/dist/index.js",
@@ -117,7 +120,9 @@
 				"@superutils/fetch": "https://unpkg.com/@superutils/fetch@latest/dist/index.js"
 			}
 		}
-	</script>
-	<script src="./index.js" type="module"></script>
+	</script> -->
+	<script src="https://unpkg.com/@superutils/core@latest/dist/browser/index.min.js"></script>
+	<script src="https://unpkg.com/@superutils/fetch@latest/dist/browser/index.min.js"></script>
+	<script src="./main.js" type="module"></script>
 	 
 </html>

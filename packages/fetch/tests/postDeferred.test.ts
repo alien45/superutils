@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { isObj, objSort } from '@superutils/core'
-import PromisE from '@superutils/promise/src'
-import { getDeferredContext } from '@superutils/promise/tests/getDeferredContext'
+import PromisE from '../../promise/src'
+import { getDeferredContext } from '../../promise/tests/getDeferredContext'
 import fetch from '../src'
 import { productsBaseUrl, getMockedResult } from './utils'
 
@@ -36,10 +36,9 @@ describe('fetch.post.deferred', () => {
 	})
 
 	afterEach(() => {
-		mockPost200.mockClear()
 		vi.unstubAllGlobals()
-
 		vi.useRealTimers()
+		vi.clearAllMocks()
 	})
 
 	it('should make a post request and return json result', async () => {
@@ -73,7 +72,9 @@ describe('fetch.post.deferred', () => {
 		// 2. runAllTimersAsync executes the 3rd call.
 		// 3. The 4th call is made, which is queued.
 		const context = getDeferredContext()
-		const saveProduct = postDeferred(context)
+		const saveProduct = postDeferred(context, undefined, undefined, {
+			fetchFunc: mockPost200,
+		})
 		saveProduct(`${productsBaseUrl}/1`, { name: 'Product 1' })
 		let delay = PromisE.delay(100)
 		await vi.runAllTimersAsync()
@@ -91,8 +92,12 @@ describe('fetch.post.deferred', () => {
 		expect(context.data.results).toHaveLength(2)
 		const result1 = getMockedResult('post', 1, {
 			body: { name: 'Product 1' },
+			fetchFunc: mockPost200,
 		})
-		const result2 = getMockedResult('post', 3, { body: 'Product 3' })
+		const result2 = getMockedResult('post', 3, {
+			body: 'Product 3',
+			fetchFunc: mockPost200,
+		})
 		expect(context.data.results).toEqual([result1, result2])
 	})
 

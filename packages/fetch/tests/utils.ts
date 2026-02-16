@@ -1,11 +1,6 @@
 import { isStr, objSort } from '@superutils/core'
 import { expect } from 'vitest'
-import fetch, {
-	ContentType,
-	FetchAs,
-	FetchOptions,
-	mergeFetchOptions,
-} from '../src'
+import fetch, { ContentType, FetchAs, FetchOptions, mergeOptions } from '../src'
 
 export const productsBaseUrl = 'https://dummyjson.com/products'
 
@@ -30,7 +25,7 @@ export const getMockedResult = (
 	args: [
 		`${productsBaseUrl}/${productId}`,
 		objSort(
-			mergeFetchOptions(fetch.defaults, {
+			mergeOptions(fetch.defaults, {
 				abortCtrl: expect.any(AbortController),
 				as: FetchAs.json,
 				batchFunc: 'all' as any,
