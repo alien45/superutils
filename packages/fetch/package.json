@@ -5,8 +5,8 @@
 	},
 	"description": "A lightweight `fetch` wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.",
 	"dependencies": {
-		"@superutils/core": "^1.2.2",
-		"@superutils/promise": "^1.3.0"
+		"@superutils/core": "^1.2.3",
+		"@superutils/promise": "^1.3.1"
 	},
 	"files": [
 		"dist",
@@ -53,5 +53,5 @@
 	"module": "./dist/index.js",
 	"type": "module",
 	"types": "./dist/index.d.ts",
-	"version": "1.5.0"
+	"version": "1.5.1"
 }
