@@ -12,13 +12,3 @@ export type IPromise_Fetch<T = unknown> = Omit<
 	/** An `AbortController` instance to control the request.  */
 	abortCtrl: AbortController
 }
-
-// Export useful export from PromisE for ease of use
-export {
-	type DeferredAsyncOptions,
-	ResolveError,
-	ResolveIgnored,
-	TIMEOUT_FALLBACK,
-	TIMEOUT_MAX,
-	TimeoutPromise,
-} from '@superutils/promise'

@@ -17,24 +17,27 @@ import { IPromisE_Delay } from './types'
  *
  * @returns promise
  *
- * @example Create a  promise that resolves after specified delay.
- * ```typescript
+ * @example
+ * #### Create a  promise that resolves after specified delay.
+ * ```javascript
  * import PromisE from '@superutils/promise'
  *
  * // Resolves after 1 second delay
  * PromisE.delay(1000).then(console.log)
  * ```
  *
- * @example Execute a function after delay.
+ * @example
+ * #### Execute a function after delay.
  * An awaitable `setTimeout()`.
- * ```typescript
+ * ```javascript
  * import PromisE from '@superutils/promise'
  *
  * PromisE.delay(1000, () => console.log('Prints after 1 second delay'))
  * ```
  *
- * @example Delay before continuing execution
- * ```typescript
+ * @example
+ * #### Delay before continuing execution
+ * ```javascript
  * import PromisE from '@superutils/promise'
  *
  * const func = async () => {

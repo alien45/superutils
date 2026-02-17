@@ -4,8 +4,11 @@ import delay from './delay'
  * @function    PromisE.delayReject
  * @summary Creates a promise that rejects after given delay/duration.
  *
- * @example Create a promise that will rejectafter 3 seconds
- * ```typescript
+ * @example
+ * #### Create a promise that will rejectafter 3 seconds
+ * ```javascript
+ * import PromisE from '@superutils/promise'
+ *
  * const rejectPromise = PromisE.delayReject(
  *     3000, // duration in milliseconds
  *     new Error('App did not initialization on time'), // reason to reject with
@@ -14,10 +17,12 @@ import delay from './delay'
  * codeThatWillNotExecute()
  * ```
  *
- * @example Prevent automated promise rejection by forcing it to resolve before timeout
- * ```typescript
+ * @example
+ * #### Prevent automated promise rejection by forcing it to resolve before timeout
+ * ```javascript
+ * import PromisE from '@superutils/promise'
  *
- * const rejectPromise = PromisE.delayReject<string>(
+ * const rejectPromise = PromisE.delayReject(
  *     3000,
  *     new Error('App did not initialization on time'),
  * )

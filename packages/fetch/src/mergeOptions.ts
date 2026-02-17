@@ -6,10 +6,10 @@ import { FetchOptions, FetchOptionsInterceptor } from './types'
  *
  * Notes:
  * - item properties will be prioritized in the order of sequence they were passed in
- * - the following properties will be merged
- *     * `errMsgs`
- *     * `headers`
- *     * `interceptors`
+ * - the following properties will be merged:
+ *   * `errMsgs`
+ *   * `headers`
+ *   * `interceptors`
  * - all other properties will simply override previous values
  *
  * @returns combined

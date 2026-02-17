@@ -36,11 +36,12 @@ export const getMockedResult = (
 				...options,
 				headers: (() => {
 					const headers = new Headers(options?.headers)
-					!headers.get('content-type')
-						&& headers.set(
-							'content-type',
-							ContentType.APPLICATION_JSON,
-						)
+					if (['delete', 'patch', 'post', 'put'].includes(method))
+						!headers.get('content-type')
+							&& headers.set(
+								'content-type',
+								ContentType.APPLICATION_JSON,
+							)
 					return headers
 				})(),
 				...(['delete', 'patch', 'post', 'put'].includes(
@@ -53,5 +54,5 @@ export const getMockedResult = (
 					}),
 			}),
 		),
-	],
+	] as [string, FetchOptions],
 })

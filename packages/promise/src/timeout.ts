@@ -28,8 +28,9 @@ import delayReject from './delayReject'
  *
  * @param values rest param containing one or more promises/values
  *
- * @example Working with a single promise
- * ```typescript
+ * @example
+ * #### Working with a single promise
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * PromisE.timeout(
@@ -39,8 +40,9 @@ import delayReject from './delayReject'
  * // Result: 1000
  * ```
  *
- * @example Working with a single function
- * ```typescript
+ * @example
+ * #### Working with a single function
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * PromisE.timeout(
@@ -50,48 +52,51 @@ import delayReject from './delayReject'
  * // Result: 1000
  * ```
  *
- * @example Promise times out & rejected
- * ```typescript
+ * @example
+ * #### Promise times out & rejected
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * PromisE.timeout(
- *     5000, // timeout after 5000ms
- *     PromisE.delay(20000), // resolves after 20000ms with value 20000
+ *   5000, // timeout after 5000ms
+ *   PromisE.delay(20000), // resolves after 20000ms with value 20000
  * ).catch(console.error)
  * // Error: Error('Timed out after 5000ms')
  *```
  *
- * @example Working with multiple promises/functions, resolved using "PromisE.all()"
+ * @example
+ * #### Working with multiple promises/functions, resolved using "PromisE.all()"
  *
- * ```typescript
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * PromisE.timeout(
- *     5000, // timeout after 5000ms
- *     PromisE.delay(1000), // resolves after 1000ms with value 1000
- *     () => PromisE.delay(2000), // resolves after 2000ms with value 2000
- *     PromisE.delay(3000), // resolves after 3000ms with value 3000
+ *   5000, // timeout after 5000ms
+ *   PromisE.delay(1000), // resolves after 1000ms with value 1000
+ *   () => PromisE.delay(2000), // resolves after 2000ms with value 2000
+ *   PromisE.delay(3000), // resolves after 3000ms with value 3000
  * ).then(console.log)
  * // Result: [ 1000, 2000, 3000 ]
  * ```
  *
- * @example Promise times out & but not rejected.
+ * @example
+ * #### Promise times out & but not rejected.
  * Eg: when API request is taking longer than expected, print a message avoid rejecting the promise.
- * ```typescript
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * const promise = PromisE.timeout(
- *     5000, // timeout after 5000ms
- *     PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000
+ *   5000, // timeout after 5000ms
+ *   PromisE.delay(20000), // data promise, resolves after 20000ms with value 20000
  * )
  * const data = await promise.catch(err => {
- *     // promise did not time out, but was rejected because one of the data promises rejected
- *     if (!promise.timedout) return Promise.reject(err)
+ *   // promise did not time out, but was rejected because one of the data promises rejected
+ *   if (!promise.timedout) return Promise.reject(err)
  *
- *     // promise timed out >> print/update UI
- *     console.log('Request is taking longer than expected......')
- *     // Now return the data promise which is the result of `PromisE.all(promises)` (default).
- *     return promise.data
+ *   // promise timed out >> print/update UI
+ *   console.log('Request is taking longer than expected......')
+ *   // Now return the data promise which is the result of `PromisE.all(promises)` (default).
+ *   return promise.data
  * })
  *```
  */
@@ -119,19 +124,19 @@ export function timeout<
  *
  * @param values Mix of promises, values and/or functions
  *
- * @example Working with multiple promises/functions resolved using "PromisE.race()"
- *
- * ```typescript
+ * @example
+ * #### Working with multiple promises/functions resolved using "PromisE.race()"
+ * ```javascript
  * import PromisE from '@supertuils/promise'
  *
  * PromisE.timeout(
- *     { // instead of `timeout: number` an object can be used for additional options
- *         func: 'race', // tells PromisE.timeout to use `PromisE.race(promises)`
- *         timeout: 5000, // timeout after 5000ms
- *     },
- *     PromisE.delay(1000), // resolves after 1000ms with value 1000
- *     () => PromisE.delay(2000), // resolves after 2000ms with value 2000
- *     PromisE.delay(3000), // resolves after 3000ms with value 3000
+ *   { // instead of `timeout: number` an object can be used for additional options
+ *     func: 'race', // tells PromisE.timeout to use `PromisE.race(promises)`
+ *     timeout: 5000, // timeout after 5000ms
+ *   },
+ *   PromisE.delay(1000), // resolves after 1000ms with value 1000
+ *   () => PromisE.delay(2000), // resolves after 2000ms with value 2000
+ *   PromisE.delay(3000), // resolves after 3000ms with value 3000
  * ).then(console.log)
  * // Result: 1000 (Result of `Promise.race(promises)`)
  * ```

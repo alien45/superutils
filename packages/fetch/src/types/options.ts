@@ -83,9 +83,7 @@ export type FetchCustomOptions = {
 	 * See {@link FetchInterceptors} for more details.
 	 */
 	interceptors?: FetchInterceptors
-	// /** Request timeout in milliseconds */
-	// timeout?: number
-	/** Whether to validate URL before making the request. Default: `true` */
+	/** Whether to validate URL before making the request. Default: `false` */
 	validateUrl?: boolean
 } & FetchRetryOptions
 	& TimeoutOptions<[]>
@@ -119,9 +117,25 @@ export type FetchOptions = Omit<RequestInit, 'body'> & FetchCustomOptions
 /** Default fetch options */
 export type FetchOptionsDefault = Omit<
 	FetchOptionsInterceptor,
-	'abortCtrl' | 'as' | 'method' | 'signal' | 'timeout'
+	'abortCtrl' | 'as' | 'method' | 'signal' | 'timeout' | 'headers'
 > & {
-	/** Request timeout duration in milliseconds. Default: `30_000` (30 seconds) */
+	/**
+	 * Request headers.
+	 *
+	 * Deafult:
+	 * - No default content type set when `fetch()` is directly invoked.
+	 * - `"content-type": "application/json"`: for `createPostClient()`, `fetch.post()`,
+	 * `fetch.post.deferred()` and other method specific functions
+	 */
+	headers: HeadersInit
+	/**
+	 * Request timeout duration in milliseconds.
+	 *
+	 * Default:
+	 * - `30_000` for `createClient()`, `createPostClient()` and
+	 * all method specific functions (`fetch.METHOD` & `fetch.METHOD.deferred()`
+	 * - `2147483647` when `fetch()` invoked directly
+	 */
 	timeout: number
 }
 
@@ -201,30 +215,10 @@ export type PostArgs = [
  * ```typescript
  * import fetch, { type PostDeferredCbArgs } from '@superutils/fetch'
  *
- * // test with types
  * type T1 = PostDeferredCbArgs<string | URL, undefined> // expected: [data, options]
- * type T2 = PostDeferredCbArgs<undefined, string> // expected: [url, options]
+ * type T2 = PostDeferredCbArgs<string | undefined, string> // expected: [url, options]
  * type T3 = PostDeferredCbArgs // expected: [url, data, options]
  * type T4 = PostDeferredCbArgs<string, string> // expected: [options]
- *
- * const data = { name: 'test' }
- * const url = 'https://domain.com'
- * // test with fetch.post.deferred()
- * const f1 = fetch.post.deferred({}, 'https://domain.com')
- * // expected: [data, options]
- * f1({data: 1}).then(console.log, console.warn)
- *
- * const f2 = fetch.post.deferred({}, undefined, 'dome data')
- * // expected: [url, options]
- * f2('https').then(console.log, console.warn)
- *
- * const f3 = fetch.post.deferred({})
- * // expected: [url, data, options]
- * f3('https://domain.com').then(console.log, console.warn)
- *
- * const f4 = fetch.post.deferred({}, 'url', 'data')
- * // expected: [options]
- * f4().then(console.log, console.warn)
  * ```
  */
 export type PostDeferredCbArgs<

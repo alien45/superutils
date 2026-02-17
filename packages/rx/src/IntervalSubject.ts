@@ -6,8 +6,12 @@ import { BehaviorSubject } from './BehaviorSubject'
  *
  * -----------------------------------------------
  *
- * @example Fetch data from API server every minute
+ * @example
+ * #### Fetch data from API server every minute
  * ```typescript
+ * import fetch from '@superutils/fetch'
+ * import { IntervalSubject } from '@superutils/rx'
+ *
  * const initialValue = 0
  * const rxInterval = new IntervalSubject(
  * 	true, // auto-start
@@ -17,12 +21,11 @@ import { BehaviorSubject } from './BehaviorSubject'
  * )
  *
  * const onChange = (counter: number) => {
- * 	counter === initialValue && console.log('Counter started')
- * 	const { PromisE } = require('@superutils/core')
- * 	PromisE.fetch('https://jsonplaceholder.typicode.com/todos/100').then(
- *         () => console.log(new Date().toISOString(), 'Successful ping'),
- *         (err: Error) => console.log('Ping failed.', err)
- *     )
+ *   counter === initialValue && console.log('Counter started')
+ *   fetch.get('https://dummyjson.com/http/200').then(
+ *     () => console.log(new Date().toISOString(), 'Successful ping'),
+ *     (err: Error) => console.log('Ping failed.', err)
+ *   )
  * }
  *
  * // BehaviorSubject automatically resolves with the initial value if subscribed immediately.

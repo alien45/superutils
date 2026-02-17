@@ -26,33 +26,36 @@ type ValueModifier<T = unknown, TCopy = T> = (
  * Changes on the destination subject is NOT applied back into the source subject.
  *
  * @param rxSource  RxJS source subject(s). If Array provied, value of `rxCopy` will also be an Array by default,
- *      unless a different type is provided by `rxCopy` or `valueModifier`.
+ * unless a different type is provided by `rxCopy` or `valueModifier`.
  *
  * @param rxCopy    (optional) RxJS copy/destination subject.
- *      If `undefined`, a new subject will be created.
- *      Value type will be inferred automatically based on `rxCopy`, `valueModifier` and `rxSource`.
- *      Default: `new BehaviorSubject()`
+ * If `undefined`, a new subject will be created.
+ * Value type will be inferred automatically based on `rxCopy`, `valueModifier` and `rxSource`.
+ * Default: `new BehaviorSubject()`
  * @param valueModifier (optional) callback to modify the value (an thus type) before copying from `rxSource`.
- *      Accepts async functions. Function invocation errors will be gracefully ignored.
- *      PS: If the very first invokation returns `IGNORE_UPDATE_SYMBOL`, the value of `rxCopy.value` will be undefined.
- *      Args: `newValue, previousValue, rxCopy`
+ * Accepts async functions. Function invocation errors will be gracefully ignored.
+ * PS: If the very first invokation returns `IGNORE_UPDATE_SYMBOL`, the value of `rxCopy.value` will be undefined.
+ * Args: `newValue, previousValue, rxCopy`
  * @param defer (optional) delay in milliseconds.
- *      Default: `100` if rxSource is an array, otherwise, `0`.
+ * Default: `100` if rxSource is an array, otherwise, `0`.
  *
  * @returns rxCopy
  *
  * ----------------------------------------------
  *
- * @example copy a single subject
+ * @example
+ * #### Copy a single subject
  * ```typescript
+ * import { BehaviorSubject, copyRxSubject } from '@superutils/rx'
+ *
  * const rxNumber = new BehaviorSubject(1)
  * const rxEven = copyRxSubject(
- *     rxNumber,
- *     // If not provided, rxEven will be created and returned: `new BehaviorSubject<boolean>(false),`
- *     // Type will be inferred from `valueModifier` if available, otherwise, `rxNumber`.
- *     undefined,
- *     // whenever a new value is received from rxNumber, reduce it to the appropriate value for the rxEven.
- *     (newValue) => newValue % 2 === 0,
+ *   rxNumber,
+ *   // If not provided, rxEven will be created and returned: `new BehaviorSubject<boolean>(false),`
+ *   // Type will be inferred from `valueModifier` if available, otherwise, `rxNumber`.
+ *   undefined,
+ *   // whenever a new value is received from rxNumber, reduce it to the appropriate value for the rxEven.
+ *   (newValue) => newValue % 2 === 0,
  * )
  * // subscribe to changes
  * // will immediately print false from the initial value of rxNumber
@@ -63,55 +66,64 @@ type ValueModifier<T = unknown, TCopy = T> = (
  *
  * ----------------------------------------------
  *
- * @example copy an array of subjects & non-subjects
+ * @example
+ * #### Copy an array of subjects & non-subjects
  * Automatically reduces to a single array with original values and their respective types
  * ```typescript
- *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
- *  const rxUserId = new BehaviorSubject('username')
- *  const rxUserSettings = copyRxSubject(
- *      [rxTheme, rxUser, 'my-fancy-app' ] as const
- *  )
- *  // subscribe to the subject with reduced array values
- *  rxUserSettings.subscribe(([theme, user, appName]) => {})
+ * import { BehaviorSubject, copyRxSubject } from '@superutils/rx'
+ *
+ * const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ * const rxUserId = new BehaviorSubject('username')
+ * const rxUserSettings = copyRxSubject(
+ *     [rxTheme, rxUser, 'my-fancy-app' ] as const
+ * )
+ * // subscribe to the subject with reduced array values
+ * rxUserSettings.subscribe(([theme, user, appName]) => {})
  * ```
  *
  * ----------------------------------------------
  *
- * @example copy an array of subjects and reduce to some other value
+ * @example
+ * #### Copy an array of subjects and reduce to some other value
  * ```typescript
- *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
- *  const rxUserId = new BehaviorSubject('username')
- *  const rxUserSettings = copyRxSubject(
- *      [rxTheme, rxUserId] as const,
- *      // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
- *      undefined,
- *      ([theme, userId]) => ({ theme, userId }),
- *      100, // delay before updating rxCopy
- *  )
- *  // save settings to local storage whenever any of the values changes
- *  rxUserSettings.subscribe(settings => localStorage.setItem(settings.userId, JSON.stringify(settings)))
+ * import { BehaviorSubject, copyRxSubject } from '@superutils/rx'
+ *
+ * const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ * const rxUserId = new BehaviorSubject('username')
+ * const rxUserSettings = copyRxSubject(
+ *   [rxTheme, rxUserId] as const,
+ *   // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
+ *   undefined,
+ *   ([theme, userId]) => ({ theme, userId }),
+ *   100, // delay before updating rxCopy
+ * )
+ * // save settings to local storage whenever any of the values changes
+ * rxUserSettings.subscribe(settings => localStorage.setItem(settings.userId, JSON.stringify(settings)))
  * ```
  *
  * ----------------------------------------------
  *
- * @example copy an array of subjects & non-subjects and reduce to some other value.
+ * @example
+ * #### Copy an array of subjects & non-subjects and reduce to some other value.
  * Non-subjects will act as unobserved values to be included in the final value.
- * ```typescript
- *  const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
- *  const rxUser = new BehaviorSubject({ balance: 1000, currency: 'usd', userId: 'username' })
- *  const rxProfileProps = copyRxSubject(
- *      [rxTheme, rxUser, 'my-fancy-app' ] as const,
- *      // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
- *      undefined,
- *      ([theme, userId, appName]) => ({ appName, theme, userId }),
- *      100, // delay before updating rxCopy
- *  )
- *  const userProfileView = (
- *      <RxSubjectView
- *          subject={rxProfileProps}
- *          render={props => <UserProfile {...props} />}
- *      />
- *  )
+ * ```jsx
+ * import { BehaviorSubject, copyRxSubject, RxSubjectView } from '@superutils/rx'
+ *
+ * const rxTheme = new BehaviorSubject<'dark' | 'lite'>('dark')
+ * const rxUser = new BehaviorSubject({ balance: 1000, currency: 'usd', userId: 'username' })
+ * const rxProfileProps = copyRxSubject(
+ *   [rxTheme, rxUser, 'my-fancy-app' ] as const,
+ *   // A new subject will be created from `valueModifier` to: `new BehaviorSubject<...>(...),`
+ *   undefined,
+ *   ([theme, userId, appName]) => ({ appName, theme, userId }),
+ *   100, // delay before updating rxCopy
+ * )
+ * const userProfileView = (
+ *   <RxSubjectView
+ *     subject={rxProfileProps}
+ *     render={props => <UserProfile {...props} />}
+ *   />
+ * )
  * ```
  */
 export function copyRxSubject<

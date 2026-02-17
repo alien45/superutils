@@ -20,34 +20,36 @@ export type Interceptor<T, TArgs extends unknown[]> = (
  *
  * @returns returning undefined or not returning anything will not override the error
  *
- * @example	intercept fetch errors to log errors
- * ```typescript
- * import PromisE from '@superutils/promise'
+ * @example
+ * #### Intercept fetch errors to log errors
+ * ```javascript
+ * import fetch from '@superutils/fetch'
  *
  * // not returning anything or returning undefined will avoid transforming the error.
  * const logError = fetchErr => console.log(fetchErr)
- * const result = await PromisE.fetch('https://my.domain.com/api/that/fails', {
- *     interceptors: {
- *         error: [logError]
- *     }
+ * const result = await fetch.get('https://dummyjson.com/http/400', {
+ *   interceptors: {
+ *     error: [logError]
+ *   }
  * })
  * ```
  *
- * @example	intercept & transform fetch errors
- * ```typescript
- * import PromisE from '@superutils/promise'
+ * @example
+ * #### Intercept & transform fetch errors
+ * ```javascript
+ * import fetch from '@superutils/fetch'
  *
  * // Interceptors can be async functions or just return a promise that resolves to the error.
  * // If the execution of the interceptor fails or promise rejects, it will be ignored.
  * // To transform the error it must directly return an error or a Promise that `resolves` with an error.
  * const transformError = async (fetchErr, url, options) => {
- *     fetchErr.message = 'Custom errormessage'
- * 	   return Promise.resolve(fetchErr)
+ *   fetchErr.message = 'Custom errormessage'
+ * 	 return Promise.resolve(fetchErr)
  * }
- * const result = await PromisE.fetch('https://my.domain.com/api/that/fails', {
- *     interceptors: {
- *         error: [transformError]
- *     }
+ * const result = await fetch.get('https://dummyjson.com/http/400', {
+ *   interceptors: {
+ *     error: [transformError]
+ *   }
  * })
  * ```
  */
@@ -62,19 +64,21 @@ export type FetchInterceptorError = Interceptor<
  * 1. by returning an API URL (string/URL)
  * 2. by modifying the properties of the options parameter to be used before making the fetch request
  *
- * @example intercept and transform fetch request
+ * @example
+ * #### Intercept and transform fetch request
  * ```typescript
- * import PromisE from '@superutils/promise'
+ * import fetch from '@superutils/fetch'
  *
  * // update API version number
  * const apiV1ToV2 = url => `${url}`.replace('api/v1', 'api/v2')
  * const includeAuthToken = (url, options) => {
- *     options.headers.set('x-auth-token', 'my-auth-token')
+ *   options.headers.set('x-auth-token', 'my-auth-token')
  * }
- * const data = await PromisE.fetch('https://my.domain.com/api', {
- *     interceptors: {
- *         result: [apiV1ToV2, includeAuthToken]
- *     }
+ * const result = await fetch.get('https://dummyjson.com/products', {
+ *   method: 'post',
+ *   interceptors: {
+ *       result: [apiV1ToV2, includeAuthToken]
+ *   }
  * })
  * ```
  */
@@ -88,24 +92,29 @@ export type FetchInterceptorRequest = Interceptor<
  *
  * This interceptor can also be used as a transformer by return a different/modified {@link Response}.
  *
- * @example intercept and transform response:
- * ```typescript
- * import PromisE from '@superutils/promise'
+ * @example
+ * #### Intercept and transform response:
+ * ```javascript
+ * import fetch from '@superutils/fetch'
  *
- * // After successful login, retrieve user balance.
+ * // After successful login, retrieve full user details.
  * // This is probably better suited as a result transformer but play along as this is
  * // just a hypothetical scenario ;)
- * const includeBalance = async response => {
- *     const balance = await PromisE.fetch('https://my.domain.com/api/user/12325345/balance')
- * 	   const user = await response.json()
- *     user.balance = balance
- *     return new Response(JSON.stringify(user))
+ * const getUser = async response => {
+ * 	 const authResult = await response.json()
+ *   const userDetails = await fetch.get('https://dummyjson.com/users/1')
+ *   const userAuth = { ...userDetails, ...authResult }
+ *   return new Response(JSON.stringify(userAuth))
  * }
- * const user = await PromisE.fetch('https://my.domain.com/api/login', {
- *     interceptors: {
- *         response: [includeBalance]
- *     }
- * })
+ * const user = await fetch.post(
+ * 	'https://dummyjson.com/user/login',
+ *  {  // data/request body
+ *    username: 'emilys',
+ *    password: 'emilyspass',
+ *    expiresInMins: 30,
+ *  },
+ *  { interceptors: { response: [getUser] } }
+ * )
  * ```
  */
 export type FetchInterceptorResponse = Interceptor<
@@ -126,32 +135,45 @@ export type FetchInterceptorResponse = Interceptor<
  * This interceptor can also be used as a transformer by returns a different/modified result.
  *
  *
- * @example intercept and transform fetch result
- * ```typescript
- * import PromisE from '@superutils/promise'
+ * @example
+ * #### Intercept and transform fetch result
+ * ```javascript
+ * import fetch from '@superutils/fetch'
  *
- * // first transform result by extracting result.data
- * const extractData = result => result?.data ?? result
+ * // first transform result (user object) and ensure user result alwasy contain a hexadecimal crypto balance
+ * const ensureBalanceHex = (user = {}) => {
+ *   user.crypto ??= {}
+ *   user.crypto.balance ??= '0x0'
+ *   return user
+ * }
  * // then check convert hexadecimal number to BigInt
- * const hexToBigInt = data => {
- *     if (data.hasOwnProperty('balance') && `${data.balance}`.startsWith('0x')) {
- *          data.balance = BigInt(data.balance)
- *     }
- *     return data
+ * const hexToBigInt = user => {
+ *   user.crypto.balance = BigInt(user.crypto.balance)
+ *   return user
  * }
  * // then log balance (no transformation)
- * const logBalance = data => {
- *     data?.hasOwnProperty('balance') && console.log(data.balance)
+ * const logBalance = (result, url) => {
+ *   // only log balance for single user requests
+ *   const shouldLog = result?.hasOwnProperty('crypto') && /^[0-9]+$/.test(
+ *     url?.split('/users/')[1].replace('/', '')
+ *   )
+ *   shouldLog && console.log(
+ *     new Date().toISOString(),
+ *     '[UserBalance] UserID:', result.id,
+ *     result.crypto.balance
+ *   )
  * }
- * const data = await PromisE.fetch('https://my.domain.com/api', {
- *     interceptors: {
- *         result: [
- * 	           extractData,
- * 	           hexToBigInt,
- * 	           logBalance
- * 	       ]
- *     }
+ * // now we make the actaul fetch request
+ * const result = await fetch.get('https://dummyjson.com/users/1', {
+ *   interceptors: {
+ *     result: [
+ * 	     ensureBalanceHex,
+ * 	     hexToBigInt,
+ * 	     logBalance
+ * 	   ]
+ *   }
  * })
+ * console.log({result})
  * ```
  */
 export type FetchInterceptorResult<
