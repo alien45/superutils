@@ -20,8 +20,10 @@ export const ANY_VALUE_SYMBOL = Symbol('any-value')
  *
  * ----------------------------------------
  *
- * @example Create an interval runner subject that triggers incremental value every second.
+ * @example
+ * #### Create an interval runner subject that triggers incremental value every second.
  * ```typescript
+ * import { IntervalSubject, subjectAsPromise } from '@superutils/rx'
  * const rxInterval = new IntervalSubject(true, 1000, 1, 1)
  *
  * // create a promise that only resolves when expected value is received

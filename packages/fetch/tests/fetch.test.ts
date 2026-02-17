@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE from '@superutils/promise'
+import PromisE, { TIMEOUT_MAX } from '@superutils/promise'
 import fetch, {
 	FetchAs,
 	FetchError,
@@ -11,7 +11,7 @@ import fetch, {
 	FetchOptions,
 } from '../src'
 import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
-import { fallbackIfFails, noop } from '@superutils/core'
+import { fallbackIfFails, noop, objSort } from '@superutils/core'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
@@ -193,6 +193,7 @@ describe('fetch', () => {
 			const {
 				args: [_, expectedOptions],
 			} = getMockedResult('get', 1, localOptions)
+			expectedOptions.timeout = TIMEOUT_MAX
 			await fetch(product1Url, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
@@ -232,10 +233,11 @@ describe('fetch', () => {
 	describe('interceptors', () => {
 		it('should throw error when invalid URL is provided', async () => {
 			const errorIntercepror = vi.fn()
-			const promise = fetch('an invalid url', {
+			const promise = fetch.get('an invalid url', {
 				interceptors: { error: [errorIntercepror] },
+				validateUrl: true,
 			})
-			promise.catch(noop)
+			await promise.catch(noop)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
 		})
@@ -286,8 +288,8 @@ describe('fetch', () => {
 			let receivedArgs = [] as unknown[]
 			const mockedInterceptors = {
 				error: [
-					(...args) => {
-						receivedArgs = args
+					(error, url, options) => {
+						receivedArgs = [error, url, objSort(options)]
 					},
 				] as FetchInterceptorError[],
 				request: [],
@@ -296,15 +298,20 @@ describe('fetch', () => {
 			}
 			const options = {
 				interceptors: mockedInterceptors,
+				validateUrl: true,
 			} as Omit<FetchOptions, 'method'>
-			const { args: expectedArgs } = getMockedResult('get', 1, options) // to prepare expected options
+			const expectedOptions = getMockedResult('get', 1, options).args[1] // to prepare expected options
+			expectedOptions.headers = new Headers()
 			const url = 'an invalid url'
-			expectedArgs[0] = url // override with invalid url
 			await fetch.get(url, options).catch(noop)
-			expect(receivedArgs).toEqual([
-				expect.any(FetchError),
-				...expectedArgs,
-			])
+			const [err, receivedUrl, receivedOptions] = receivedArgs as [
+				FetchError,
+				string,
+				FetchOptions,
+			]
+			expect(err).toBeInstanceOf(FetchError)
+			expect(receivedUrl).toBe(url)
+			expect(receivedOptions).toEqual(expectedOptions)
 		})
 
 		it('should execute interceptors and transform result', async () => {

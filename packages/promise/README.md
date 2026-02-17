@@ -14,6 +14,8 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 - [Features](#features)
 - [Installation](#installation)
+    - [NPM](#npm)
+    - [CDN/Browser](#cdn--browser)
 - [Usage](#usage)
     - [`new PromisE(executor)`](#promise-executor): Drop-in replacement for `Promise`
         - [Status tracking](#status-tracking)
@@ -36,11 +38,45 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 ## Installation
 
+### NPM
+
+Install using your favorite package manager (e.g., `npm`, `yarn`, `pnpm`, `bun`, etc.):
+
 ```bash
 npm install @superutils/promise
 ```
 
 Dependency: `@superutils/core` will be automatically installed by NPM
+
+### CDN / Browser
+
+If you are not using a bundler, you can include the browser build directly:
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/promise/dist/browser/index.min.js"></script>
+```
+
+OR,
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/promise@latest/dist/browser/index.min.js"></script>
+```
+
+This will expose a global namespace with the following:
+
+```javascript
+// Namespace: default export (class) from '@superutils/promise' and all the exports as properties
+superutils.PromisE
+
+const { PromisE } = superutils
+
+new PromisE()
+await PromisE.delay(1000)
+const handleChange = PromisE.deferredCallback(
+	event => console.log({ value: event.target.value }),
+	{ delay: 300 },
+)
+```
 
 ## Usage
 

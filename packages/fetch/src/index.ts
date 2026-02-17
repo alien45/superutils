@@ -1,4 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
+// Re-export fetch relevant & useful things from '@superutils/promise' for ease of use
+export {
+	ResolveError,
+	ResolveIgnored,
+	TIMEOUT_FALLBACK,
+	TIMEOUT_MAX,
+	TimeoutPromise,
+} from '@superutils/promise'
+export type {
+	DeferredAsyncOptions,
+	OnEarlyFinalize,
+	OnFinalize,
+	RetryIfFunc,
+	RetryOptions,
+	TimeoutOptions,
+} from '@superutils/promise'
+
+/* All local exports */
 export * from './createClient'
 export * from './createPostClient'
 export * from './executeInterceptors'
@@ -109,8 +128,8 @@ const methods = {
  * import fetch from '@superutils/fetch'
  *
  * fetch('https://dummyjson.com/products/1')
- *     .then(response => response.json())
- *     .then(console.log, console.error)
+ *   .then(response => response.json())
+ *   .then(console.log, console.error)
  * ```
  *
  * @example
@@ -120,13 +139,9 @@ const methods = {
  *
  * // no need for `response.json()` or `result.data.data` drilling
  * fetch.get('https://dummyjson.com/products/1')
- *     .then(product => console.log(product))
- * fetch.get('https://dummyjson.com/products/1')
- *     .then(product => console.log(product))
- *
- *
+ *   .then(product => console.log(product))
  * fetch.post('https://dummyjson.com/products/add', { title: 'Product title' })
- *     .then(product => console.log(product))
+ *   .then(product => console.log(product))
  * ```
  *
  *
@@ -156,10 +171,10 @@ const methods = {
  *
  * // add an interceptor to conditionally include header before making requests
  * interceptors.request.push((url, options) => {
- * 		// ignore login requests
- *     if (`${url}`.includes('/login')) return
+ *   // ignore login requests
+ *   if (`${url}`.includes('/login')) return
  *
- *     options.headers.set('x-auth-token', 'my-auth-token')
+ *   options.headers.set('x-auth-token', 'my-auth-token')
  * })
  * ```
  */

@@ -8,26 +8,25 @@ import { IPromisE, DeferredAsyncOptions } from './types'
  *
  * @returns deferred/throttled function
  *
- *
- * @example Debounce/deferred event handler
+ * @example
+ * #### Debounce/deferred event handler
  * ```typescript
  * import PromisE from '@superutils/promise'
  *
  * // Input change handler
- * const handleChange = (e: { target: { value: number } }) =>
- * 	   console.log(e.target.value)
+ * const handleChange = e => console.log(e.target.value)
  * // Change handler with `PromisE.deferred()`
  * const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
- * 	   delay: 300,
- * 	   throttle: false,
+ *   delay: 300,
+ *   throttle: false,
  * })
  * // Simulate input change events after prespecified delays
  * const delays = [100, 150, 200, 550, 580, 600, 1000, 1100]
  * delays.forEach(timeout =>
- * 	   setTimeout(
- * 	   	   () => handleChangeDeferred({ target: { value: timeout } }),
- * 	   	   timeout,
- * 	   ),
+ * 	 setTimeout(
+ * 	   () => handleChangeDeferred({ target: { value: timeout } }),
+ * 	   timeout,
+ * 	 ),
  * )
  * // Prints:
  * // 200, 600, 1100

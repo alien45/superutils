@@ -37,25 +37,35 @@ export type onBeforeExecType = (
  *
  * @param	preExecute	(optional) if true, will pre-execute task before starting the timer.
  *
- * @example Execute a function sequentially
- * Will not start counting time until function execution ends, maintaining the delay betweeen execution consistent.
+ * @example
+ * #### Execute a function sequentially
+ * Counting time will not start until function execution ends, maintaining the delay betweeen
+ * end of execution consistent.
  * ```typescript
+ * import fetch from '@superutils/fetch'
+ * import { IntervalRunner } fro '@superutils/rx'
+ *
  * const runner = new IntervalRunner(
- *     PromisE.fetch,
- * 	   ['https://my-api-url.com/get-data'],
+ *     fetch.get,
+ * 	   ['https://dummyjson.com/products'],
  *     2000,
  *  )
  * runner.start(result => console.log({ result }))
  * ```
  *
- * @example Execute a function at without enforcing sequential execution.
- * Will start counting time even if function execution is unfinied, maintaining the delay betweeen execution START-TIME consistent.
+ * @example
+ * #### Execute a function at without enforcing sequential execution.
+ * Will start counting time even if function execution is unfinied, maintaining the delay betweeen
+ * start of execution consistent.
  * ```typescript
+ * import fetch from '@superutils/fetch'
+ * import { IntervalRunner } fro '@superutils/rx'
+ *
  * const runner = new IntervalRunner(
- *     PromisE.fetch,
- * 	   ['https://my-api-url.com/get-data'],
- *     2000,
- *     false,
+ *   fetch.get,
+ * 	 ['https://dummyjson.com/products'],
+ *   2000,
+ *   false,
  *  )
  * runner.start(result => console.log({ result }))
  * ```

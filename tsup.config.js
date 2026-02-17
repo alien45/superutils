@@ -42,5 +42,5 @@ export default defineConfig((options = {}) => {
 			sourcemap: true,
 			treeshake: true,
 		},
-	]
+	].filter(Boolean)
 })

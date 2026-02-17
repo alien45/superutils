@@ -12,9 +12,11 @@ import timeout from './timeout'
  * For more example see static functions like `PromisE.deferred}, `PromisE.fetch}, `PromisE.timeout} etc.
  *
  *
- * @example Example 1: As a drop-in replacement for Promise class
- * ```typescript
+ * @example
+ * #### Example 1: As a drop-in replacement for Promise class
+ * ```javascript
  * import PromisE from '@superutils/promise'
+ *
  * const p = new PromisE((resolve, reject) => resolve('done'))
  * console.log(
  *  p.pending, // Indicates if promise has finalized (resolved/rejected)
@@ -23,25 +25,36 @@ import timeout from './timeout'
  * )
  * ```
  *
- * @example Example 2: Extend an existing "Proimse" instance to check status
- * ```typescript
+ * @example
+ * #### Example 2: Extend an existing `Proimse` instance to check status
+ * ```javascript
  * import PromisE from '@superutils/promise'
+ *
  * const instance = new Promise((resolve) => setTimeout(() => resolve(1), 1000))
  * const p = new PromisE(instance)
- * console.log(p.pending)
+ * console.log(p.pending) // true
+ * setTimeout(() => console.log({
+ *   pending: p.pending, // false
+ *   rejected: p.rejected, // false
+ *   resolved: p.resolved, // true
+ * }), 1000)
  * ```
  *
- * @example Example 3: Create a promise to be finalized externally (an alternative to "PromisE.withResolvers()")
- * ```typescript
+ * @example
+ * #### Example 3: Create a promise to be finalized externally (an alternative to "PromisE.withResolvers()")
+ * ```javascript
  * import PromisE from '@superutils/promise'
- * const p = new PromisE<number>()
+ *
+ * const p = new PromisE()
  * setTimeout(() => p.resolve(1))
  * p.then(console.log)
  * ```
  *
- * @example Example 4. Invoke functions catching any error and wrapping the result in a PromisE instance
- * ```typescript
+ * @example
+ * #### Example 4. Invoke functions catching any error and wrapping the result in a PromisE instance
+ * ```javascript
  * import PromisE from '@superutils/promise'
+ *
  * const p = PromisE.try(() => { throw new Error('I am a naughty function' ) })
  * p.catch(console.error)
  * ```

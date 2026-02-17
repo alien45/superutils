@@ -11,6 +11,8 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 ## Table of Contents
 
 - [Installation](#installation)
+    - [NPM](#npm)
+    - [CDN/Browser](#cdn--browser)
 - [Usage](#usage)
     - [`is`](#is): Type checkers
     - [`debounce()`](#debounce): Debounce callbacks
@@ -26,8 +28,40 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 ## Installation
 
+### NPM
+
+Install using your favorite package manager (e.g., `npm`, `yarn`, `pnpm`, `bun`, etc.):
+
 ```bash
 npm install @superutils/core
+```
+
+### CDN / Browser
+
+If you are not using a bundler, you can include the browser build directly:
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/core/dist/browser/index.min.js"></script>
+```
+
+OR,
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/core@latest/dist/browser/index.min.js"></script>
+```
+
+This will expose a global namespace with the following:
+
+```javascript
+// Namespace: an object containing all exports from `@superutils/core`
+superutils.core
+
+const { deferred, fallbackIfFails, objCopy, search, throttle } = superutils.core
+
+deferred()
+fallbackIfFails()
+search()
+throttle()
 ```
 
 ## Usage

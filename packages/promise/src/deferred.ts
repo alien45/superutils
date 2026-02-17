@@ -69,8 +69,11 @@ import {
  * - debounced: when `delay > 0` and `throttle = false`
  * - throttled: when `delay > 0` and `throttle = true`
  *
- * @example Debounce calls
- * ```typescript
+ * @example
+ * #### Debounce calls
+ * ```javascript
+ * import PromisE from '@superutils/promise'
+ *
  * const example = async (options = {}) => {
  * 	const df = PromisE.deferred({
  * 		delay: 100,
@@ -90,8 +93,11 @@ import {
  * // `200` will be printed in the console
  * ```
  *
- * @example Throttle calls
- * ```typescript
+ * @example
+ * #### Throttle calls
+ * ```javascript
+ * import PromisE, { ResolveIgnored } from '@superutils/promise'
+ *
  * const example = async (options = {}) => {
  * 	const df = PromisE.deferred({
  * 		delay: 100,
