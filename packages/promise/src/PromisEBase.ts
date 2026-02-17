@@ -25,10 +25,13 @@ export class PromisEBase<T = unknown>
 	/**
 	 * If executor function is not provided, the promise must be resolved/rejected externally.
 	 *
-	 * @example An alternative to "Promise.withResolvers()"
-	 * ```typescript
+	 * @example
+	 * #### An alternative to "Promise.withResolvers()"
+	 * ```javascript
+	 * import PromisE from '@superutils/promise'
+	 *
 	 * // create a promise that will NEVER finalize automatically
-	 * const p = new PromisE<number>()
+	 * const p = new PromisE()
 	 * // resolve it manually
 	 * setTimeout(() => p.resolve(1), 1000)
 	 * p.then(console.log)

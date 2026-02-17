@@ -62,12 +62,12 @@ import { IfPromiseAddValue } from './types'
  * @example
  * #### Hybrid functions: working with function that returns value sync/async circumstantially
  *
- * ```typescript
+ * ```javascript
  * import { fallbackIfFails } from '@superutils/core'
  *
  * const getData = (useCache = true, cacheKey = 'data-cache') => {
  *     if (useCache && localStorage[cacheKey]) return localStorage[cacheKey]
- *     return fetch('https://my.domain.com/api')
+ *     return fetch('https://dummyjson.com/productsi')
  *         .then(r => r.json())
  *         .then(data => {
  * 		       if(cacheKey) localStorage[cacheKey] = data

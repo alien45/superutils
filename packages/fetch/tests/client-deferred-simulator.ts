@@ -55,7 +55,7 @@ const getClientDeferredSimulator = (postClient = false) => {
 					getProductsDeferred(
 						...[
 							postClient && {},
-							{ fetchFunc: fetchFunc(n), debugTag: n },
+							{ fetchFunc: fetchFunc(n) },
 						].filter(Boolean),
 					),
 				),

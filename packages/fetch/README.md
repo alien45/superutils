@@ -14,6 +14,8 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 - [Features](#features)
 - [Installation](#installation)
+    - [NPM](#npm)
+    - [CDN / Browser](#cdn--browser)
 - [Usage](#usage)
     - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
     - [`PromisE Features`](#promise-features): status, early finalization etc
@@ -39,9 +41,56 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 ## Installation
 
+### NPM
+
+Install using your favorite package manager (e.g., `npm`, `yarn`, `pnpm`, `bun`, etc.):
+
 ```bash
 npm install @superutils/fetch
 ```
+
+Dependency: `@superutils/core` and `@superutils/promise` will be automatically installed by package manager
+
+### CDN / Browser
+
+If you are not using a bundler, you can include the browser build directly:
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch/dist/browser/index.min.js"></script>
+```
+
+OR,
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch@latest/dist/browser/index.min.js"></script>
+```
+
+This will expose a global namespace with the following:
+
+```javascript
+// Namespace: default export (function) from '@superutils/fetch' and all the exports as properties
+superutils.fetch
+// Namespace: default export (class) from '@superutils/promise' and all the exports as properties
+superutils.PromisE
+
+const { fetch, PromisE } = superutils
+
+// Fetch usage
+fetch('url', { method: 'get', timeout: 10_000 })
+fetch.get()
+fetch.createClient({ method: 'post', timeout: 30_000 }, {}, { delay: 500 })
+
+// PromisE usage
+new PromisE()
+await PromisE.delay(1000)
+const handleChange = PromisE.deferredCallback(
+	event => console.log({ value: event.target.value }),
+	{ delay: 300 },
+)
+```
+
+The `@superutils/fetch` browser build includes `PromisE` most (if not all) of it is used internally.
+Loading `@superutils/promise` separately will take precedence and override it.
 
 ## Usage
 

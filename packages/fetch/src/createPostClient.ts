@@ -1,8 +1,8 @@
-import { deferredCallback } from '@superutils/promise'
+import { DeferredAsyncOptions, deferredCallback } from '@superutils/promise'
+import { ClientData } from './createClient'
 import fetch from './fetch'
 import mergeOptions from './mergeOptions'
 import {
-	DeferredAsyncOptions,
 	ExcludePostOptions,
 	FetchAs,
 	PostArgs,
@@ -11,7 +11,6 @@ import {
 	IPromise_Fetch,
 	GetFetchResult,
 } from './types'
-import { ClientData } from './createClient'
 
 /**
  * Create a reusable fetch client with shared options. The returned function comes attached with a
@@ -23,24 +22,25 @@ import { ClientData } from './createClient'
  * Similar to `createClient`, the returned function comes equipped with a `.deferred()` method, enabling debounced,
  * throttled, or sequential execution.
  *
- * @example create reusable clients
+ * @example
+ * #### Create reusable clients
  * ```javascript
  * import { createPostClient, FetchAs } from '@superutils/fetch'
  *
  * // Create a POST client with 10-second as the default timeout
  * const postClient = createPostClient(
- * 	{
- * 		method: 'post',
- * 		headers: { 'content-type': 'application/json' },
+ * 	{ // fixed options cannot be overrided by client calls
+ * 	  method: 'post',
+ * 	  headers: { 'content-type': 'application/json' },
  * 	},
- * 	{ timeout: 10000 },
+ * 	{ timeout: 10000 }, // common options that can be overriden by client calls
  * )
  *
  * // Invoking `postClient()` automatically applies the pre-configured options
  * postClient(
- * 	'https://dummyjson.com/products/add',
- * 	{ title: 'New Product' }, // data/body
- * 	{}, // other options
+ * 	 'https://dummyjson.com/products/add',
+ * 	 { title: 'New Product' }, // data/body
+ * 	 {}, // other options
  * ).then(console.log)
  *
  * // create a deferred client using "postClient"
@@ -50,10 +50,7 @@ import { ClientData } from './createClient'
  * 		onResult: console.log, // prints only successful results
  * 	},
  * 	'https://dummyjson.com/products/add',
- * 	{
- * 		method: 'patch',
- * 		timeout: 3000,
- * 	},
+ * 	{ method: 'patch', timeout: 3000 },
  * )
  * updateProduct({ title: 'New title 1' }) // ignored by debounce
  * updateProduct({ title: 'New title 2' }) // executed
@@ -88,6 +85,7 @@ export const createPostClient = <
 		options?: Options,
 	): IPromise_Fetch<Result> {
 		const mergedOptions = mergeOptions(
+			fetch.defaults,
 			commonOptions,
 			options,
 			fixedOptions, // fixed options will always override other options
@@ -95,6 +93,7 @@ export const createPostClient = <
 		mergedOptions.as ??= FetchAs.json
 		mergedOptions.body = data
 		mergedOptions.method ??= 'post'
+		;(mergedOptions as Record<string, boolean>).fromPostClient = true
 		return fetch(url, mergedOptions)
 	}
 
@@ -136,6 +135,7 @@ export const createPostClient = <
 			// add default data after the url
 			if (defaultData !== undefined) args.splice(1, 0, defaultData)
 			const mergedOptions = (mergeOptions(
+				fetch.defaults,
 				commonOptions,
 				defaultOptions,
 				args[2] as Options,
@@ -150,6 +150,7 @@ export const createPostClient = <
 			// attach body to options
 			mergedOptions.body = (args[1] ?? mergedOptions.body) as PostArgs[1]
 			mergedOptions.method ??= 'post'
+			;(mergedOptions as Record<string, boolean>).fromPostClient = true
 			return fetch(args[0] as PostArgs[0], mergedOptions)
 		}
 

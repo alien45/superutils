@@ -2,10 +2,11 @@ import {
 	fallbackIfFails,
 	isError,
 	isFn,
+	isObj,
 	isPromise,
 	isUrlValid,
 } from '@superutils/core'
-import { timeout as PromisE_timeout } from '@superutils/promise'
+import { timeout as PromisE_timeout, TIMEOUT_MAX } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
 import mergeOptions from './mergeOptions'
@@ -34,12 +35,13 @@ import {
  * @param options.as (optional) determines how to parse the result. Default: {@link FetchAs.json}
  * @param options.method (optional) fetch method. Default: `'get'`
  *
- * @example Make a simple HTTP requests
- * ```typescript
+ * @example
+ * #### Make a simple HTTP requests
+ * ```javascript
  * import { fetch } from '@superutils/fetch'
  *
  * // no need for `response.json()` or `result.data.data` drilling
- * fetch('https://dummyjson.com/products/1')
+ * fetch.get('https://dummyjson.com/products/1')
  * 	   .then(product => console.log(product))
  * ```
  */
@@ -54,9 +56,23 @@ const fetch = <
 	url: string | URL,
 	options: FetchOptions & TOptions = {} as TOptions,
 ) => {
+	if (!isObj(options)) options = {} as TOptions
+	let fromPostClient = false
+	if ((options as unknown as Record<string, boolean>).fromPostClient) {
+		delete (options as unknown as Record<string, boolean>).fromPostClient
+		fromPostClient = true
+	}
 	let response: Response | undefined
 	// merge `defaults` with `options` to make sure default values are used where appropriate
-	const opts = mergeOptions(fetch.defaults, options)
+	const opts = mergeOptions(
+		{
+			abortOnEarlyFinalize: fetch.defaults.abortOnEarlyFinalize,
+			errMsgs: fetch.defaults.errMsgs,
+			timeout: TIMEOUT_MAX,
+			validateUrl: false,
+		},
+		options,
+	)
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
 	opts.abortCtrl =
 		opts.abortCtrl instanceof AbortController
@@ -96,11 +112,6 @@ const fetch = <
 	}
 	return PromisE_timeout(opts, async () => {
 		try {
-			let contentType = headers.get('content-type')
-			if (!contentType) {
-				headers.set('content-type', ContentType.APPLICATION_JSON)
-				contentType = ContentType.APPLICATION_JSON
-			}
 			// invoke global and local response interceptors to intercept and/or transform `url` and `options`
 			url = await executeInterceptors(
 				url,
@@ -108,22 +119,33 @@ const fetch = <
 				opts.interceptors?.request,
 				opts,
 			)
-			const { body, errMsgs, validateUrl = true } = opts
+			const { body, errMsgs, validateUrl = false } = opts
 			opts.signal ??= abortCtrl.signal
 			if (validateUrl && !isUrlValid(url, false))
 				throw new Error(errMsgs.invalidUrl)
 
-			const shouldStringifyBody =
-				[
-					ContentType.APPLICATION_JSON,
-					ContentType.APPLICATION_X_WWW_FORM_URLENCODED,
-				].find(x => contentType.includes(x))
-				&& !['undefined', 'string'].includes(typeof body)
-			// stringify data/body
-			if (shouldStringifyBody)
-				opts.body = JSON.stringify(
-					isFn(body) ? fallbackIfFails(body, [], undefined) : body,
-				)
+			if (fromPostClient) {
+				let contentType = headers.get('content-type')
+				if (!contentType) {
+					headers.set('content-type', ContentType.APPLICATION_JSON)
+					contentType = ContentType.APPLICATION_JSON
+				}
+				const shouldStringifyBody =
+					['delete', 'patch', 'post', 'put'].includes(
+						`${opts.method}`.toLowerCase(),
+					)
+					&& !['undefined', 'string'].includes(typeof body)
+					&& isObj(body, true)
+					&& contentType === ContentType.APPLICATION_JSON
+				// stringify data/body
+				if (shouldStringifyBody) {
+					opts.body = JSON.stringify(
+						isFn(body)
+							? fallbackIfFails(body, [], undefined)
+							: body,
+					)
+				}
+			}
 
 			// make the fetch call
 			response = await getResponse(url, opts)
@@ -198,8 +220,8 @@ fetch.defaults = {
 		response: [],
 		result: [],
 	},
-	timeout: 30_000,
-	validateUrl: true,
+	timeout: 60_000,
+	validateUrl: false,
 } as FetchOptionsDefault
 
 const interceptErr = async (

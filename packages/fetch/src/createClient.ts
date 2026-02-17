@@ -1,8 +1,7 @@
-import { deferredCallback } from '@superutils/promise'
+import { DeferredAsyncOptions, deferredCallback } from '@superutils/promise'
 import fetch from './fetch'
 import mergeOptions from './mergeOptions'
 import type {
-	DeferredAsyncOptions,
 	ExtractAs,
 	ExcludeOptions,
 	FetchArgs,
@@ -31,45 +30,41 @@ export type ClientData<FixedOptions> =
  * The returned client also includes a `.deferred()` method, providing the same debounce, throttle, and sequential
  * execution capabilities found in functions like `fetch.get.deferred()`.
  *
- * @example create reusable clients
+ * @example
+ * #### Create reusable clients
  * ```javascript
  * import { createClient } from '@superutils/fetch'
  *
  * // Create a "GET" client with default headers and a 5-second timeout
  * const apiClient = createClient(
- * 	{
- * 		// fixed options cannot be overridden
- * 		method: 'get',
- * 	},
- * 	{
- * 		// default options can be overridden
- * 		headers: {
- * 			Authorization: 'Bearer my-secret-token',
- * 			'Content-Type': 'application/json',
- * 		},
- * 		timeout: 5000,
- * 	},
- * 	{
- * 		// default defer options (can be overridden)
- * 		delay: 300,
- * 		retry: 2, // If request fails, retry up to two more times
- * 	},
+ * 	 { method: 'get' }, // fixed options cannot be overridden
+ * 	 { // default options can be overridden
+ * 	   headers: {
+ * 	   	Authorization: 'Bearer my-secret-token',
+ * 	   	'Content-Type': 'application/json',
+ * 	   },
+ * 	   timeout: 5000,
+ * 	 },
+ * 	 {// default defer options (can be overridden)
+ * 	   delay: 300,
+ * 	   retry: 2, // If request fails, retry up to two more times
+ * 	 },
  * )
  *
  * // Use it just like the standard fetch
  * apiClient('https://dummyjson.com/products/1', {
- * 	// The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
- * 	// In TypeScript, the compiler will not allow this property.
- * 	// In Javascript, it will simply be ignored.
- * 	// method: 'post',
- * 	timeout: 3000, // The 'timeout' property can be overridden
+ *   // The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
+ *   // In TypeScript, the compiler will not allow this property.
+ *   // In Javascript, it will simply be ignored.
+ *   // method: 'post',
+ *   timeout: 3000, // The 'timeout' property can be overridden
  * }).then(console.log, console.warn)
  *
  * // create a deferred client using "apiClient"
  * const deferredClient = apiClient.deferred(
- * 	{ retry: 0 }, // disable retrying by overriding the `retry` defer option
- * 	'https://dummyjson.com/products/1',
- * 	{ timeout: 3000 },
+ *   { retry: 0 }, // disable retrying by overriding the `retry` defer option
+ *   'https://dummyjson.com/products/1',
+ *   { timeout: 3000 },
  * )
  * deferredClient({ timeout: 10000 }) // timeout is overridden by individual request
  * 	.then(console.log, console.warn)
@@ -94,6 +89,7 @@ export const createClient = <
 		Result = GetFetchResult<[FixedOptions, TOptions, CommonOptions], T>,
 	>(url: FetchArgs[0], options?: TOptions): IPromise_Fetch<Result> {
 		const mergedOptions = mergeOptions(
+			fetch.defaults,
 			commonOptions,
 			options,
 			fixedOptions, // fixed options will always override other options
@@ -131,6 +127,7 @@ export const createClient = <
 				: [options?: TOptions]
 		): IPromise_Fetch<Result> => {
 			const mergedOptions = (mergeOptions(
+				fetch.defaults,
 				commonOptions,
 				defaultOptions,
 				(defaultUrl === undefined ? args[1] : args[0]) as TOptions,
