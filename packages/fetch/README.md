@@ -16,7 +16,7 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 - [Installation](#installation)
 - [Usage](#usage)
     - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
-    - [`PromisE Features`](#promise-features): status, early finalization etc
+    - [`TimeoutPromise` Instance](#promise-features): finer control over the request
     - [`Method Specific Functions`](#methods)
     - [`fetch.get()`](#fetch-get)
     - [`fetch.get.deferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
@@ -61,9 +61,9 @@ fetch('https://dummyjson.com/products/1')
 
 <div id="promise-features"></div>
 
-### PromisE Instance: status, early cancellation
+### `TimeoutPromise` Instance (extends `PromisE`): finer control over the request
 
-All fetch calls return a `PromisE` (`@superutils/promise`) instance which means they come with additional features available in `PromisE`:
+All fetch calls return a `TimeoutPromise` instance from (`@superutils/promise`) which means they come with additional features available in `PromisE`:
 
 1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
 
@@ -78,6 +78,8 @@ request.then(() => {
 	console.log(request.resolved) // true
 	console.log(request.pending) // false
 	console.log(request.rejected) // false
+	console.log(request.aborted) // false
+	console.log(request.timedout) // false
 })
 ```
 
@@ -100,6 +102,21 @@ request.onEarlyFinalize.push((resolved, valueOrReason) =>
 // resolve/reject before the promise is finalized
 request.reject(new Error('No longer needed'))
 ```
+
+3. `abortCtrl`: an `AbortController` instance either provided in the options or created internally.
+
+4. `cancelAbort()`: function internally stop listening to abort signals. PS: the signal that has been passed to built-in `fetch` cannot be undone.
+
+5. `clearTimeout()`: function to clear timeout, effectively disabling abort on timeout.
+
+6. Promises:
+
+- `data`: the fetch result promise and also an instance of `PromisE`.
+- `timeout`: a promise that automatically rejects if request has not completed within provided `options.timeout` duration.
+
+Both of these promises can be externally finalized which will result in the fetch/timeout promise to be resolved or rejected and `abortCtrl` aborted.
+
+7. `options`: all options provided to the fetch function
 
 <div id="methods"></div>
 
