@@ -5,7 +5,7 @@ import type {
 } from '@superutils/promise'
 import { FetchAs } from './constants'
 import type { FetchInterceptors, FetchInterceptorsMerged } from './interceptors'
-import { DropFirst } from '@superutils/core'
+import { DropFirst, ValueOrPromise } from '@superutils/core'
 
 /** Exclude properties of `Target` from `Options`. `headers` will always be included */
 export type ExcludeOptions<
@@ -69,7 +69,7 @@ export type FetchCustomOptions = {
 	 * - Use `abortCtrl` instead of `signal` to prevent creating internal `AbortController` instance.
 	 */
 	abortCtrl?: AbortController
-	body?: PostBody | (() => PostBody)
+	body?: PostArgs[1]
 	/**
 	 * Custom fetch function to use instead of the global `fetch`.
 	 * Useful for testing or using a different fetch implementation (e.g. `node-fetch` in older Node versions).
@@ -117,7 +117,7 @@ export type FetchOptions = Omit<RequestInit, 'body'> & FetchCustomOptions
 /** Default fetch options */
 export type FetchOptionsDefault = Omit<
 	FetchOptionsInterceptor,
-	'abortCtrl' | 'as' | 'method' | 'signal' | 'timeout' | 'headers'
+	'abortCtrl' | 'as' | 'body' | 'method' | 'signal' | 'timeout' | 'headers'
 > & {
 	/**
 	 * Request headers.
@@ -146,6 +146,7 @@ export type FetchOptionsDefault = Omit<
 export type FetchOptionsInterceptor = Omit<
 	FetchOptions,
 	| 'as'
+	| 'body'
 	| 'errMsgs'
 	| 'interceptors'
 	| 'headers'
@@ -153,6 +154,7 @@ export type FetchOptionsInterceptor = Omit<
 	| keyof FetchRetryOptions
 > & {
 	as: FetchAs
+	body: PostBody
 	/** Error messages */
 	errMsgs: Required<FetchErrMsgs>
 	headers: Headers
@@ -204,7 +206,14 @@ export type PostBody = Record<string, unknown> | BodyInit | null
 
 export type PostArgs = [
 	url: string | URL,
-	data?: PostBody | (() => PostBody),
+	/**
+	 * Post body or a function that returns/resolves post body.
+	 *
+	 * PS:
+	 * - if function provided, it will be executed before executing any request interceptors
+	 * - if function execution fails it will throw an error and avoid making the fetch request
+	 */
+	data?: PostBody | (() => ValueOrPromise<PostBody>),
 	options?: PostOptions,
 ]
 

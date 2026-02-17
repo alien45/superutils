@@ -91,7 +91,7 @@ export const createPostClient = <
 			fixedOptions, // fixed options will always override other options
 		) as PostOptions
 		mergedOptions.as ??= FetchAs.json
-		mergedOptions.body = data
+		mergedOptions.body = data ?? mergedOptions.body
 		mergedOptions.method ??= 'post'
 		;(mergedOptions as Record<string, boolean>).fromPostClient = true
 		return fetch(url, mergedOptions)

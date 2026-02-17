@@ -17,6 +17,7 @@ import type {
 	FetchOptionsInterceptor,
 	FetchResult,
 	IPromise_Fetch,
+	PostBody,
 } from './types'
 import {
 	ContentType,
@@ -112,6 +113,13 @@ const fetch = <
 	}
 	return PromisE_timeout(opts, async () => {
 		try {
+			// invoke body function before executing request interceptors
+			opts.body = await fallbackIfFails(
+				opts.body as unknown as Promise<PostBody>,
+				[],
+				(err: Error) => Promise.reject(err),
+			)
+
 			// invoke global and local response interceptors to intercept and/or transform `url` and `options`
 			url = await executeInterceptors(
 				url,
@@ -119,6 +127,7 @@ const fetch = <
 				opts.interceptors?.request,
 				opts,
 			)
+
 			const { body, errMsgs, validateUrl = false } = opts
 			opts.signal ??= abortCtrl.signal
 			if (validateUrl && !isUrlValid(url, false))
@@ -138,13 +147,7 @@ const fetch = <
 					&& isObj(body, true)
 					&& contentType === ContentType.APPLICATION_JSON
 				// stringify data/body
-				if (shouldStringifyBody) {
-					opts.body = JSON.stringify(
-						isFn(body)
-							? fallbackIfFails(body, [], undefined)
-							: body,
-					)
-				}
+				if (shouldStringifyBody) opts.body = JSON.stringify(opts.body)
 			}
 
 			// make the fetch call
