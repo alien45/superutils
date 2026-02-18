@@ -85,7 +85,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> address recurring production issues around retries, cancellation, and request lifecycles in a consistent, observable way.
       </td>
-      <td id="coverage_fetch"><div style="color:green">&#128153;&nbsp;99.01%</div></td>
+      <td id="coverage_fetch"><div style="color:green">&#128153;&nbsp;99.2%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View</a></td>
     </tr>
     <tr>

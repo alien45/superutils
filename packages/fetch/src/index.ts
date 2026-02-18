@@ -127,7 +127,7 @@ const methods = {
  * ```javascript
  * import fetch from '@superutils/fetch'
  *
- * fetch('https://dummyjson.com/products/1')
+ * fetch('[DUMMYJSON-DOT-COM]/products/1')
  *   .then(response => response.json())
  *   .then(console.log, console.error)
  * ```
@@ -137,10 +137,10 @@ const methods = {
  * ```javascript
  * import fetch from '@superutils/fetch'
  *
- * // no need for `response.json()` or `result.data.data` drilling
- * fetch.get('https://dummyjson.com/products/1')
+ * // no need for `response.json()` or "result.data.data" drilling
+ * fetch.get('[DUMMYJSON-DOT-COM]/products/1')
  *   .then(product => console.log(product))
- * fetch.post('https://dummyjson.com/products/add', { title: 'Product title' })
+ * fetch.post('[DUMMYJSON-DOT-COM]/products/add', { title: 'Product title' })
  *   .then(product => console.log(product))
  * ```
  *

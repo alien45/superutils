@@ -22,7 +22,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  *
  * const onChange = (counter: number) => {
  *   counter === initialValue && console.log('Counter started')
- *   fetch.get('https://dummyjson.com/http/200').then(
+ *   fetch.get('[DUMMYJSON-DOT-COM]/http/200').then(
  *     () => console.log(new Date().toISOString(), 'Successful ping'),
  *     (err: Error) => console.log('Ping failed.', err)
  *   )

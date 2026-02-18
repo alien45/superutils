@@ -64,7 +64,7 @@ OR,
 
 This will expose a global namespace with the following:
 
-```javascript
+```java
 // Namespace: default export (class) from '@superutils/promise' and all the exports as properties
 superutils.PromisE
 
@@ -314,8 +314,8 @@ import PromisE from '@superutils/promise'
 const loadUserNProducts = async () => {
 	const promise = PromisE.timeout(
 		5000, // timeout after 5000ms
-		fetch('https://dummyjson.com/users/1'), // fetch user
-		fetch('https://dummyjson.com/products'), // fetch products
+		fetch('[DUMMYJSON-DOT-COM]/users/1'), // fetch user
+		fetch('[DUMMYJSON-DOT-COM]/products'), // fetch products
 	)
 	const [user, products] = await promise.catch(err => {
 		// promise did not time out, but was rejected

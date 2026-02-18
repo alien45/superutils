@@ -38,7 +38,7 @@ import {
  *
  * // Invoking `postClient()` automatically applies the pre-configured options
  * postClient(
- * 	 'https://dummyjson.com/products/add',
+ * 	 '[DUMMYJSON-DOT-COM]/products/add',
  * 	 { title: 'New Product' }, // data/body
  * 	 {}, // other options
  * ).then(console.log)
@@ -49,7 +49,7 @@ import {
  * 		delay: 300, // debounce duration
  * 		onResult: console.log, // prints only successful results
  * 	},
- * 	'https://dummyjson.com/products/add',
+ * 	'[DUMMYJSON-DOT-COM]/products/add',
  * 	{ method: 'patch', timeout: 3000 },
  * )
  * updateProduct({ title: 'New title 1' }) // ignored by debounce

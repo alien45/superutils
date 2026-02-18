@@ -47,7 +47,7 @@ export type onBeforeExecType = (
  *
  * const runner = new IntervalRunner(
  *     fetch.get,
- * 	   ['https://dummyjson.com/products'],
+ * 	   ['[DUMMYJSON-DOT-COM]/products'],
  *     2000,
  *  )
  * runner.start(result => console.log({ result }))
@@ -63,7 +63,7 @@ export type onBeforeExecType = (
  *
  * const runner = new IntervalRunner(
  *   fetch.get,
- * 	 ['https://dummyjson.com/products'],
+ * 	 ['[DUMMYJSON-DOT-COM]/products'],
  *   2000,
  *   false,
  *  )
