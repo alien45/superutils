@@ -320,7 +320,7 @@ export const replacePageUrls = debounce(() => {
 	document.querySelectorAll('code').forEach(el => {
 		el.innerHTML = replaceUrls(el.getHTML())
 	})
-}, 100)
+}, 300)
 
 /** "Try Now" button click event handler */
 export const tryBtnClickHandler = (event: PointerEvent) => {
