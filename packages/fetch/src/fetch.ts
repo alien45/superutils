@@ -41,8 +41,8 @@ import {
  * ```javascript
  * import { fetch } from '@superutils/fetch'
  *
- * // no need for `response.json()` or `result.data.data` drilling
- * fetch.get('https://dummyjson.com/products/1')
+ * // no need for `response.json()` or "result.data.data" drilling
+ * fetch.get('[DUMMYJSON-DOT-COM]/products/1')
  * 	   .then(product => console.log(product))
  * ```
  */

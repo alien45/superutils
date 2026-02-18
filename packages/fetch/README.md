@@ -67,7 +67,7 @@ OR,
 
 This will expose a global namespace with the following:
 
-```javascript
+```java
 // Namespace: default export (function) from '@superutils/fetch' and all the exports as properties
 superutils.fetch
 // Namespace: default export (class) from '@superutils/promise' and all the exports as properties
@@ -77,7 +77,7 @@ const { fetch, PromisE } = superutils
 
 // Fetch usage
 fetch('url', { method: 'get', timeout: 10_000 })
-fetch.get()
+fetch.get('url')
 fetch.createClient({ method: 'post', timeout: 30_000 }, {}, { delay: 500 })
 
 // PromisE usage
@@ -103,7 +103,7 @@ Use as a drop-in replacement to built-in `fetch()`.
 ```javascript
 import fetch from '@superutils/fetch'
 
-fetch('https://dummyjson.com/products/1')
+fetch('[DUMMYJSON-DOT-COM]/products/1')
 	.then(response => response.json())
 	.then(console.log)
 ```
@@ -119,7 +119,7 @@ All fetch calls return a `TimeoutPromise` instance from (`@superutils/promise`) 
 ```javascript
 import fetch from '@superutils/fetch'
 
-const request = fetch('https://dummyjson.com/products/1')
+const request = fetch('[DUMMYJSON-DOT-COM]/products/1')
 
 console.log(request.pending) // true
 
@@ -138,7 +138,7 @@ request.then(() => {
 import fetch from '@superutils/fetch'
 
 // Request that will take 5 seconds to resolve
-const request = fetch('https://dummyjson.com/products?delay=5000')
+const request = fetch('[DUMMYJSON-DOT-COM]/products?delay=5000')
 
 request.then(result => console.log(result), console.warn)
 
@@ -191,7 +191,7 @@ While `fetch()` provides access to all HTTP request methods by specifying it in 
 - `fetch.post.deferred(...)`
 - `fetch.put.deferred(...)`
 
-All method specific functions by default return result parsed as JSON. No need for `response.json()` or `result.data.data` drilling.
+All method specific functions by default return result parsed as JSON. No need for `response.json()` or "result.data.data" drilling.
 
 <div id="fetch-get"></div>
 
@@ -205,7 +205,7 @@ Equivalent to `fetch(url, { method: 'get', as: 'json' })`.
 import fetch from '@superutils/fetch'
 
 fetch
-	.get('https://dummyjson.com/products/1')
+	.get('[DUMMYJSON-DOT-COM]/products/1')
 	.then(product => console.log({ product }))
 ```
 
@@ -225,15 +225,13 @@ const searchProducts = fetch.get.deferred({
 })
 
 // User types 'iphone'
-searchProducts('https://dummyjson.com/products/search?q=iphone').then(
-	result => {
-		console.log('Result for "iphone":', result)
-	},
-)
+searchProducts('[DUMMYJSON-DOT-COM]/products/search?q=iphone').then(result => {
+	console.log('Result for "iphone":', result)
+})
 
 // Before 300ms has passed, the user continues typing 'iphone 12'
 setTimeout(() => {
-	searchProducts('https://dummyjson.com/products/search?q=iphone 12').then(
+	searchProducts('[DUMMYJSON-DOT-COM]/products/search?q=iphone 12').then(
 		result => {
 			console.log('Result for "iphone 12":', result)
 		},
@@ -279,7 +277,7 @@ const getRandomQuote = fetch.get.deferred(
 		// Ignored calls will resolve with the result of the last successful call.
 		resolveIgnored: 'WITH_LAST',
 	},
-	'https://dummyjson.com/quotes/random', // Default URL
+	'[DUMMYJSON-DOT-COM]/quotes/random', // Default URL
 	{ timeout: 3000 }, // Default fetch options
 )
 
@@ -306,7 +304,7 @@ import fetch from '@superutils/fetch'
 
 const newProduct = { title: 'Perfume Oil' }
 
-fetch.post('https://dummyjson.com/products/add', newProduct).then(
+fetch.post('[DUMMYJSON-DOT-COM]/products/add', newProduct).then(
 	createdProduct => console.log('Product created:', createdProduct),
 	error => console.error('Failed to create product:', error),
 )
@@ -332,7 +330,7 @@ const saveProductThrottled = fetch.post.deferred(
 		trailing: true, // Ensures the very last update is always saved
 		onResult: product => console.log(`[Saved] Product: ${product.title}`),
 	},
-	'https://dummyjson.com/products/add', // Default URL
+	'[DUMMYJSON-DOT-COM]/products/add', // Default URL
 )
 // Simulate a user typing quickly, triggering multiple saves.
 console.log('User starts typing...')
@@ -373,7 +371,7 @@ const requestNewToken = fetch.post.deferred(
 			currentRefreshToken = refreshToken
 		},
 	},
-	'https://dummyjson.com/auth/refresh', // Default URL
+	'[DUMMYJSON-DOT-COM]/auth/refresh', // Default URL
 	() => ({
 		refreshToken: currentRefreshToken,
 		expiresInMins: 30,
@@ -384,7 +382,7 @@ const requestNewToken = fetch.post.deferred(
 // First authenticate user to get the initial refresh token and then request new refresh tokens
 fetch
 	.post<{ refreshToken: string }>(
-		'https://dummyjson.com/auth/login',
+		'[DUMMYJSON-DOT-COM]/auth/login',
 		{
 			username: 'emilys',
 			password: 'emilyspass',
@@ -463,7 +461,7 @@ const interceptors = {
 			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
 			// You can transform the response by returning different `Response` object or even make a completely new HTTP request.
 			// The subsequent response interceptors will receive the returned response
-			return fetch('https://dummyjson.com/products/1') // promise will be resolved automatically
+			return fetch('[DUMMYJSON-DOT-COM]/products/1') // promise will be resolved automatically
 		},
 	],
 	result: [
@@ -479,7 +477,7 @@ const interceptors = {
 	],
 }
 fetch
-	.get('https://dummyjson.com/products/1', { interceptors })
+	.get('[DUMMYJSON-DOT-COM]/products/1', { interceptors })
 	.then(product => console.log({ product }))
 ```
 
@@ -502,7 +500,7 @@ interceptors.error.push((err, url, options) => {
 })
 
 // Each time a requst is made using @superutils/fetch, the above interceptors will be executed when appropriate
-fetch('https://dummyjson.com/products/1').then(console.log, console.warn)
+fetch('[DUMMYJSON-DOT-COM]/products/1').then(console.log, console.warn)
 ```
 
 <div id="retry"></div>
@@ -514,7 +512,7 @@ The `retry` option provides a robust mechanism to automatically re-attempt faile
 ```javascript
 import fetch from '@superutils/fetch'
 
-fetch.get('https://dummyjson.com/products/1', {
+fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
 	retry: 3, // Max number of retries.
 	retryBackOff: 'linear', // Backoff strategy: 'linear' or 'exponential'.
 	// Delay in milliseconds.
@@ -540,7 +538,7 @@ A request can be automatically cancelled by simply providing a `timeout` duratio
 ```javascript
 import fetch from '@superutils/fetch'
 
-fetch.get('https://dummyjson.com/products/1', {
+fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
 	timeout: 5000,
 })
 ```
@@ -568,7 +566,7 @@ To retrieve the response in a different format (e.g., as text, a blob, or the ra
 ```typescript
 import fetch, { FetchAs } from '@superutils/fetch'
 
-fetch.get('https://dummyjson.com/products/1', {
+fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
 	as: FetchAs.text,
 })
 ```
@@ -587,11 +585,11 @@ import { createClient } from '@superutils/fetch'
 // Create a "GET" client with default headers and a 5-second timeout
 const apiClient = createClient(
 	{
-		// fixed options cannot be overridden
+		// fixed options (cannot be overridden)
 		method: 'get',
 	},
 	{
-		// default options can be overridden
+		// common options (can be overridden)
 		headers: {
 			Authorization: 'Bearer my-secret-token',
 			'Content-Type': 'application/json',
@@ -599,14 +597,14 @@ const apiClient = createClient(
 		timeout: 5000,
 	},
 	{
-		// default defer options (can be overridden)
+		// defer options (can be overridden)
 		delay: 300,
 		retry: 2, // If request fails, retry up to two more times
 	},
 )
 
 // Use it just like the standard fetch
-apiClient('https://dummyjson.com/products/1', {
+apiClient('[DUMMYJSON-DOT-COM]/products/1', {
 	// The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
 	// In TypeScript, the compiler will not allow this property.
 	// In Javascript, it will simply be ignored.
@@ -617,14 +615,14 @@ apiClient('https://dummyjson.com/products/1', {
 // create a deferred client using "apiClient"
 const deferredClient = apiClient.deferred(
 	{ retry: 0 }, // disable retrying by overriding the `retry` defer option
-	'https://dummyjson.com/products/1',
+	'[DUMMYJSON-DOT-COM]/products/1',
 	{ timeout: 3000 },
 )
 deferredClient({ timeout: 10000 }) // timeout is overridden by individual request
 	.then(console.log, console.warn)
 ```
 
-### `createPostClient(mandatoryOptions, commonOptions, commonDeferOptions)`: Reusable Post-like Clients
+### `createPostClient(fixedOptions, commonOptions, commonDeferOptions)`: Reusable Post-like Clients
 
 While `createClient()` is versatile enough for any HTTP method, `createPostClient()` is specifically designed for methods that require a request body, such as `DELETE`, `PATCH`, `POST`, and `PUT`. If a method is not provided, it defaults to `POST`. The generated client accepts an additional second parameter (`data`) for the request payload.
 
@@ -644,7 +642,7 @@ const postClient = createPostClient(
 
 // Invoking `postClient()` automatically applies the pre-configured options
 postClient(
-	'https://dummyjson.com/products/add',
+	'[DUMMYJSON-DOT-COM]/products/add',
 	{ title: 'New Product' }, // data/body
 	{}, // other options
 ).then(console.log)
@@ -655,7 +653,7 @@ const updateProduct = postClient.deferred(
 		delay: 300, // debounce duration
 		onResult: console.log, // prints only successful results
 	},
-	'https://dummyjson.com/products/add',
+	'[DUMMYJSON-DOT-COM]/products/add',
 	{
 		method: 'patch',
 		timeout: 3000,

@@ -27,7 +27,7 @@ export type Interceptor<T, TArgs extends unknown[]> = (
  *
  * // not returning anything or returning undefined will avoid transforming the error.
  * const logError = fetchErr => console.log(fetchErr)
- * const result = await fetch.get('https://dummyjson.com/http/400', {
+ * const result = await fetch.get('[DUMMYJSON-DOT-COM]/http/400', {
  *   interceptors: {
  *     error: [logError]
  *   }
@@ -46,7 +46,7 @@ export type Interceptor<T, TArgs extends unknown[]> = (
  *   fetchErr.message = 'Custom errormessage'
  * 	 return Promise.resolve(fetchErr)
  * }
- * const result = await fetch.get('https://dummyjson.com/http/400', {
+ * const result = await fetch.get('[DUMMYJSON-DOT-COM]/http/400', {
  *   interceptors: {
  *     error: [transformError]
  *   }
@@ -74,7 +74,7 @@ export type FetchInterceptorError = Interceptor<
  * const includeAuthToken = (url, options) => {
  *   options.headers.set('x-auth-token', 'my-auth-token')
  * }
- * const result = await fetch.get('https://dummyjson.com/products', {
+ * const result = await fetch.get('[DUMMYJSON-DOT-COM]/products', {
  *   method: 'post',
  *   interceptors: {
  *       result: [apiV1ToV2, includeAuthToken]
@@ -102,12 +102,12 @@ export type FetchInterceptorRequest = Interceptor<
  * // just a hypothetical scenario ;)
  * const getUser = async response => {
  * 	 const authResult = await response.json()
- *   const userDetails = await fetch.get('https://dummyjson.com/users/1')
+ *   const userDetails = await fetch.get('[DUMMYJSON-DOT-COM]/users/1')
  *   const userAuth = { ...userDetails, ...authResult }
  *   return new Response(JSON.stringify(userAuth))
  * }
  * const user = await fetch.post(
- * 	'https://dummyjson.com/user/login',
+ * 	'[DUMMYJSON-DOT-COM]/user/login',
  *  {  // data/request body
  *    username: 'emilys',
  *    password: 'emilyspass',
@@ -164,7 +164,7 @@ export type FetchInterceptorResponse = Interceptor<
  *   )
  * }
  * // now we make the actaul fetch request
- * const result = await fetch.get('https://dummyjson.com/users/1', {
+ * const result = await fetch.get('[DUMMYJSON-DOT-COM]/users/1', {
  *   interceptors: {
  *     result: [
  * 	     ensureBalanceHex,

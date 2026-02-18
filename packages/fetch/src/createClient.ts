@@ -14,7 +14,7 @@ import { FetchAs } from './types'
 /**
  * Defines client generic parameter T based on fixed options.
  *
- * If `fixedOptions.as` is defined and not `FetcAs.json`, then `T` will be `never`.
+ * If "fixedOptions.as" is defined and not `FetcAs.json`, then `T` will be `never`.
  */
 export type ClientData<FixedOptions> =
 	ExtractAs<[FixedOptions]> extends FetchAs.json ? unknown : never // disallow providing T
@@ -52,7 +52,7 @@ export type ClientData<FixedOptions> =
  * )
  *
  * // Use it just like the standard fetch
- * apiClient('https://dummyjson.com/products/1', {
+ * apiClient('[DUMMYJSON-DOT-COM]/products/1', {
  *   // The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
  *   // In TypeScript, the compiler will not allow this property.
  *   // In Javascript, it will simply be ignored.
@@ -63,7 +63,7 @@ export type ClientData<FixedOptions> =
  * // create a deferred client using "apiClient"
  * const deferredClient = apiClient.deferred(
  *   { retry: 0 }, // disable retrying by overriding the `retry` defer option
- *   'https://dummyjson.com/products/1',
+ *   '[DUMMYJSON-DOT-COM]/products/1',
  *   { timeout: 3000 },
  * )
  * deferredClient({ timeout: 10000 }) // timeout is overridden by individual request

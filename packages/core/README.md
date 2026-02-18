@@ -52,7 +52,7 @@ OR,
 
 This will expose a global namespace with the following:
 
-```javascript
+```java
 // Namespace: an object containing all exports from `@superutils/core`
 superutils.core
 
@@ -204,7 +204,7 @@ import { fallbackIfFails } from '@superutils/core'
 const allProducts = []
 // an example sync function that may fail
 const getProducts = () =>
-	fetch('https://dummyjson.com/products').then(r => r.json())
+	fetch('[DUMMYJSON-DOT-COM]/products').then(r => r.json())
 fallbackIfFails(
 	getProducts, // function to invoke
 	[], // Parameters to be provided to the function. A function can also be used here that returns an array

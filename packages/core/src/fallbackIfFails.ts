@@ -67,7 +67,7 @@ import { IfPromiseAddValue } from './types'
  *
  * const getData = (useCache = true, cacheKey = 'data-cache') => {
  *     if (useCache && localStorage[cacheKey]) return localStorage[cacheKey]
- *     return fetch('https://dummyjson.com/productsi')
+ *     return fetch('[DUMMYJSON-DOT-COM]/productsi')
  *         .then(r => r.json())
  *         .then(data => {
  * 		       if(cacheKey) localStorage[cacheKey] = data

@@ -1,4 +1,10 @@
-import { debounce, fallbackIfFails, getValues, isObj } from '@superutils/core'
+import {
+	debounce,
+	fallbackIfFails,
+	getValues,
+	isObj,
+	isUrlValid,
+} from '@superutils/core'
 import fetch, { FetchAs } from '@superutils/fetch'
 import sdk, {
 	type EmbedOptions,
@@ -31,7 +37,8 @@ export const extractDependencies = (code: string) => {
 
 	while ((match = regex.exec(code)) !== null) {
 		const pkg = match[1]
-		if (pkg.startsWith('.') || pkg.startsWith('/')) continue
+		if (pkg.startsWith('.') || pkg.startsWith('/') || isUrlValid(pkg))
+			continue
 
 		const parts = pkg.split('/')
 		const name = pkg.startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0]
@@ -72,9 +79,9 @@ export const addTryNowBtnNListen = debounce(() => {
 				.split('-')[1]
 			const btn = `
 					<div class="try-button-wrap">
-						<a href="#" class="${tryBtnClass}" data-template="${lang}">
+						<button class="${tryBtnClass}" data-template="${lang}">
 							${ICON_STACKBLITZ} Try Now!
-						</a>
+						</button>
 					</div>
 				`
 			codeBlock.innerHTML = btn + codeBlock.innerHTML
@@ -134,7 +141,9 @@ export const embedPlayground = async (
 		closeButton.onmouseleave = () => {
 			closeButton.style = closeStyle
 		}
-		closeButton.onclick = () => modal.remove()
+		closeButton.onclick = () => {
+			modal.remove()
+		}
 		closeButton.style = closeStyle
 		closeButton.textContent = 'Close Playground'
 		modal.appendChild(closeButton)
@@ -208,12 +217,21 @@ export const embedPlayground = async (
 			{},
 		),
 	}
+	// files that need npm dependency injection
 	const filesDep = Object.keys(filesWithContent).filter(x =>
 		['ts', 'js', 'jsx', 'tsx'].includes(x.split('.').pop()),
 	)
 	const fileDependencies = filesDep
-		.map(x => extractDependencies(filesWithContent[x]))
+		.map(file => {
+			// replace placeholder urls in code.
+			// this should not be needed
+			// but just in case `replacePageUrls()` missed any elements for whatever reason
+			filesWithContent[file] = replaceUrls(filesWithContent[file])
+
+			return extractDependencies(filesWithContent[file])
+		})
 		.reduce((obj, next) => ({ ...obj, ...next }), {})
+
 	const _project = {
 		description: 'Try @superutils in embeded StackBlitz playground',
 		title: 'Playground',
@@ -225,7 +243,7 @@ export const embedPlayground = async (
 					? 'html'
 					: 'node',
 		files: {
-			[indexFile]: code || '// Your code goes here',
+			[indexFile]: replaceUrls(code) || '// Your code goes here',
 			...filesWithContent,
 			'package.json': JSON.stringify(
 				{
@@ -293,13 +311,23 @@ export const embedPlayground = async (
 	// return embed
 }
 
+/** Replace dummyjson placeholders in URLs with original URL */
+export const replaceUrls = (code = '') =>
+	`${code || ''}`.replaceAll('[DUMMYJSON-DOT-COM]', 'https://dummyjson.com')
+
+/** Replace dummyjson placeholders in page <code> elements with original URL */
+export const replacePageUrls = debounce(() => {
+	document.querySelectorAll('code').forEach(el => {
+		el.innerHTML = replaceUrls(el.getHTML())
+	})
+}, 100)
+
 /** "Try Now" button click event handler */
 export const tryBtnClickHandler = (event: PointerEvent) => {
 	const target = event.target as HTMLElement
 	if (!target.classList.contains('try-button')) return
 
 	event.preventDefault()
-
 	const language = (target.getAttribute('data-template')
 		|| 'javascript') as ProjectTemplate
 	const parent = target.closest(`.language-${language}`)
