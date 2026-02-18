@@ -2,7 +2,7 @@ import { onContentUpdated } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { h, onMounted, onUnmounted, defineComponent } from 'vue'
 import Playground from './components/Playground.vue'
-import { addTryNowBtnNListen, replaceUrls, replacePageUrls } from './stackblitz'
+import { addTryNowBtnNListen, replacePageUrls } from './stackblitz'
 
 export default {
 	...DefaultTheme,
@@ -14,9 +14,8 @@ export default {
 					addTryNowBtnNListen()
 					replacePageUrls()
 				})
+				replacePageUrls()
 				addTryNowBtnNListen()
-
-				replaceUrls()
 			})
 			onUnmounted(() => {
 				// do stuff on application unmount
