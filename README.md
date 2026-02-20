@@ -13,6 +13,8 @@
 - [Non-goals](#non-goals)
 - [Packages](#packages)
 - [Getting Started](#getting-started)
+    - [NPM](#npm)
+    - [CDN/Browser](#cdn--browser)
 - [Contribute](#contribute)
 - [License](#license)
 
