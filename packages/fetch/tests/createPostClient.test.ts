@@ -89,3 +89,35 @@ describe('createPostClient', () => {
 		await simulateClientCalls({ throttle: true, trailing: false })
 	})
 })
+
+
+// Create a POST client with 10-second as the default timeout
+const postClient = createPostClient(
+	{
+		headers: { 'content-type': 'application/json' },
+	},
+	{ timeout: 10000 },
+)
+
+// // Invoking `postClient()` automatically applies the pre-configured options
+// postClient(
+// 	'[DUMMYJSON-DOT-COM]/products/add',
+// 	{ title: 'New Product' }, // data/body
+// 	{}, // other options
+// ).then(result => console.log('Product created:', result))
+
+// create a deferred client using "postClient"
+const updateProduct = postClient.deferred(
+	{
+		delay: 300,
+		// prints only successful results
+		onResult: result =>
+			console.log('Product updated using deferred funciton:', result),
+	},
+	'[DUMMYJSON-DOT-COM]/products/add',
+	undefined,
+	{
+		method: 'patch',
+		timeout: 3000,
+	},
+)

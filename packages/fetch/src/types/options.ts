@@ -33,16 +33,9 @@ export type ExtractAs<
 				: ExtractAs<DropFirst<T>, Fallback>
 			: ExtractAs<DropFirst<T>, Fallback>
 
-export type ExtractFetchAs<T, TFallback = FetchAs.json> = T extends FetchAs
-	? T
-	: T extends { as: infer As }
-		? As extends FetchAs
-			? As
-			: TFallback
-		: TFallback
-
 export type FetchArgs = [url: string | URL, options?: FetchOptions]
 
+/** Additional arguments provided to interceptors */
 export type FetchArgsInterceptor = [
 	url: string | URL,
 	options: FetchOptionsInterceptor,
@@ -88,12 +81,6 @@ export type FetchCustomOptions = {
 } & FetchRetryOptions
 	& TimeoutOptions<[]>
 
-/** Default args */
-export type FetchDeferredArgs = [
-	url?: string | URL,
-	options?: Omit<FetchOptions, 'abortCtrl'>,
-]
-
 export type FetchErrMsgs = {
 	/** Error message to be used when request is aborted without specifying a message */
 	aborted?: string
@@ -107,6 +94,7 @@ export type FetchErrMsgs = {
 	requestFailed?: string
 }
 
+/** Optional, custom fetch function to replace the built-in `fetch` */
 export type FetchFunc = (...args: FetchArgs) => Promise<Response>
 
 /**
@@ -124,17 +112,14 @@ export type FetchOptionsDefault = Omit<
 	 *
 	 * Deafult:
 	 * - No default content type set when `fetch()` is directly invoked.
-	 * - `"content-type": "application/json"`: for `createPostClient()`, `fetch.post()`,
-	 * `fetch.post.deferred()` and other method specific functions
+	 * - Content type `"application/json"` is used as the default for all `createPostClient()`
+	 * derived functions (eg: `fetch.post()`, `fetch.put()`...),
 	 */
 	headers: HeadersInit
 	/**
 	 * Request timeout duration in milliseconds.
 	 *
-	 * Default:
-	 * - `30_000` for `createClient()`, `createPostClient()` and
-	 * all method specific functions (`fetch.METHOD` & `fetch.METHOD.deferred()`
-	 * - `2147483647` when `fetch()` invoked directly
+	 * Default: `60_000`
 	 */
 	timeout: number
 }
@@ -154,7 +139,7 @@ export type FetchOptionsInterceptor = Omit<
 	| keyof FetchRetryOptions
 > & {
 	as: FetchAs
-	body: PostBody
+	body?: PostBody
 	/** Error messages */
 	errMsgs: Required<FetchErrMsgs>
 	headers: Headers

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { isObj, objSort } from '@superutils/core'
+import { isObj, objSort } from '../../core/src'
 import PromisE from '../../promise/src'
 import { getDeferredContext } from '../../promise/tests/getDeferredContext'
 import fetch from '../src'

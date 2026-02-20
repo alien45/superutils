@@ -10,6 +10,7 @@ import {
 	PostOptions,
 	IPromise_Fetch,
 	GetFetchResult,
+	ContentType,
 } from './types'
 
 /**
@@ -85,7 +86,6 @@ export const createPostClient = <
 		options?: Options,
 	): IPromise_Fetch<Result> {
 		const mergedOptions = mergeOptions(
-			fetch.defaults,
 			commonOptions,
 			options,
 			fixedOptions, // fixed options will always override other options
@@ -93,7 +93,11 @@ export const createPostClient = <
 		mergedOptions.as ??= FetchAs.json
 		mergedOptions.body = data ?? mergedOptions.body
 		mergedOptions.method ??= 'post'
-		;(mergedOptions as Record<string, boolean>).fromPostClient = true
+
+		const headers = mergedOptions.headers as Headers
+		if (!headers.get('content-type')) {
+			headers.set('content-type', ContentType.APPLICATION_JSON)
+		}
 		return fetch(url, mergedOptions)
 	}
 
@@ -150,7 +154,11 @@ export const createPostClient = <
 			// attach body to options
 			mergedOptions.body = (args[1] ?? mergedOptions.body) as PostArgs[1]
 			mergedOptions.method ??= 'post'
-			;(mergedOptions as Record<string, boolean>).fromPostClient = true
+
+			const headers = mergedOptions.headers as Headers
+			if (!headers.get('content-type')) {
+				headers.set('content-type', ContentType.APPLICATION_JSON)
+			}
 			return fetch(args[0] as PostArgs[0], mergedOptions)
 		}
 

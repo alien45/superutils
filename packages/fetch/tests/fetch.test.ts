@@ -1,17 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE, { TIMEOUT_MAX } from '@superutils/promise'
+import { fallbackIfFails, noop, objSort } from '../../core/src'
+import PromisE from '../../promise/src'
 import fetch, {
 	FetchAs,
 	FetchError,
+	FetchFunc,
 	FetchInterceptorError,
 	FetchInterceptorRequest,
 	FetchInterceptorResponse,
 	FetchInterceptorResult,
 	FetchInterceptors,
 	FetchOptions,
+	FetchOptionsInterceptor,
 } from '../src'
 import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
-import { fallbackIfFails, noop, objSort } from '@superutils/core'
+import { json } from 'stream/consumers'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
@@ -193,7 +196,6 @@ describe('fetch', () => {
 			const {
 				args: [_, expectedOptions],
 			} = getMockedResult('get', 1, localOptions)
-			expectedOptions.timeout = TIMEOUT_MAX
 			await fetch(product1Url, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
@@ -228,6 +230,25 @@ describe('fetch', () => {
 			expect(onResolve).not.toHaveBeenCalled()
 			expect(onEarlyFinalize).toHaveBeenCalled()
 		})
+
+		it('should invoke body function before executing request interceptors', async () => {
+			const bodyFunc = vi.fn(() => ({ data: 1 }))
+			const fetchFunc = vi.fn(
+				async (...[_, options]: FetchOptionsInterceptor[]) => ({
+					ok: true,
+					status: 200,
+					json: () => Promise.resolve(options.body),
+				}),
+			)
+			const promise = fetch.post(baseUrl, bodyFunc, {
+				fetchFunc: fetchFunc as unknown as FetchFunc,
+			})
+
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual(JSON.stringify({ data: 1 }))
+			expect(bodyFunc).toHaveBeenCalledOnce()
+			expect(fetchFunc).toHaveBeenCalledOnce()
+		})
 	})
 
 	describe('interceptors', () => {
@@ -240,6 +261,23 @@ describe('fetch', () => {
 			await promise.catch(noop)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
+		})
+
+		it('should allow single interceptor function and convert it to an array', async () => {
+			const interceptor = vi.fn()
+			const promise = fetch.get(product1Url, {
+				fetchFunc: async (_, options) =>
+					({
+						success: true,
+						status: 200,
+						json: () =>
+							Promise.resolve(options?.interceptors?.request),
+					}) as unknown as Promise<Response>,
+				interceptors: { request: interceptor },
+			})
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual([interceptor])
+			expect(interceptor).toHaveBeenCalledOnce()
 		})
 
 		it('should receive correct request, result & response interceptor arguments', async () => {
