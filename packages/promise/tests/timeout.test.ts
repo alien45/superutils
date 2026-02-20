@@ -99,7 +99,7 @@ describe('PromisE.timeout', () => {
 		})
 	})
 
-	describe('funtions', () => {
+	describe('should turn non-async funtion into promise', () => {
 		it('should accepts & invoke funtions with PromisE.try', async () => {
 			const values = new Array(10).fill(0).map((_, i) => i)
 			const p = PromisE.timeout(
@@ -108,6 +108,7 @@ describe('PromisE.timeout', () => {
 			)
 			await vi.runAllTimersAsync()
 			await expect(p).resolves.toEqual(values)
+			expect(p.data).instanceOf(PromisEBase)
 		})
 
 		it('should should accept & invoke functions and throw error', async () => {
@@ -127,6 +128,21 @@ describe('PromisE.timeout', () => {
 	})
 
 	describe('AbortSignal', () => {
+		it('should finalize externally', async () => {
+			const p = PromisE.timeout(
+				{
+					abortCtrl: new AbortController(),
+					timeout: 5000,
+				},
+				() => PromisE.delay(60000),
+			)
+			p.resolve(0)
+			p.abortCtrl?.abort()
+			await vi.runAllTimersAsync()
+			await expect(p).resolves.toBe(0)
+			expect(p.aborted).toBe(false)
+			expect(p.timedout).toBe(false)
+		})
 		it('should externally abort using AbortController', async () => {
 			// vi.useRealTimers()
 			const abortCtrl = new AbortController()

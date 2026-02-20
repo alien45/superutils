@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE from '../src'
+import PromisE, { PromisEBase } from '../src'
 
 describe('PromisE.retry', () => {
 	afterEach(() => {
@@ -86,5 +86,17 @@ describe('PromisE.retry', () => {
 			(delay, i, arr) => i === 0 || delay >= arr[i - 1] * 2,
 		)
 		expect(isExponential).toBe(true)
+	})
+
+	it('should return an instance of PromisEBase and stop retrying on earlyFinazlie', async () => {
+		const promise = PromisE.retry<number>(() => PromisE.delayReject(1000), {
+			retry: 5,
+		})
+		promise.resolve(0)
+		expect(promise).instanceOf(PromisEBase)
+		await vi.advanceTimersByTimeAsync(1100)
+		await vi.advanceTimersByTimeAsync(1100)
+		await vi.runAllTimersAsync()
+		await expect(promise).resolves.toBe(0)
 	})
 })

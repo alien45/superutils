@@ -6,13 +6,11 @@ import {
 	isPromise,
 	isUrlValid,
 } from '@superutils/core'
-import { timeout as PromisE_timeout, TIMEOUT_MAX } from '@superutils/promise'
+import { timeout as PromisE_timeout } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
 import mergeOptions from './mergeOptions'
 import type {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	FetchCustomOptions,
 	FetchOptions,
 	FetchOptionsInterceptor,
 	FetchResult,
@@ -65,17 +63,8 @@ const fetch = <
 	opts.signal ??= opts.abortCtrl.signal
 	const { abortCtrl, as: parseAs, headers, onAbort, onTimeout } = opts
 	opts.onAbort = async () => {
-		const err: Error =
-			(await fallbackIfFails(onAbort, [], undefined))
-			?? opts.abortCtrl?.signal?.reason
-			?? opts.signal?.reason
-			?? opts.errMsgs.aborted
+		const err: Error = await fallbackIfFails(onAbort, [], undefined)
 
-		if (isError(err) && err.name === 'AbortError') {
-			err.message = ['This operation was aborted'].includes(err.message)
-				? opts.errMsgs.aborted
-				: err.message
-		}
 		return await interceptErr(
 			isError(err) ? err : new Error(err),
 			url,
@@ -134,7 +123,7 @@ const fetch = <
 				url,
 				opts,
 			)
-			const status = response?.status ?? 0
+			const status = response?.status
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
 				const jsonError: unknown = await fallbackIfFails(

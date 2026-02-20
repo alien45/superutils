@@ -50,19 +50,19 @@ Dependency: `@superutils/core` will be automatically installed by NPM
 
 ### CDN / Browser
 
-If you are not using a bundler, you can include the browser build directly:
+If you are not using a bundler, you can include the minified browser build directly:
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/promise/dist/browser/index.min.js"></script>
+<script src="https://unpkg.com/@superutils/promise@latest/dist/browser/index.min.js"></script>
 ```
 
 OR,
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/promise@latest/dist/browser/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@superutils/promise/dist/browser/index.min.js"></script>
 ```
 
-This will expose a global namespace with the following:
+This will expose a global namespace `superutils` with the following:
 
 ```java
 // Namespace: default export (class) from '@superutils/promise' and all the exports as properties

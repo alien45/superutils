@@ -4,13 +4,7 @@
 
 <!-- [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/) -->
 
-`@superutils` is a collection of small, deliberately scoped TypeScript utilities built to solve recurring production problems without introducing hidden abstractions or unnecessary coupling.
-
-While many of the foundational packages are dependency-free and framework-agnostic, some packages are intentionally designed to integrate closely with specific ecosystems such as React or RxJS, while still favoring explicit behavior and minimal surface area. Each package is designed to be usable on its own and makes its assumptions explicit, including any framework or runtime dependencies.
-
-Many of these utilities have been evolving for nearly a decade across real-world codebases. The immediate predecessor to this project was the common-utils library developed and used in production at Totem Accounting, where these patterns were stress-tested under real user traffic, long-lived state, and operational constraints. @superutils is a cleaned-up, modular continuation of that work.
-
-This library is built for engineers, myself included, who prefer simple, explicit APIs and modular & reusable tools with predictable behavior and long term maintainability.
+`@superutils` is a collection of small, battle-tested TypeScript utilities for solving recurring production problems without hidden abstractions. Evolved from patterns proven over a decade in real-world systems, the library includes both framework-agnostic utilities and packages tailored for ecosystems like React. Each tool is designed to be modular, explicit, and maintainable, reflecting a preference for simple and reliable building blocks.
 
 ## Table of Contents
 
@@ -24,15 +18,9 @@ This library is built for engineers, myself included, who prefer simple, explici
 
 ## Why @superutils exists
 
-Over the past several years, I kept encountering the same classes of problems across different products and teams: managing asynchronous behavior without losing observability, reducing repeated boilerplate around common workflows, and enforcing correctness at boundaries without obscuring control flow.
+Over the years, I kept encountering the same recurring problems across different teams and products: managing async flows cleanly, reducing repeated boilerplate, and enforcing correctness without hiding control flow. In production systems, including my work at Totem Accounting, many of these solutions were built ad hoc and slowly drifted across codebases, which I later consolidated into a single repository. That repository, however, still carried project-specific assumptions and needed further modularization and cleaner abstractions to become truly reusable across different systems.
 
-In multiple production systems, including my work at Totem Accounting, these problems were often solved ad hoc. Small helper functions would emerge, get copied across codebases, slowly diverge, and eventually become harder to reason about than the problems they were meant to solve. Existing libraries addressed parts of these needs, but often introduced opinionated abstractions, hidden state, or unnecessary coupling that made long-term maintenance harder.
-
-Over time, certain patterns proved themselves. Utilities that were explicit, small in scope, and readable in one sitting survived repeated refactors, onboarding cycles, and real user traffic. @superutils is an extraction of those patterns into a modular, reusable form. It trades breadth and cleverness for clarity, explicit behavior, and predictable failure modes.
-
-This library exists primarily because it reflects how I prefer to build systems myself: tools I am comfortable depending on in production, understanding fully, and maintaining over time.
-
-The intent is to build utilities once, understand them fully, test them thoroughly, and feel comfortable reusing them across different systems and contexts.
+@superutils is a distillation of the patterns that consistently held up. It focuses on small, explicit, production-ready utilities that prioritize clarity, predictable behavior, and long-term maintainability over clever abstractions.
 
 ## Design philosophy
 
@@ -85,7 +73,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> address recurring production issues around retries, cancellation, and request lifecycles in a consistent, observable way.
       </td>
-      <td id="coverage_fetch"><div style="color:green">&#128153;&nbsp;99.2%</div></td>
+      <td id="coverage_fetch"><div style="color:green">&#128152;&nbsp;100%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View</a></td>
     </tr>
     <tr>
@@ -127,32 +115,55 @@ This monorepo contains the following packages. Each is independently versioned a
 
 ## Getting Started
 
-All packages are scoped under `@superutils` and will be available on the NPM registry. You can install any package using your preferred package manager.
+### NPM
+
+All packages are scoped under `@superutils` and will be available on the NPM registry. You can install any package using your preferred package manager (e.g., `npm`, `yarn`, `pnpm`, `bun`, etc.).
 
 ```bash
-# Installing the @superutils/promise package
-npm install @superutils/promise
+# Installing the @superutils/fetch package
+npm install @superutils/fetch
 ```
 
 Once installed, you can import the utilities directly into your project.
 
 ```typescript
-import PromisE from '@superutils/promise'
+import fetch from '@superutils/fetch'
 
-const dp = PromisE.delay(1000)
-console.log({
-	pending: dp.pending,
-	rejected: dp.rejected,
-	resolved: dp.resolved,
-})
-// Prints: { pending: true, resolved: false, rejected: false }
-await dp // waits 1 second
-console.log({
-	pending: dp.pending,
-	rejected: dp.rejected,
-	resolved: dp.resolved,
-})
-// Prints: { pending: false, resolved: true, rejected: false }
+fetch
+	.get('[DUMMYJSON-DOT-COM]/products', {
+		interceptors: {
+			// transform result
+			result: products =>
+				products.map(p => ({
+					...p,
+					updated: new Date().toISOString(),
+				})),
+		},
+		timeout: 5000,
+	})
+	.then(console.log)
+```
+
+### CDN / Browser
+
+If you are not using a bundler, you can include the minified browser build directly:
+
+```xml
+<script src="https://unpkg.com/@superutils/fetch@latest/dist/browser/index.min.js"></script>
+```
+
+OR,
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch@latest/dist/browser/index.min.js"></script>
+```
+
+This exposes a global `superutils` object containing the exports of any loaded packages:
+
+```javascript
+superutils.core // All exports from `@superutils/core`
+superutils.fetch // Default export (function) from `@superutils/fetch` + named exports
+superutils.PromisE // Default export (class) from `@superutils/promise` + named exports
 ```
 
 For more details please read the API reference for respective packages.

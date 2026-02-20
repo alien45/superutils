@@ -73,6 +73,19 @@ describe('createPostClient', () => {
 		expect(options.method).toBe('post')
 	})
 
+	it('should allow setting options.body instead of using the data argument', async () => {
+		const client = createPostClient()
+		const promsie = client<ResultType>(product1Url, undefined, {
+			body: 'body',
+		})
+		await vi.runAllTimersAsync()
+		const {
+			args: [url, options],
+		} = await promsie
+		expect(url).toBe(product1Url)
+		expect(options.body).toBe('body')
+	})
+
 	it('should correctly handle `debounce+leading` post calls', async () => {
 		await simulateClientCalls({ throttle: false, leading: true })
 	})
@@ -89,7 +102,6 @@ describe('createPostClient', () => {
 		await simulateClientCalls({ throttle: true, trailing: false })
 	})
 })
-
 
 // Create a POST client with 10-second as the default timeout
 const postClient = createPostClient(

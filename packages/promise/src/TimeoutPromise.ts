@@ -90,8 +90,6 @@ export class TimeoutPromise<T>
 	}
 
 	private _handleAbort = async () => {
-		if (!this._signals?.length || !this.pending) return
-
 		let err = await fallbackIfFails(this.options?.onAbort, [], undefined)
 		err ??= new Error(
 			`Aborted after ${new Date().getTime() - this.started.getTime()}ms`,

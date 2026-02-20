@@ -6,8 +6,8 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import delay from './delay'
-import { IPromisE, RetryOptions } from './types'
 import PromisEBase from './PromisEBase'
+import type { RetryOptions } from './types'
 
 /**
  * Executes a function asynchronously and retries it on failure or until a specific condition is met.
@@ -101,21 +101,23 @@ export const retry = <T>(
 		let error: unknown
 		let shouldRetry = false
 		do {
-			if (finalized) break
 			retryCount++
 			if (retryBackOff === 'exponential' && retryCount > 1)
 				_retryDelay *= 2
 			if (retryDelayJitter)
 				_retryDelay += Math.floor(Math.random() * retryDelayJitterMax)
 
-			if (retryCount > 0) await delay(_retryDelay)
+			if (!finalized && retryCount > 0) await delay(_retryDelay)
 
-			try {
-				error = undefined
-				result = await func()
-			} catch (err) {
-				error = err
+			if (!finalized) {
+				try {
+					error = undefined
+					result = await func()
+				} catch (err) {
+					error = err
+				}
 			}
+
 			if (finalized || maxRetries === 0 || retryCount >= maxRetries) break
 
 			shouldRetry = !!(

@@ -38,19 +38,19 @@ npm install @superutils/core
 
 ### CDN / Browser
 
-If you are not using a bundler, you can include the browser build directly:
+If you are not using a bundler, you can include the minified browser build directly:
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/core/dist/browser/index.min.js"></script>
+<script src="https://unpkg.com/@superutils/core@latest/dist/browser/index.min.js"></script>
 ```
 
 OR,
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/core@latest/dist/browser/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@superutils/core/dist/browser/index.min.js"></script>
 ```
 
-This will expose a global namespace with the following:
+This will expose a global namespace `superutils` with the following:
 
 ```java
 // Namespace: an object containing all exports from `@superutils/core`
