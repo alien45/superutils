@@ -6,7 +6,8 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import delay from './delay'
-import { RetryOptions } from './types'
+import PromisEBase from './PromisEBase'
+import type { RetryOptions } from './types'
 
 /**
  * Executes a function asynchronously and retries it on failure or until a specific condition is met.
@@ -66,65 +67,75 @@ import { RetryOptions } from './types'
  * it resolves with the last return value of `func()`. Errors thrown by `func` are caught and handled internally,
  * only re-thrown if no result is received after maximum retries.
  */
-export const retry = async <T>(
+export const retry = <T>(
 	func: () => ValueOrPromise<T>,
 	options: RetryOptions<T>,
-): Promise<T> => {
-	// merge options with default options conditionally
-	options = objCopy(retry.defaults, options ?? {}, [], (key, value) => {
-		switch (key) {
-			// case 'retryDelayJitter':
-			// 	return true
-			case 'retry':
-			// eslint-disable-next-line no-fallthrough
-			case 'retryDelay':
-			case 'retryDelayJitterMax':
-				// use default value if  0 or negative integer
-				return value !== 0 && !isPositiveInteger(value)
-		}
-		return !!isEmpty(value) // for other properties only override if not empty
+) => {
+	let finalized = false
+	const promise = PromisEBase.try<T, []>(async () => {
+		// merge options with default oasync async async ptions conditionally
+		options = objCopy(retry.defaults, options ?? {}, [], (key, value) => {
+			switch (key) {
+				// case 'retryDelayJitter':
+				// 	return true
+				case 'retry':
+				// eslint-disable-next-line no-fallthrough
+				case 'retryDelay':
+				case 'retryDelayJitterMax':
+					// use default value if  0 or negative integer
+					return value !== 0 && !isPositiveInteger(value)
+			}
+			return !!isEmpty(value) // for other properties only override if not empty
+		})
+
+		const {
+			retry: maxRetries,
+			retryBackOff,
+			retryDelay,
+			retryDelayJitter,
+			retryDelayJitterMax,
+		} = options as Required<RetryOptions>
+		let _retryDelay = retryDelay
+		let retryCount = -1
+		let result: T | undefined
+		let error: unknown
+		let shouldRetry = false
+		do {
+			retryCount++
+			if (retryBackOff === 'exponential' && retryCount > 1)
+				_retryDelay *= 2
+			if (retryDelayJitter)
+				_retryDelay += Math.floor(Math.random() * retryDelayJitterMax)
+
+			if (!finalized && retryCount > 0) await delay(_retryDelay)
+
+			if (!finalized) {
+				try {
+					error = undefined
+					result = await func()
+				} catch (err) {
+					error = err
+				}
+			}
+
+			if (finalized || maxRetries === 0 || retryCount >= maxRetries) break
+
+			shouldRetry = !!(
+				(await fallbackIfFails(
+					options.retryIf ?? error, // if `retryIf` not provided, retry on error
+					[result, retryCount, error],
+					error, // if `retryIf` throws error, default to retry on error
+				)) ?? error
+			)
+		} while (shouldRetry)
+
+		if (error !== undefined) return Promise.reject(error as Error)
+		return result as T
 	})
-
-	const {
-		retry: maxRetries,
-		retryBackOff,
-		retryDelay,
-		retryDelayJitter,
-		retryDelayJitterMax,
-	} = options as Required<RetryOptions>
-	let _retryDelay = retryDelay
-	let retryCount = -1
-	let result: T | undefined
-	let error: unknown
-	let shouldRetry = false
-	do {
-		retryCount++
-		if (retryBackOff === 'exponential' && retryCount > 1) _retryDelay *= 2
-		if (retryDelayJitter)
-			_retryDelay += Math.floor(Math.random() * retryDelayJitterMax)
-
-		if (retryCount > 0) await delay(_retryDelay)
-
-		try {
-			error = undefined
-			result = await func()
-		} catch (err) {
-			error = err
-		}
-
-		if (maxRetries === 0 || retryCount >= maxRetries) break // no retry requested
-
-		shouldRetry = !!(
-			(await fallbackIfFails(
-				options.retryIf ?? error, // if `retryIf` not provided, retry on error
-				[result, retryCount, error],
-				error, // if `retryIf` throws error, default to retry on error
-			)) ?? error
-		)
-	} while (shouldRetry)
-
-	if (error !== undefined) return Promise.reject(error as Error)
-	return result as T
+	promise.onEarlyFinalize.push(() => {
+		finalized = true
+	})
+	return promise
 }
 /** Global default values */
 retry.defaults = {

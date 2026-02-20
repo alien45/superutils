@@ -1,4 +1,4 @@
-import { objSort } from '@superutils/core'
+import { objSort } from '../../core/src'
 import { getDeferredContext } from '../../promise/tests/getDeferredContext'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fetch, { type FetchArgs } from '../src'

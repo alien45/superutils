@@ -1,17 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import PromisE, { TIMEOUT_MAX } from '@superutils/promise'
+import { fallbackIfFails, noop, objSort } from '../../core/src'
+import PromisE from '../../promise/src'
 import fetch, {
 	FetchAs,
 	FetchError,
+	FetchFunc,
 	FetchInterceptorError,
 	FetchInterceptorRequest,
 	FetchInterceptorResponse,
 	FetchInterceptorResult,
 	FetchInterceptors,
 	FetchOptions,
+	FetchOptionsInterceptor,
 } from '../src'
 import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
-import { fallbackIfFails, noop, objSort } from '@superutils/core'
+import { json } from 'stream/consumers'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
@@ -54,7 +57,7 @@ describe('fetch', () => {
 				),
 			)
 			vi.stubGlobal('fetch', fetch200)
-			const promise = fetch<Response>(product1Url)
+			const promise = fetch<Response>(product1Url, null as any)
 			await vi.runAllTimersAsync()
 			const response = await promise
 			expect(response).instanceOf(Response)
@@ -78,12 +81,12 @@ describe('fetch', () => {
 			vi.stubGlobal('fetch', fetchMock)
 			let error: FetchError
 			const handleErr = vi.fn((err: FetchError) => (error = err))
-			fetch.get(product1Url).catch(handleErr)
+			fetch.get(undefined as any).catch(handleErr)
 			await vi.runAllTimersAsync()
 			expect(handleErr).toHaveBeenCalledWith(expect.any(FetchError))
 			expect(error!.options).not.toBe(undefined)
 			expect(error!.response).toBe(undefined)
-			expect(error!.url).not.toBe(undefined)
+			expect(error!.url).toBe(undefined)
 		})
 
 		it('should handle parse error', async () => {
@@ -193,7 +196,6 @@ describe('fetch', () => {
 			const {
 				args: [_, expectedOptions],
 			} = getMockedResult('get', 1, localOptions)
-			expectedOptions.timeout = TIMEOUT_MAX
 			await fetch(product1Url, localOptions)
 			expect(receivedOptions).toEqual(expectedOptions)
 
@@ -228,6 +230,25 @@ describe('fetch', () => {
 			expect(onResolve).not.toHaveBeenCalled()
 			expect(onEarlyFinalize).toHaveBeenCalled()
 		})
+
+		it('should invoke body function before executing request interceptors', async () => {
+			const bodyFunc = vi.fn(() => ({ data: 1 }))
+			const fetchFunc = vi.fn(
+				async (...[_, options]: FetchOptionsInterceptor[]) => ({
+					ok: true,
+					status: 200,
+					json: () => Promise.resolve(options.body),
+				}),
+			)
+			const promise = fetch.post(baseUrl, bodyFunc, {
+				fetchFunc: fetchFunc as unknown as FetchFunc,
+			})
+
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual(JSON.stringify({ data: 1 }))
+			expect(bodyFunc).toHaveBeenCalledOnce()
+			expect(fetchFunc).toHaveBeenCalledOnce()
+		})
 	})
 
 	describe('interceptors', () => {
@@ -240,6 +261,33 @@ describe('fetch', () => {
 			await promise.catch(noop)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
+		})
+		it('should string returned by error interceptor', async () => {
+			const errorIntercepror = vi.fn(() => 'custom error' as any)
+			const promise = fetch.get('', {
+				fetchFunc: () => Promise.reject(),
+				interceptors: { error: [errorIntercepror] },
+			})
+			await promise.catch(noop)
+			await expect(promise).rejects.toThrow('custom error')
+			expect(errorIntercepror).toHaveBeenCalledOnce()
+		})
+
+		it('should allow single interceptor function and convert it to an array', async () => {
+			const interceptor = vi.fn()
+			const promise = fetch.get(product1Url, {
+				fetchFunc: async (_, options) =>
+					({
+						success: true,
+						status: 200,
+						json: () =>
+							Promise.resolve(options?.interceptors?.request),
+					}) as unknown as Promise<Response>,
+				interceptors: { request: interceptor },
+			})
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual([interceptor])
+			expect(interceptor).toHaveBeenCalledOnce()
 		})
 
 		it('should receive correct request, result & response interceptor arguments', async () => {
@@ -432,6 +480,16 @@ describe('fetch', () => {
 			expect(fetchNetworkError).toHaveBeenCalled()
 			expect(fetchNetworkError).toHaveBeenCalledTimes(4) // 3 retries + first call
 		})
+
+		it('should avoid retrying after being aborted', async () => {
+			const handleErr = vi.fn()
+			const abortCtrl = new AbortController()
+			const promise = fetch('', { abortCtrl, retry: 5 }).catch(handleErr)
+			abortCtrl.abort()
+			await vi.runAllTimersAsync()
+			await promise
+			expect(handleErr).toHaveBeenCalledWith(expect.any(Error))
+		})
 	})
 
 	describe('timeout & abort', () => {
@@ -489,6 +547,25 @@ describe('fetch', () => {
 			expect(mockedFetch).toHaveBeenCalledTimes(1)
 			expect(promise.aborted).toBe(true)
 			expect(promise.abortCtrl?.signal.aborted).toBe(true)
+		})
+
+		it('should invoke onAbort callback', async () => {
+			const onAbort = vi.fn(() => new Error('Aborted'))
+			const onTimeout = vi.fn()
+			const abortCtrl = new AbortController()
+			const promise = fetch.get(product1Url, {
+				abortCtrl,
+				onAbort,
+				onTimeout,
+				timeout: 5000,
+			})
+			abortCtrl.abort()
+			let error: FetchError | undefined
+			promise.catch(err => (error = err))
+			await vi.runAllTimersAsync()
+			expect(error).instanceOf(FetchError)
+			expect(error?.message).toBe('Aborted')
+			expect(onAbort).toHaveBeenCalled()
 		})
 	})
 })

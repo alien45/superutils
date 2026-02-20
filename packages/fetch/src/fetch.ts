@@ -6,13 +6,11 @@ import {
 	isPromise,
 	isUrlValid,
 } from '@superutils/core'
-import { timeout as PromisE_timeout, TIMEOUT_MAX } from '@superutils/promise'
+import { timeout as PromisE_timeout } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
 import mergeOptions from './mergeOptions'
 import type {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	FetchCustomOptions,
 	FetchOptions,
 	FetchOptionsInterceptor,
 	FetchResult,
@@ -27,25 +25,14 @@ import {
 	FetchOptionsDefault,
 } from './types'
 
-/**
- * Extended `fetch` with timeout, retry, and other options. Automatically parses as JSON by default on success.
- *
- * @param url request URL
- * @param options (optional) Standard `fetch` options extended with {@link FetchCustomOptions}.
- * Default "content-type" header is 'application/json'.
- * @param options.as (optional) determines how to parse the result. Default: {@link FetchAs.json}
- * @param options.method (optional) fetch method. Default: `'get'`
- *
- * @example
- * #### Make a simple HTTP requests
- * ```javascript
- * import { fetch } from '@superutils/fetch'
- *
- * // no need for `response.json()` or "result.data.data" drilling
- * fetch.get('[DUMMYJSON-DOT-COM]/products/1')
- * 	   .then(product => console.log(product))
- * ```
- */
+const defaultErrorMsgs = Object.freeze({
+	aborted: 'Request aborted',
+	invalidUrl: 'Invalid URL',
+	parseFailed: 'Failed to parse response as',
+	timedout: 'Request timed out',
+	requestFailed: 'Request failed with status code:',
+}) as Required<FetchErrMsgs>
+
 const fetch = <
 	T = unknown,
 	TOptions extends FetchOptions = FetchOptions,
@@ -58,20 +45,12 @@ const fetch = <
 	options: FetchOptions & TOptions = {} as TOptions,
 ) => {
 	if (!isObj(options)) options = {} as TOptions
-	let fromPostClient = false
-	if ((options as unknown as Record<string, boolean>).fromPostClient) {
-		delete (options as unknown as Record<string, boolean>).fromPostClient
-		fromPostClient = true
-	}
+
 	let response: Response | undefined
 	// merge `defaults` with `options` to make sure default values are used where appropriate
 	const opts = mergeOptions(
-		{
-			abortOnEarlyFinalize: fetch.defaults.abortOnEarlyFinalize,
-			errMsgs: fetch.defaults.errMsgs,
-			timeout: TIMEOUT_MAX,
-			validateUrl: false,
-		},
+		{ errMsgs: defaultErrorMsgs },
+		fetch.defaults,
 		options,
 	)
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
@@ -84,17 +63,8 @@ const fetch = <
 	opts.signal ??= opts.abortCtrl.signal
 	const { abortCtrl, as: parseAs, headers, onAbort, onTimeout } = opts
 	opts.onAbort = async () => {
-		const err: Error =
-			(await fallbackIfFails(onAbort, [], undefined))
-			?? opts.abortCtrl?.signal?.reason
-			?? opts.signal?.reason
-			?? opts.errMsgs.aborted
+		const err: Error = await fallbackIfFails(onAbort, [], undefined)
 
-		if (isError(err) && err.name === 'AbortError') {
-			err.message = ['This operation was aborted'].includes(err.message)
-				? opts.errMsgs.aborted
-				: err.message
-		}
 		return await interceptErr(
 			isError(err) ? err : new Error(err),
 			url,
@@ -133,22 +103,15 @@ const fetch = <
 			if (validateUrl && !isUrlValid(url, false))
 				throw new Error(errMsgs.invalidUrl)
 
-			if (fromPostClient) {
-				let contentType = headers.get('content-type')
-				if (!contentType) {
-					headers.set('content-type', ContentType.APPLICATION_JSON)
-					contentType = ContentType.APPLICATION_JSON
-				}
-				const shouldStringifyBody =
-					['delete', 'patch', 'post', 'put'].includes(
-						`${opts.method}`.toLowerCase(),
-					)
-					&& !['undefined', 'string'].includes(typeof body)
-					&& isObj(body, true)
-					&& contentType === ContentType.APPLICATION_JSON
-				// stringify data/body
-				if (shouldStringifyBody) opts.body = JSON.stringify(opts.body)
-			}
+			const stringify =
+				['delete', 'patch', 'post', 'put'].includes(
+					`${opts.method}`.toLowerCase(),
+				)
+				&& !['undefined', 'string'].includes(typeof body)
+				&& isObj(body, true)
+				&& headers.get('content-type') === ContentType.APPLICATION_JSON
+			// stringify body
+			if (stringify) opts.body = JSON.stringify(opts.body)
 
 			// make the fetch call
 			response = await getResponse(url, opts)
@@ -160,7 +123,7 @@ const fetch = <
 				url,
 				opts,
 			)
-			const status = response?.status ?? 0
+			const status = response?.status
 			const isSuccess = status >= 200 && status < 300
 			if (!isSuccess) {
 				const jsonError: unknown = await fallbackIfFails(
@@ -209,13 +172,7 @@ const fetch = <
 /** Default fetch options */
 fetch.defaults = {
 	abortOnEarlyFinalize: true,
-	errMsgs: {
-		aborted: 'Request aborted',
-		invalidUrl: 'Invalid URL',
-		parseFailed: 'Failed to parse response as',
-		timedout: 'Request timed out',
-		requestFailed: 'Request failed with status code:',
-	} as Required<FetchErrMsgs>, // all error messages must be defined here
+	errMsgs: { ...defaultErrorMsgs }, // all error messages must be defined here
 	headers: new Headers(),
 	interceptors: {
 		error: [],

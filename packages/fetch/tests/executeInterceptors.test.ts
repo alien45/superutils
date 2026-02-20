@@ -1,5 +1,5 @@
-import { noop } from '@superutils/core'
 import { describe, expect, it } from 'vitest'
+import { noop } from '../../core/src'
 import { executeInterceptors } from '../src'
 
 describe('executeInterceptors', () => {

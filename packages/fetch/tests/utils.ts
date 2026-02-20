@@ -1,5 +1,5 @@
-import { isStr, objSort } from '@superutils/core'
 import { expect } from 'vitest'
+import { isStr, objSort } from '../../core/src'
 import fetch, { ContentType, FetchAs, FetchOptions, mergeOptions } from '../src'
 
 export const productsBaseUrl = 'https://dummyjson.com/products'

@@ -115,9 +115,7 @@ const methods = {
  * @param options.timeout (optional) duration in milliseconds to abort the request.
  * This duration includes the execution of all interceptors/transformers.
  *
- * Default: `30_000`
- *
- *
+ * Default: `60_000`
  *
  * ---
  *
@@ -143,7 +141,6 @@ const methods = {
  * fetch.post('[DUMMYJSON-DOT-COM]/products/add', { title: 'Product title' })
  *   .then(product => console.log(product))
  * ```
- *
  *
  * @example
  * #### Set default options.

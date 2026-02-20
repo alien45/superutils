@@ -29,7 +29,7 @@ const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
 			...options,
 			retryIf: async (res, count, error) => {
 				const { abortCtrl, retryIf, signal } = options
-				if (abortCtrl?.signal.aborted || signal?.aborted) return false
+				if (abortCtrl?.signal?.aborted || signal?.aborted) return false
 
 				return !!(
 					(await fallbackIfFails(

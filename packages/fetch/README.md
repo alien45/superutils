@@ -16,6 +16,10 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 - [Installation](#installation)
     - [NPM](#npm)
     - [CDN / Browser](#cdn--browser)
+    - [Defaults](#defaults)
+        - [Timeout](#timeout)
+        - [Conent Type](#content-type)
+        - [Response Parsing](#fetch-as)
 - [Usage](#usage)
     - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
     - [`TimeoutPromise` Instance](#promise-features): finer control over the request
@@ -27,7 +31,8 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`Retry`](#retry) Retry on request failure
     - [`Timeout`](#timeout) Abort request on timeout
     - [`Interceptors/Transformers`](#interceptors)
-    - [`Reusable Clients`](#reusable-clients)
+    - [`createClient()`](#create-client)
+    - [`createPostClient()`](#create-post-client)
 
 ## Features
 
@@ -53,24 +58,24 @@ Dependency: `@superutils/core` and `@superutils/promise` will be automatically i
 
 ### CDN / Browser
 
-If you are not using a bundler, you can include the browser build directly:
+If you are not using a bundler, you can include the minified browser build directly:
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch/dist/browser/index.min.js"></script>
+<script src="https://unpkg.com/@superutils/fetch@latest/dist/browser/index.min.js"></script>
 ```
 
 OR,
 
 ```xml
-<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch@latest/dist/browser/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@superutils/fetch/dist/browser/index.min.js"></script>
 ```
 
-This will expose a global namespace with the following:
+This will expose a global namespace `superutils` with the following:
 
 ```java
-// Namespace: default export (function) from '@superutils/fetch' and all the exports as properties
+// Default export (function) from `@superutils/fetch` + named exports
 superutils.fetch
-// Namespace: default export (class) from '@superutils/promise' and all the exports as properties
+// Default export (class) from `@superutils/promise` + named exports
 superutils.PromisE
 
 const { fetch, PromisE } = superutils
@@ -83,14 +88,64 @@ fetch.createClient({ method: 'post', timeout: 30_000 }, {}, { delay: 500 })
 // PromisE usage
 new PromisE()
 await PromisE.delay(1000)
-const handleChange = PromisE.deferredCallback(
-	event => console.log({ value: event.target.value }),
-	{ delay: 300 },
-)
 ```
 
 The `@superutils/fetch` browser build includes `PromisE` most (if not all) of it is used internally.
 Loading `@superutils/promise` separately will take precedence and override it.
+
+### Defaults
+
+The `fetch.defaults` object allows you to configure global default options, such as headers, interceptors, and timeouts.
+
+#### Timeout
+
+By default, all requests include a 60-second timeout to abort requests that take too long to complete. You can override this per request or globally by setting `fetch.defaults.timeout`:
+
+```javascript
+import fetch, { TIMEOUT_FALLBACK, TIMEOUT_MAX } from '@superutils/fetch'
+
+// Set the maximum allowed duration by `setTimeout` (approx 28 days)
+fetch.defaults.timeout = TIMEOUT_MAX
+```
+
+- Setting `0`, `Infinity`, negative or an invalid number will fallback to `TIMEOUT_FALLBACK` (10 seconds).
+- Setting a number higher than `TIMEOUT_MAX` will fallback to `TIMEOUT_MAX`.
+
+<div id="content-type"></div>
+
+#### Content Type
+
+By defualt `fetch()` does not have any default content type header to match the behavior of the built-in `fetch`.
+
+All functions derived from `createPostClient` (eg: `fetch.post()`, `fetch.put()`) will use the default content-type header `application/json`.
+
+<div id="fetch-as"></div>
+
+#### Response Parsing
+
+By default, `fetch()` returns a `Response` object, making it a drop-in replacement for the built-in `fetch`.
+
+All other functions (e.g., `createClient`, `createPostClient`, `fetch.get`...) automatically parse and return the result as JSON by default.
+
+To retrieve the response in a different format (e.g., as text, a blob, or the raw `Response` object), set the `as` option to one of the following `FetchAs` enum values corresponding to the relevant `Response` method:
+
+- `FetchAs.json`
+- `FetchAs.text`
+- `FetchAs.blob`
+- `FetchAs.arrayBuffer`
+- `FetchAs.formData`
+- `FetchAs.bytes`
+- `FetchAs.response`
+
+```javascript
+import fetch, { FetchAs } from '@superutils/fetch'
+
+fetch
+	.get('[DUMMYJSON-DOT-COM]/products/1', { as: FetchAs.text })
+	.then(console.log)
+```
+
+> **Note:** To ensure type safety, the `as` property is excluded from `fetch.defaults` in TypeScript. Since this option determines the function's return type, setting it globally would prevent accurate type inference for individual requests.
 
 ## Usage
 
@@ -112,9 +167,9 @@ fetch('[DUMMYJSON-DOT-COM]/products/1')
 
 ### `TimeoutPromise` Instance (extends `PromisE`): finer control over the request
 
-All fetch calls return a `TimeoutPromise` instance from (`@superutils/promise`) which means they come with additional features available in `PromisE`:
+All fetch calls return a `TimeoutPromise` instance from (`@superutils/promise`) which means they come with additional features:
 
-1. Status tracking: all instances come with `.pending`, `.resolved` and `.rejected` attributes that indicate the current state of the promise.
+1. Status tracking: all instances come additional properties that indicate the current state of the promise and request.
 
 ```javascript
 import fetch from '@superutils/fetch'
@@ -263,7 +318,7 @@ setTimeout(() => {
     3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
     4.  `ResolveError.REJECT`: (Default) The promise is rejected with a `FetchError`, adhering to standard promise behavior.
 
-#### Using defaults to reduce redundancy
+<!-- #### Using defaults to reduce redundancy
 
 ```javascript
 import fetch from '@superutils/fetch'
@@ -291,7 +346,7 @@ getRandomQuote().then(quote => console.log('Call 3 resolved:', quote))
 // Because `resolveIgnored` is `WITH_LAST`, all three promises resolve with the same quote.
 // The promises for the two ignored calls resolve as soon as the first successful call resolves.
 // Console output will show the same quote ID for all three calls.
-```
+``` -->
 
 <div id="post"></div>
 
@@ -512,68 +567,24 @@ The `retry` option provides a robust mechanism to automatically re-attempt faile
 ```javascript
 import fetch from '@superutils/fetch'
 
-fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
-	retry: 3, // Max number of retries.
-	retryBackOff: 'linear', // Backoff strategy: 'linear' or 'exponential'.
-	// Delay in milliseconds.
-	// - 'linear': Constant delay between each attempt.
-	// - 'exponential': Initial delay that doubles with each retry.
-	retryDelay: 300,
-	retryDelayJitter: true, // Add random delay to avoid thundering herd.
-	retryDelayJitterMax: 100, // Max jitter delay (ms).
-	retryIf: (response, retryCount, error) => {
-		console.log('Attempt #', retryCount + 1)
-		// re-attempt if status code not 200
-		return response.status !== 200
-	},
-})
+fetch
+	.get('[DUMMYJSON-DOT-COM]/products/1', {
+		retry: 3, // If request fails, retry up to three more times
+		// Additionally, you can control the retry strategy by using a function
+		retryIf: async (response, retryCount, error) => {
+			if (!!error) return true
+
+			// make sure to clone the response if result stream must be consumed here.
+			const result = await response.clone().json()
+			return result !== 'expected value'
+		},
+	})
+	.then(console.log)
 ```
 
-<div id="timeout"></div>
+<div id="create-client"></div>
 
-### Request Timeout
-
-A request can be automatically cancelled by simply providing a `timeout` duration in milliseconds. Internally, `fetch` uses an `AbortController` to cancel the request if it does not complete within the specified time.
-
-```javascript
-import fetch from '@superutils/fetch'
-
-fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
-	timeout: 5000,
-})
-```
-
-<div id="fetch-as"></div>
-
-### Response Parsing
-
-By default, `fetch()` returns a `Response` object, making it a drop-in replacement for the built-in `fetch`.
-
-However, all method-specific functions (e.g., `fetch.get`, `fetch.post`, `fetch.get.deferred`) automatically parse and return the result as JSON.
-
-To retrieve the response in a different format (e.g., as text, a blob, or the raw `Response` object), set the `as` option to one of the following `FetchAs` values:
-
-- `FetchAs.json`
-- `FetchAs.text`
-- `FetchAs.blob`
-- `FetchAs.arrayBuffer`
-- `FetchAs.formData`
-- `FetchAs.bytes`
-- `FetchAs.response`
-
-> **Note:** When not using TypeScript, you can simply pass the string value (e.g., `'text'`, `'blob'`, `'response'`).
-
-```typescript
-import fetch, { FetchAs } from '@superutils/fetch'
-
-fetch.get('[DUMMYJSON-DOT-COM]/products/1', {
-	as: FetchAs.text,
-})
-```
-
-<div id="reusable-clients"></div>
-
-### `createClient(fixedOptions, commonOptions, commonDeferOptions)`: Reusable Clients
+### `createClient(fixedOptions, commonOptions, commonDeferOptions)`
 
 The `createClient` utility streamlines the creation of dedicated API clients by generating pre-configured fetch functions. These functions can be equipped with default options like headers, timeouts, or a specific HTTP method, which minimizes code repetition across your application. If a method is not specified during creation, the client will default to `GET`.
 
@@ -622,7 +633,9 @@ deferredClient({ timeout: 10000 }) // timeout is overridden by individual reques
 	.then(console.log, console.warn)
 ```
 
-### `createPostClient(fixedOptions, commonOptions, commonDeferOptions)`: Reusable Post-like Clients
+<div id="create-post-client"></div>
+
+### `createPostClient(fixedOptions, commonOptions, commonDeferOptions)`
 
 While `createClient()` is versatile enough for any HTTP method, `createPostClient()` is specifically designed for methods that require a request body, such as `DELETE`, `PATCH`, `POST`, and `PUT`. If a method is not provided, it defaults to `POST`. The generated client accepts an additional second parameter (`data`) for the request payload.
 
@@ -634,10 +647,12 @@ import { createPostClient } from '@superutils/fetch'
 // Create a POST client with 10-second as the default timeout
 const postClient = createPostClient(
 	{
-		method: 'post',
 		headers: { 'content-type': 'application/json' },
 	},
-	{ timeout: 10000 },
+	{
+		method: 'post',
+		timeout: 10000,
+	},
 )
 
 // Invoking `postClient()` automatically applies the pre-configured options
@@ -645,20 +660,23 @@ postClient(
 	'[DUMMYJSON-DOT-COM]/products/add',
 	{ title: 'New Product' }, // data/body
 	{}, // other options
-).then(console.log)
+).then(result => console.log('Product created:', result))
 
 // create a deferred client using "postClient"
-const updateProduct = postClient.deferred(
+const deferredPatchClient = postClient.deferred(
 	{
-		delay: 300, // debounce duration
-		onResult: console.log, // prints only successful results
+		delay: 300,
+		// prints only successful results
+		onResult: result =>
+			console.log('Product updated using deferred funciton:', result),
 	},
 	'[DUMMYJSON-DOT-COM]/products/add',
+	undefined, // data to be provided later
 	{
-		method: 'patch',
+		method: 'patch', // default method for deferredPatchClient
 		timeout: 3000,
 	},
 )
-updateProduct({ title: 'New title 1' }) // ignored by debounce
-updateProduct({ title: 'New title 2' }) // executed
+deferredPatchClient({ title: 'New title 1' }) // ignored by debounce
+deferredPatchClient({ title: 'New title 2' }) // executed
 ```

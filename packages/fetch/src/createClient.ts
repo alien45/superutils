@@ -126,13 +126,13 @@ export const createClient = <
 				? [url: FetchArgs[0], options?: TOptions]
 				: [options?: TOptions]
 		): IPromise_Fetch<Result> => {
-			const mergedOptions = (mergeOptions(
+			const mergedOptions = mergeOptions(
 				fetch.defaults,
 				commonOptions,
 				defaultOptions,
 				(defaultUrl === undefined ? args[1] : args[0]) as TOptions,
 				fixedOptions, // fixed options will always override other options
-			) ?? {}) as FetchOptions
+			) as FetchOptions
 			mergedOptions.as ??= FetchAs.json
 			// make sure to abort any previously pending request
 			_abortCtrl?.abort?.()
