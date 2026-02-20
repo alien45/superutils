@@ -1,6 +1,8 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { PromiseParams, IPromisE, OnEarlyFinalize, OnFinalize } from './types'
 
+const Promise = globalThis.Promise
+
 export class PromisEBase<T = unknown>
 	extends Promise<T>
 	implements IPromisE<T>
@@ -137,27 +139,23 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.all(...))` */
 	static all = <T extends unknown[]>(values: T) =>
-		new PromisEBase(globalThis.Promise.all<T>(values)) as IPromisE<{
+		new PromisEBase(Promise.all<T>(values)) as IPromisE<{
 			-readonly [P in keyof T]: Awaited<T[P]>
 		}>
 
 	/** Sugar for `new PromisE(Promise.allSettled(...))` */
 	static allSettled = <T extends unknown[]>(values: T) =>
-		new PromisEBase(globalThis.Promise.allSettled<T>(values)) as IPromisE<
+		new PromisEBase(Promise.allSettled<T>(values)) as IPromisE<
 			PromiseSettledResult<Awaited<T[number]>>[]
 		>
 
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
-		new PromisEBase(globalThis.Promise.any<T>(values)) as IPromisE<
-			Awaited<T[number]>
-		>
+		new PromisEBase(Promise.any<T>(values)) as IPromisE<Awaited<T[number]>>
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
 	static race = <T extends unknown[]>(values: T) =>
-		new PromisEBase(globalThis.Promise.race(values)) as IPromisE<
-			Awaited<T[number]>
-		>
+		new PromisEBase(Promise.race(values)) as IPromisE<Awaited<T[number]>>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {
@@ -169,24 +167,20 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.resolve(...))` */
 	static resolve = <T>(value?: T | PromiseLike<T>) =>
-		new PromisEBase<T>(
-			globalThis.Promise.resolve<T>(value as T),
-		) as IPromisE<T>
+		new PromisEBase<T>(Promise.resolve<T>(value as T)) as IPromisE<T>
 
 	/** Sugar for `new PromisE(Promise.try(...))` */
-	static try = <T, U extends unknown[]>(
+	static try = <T, U extends unknown[] = []>(
 		callbackFn: (...args: U) => T | PromiseLike<T>,
 		...args: U
 	) =>
-		new PromisEBase<T>(resolve =>
-			resolve(
-				// Promise.try is not supported in Node < 23.
-				fallbackIfFails(
-					callbackFn,
-					args,
-					// rethrow error to ensure the returned promise is rejected
-					err => globalThis.Promise.reject(err as Error),
-				),
+		// Promise.try is not supported in Node < 23.
+		new PromisEBase<T>(
+			fallbackIfFails(
+				callbackFn,
+				args,
+				// rethrow error to ensure the returned promise is rejected
+				err => PromisEBase.reject(err as Error),
 			),
 		) as IPromisE<Awaited<T>>
 
