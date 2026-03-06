@@ -19,4 +19,7 @@ export type UnsubscribeCandidates =
 	| Unsubscribe
 	| SubscriptionLike
 	| SubscriptionLike[]
-	| Record<string, SubscriptionLike | Unsubscribe>
+	| Record<
+			PropertyKey,
+			SubscriptionLike | Unsubscribe | null | undefined | false
+	  >

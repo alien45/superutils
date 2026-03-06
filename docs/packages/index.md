@@ -13,6 +13,8 @@
 - [Non-goals](#non-goals)
 - [Packages](#packages)
 - [Getting Started](#getting-started)
+    - [NPM](#npm)
+    - [CDN/Browser](#cdn-browser)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -160,7 +162,7 @@ OR,
 
 This exposes a global `superutils` object containing the exports of any loaded packages:
 
-```javascript
+```java
 superutils.core // All exports from `@superutils/core`
 superutils.fetch // Default export (function) from `@superutils/fetch` + named exports
 superutils.PromisE // Default export (class) from `@superutils/promise` + named exports

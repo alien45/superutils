@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { isArr, isFn } from '@superutils/core'
+import { isArr, isFn, isObj } from '@superutils/core'
 import { UnsubscribeCandidates } from './types'
 
 /**
@@ -8,7 +6,10 @@ import { UnsubscribeCandidates } from './types'
  * @summary unsubscribe to multiple RxJS subscriptions
  * @param   {Function|Unsubscribable|Array} unsub
  */
-export const unsubscribeAll = (unsub: UnsubscribeCandidates = {}) => {
+export const unsubscribeAll = (
+	unsub: UnsubscribeCandidates = {},
+	onError?: (err: unknown) => void,
+) => {
 	// single function supplied
 	if (isFn(unsub)) return unsub()
 
@@ -16,17 +17,20 @@ export const unsubscribeAll = (unsub: UnsubscribeCandidates = {}) => {
 	if (!isArr(unsub) && isFn(unsub.unsubscribe)) return unsub.unsubscribe()
 
 	// multi: array/object
-	Object.values(unsub).forEach(x => {
+	const obj = unsub as Record<PropertyKey, unknown>
+	Object.keys(obj).forEach(key => {
 		try {
-			if (!x) return
-			const fn: null | ((...args: unknown[]) => unknown) = isFn(x)
-				? x
-				: isFn(x.unsubscribe)
-					? x.unsubscribe
+			if (!obj[key]) return
+
+			isFn(obj[key])
+				? obj[key]()
+				: isObj(obj[key], false)
+					? isFn(obj[key].unsubscribe)
+						? obj[key].unsubscribe()
+						: unsubscribeAll(obj[key] as UnsubscribeCandidates)
 					: null
-			fn?.()
-		} catch (e) {
-			e
+		} catch (err) {
+			onError?.(err)
 		}
 	})
 }

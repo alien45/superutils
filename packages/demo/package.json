@@ -3,7 +3,9 @@
 	"dependencies": {
 		"@superutils/core": "^1.2.0",
 		"@superutils/promise": "^1.2.0",
-		"@superutils/rx": "^0.1.0"
+		"@superutils/rx": "^0.1.0",
+		"@types/node-localstorage": "^1.3.3",
+		"node-localstorage": "^2.2.1"
 	},
 	"devDependencies": {
 		"tsup": "^8.5.1"
@@ -38,7 +40,7 @@
 		"build": "tsup --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
 		"start": "npm run build && node dist/index.js",
-		"test": "cd ../../ && npm run test promise"
+		"test": "cd ../../ && npm run test demo"
 	},
 	"type": "module",
 	"version": "0.1.0"

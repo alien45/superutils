@@ -1,4 +1,5 @@
 export * from './copyRxSubject'
+export * from './data-storage'
 export * from './IntervalSubject'
 export * from './IntervalRunner'
 export * from './isSubjectLike'

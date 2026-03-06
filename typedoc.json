@@ -5,8 +5,6 @@
 		"packages/ai-orchestrator/",
 		"packages/demo/",
 		"packages/template/",
-		// exclude until ready
-		"packages/data-storage/"
 		// Not ready but already referenced in the docs pages
 		// "packages/rx/",
 		// "packages/react/"
