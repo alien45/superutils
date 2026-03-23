@@ -1,6 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DataStorage, StorageCompact, StorageValue } from '../src/data-storage'
+import { unsubscribeAll } from '../src/unsubscribeAll'
 
 class MockLocalStorage implements StorageCompact {
 	storage = new Map<string, string>()
@@ -27,6 +28,7 @@ describe('DataStorage', () => {
 	})
 	afterEach(() => {
 		vi.unstubAllGlobals()
+		vi.useRealTimers()
 	})
 
 	it('should read & write to mocked localStorage and initialize on first write', () => {
@@ -85,7 +87,7 @@ describe('DataStorage', () => {
 	})
 
 	it('should create an instance with cache disabled and read/write directly from storage', () => {
-		const storage = new DataStorage(name, { cacheDisabled: true, delay })
+		const storage = new DataStorage(name, { cacheDisabled: true })
 		expect(mockedStorage.getItem).toHaveBeenCalledTimes(0)
 		expect(storage.cacheDisabled).toBe(true)
 		expect(storage.subject).instanceOf(Subject)
@@ -183,20 +185,65 @@ describe('DataStorage', () => {
 		expect(storage.init()).toBe(false)
 	})
 
-	it('should write to storage after delay', () => {
-		vi.useFakeTimers()
-		const storage = new DataStorage(name)
-		storage.set(key, value)
-		expect(mockedStorage.setItem).toHaveBeenCalledTimes(0)
-		vi.advanceTimersByTime(storage.delay)
-		expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
-	})
-
 	it('should return empty map if non-map value set directly to the subject', () => {
-		const storage = new DataStorage(name, { delay })
+		const storage = new DataStorage(name, {
+			delay,
+			initialValue: new Map(entries),
+		})
 		expect(storage.subject instanceof BehaviorSubject).toBe(true)
 		storage.subject.next(null as any)
 		expect(storage.getAll()).toEqual(new Map())
+	})
+
+	describe('writing based on caching and delay', () => {
+		it('should write to storage after delay', () => {
+			vi.useFakeTimers()
+			const storage = new DataStorage(name)
+			storage.set(key, value)
+			expect(mockedStorage.setItem).toHaveBeenCalledTimes(0)
+			vi.advanceTimersByTime(storage.delay)
+			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
+		})
+
+		it('should write to storage each time data changes when cache is disabled', () => {
+			const storage = new DataStorage(name, { cacheDisabled: true })
+			const count = 10
+			const entries = []
+			for (let i = 0; i < count; i++) {
+				const key = 'key' + i
+				const value = { value: i }
+				storage.set(key, value)
+				entries.push([key, value])
+			}
+			expect(mockedStorage.setItem).toHaveBeenCalledTimes(count)
+			expect(mockedStorage.getItem).toHaveBeenCalledTimes(count)
+			expect(JSON.parse(mockedStorage.getItem(name) || '[]')).toEqual(
+				entries,
+			)
+		})
+
+		it('should write to storage after debouce delay when cache is enabled', () => {
+			vi.useFakeTimers()
+			const delay = 500
+			const storage = new DataStorage(name, {
+				cacheDisabled: false,
+				delay,
+			})
+			const count = 10
+			const expectedEntries = []
+			for (let i = 0; i < count; i++) {
+				const key = 'key' + i
+				const value = { value: i }
+				storage.set(key, value)
+				expectedEntries.push([key, value])
+			}
+			expect(mockedStorage.setItem).toHaveBeenCalledTimes(0)
+			vi.advanceTimersByTime(storage.delay)
+			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
+			expect(mockedStorage.getItem).toHaveBeenCalledTimes(1)
+			const entries = mockedStorage.getItem(name) || '[]'
+			expect(entries).toEqual(JSON.stringify(expectedEntries))
+		})
 	})
 
 	describe('find, filter, search & sort', () => {
@@ -239,38 +286,65 @@ describe('DataStorage', () => {
 	})
 
 	describe('forceUpdateCache', () => {
-		const testFunc =
+		const simulateTest =
 			(storageName: Parameters<typeof DataStorage.forceUpdateCache>[0]) =>
 			async () => {
+				const names =
+					storageName === true
+						? [name]
+						: Array.isArray(storageName)
+							? storageName
+							: [storageName]
 				const subjectOnChange = vi.fn()
-				const key1 = 'key1'
-				const value1 = { value: 1 }
-				const storage = new DataStorage(name, {
-					delay,
-					initialValue: new Map(entries),
-				})
-				const sub = storage.subject.subscribe(subjectOnChange)
-				expect(storage.toArray()).toEqual(entries)
-				const newStr = JSON.stringify([...entries, [key1, value1]])
-				mockedStorage.setItem(storage.name, newStr)
-				expect(mockedStorage.storage.get(storage.name)).toBe(newStr)
-				expect(mockedStorage.getItem).toHaveBeenNthCalledWith(
-					1,
-					storage.name,
+				const storages = names.map(
+					name =>
+						new DataStorage(name, {
+							delay,
+							initialValue: new Map(entries),
+						}),
 				)
+
+				// make sure the initial value is stored
+				const subs = storages.map(storage => {
+					const sub = storage.subject.subscribe(subjectOnChange)
+					expect(storage.toArray()).toEqual(entries)
+
+					// manually set value to the underlying storage
+					const newStr = JSON.stringify([
+						...entries,
+						['key1', { value: 1 }],
+					])
+					mockedStorage.setItem(storage.name, newStr)
+					expect(mockedStorage.storage.get(storage.name)).toBe(newStr)
+					return sub
+				})
+
+				expect(mockedStorage.getItem).toHaveBeenCalledTimes(
+					storages.length,
+				)
+				expect(subjectOnChange).toHaveBeenCalledTimes(storages.length)
+
+				// trigger a forced update of all storages with cache enabled
 				DataStorage.forceUpdateCache(storageName)
 
-				expect(mockedStorage.getItem).toHaveBeenNthCalledWith(
-					2,
-					storage.name,
+				expect(mockedStorage.getItem).toHaveBeenCalledTimes(
+					storages.length * 2,
 				)
-				expect(subjectOnChange).toHaveBeenCalledTimes(2)
-
-				sub.unsubscribe()
+				expect(subjectOnChange).toHaveBeenCalledTimes(
+					storages.length * 2,
+				)
+				// unsubscribe from all storages
+				unsubscribeAll(subs)
 			}
-		it('should update cached data for all instances', testFunc(true))
-		it('should update cached data for named instance', testFunc(name))
-		it('should update cached data of array of instances', testFunc([name]))
+
+		it('should update cached data for all instances', simulateTest(true))
+
+		it('should update cached data for named instance', simulateTest(name))
+
+		it(
+			'should update cached data of array of instances',
+			simulateTest([name, 'test2', 'test3']),
+		)
 	})
 
 	describe('callbacks', () => {
@@ -299,7 +373,6 @@ describe('DataStorage', () => {
 			const handleError = vi.fn()
 			const storage = new DataStorage(name, {
 				cacheDisabled: true,
-				delay,
 				initialValue: new Map(entries),
 				onError: handleError,
 			})

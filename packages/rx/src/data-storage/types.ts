@@ -58,14 +58,14 @@ export type StorageOptions<
 } & Pick<
 	Partial<IDataStorage<Key, Value, CacheDisabled>>,
 	| 'cacheDisabled'
-	| 'delay'
+	// | 'delay'
 	| 'onChange'
 	| 'onError'
 	| 'parse'
 	| 'spaces'
 	| 'storage'
 	| 'stringify'
->
+> & { delay?: CacheDisabled extends false ? number : never }
 
 export type StorageParseFn<K, V extends StorageValue> = (
 	data: string,
@@ -148,7 +148,7 @@ export interface IDataStorage<
 	spaces?: number
 
 	/**
-	 * `LocalStorage` or equivalent storage instance to read and write from.
+	 * `LocalStorage` or equivalent storage instance to be used as the underlying storage and to read & write from.
 	 *
 	 * Notes:
 	 * - Ignored when `name` is falsy (in-memory only mode)

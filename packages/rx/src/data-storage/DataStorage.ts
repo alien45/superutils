@@ -191,7 +191,11 @@ export class DataStorage<
 			storage,
 			stringify,
 		} = options ?? {}
-		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
+		this.delay = cacheDisabled
+			? 0
+			: delay === 0 || isPositiveNumber(delay)
+				? delay
+				: 300
 		this.name = `${name ?? ''}`.trim()
 		this.onError = onError
 		this.onChange = onChange
@@ -269,21 +273,18 @@ export class DataStorage<
 	readonly get = (key: Key) => this.getAll().get(key)
 
 	readonly getAll = (forceRead = false) => {
-		const readFromStorage =
-			this.name && (forceRead || this.cacheDisabled || !this.initialized)
+		const wasInitialized = this.initialized
+		if (!wasInitialized) this.init()
+
+		const readFromStorage = this.cacheDisabled || (this.name && forceRead)
 		if (readFromStorage) {
-			const wasInitialized = this.initialized
 			const data = this.read()
 			const shouldTrigger = forceRead || (!wasInitialized && !!data.size)
 			shouldTrigger && this.subject.next(data)
 			return data
 		}
 
-		const data = (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
-		return isMap(data)
-			? data
-			: // in-case non-map value is set directly to the subject
-				new Map<Key, Value>()
+		return (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
 	}
 
 	readonly has = (key: Key) => this.getAll().has(key)
@@ -325,6 +326,9 @@ export class DataStorage<
 		if (this.delay > 0) piped = piped.pipe(debounceTime(this.delay))
 		// Subscribe to data changes and write to storage.
 		this.subscriptions.subject = piped.subscribe(data => {
+			// in-case non-map value is set, set it to empty map
+			if (!isMap(data)) return this.subject.next(new Map<Key, Value>())
+
 			this.write(data)
 			fallbackIfFails(
 				async () => await this.onChange?.(data),
@@ -349,7 +353,7 @@ export class DataStorage<
 	readonly parse?: StorageParseFn<Key, Value>
 
 	readonly read = () => {
-		!this.initialized && this.init()
+		// !this.initialized && this.init()
 		const dataStr = this.storage?.getItem(this.name) ?? '[]'
 		const data =
 			isFn(this.parse)
@@ -374,16 +378,16 @@ export class DataStorage<
 		search(this.getAll(), options)
 
 	readonly set = (key: Key, value: Value) => {
-		const data = this.getAll()
-		data.set(key, value)
-		this.setAll(data, true)
+		this.setAll(new Map([[key, value]]), false)
 		return this
 	}
 
 	readonly setAll = (data = new Map<Key, Value>(), replace = false) => {
 		if (!isMap(data)) return this
 
-		data = replace ? data : mapJoin(this.getAll(), data)
+		data = replace
+			? data // override all entries
+			: mapJoin(this.getAll(), data) // merge with existing entries and override only matching keys
 		this.subject.next(new Map(data))
 		return this
 	}
