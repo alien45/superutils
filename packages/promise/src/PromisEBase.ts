@@ -1,5 +1,6 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { PromiseParams, IPromisE, OnEarlyFinalize, OnFinalize } from './types'
+import delay from './delay'
 
 const Promise = globalThis.Promise
 
@@ -43,21 +44,30 @@ export class PromisEBase<T = unknown>
 	constructor(input?: T | Promise<T> | PromiseParams<T>[0]) {
 		let _resolve: (value: T | PromiseLike<T>) => void
 		let _reject: (reason: unknown) => void
+		let superCalled = false
+
+		const finalize = (
+			fn: typeof _resolve | typeof _reject,
+			resolve = true,
+			value: unknown,
+		) => {
+			if (!superCalled)
+				return queueMicrotask(() => finalize(fn, resolve, value))
+
+			fn(value as T)
+			this._state = resolve ? 1 : 2
+			this.onFinalize.forEach(fn =>
+				fallbackIfFails(
+					fn,
+					resolve ? [value as T] : [undefined, value],
+					undefined,
+				),
+			)
+		}
+
 		super((resolve, reject) => {
-			_reject = reason => {
-				reject(reason)
-				this._state = 2
-				this.onFinalize.forEach(fn =>
-					fallbackIfFails(fn, [undefined, reason], undefined),
-				)
-			}
-			_resolve = value => {
-				resolve(value)
-				this._state = 1
-				this.onFinalize.forEach(fn =>
-					fallbackIfFails(fn, [value, undefined], undefined),
-				)
-			}
+			_reject = reason => finalize(reject, false, reason)
+			_resolve = value => finalize(resolve, true, value)
 
 			if (isFn(input)) {
 				fallbackIfFails(input, [_resolve, _reject], _reject)
@@ -69,6 +79,7 @@ export class PromisEBase<T = unknown>
 			// If input is `undefined`, do nothing and expect external finalization.
 		})
 
+		superCalled = true
 		this._resolve = _resolve!
 		this._reject = _reject!
 	}

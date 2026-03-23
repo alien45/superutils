@@ -23,8 +23,8 @@
 	"license": "MIT",
 	"name": "@superutils/fetch",
 	"peerDependencies": {
-		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.2.0"
+		"@superutils/core": "^1.2.7",
+		"@superutils/promise": "^1.3.5"
 	},
 	"publishConfig": {
 		"access": "public"
