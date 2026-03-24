@@ -119,7 +119,7 @@ export interface IDataStorage<
 	readonly cacheDisabled: CacheDisabled
 
 	/**
-	 * Debounce delay duration in milliseconds before writing to storage.
+	 * Debounce delay duration in milliseconds before writing to storage when caching is enabled.
 	 *
 	 * Increasing this value can improve performance when dealing with large datasets
 	 * or frequent updates by reducing the number of write operations.
