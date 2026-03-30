@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import {
+	deferred,
 	fallbackIfFails,
 	filter,
 	find,
@@ -21,8 +22,10 @@ import {
 	skip,
 	Subject,
 	Subscription,
+	throttleTime,
 } from 'rxjs'
 import {
+	DelayOptions,
 	IDataStorage,
 	OnErrorType,
 	StorageCompact,
@@ -65,7 +68,12 @@ export class DataStorage<
 > implements IDataStorage<Key, Value, CacheDisabled> {
 	readonly cacheDisabled: CacheDisabled
 
-	readonly delay!: number
+	readonly delay: number
+
+	readonly delayOptions?: DelayOptions
+
+	/** Debounce and throttle related options */
+	// readonly deferOptions
 
 	readonly initialized: boolean = false
 
@@ -183,6 +191,7 @@ export class DataStorage<
 		const {
 			cacheDisabled = false as CacheDisabled,
 			delay,
+			delayOptions,
 			initialValue,
 			onError,
 			onChange,
@@ -219,6 +228,7 @@ export class DataStorage<
 		;(this.subject as unknown) = this.cacheDisabled
 			? new Subject<Map<Key, Value>>()
 			: new BehaviorSubject(undefined)
+		this.delayOptions = delayOptions
 		isMap(initialValue) && initialValue.size && this.init(initialValue)
 	}
 
@@ -320,12 +330,10 @@ export class DataStorage<
 			&& !!initialValue?.size
 			&& this.setAll(initialValue)
 
-		let piped = this.subject.pipe(
+		const piped = this.subject.pipe(
 			skip(this.cacheDisabled || !!initialValue?.size ? 0 : 1),
 		)
-		if (this.delay > 0) piped = piped.pipe(debounceTime(this.delay))
-		// Subscribe to data changes and write to storage.
-		this.subscriptions.subject = piped.subscribe(data => {
+		let handleChange = (data: Map<Key, Value>) => {
 			// in-case non-map value is set, set it to empty map
 			if (!isMap(data)) return this.subject.next(new Map<Key, Value>())
 
@@ -335,7 +343,11 @@ export class DataStorage<
 				[],
 				this.triggerOnError('onChange'),
 			)
-		})
+		}
+		if (this.delay > 0)
+			handleChange = deferred(handleChange, this.delay, this.delayOptions)
+		// Subscribe to data changes and write to storage.
+		this.subscriptions.subject = piped.subscribe(handleChange)
 		return true
 	}
 

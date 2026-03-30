@@ -1,4 +1,5 @@
 import {
+	DeferredOptions,
 	DropFirst,
 	filter,
 	search,
@@ -7,6 +8,8 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
+
+export type DelayOptions = Omit<DeferredOptions, 'thisArg'>
 
 export type OnErrorType =
 	| 'onChange' // triggered when instance.onChange() call fails
@@ -58,14 +61,19 @@ export type StorageOptions<
 } & Pick<
 	Partial<IDataStorage<Key, Value, CacheDisabled>>,
 	| 'cacheDisabled'
-	// | 'delay'
 	| 'onChange'
 	| 'onError'
 	| 'parse'
 	| 'spaces'
 	| 'storage'
 	| 'stringify'
-> & { delay?: CacheDisabled extends false ? number : never }
+>
+	& (CacheDisabled extends false
+		? Pick<
+				Partial<IDataStorage<Key, Value, CacheDisabled>>,
+				'delay' | 'delayOptions'
+			>
+		: { delay?: never; delayOptions?: never })
 
 export type StorageParseFn<K, V extends StorageValue> = (
 	data: string,
@@ -119,7 +127,7 @@ export interface IDataStorage<
 	readonly cacheDisabled: CacheDisabled
 
 	/**
-	 * Debounce delay duration in milliseconds before writing to storage when caching is enabled.
+	 * Debounce/throttle delay duration in milliseconds for writing to storage when caching is enabled.
 	 *
 	 * Increasing this value can improve performance when dealing with large datasets
 	 * or frequent updates by reducing the number of write operations.
@@ -127,6 +135,8 @@ export interface IDataStorage<
 	 * Default: `300`
 	 */
 	readonly delay: number
+
+	readonly delayOptions?: DelayOptions
 
 	/**
 	 * Indicates wherether storage has been initialized (`init()` function invoked).

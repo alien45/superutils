@@ -196,7 +196,7 @@ describe('DataStorage', () => {
 	})
 
 	describe('writing based on caching and delay', () => {
-		it('should write to storage after delay', () => {
+		it('should write to storage after default delay with debounce', () => {
 			vi.useFakeTimers()
 			const storage = new DataStorage(name)
 			storage.set(key, value)
