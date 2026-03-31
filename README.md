@@ -128,7 +128,7 @@ npm install @superutils/fetch
 
 Once installed, you can import the utilities directly into your project.
 
-```typescript
+```javascript
 import fetch from '@superutils/fetch'
 
 fetch
