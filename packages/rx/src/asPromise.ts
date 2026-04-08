@@ -96,7 +96,9 @@ export const asPromise = <T = unknown>(
 		}),
 	)
 
-	promise.onFinalize.push(() => subscription?.unsubscribe?.())
+	promise.onFinalize.push(() => {
+		subscription?.unsubscribe?.()
+	})
 	return promise as IPromisE_Timeout<T>
 }
 export default asPromise

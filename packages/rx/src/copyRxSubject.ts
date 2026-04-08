@@ -1,18 +1,24 @@
-import { deferred, isArr, isFn } from '@superutils/core'
+import {
+	deferred,
+	fallbackIfFails,
+	isArr,
+	isFn,
+	isPositiveNumber,
+} from '@superutils/core'
+import { skip } from 'rxjs'
 import { BehaviorSubject } from './BehaviorSubject'
-import { isSubjectLike } from './isSubjectLike'
+import { DelayOptions } from './data-storage'
+import isSubjectLike from './isSubjectLike'
 import { SubjectLike } from './types'
 import { unsubscribeAll } from './unsubscribeAll'
 
 export const IGNORE_UPDATE_SYMBOL = Symbol('ignore-rx-subject-update')
 export type IgnoreUpdate = typeof IGNORE_UPDATE_SYMBOL
-type SubjectsNValuesArray<T = unknown> = (T | SubjectLike<T>)[]
-type RxSourceType = SubjectLike<unknown> | SubjectsNValuesArray<unknown>
-type UnwrapRxSourceValue<T> = T extends readonly unknown[]
+export type UnwrapRxSourceValue<T> = T extends readonly unknown[]
 	? { -readonly [K in keyof T]: SubjectToValue<T[K]> }
 	: SubjectToValue<T>
-type SubjectToValue<T> = T extends SubjectLike<infer V> ? V : T
-type ValueModifier<T = unknown, TCopy = T> = (
+export type SubjectToValue<T> = T extends SubjectLike<infer V> ? V : T
+export type ValueModifier<T = unknown, TCopy = T> = (
 	newValue: T,
 	previousValue: TCopy | undefined,
 	rxCopy: SubjectLike<TCopy>,
@@ -36,7 +42,7 @@ type ValueModifier<T = unknown, TCopy = T> = (
  * Accepts async functions. Function invocation errors will be gracefully ignored.
  * PS: If the very first invokation returns `IGNORE_UPDATE_SYMBOL`, the value of `rxCopy.value` will be undefined.
  * Args: `newValue, previousValue, rxCopy`
- * @param defer (optional) delay in milliseconds.
+ * @param delay (optional) delay in milliseconds.
  * Default: `100` if rxSource is an array, otherwise, `0`.
  *
  * @returns rxCopy
@@ -128,118 +134,137 @@ type ValueModifier<T = unknown, TCopy = T> = (
  */
 export function copyRxSubject<
 	TCopy extends T,
-	TRxSource = RxSourceType,
+	TRxSource,
 	T = UnwrapRxSourceValue<TRxSource>,
+	TRxCopy extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
 >(
 	rxSource: TRxSource,
-	rxCopy?: SubjectLike<TCopy>,
+	rxCopy?: TRxCopy,
 	valueModifier?: ValueModifier<T, TCopy>,
-	defer?: number,
-): SubjectLike<TCopy>
+	delay?: number,
+	delayOptions?: DelayOptions,
+	debugTag?: string,
+): TRxCopy
 
-/**
- * Overload for when TCopy doesn't extend T (modifier required)
- */
+// Overload for when TCopy doesn't extend T (modifier required)
 export function copyRxSubject<
 	TCopy,
-	TRxSource = RxSourceType,
+	TRxSource,
 	T = UnwrapRxSourceValue<TRxSource>,
+	TRxCopy extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
 >(
 	rxSource: TRxSource,
-	rxCopy: SubjectLike<TCopy> | undefined,
+	rxCopy: TRxCopy | undefined,
 	/**
 	 * Value of rxSource (T) and value of rxCopy (TCopy) are not the same,
 	 * therefore, `valueModifier` is required to transform the value(s) of
 	 * rxSource into value of rxCopy.
 	 */
 	valueModifier: ValueModifier<T, TCopy>,
-	defer?: number,
-): SubjectLike<TCopy>
+	delay?: number,
+	delayOptions?: DelayOptions,
+	debugTag?: string,
+): TRxCopy
 
 export function copyRxSubject<
 	TCopy,
-	TRxSource = RxSourceType,
+	TRxSource,
 	T = UnwrapRxSourceValue<TRxSource>,
+	TRxCopy extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
 >(
 	rxSource: TRxSource,
-	rxCopy?: SubjectLike<TCopy>,
-	// ...args: [T, TCopy] extends [TCopy, T] ?
-	//     [valueModifier?: ValueModifier<T>, defer?: number] :
-	//     [valueModifier: ValueModifier<T, TCopy>, defer?: number]
+	rxCopy?: TRxCopy,
 	valueModifier?: ValueModifier<T, TCopy>,
-	defer: number = isArr(rxSource)
-		? 10 // small delay to avoid too many updates on rxCopy (especially after initiation)
-		: 0,
-): SubjectLike<TCopy> {
-	const sourceIsArr = isArr<T | SubjectLike<T>>(rxSource)
-	const _rxSourceArr = (
-		isSubjectLike<T>(rxSource)
-			? [rxSource]
-			: !isArr(rxSource)
-				? [new BehaviorSubject(rxSource)]
-				: rxSource
-	) as SubjectsNValuesArray
+	delay?: number,
+	delayOptions?: DelayOptions,
+): TRxCopy {
+	delay ??= copyRxSubject.defaults.delay
+	let sourceSubs: undefined | unknown[]
+	let clientSubs = 0
+	const sourceIsArr = isArr(rxSource)
+	const rxSourceArr = isSubjectLike(rxSource)
+		? [rxSource]
+		: isArr(rxSource)
+			? rxSource
+			: [rxSource]
 	const gotModifier = isFn(valueModifier)
-	const getCopiedValue = () => {
-		const values = _rxSourceArr.map(x => (x as SubjectLike).value)
-		const result = sourceIsArr ? values : values[0]
-		return result as T
-	}
-	if (!isSubjectLike(rxCopy)) {
-		const initialValue = getCopiedValue()
-		rxCopy ??= new BehaviorSubject<TCopy>(
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-			gotModifier
-				? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(undefined as any) // for type consistency
-				: initialValue,
+	let cachedValues = rxSourceArr.map(subject =>
+		isSubjectLike(subject) ? subject.value : subject,
+	)
+	rxCopy = isSubjectLike(rxCopy)
+		? rxCopy
+		: (new BehaviorSubject(undefined) as unknown as TRxCopy)
+
+	const triggerChange = () => {
+		const currentValue = (sourceIsArr ? cachedValues : cachedValues[0]) as T
+		if (!gotModifier) return rxCopy.next(currentValue as unknown as TCopy)
+
+		const modifiedValue = fallbackIfFails(
+			valueModifier,
+			[currentValue, undefined, rxCopy],
+			IGNORE_UPDATE_SYMBOL,
 		)
-		if (gotModifier) {
-			const modifiedValue = valueModifier(initialValue, undefined, rxCopy)
-			modifiedValue !== IGNORE_UPDATE_SYMBOL && rxCopy.next(modifiedValue)
-		}
+		modifiedValue !== IGNORE_UPDATE_SYMBOL
+			&& rxCopy.next(modifiedValue as TCopy)
 	}
+	const trggerChangeDeferred = isPositiveNumber(delay)
+		? deferred(triggerChange, delay, {
+				...copyRxSubject.defaults.delayOptions,
+				...delayOptions,
+			})
+		: triggerChange
 
 	const subscribeOrg = rxCopy.subscribe.bind(rxCopy)
 	rxCopy.subscribe = (...args) => {
-		let unsubscribed = false
-		const updateRxCopy = async () => {
-			if (unsubscribed) return
+		clientSubs++
+		sourceSubs ??= rxSourceArr.map((subject, i) => {
+			if (!isSubjectLike(subject)) return
 
-			try {
-				const value = !gotModifier
-					? getCopiedValue()
-					: // eslint-disable-next-line @typescript-eslint/await-thenable
-						await valueModifier(
-							getCopiedValue(),
-							rxCopy.value,
-							rxCopy,
-						)
-				value != IGNORE_UPDATE_SYMBOL
-					&& value !== rxCopy.value
-					&& rxCopy.next(value as TCopy)
-			} catch (err) {
-				err
-			} // ignore if valueModifier threw exception
-		}
-		const handleChange =
-			defer > 0 ? deferred(updateRxCopy, defer) : updateRxCopy
+			return (
+				subject instanceof BehaviorSubject
+					? ((subject as BehaviorSubject<unknown>).pipe(
+							skip(1), // skip initial value
+						) as typeof subject)
+					: subject
+			).subscribe(newValue => {
+				cachedValues[i] = newValue
+				trggerChangeDeferred()
+			})
+		})
 
-		const subs = _rxSourceArr
-			.filter(x => isSubjectLike(x))
-			.map(x => x.subscribe(handleChange))
 		const sub = subscribeOrg(...args)
-		const unsubscribeOrg = sub.unsubscribe
+		const unsubscribeOrg = sub.unsubscribe.bind(sub)
 		sub.unsubscribe = (...args) => {
-			if (unsubscribed) return
+			if (sub.closed) return
 
-			unsubscribed = true
-			unsubscribeOrg.call(sub, ...args)
-			unsubscribeAll(subs)
+			clientSubs--
+			unsubscribeOrg(...args)
+			if (clientSubs > 0) return
+
+			unsubscribeAll(sourceSubs)
+			sourceSubs = undefined
 		}
 		return sub
 	}
+
+	const unsubscribeOrg = rxCopy?.unsubscribe?.bind(rxCopy)
+	rxCopy.unsubscribe = (...args) => {
+		unsubscribeOrg?.(...args)
+		unsubscribeAll(sourceSubs)
+		sourceSubs = undefined
+		cachedValues = []
+	}
+
+	// trigger with the initial values
+	triggerChange()
 	return rxCopy
+}
+copyRxSubject.defaults = {
+	delay: 0,
+	delayOptions: { throttle: false },
+} as {
+	delay?: number
+	delayOptions?: DelayOptions
 }
 copyRxSubject.IGNORE_UPDATE_SYMBOL = IGNORE_UPDATE_SYMBOL
 export default copyRxSubject

@@ -64,9 +64,10 @@ export const isStr = (x: unknown): x is string => typeof x === 'string'
  *
  * @returns `true` if the value is subject-like, `false` otherwise.
  */
-export const isSubjectLike = <T>(x: unknown, withValue = false) =>
-	isObj<{ subscribe: unknown; next: unknown; value?: T }>(x, false)
+export const isSubjectLike = (x: unknown, withValue = false) =>
+	isObj<Record<string, unknown>>(x, false)
 	&& isFn(x.subscribe)
+	// && isFn(x.unsubscribe)
 	&& isFn(x.next)
 	&& (!withValue || 'value' in x)
 

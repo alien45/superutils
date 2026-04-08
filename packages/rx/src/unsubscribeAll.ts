@@ -1,4 +1,5 @@
-import { isArr, isFn, isObj } from '@superutils/core'
+import { isFn } from '@superutils/core'
+import isSubscriptionLike from './isSubscriptionLike'
 import { UnsubscribeCandidates } from './types'
 
 /**
@@ -10,27 +11,20 @@ export const unsubscribeAll = (
 	unsub: UnsubscribeCandidates = {},
 	onError?: (err: unknown) => void,
 ) => {
-	// single function supplied
-	if (isFn(unsub)) return unsub()
+	if (!unsub) return
 
-	// single subscription
-	if (!isArr(unsub) && isFn(unsub.unsubscribe)) return unsub.unsubscribe()
+	try {
+		// single function supplied
+		if (isFn(unsub)) return unsub()
 
-	// multi: array/object
-	const obj = unsub as Record<PropertyKey, unknown>
-	Object.keys(obj).forEach(key => {
-		try {
-			if (!obj[key]) return
+		// single subscription
+		if (isSubscriptionLike(unsub)) return unsub.unsubscribe()
 
-			isFn(obj[key])
-				? obj[key]()
-				: isObj(obj[key], false)
-					? isFn(obj[key].unsubscribe)
-						? obj[key].unsubscribe()
-						: unsubscribeAll(obj[key] as UnsubscribeCandidates)
-					: null
-		} catch (err) {
-			onError?.(err)
-		}
-	})
+		// array/object
+		Object.values(unsub as UnsubscribeCandidates[]).forEach(value =>
+			unsubscribeAll(value, onError),
+		)
+	} catch (err) {
+		onError?.(err)
+	}
 }

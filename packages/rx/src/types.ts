@@ -1,10 +1,11 @@
 export interface SubjectLike<T = unknown> {
-	// getValue: () => T,
 	next: (value: T) => void
 	subscribe: (
 		next: (value: T) => void,
 		...args: unknown[]
 	) => SubscriptionLike
+	unsubscribe?: Unsubscribe
+	closed?: boolean
 	value?: T
 }
 
@@ -16,10 +17,17 @@ export interface SubscriptionLike {
 export type Unsubscribe = () => void
 
 export type UnsubscribeCandidates =
+	// single function
 	| Unsubscribe
+	// single subscription
 	| SubscriptionLike
+	// array of subscriptions
 	| SubscriptionLike[]
-	| Record<
-			PropertyKey,
-			SubscriptionLike | Unsubscribe | null | undefined | false
-	  >
+	// array of mixed values
+	| unknown[]
+	// object of mixed values
+	| Record<PropertyKey, unknown>
+	// values to be ignored
+	| undefined
+	| null
+	| boolean

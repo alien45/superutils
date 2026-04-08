@@ -1,15 +1,22 @@
 import {
-	DeferredOptions,
+	DebounceOptions,
 	DropFirst,
 	filter,
 	search,
 	sort,
 	SortOptions,
+	ThrottleOptions,
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
 
-export type DelayOptions = Omit<DeferredOptions, 'thisArg'>
+export type DelayOptions =
+	| ({
+			throttle: true
+	  } & Omit<ThrottleOptions, 'onError' | 'thisArg'>)
+	| ({
+			throttle?: false
+	  } & Omit<DebounceOptions, 'onError' | 'thisArg'>)
 
 export type OnErrorType =
 	| 'onChange' // triggered when instance.onChange() call fails
