@@ -1,7 +1,7 @@
 import { noop } from '@superutils/core'
 import { BehaviorSubject, interval, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import asPromise from '../src/asPromise'
+import { asPromise } from '../src'
 
 describe('subjectAsPromise', () => {
 	afterEach(() => {

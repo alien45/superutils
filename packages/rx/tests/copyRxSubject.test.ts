@@ -1,8 +1,8 @@
-import PromisE from '@superutils/promise'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
 	BehaviorSubject,
 	copyRxSubject,
+	IGNORE_UPDATE_SYMBOL,
 	Subject,
 	SubscriptionLike,
 } from '../src'
@@ -35,7 +35,7 @@ describe('copyRxSubject', () => {
 		const rxNumber = new Subject<number>()
 		const rxEven = new BehaviorSubject(0)
 		copyRxSubject(rxNumber, rxEven, (n = 0) =>
-			n < 3 ? n : copyRxSubject.IGNORE_UPDATE_SYMBOL,
+			n < 3 ? n : IGNORE_UPDATE_SYMBOL,
 		)
 		const spy = vi.fn()
 		sub = rxEven.subscribe(spy)
@@ -66,7 +66,7 @@ describe('copyRxSubject', () => {
 	it('should create a new subject and copy values from source subject', async () => {
 		const rxNumber = new BehaviorSubject(0)
 		const rxEven = copyRxSubject(rxNumber, undefined, value =>
-			value % 2 === 0 ? value : copyRxSubject.IGNORE_UPDATE_SYMBOL,
+			value % 2 === 0 ? value : IGNORE_UPDATE_SYMBOL,
 		)
 		const spy = vi.fn()
 		sub = rxEven.subscribe(spy)
@@ -105,19 +105,21 @@ describe('copyRxSubject', () => {
 
 	it('should delay updates using debouce by default', async () => {
 		const rxNum = new BehaviorSubject(0)
-		const rxCopy = copyRxSubject(rxNum, undefined, undefined, 300)
+		const rxCopy = copyRxSubject(rxNum, null, null, {
+			delay: 300,
+		})
 		const spy = vi.fn()
 		sub = rxCopy.subscribe(spy)
 
 		// expect initial value to fire a change event
 		expect(spy).toHaveBeenCalledTimes(1)
 
-		// series 1, update 1
+		// series 1, update 1 (ignored by debounce)
 		rxNum.next(1)
 		await vi.advanceTimersByTimeAsync(50)
 		expect(spy).toHaveBeenCalledTimes(1)
 
-		// series 1, update 2
+		// series 1, update 2 (ignored by debounce)
 		rxNum.next(2)
 		await vi.advanceTimersByTimeAsync(50)
 		expect(spy).toHaveBeenCalledTimes(1)
@@ -131,5 +133,31 @@ describe('copyRxSubject', () => {
 		rxNum.next(4)
 		await vi.advanceTimersByTimeAsync(300)
 		expect(spy).toHaveBeenNthCalledWith(3, 4)
+	})
+
+	it('should trigger onError callback when `valueModifier` fails', async () => {
+		const onError = vi.fn()
+		const rxSource = new BehaviorSubject(0)
+		copyRxSubject(
+			rxSource,
+			null,
+			() => {
+				throw new Error('error')
+			},
+			{ onError },
+		)
+		expect(onError).toHaveBeenCalledTimes(1)
+		rxSource.next(1)
+		expect(onError).toHaveBeenCalledTimes(2)
+		rxSource.next(2)
+		expect(onError).toHaveBeenCalledTimes(3)
+	})
+
+	it('should update copied subject value even when it is not subscribed', async () => {
+		const rxSource = new BehaviorSubject(0)
+		const rxCopy = copyRxSubject(rxSource)
+		expect(rxCopy.value).toBe(0)
+		rxSource.next(1)
+		expect(rxCopy.value).toBe(1)
 	})
 })

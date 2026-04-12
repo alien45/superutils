@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BehaviorSubject, Subscription } from '../src/BehaviorSubject'
-import isSubscriptionLike from '../src/isSubscriptionLike'
+import { BehaviorSubject, isSubscriptionLike, Subscription } from '../src'
 
 describe('isSubscriptionLike', () => {
 	const subscriptionLikeObj = {

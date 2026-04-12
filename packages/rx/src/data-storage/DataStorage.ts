@@ -16,14 +16,7 @@ import {
 	sort,
 	SortOptions,
 } from '@superutils/core'
-import {
-	BehaviorSubject,
-	debounceTime,
-	skip,
-	Subject,
-	Subscription,
-	throttleTime,
-} from 'rxjs'
+import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
 import {
 	DelayOptions,
 	IDataStorage,
@@ -42,7 +35,7 @@ import {
 	StorageToJSON,
 	StorageValue,
 } from './types'
-import { unsubscribeAll } from '../unsubscribeAll'
+import unsubscribeAll from '../unsubscribeAll'
 
 /**
  * Force all or specific instances of DataStorage to reload data from storage

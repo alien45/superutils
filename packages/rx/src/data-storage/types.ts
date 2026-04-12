@@ -8,7 +8,7 @@ import {
 	ThrottleOptions,
 	ValueOrPromise,
 } from '@superutils/core'
-import { BehaviorSubject, Subject } from 'rxjs'
+import { BehaviorSubject, Subject } from '../rxjs'
 
 export type DelayOptions =
 	| ({

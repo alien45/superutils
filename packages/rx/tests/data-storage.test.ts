@@ -1,7 +1,11 @@
 import { BehaviorSubject, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DataStorage, StorageCompact, StorageValue } from '../src/data-storage'
-import { unsubscribeAll } from '../src/unsubscribeAll'
+import {
+	DataStorage,
+	StorageCompact,
+	StorageValue,
+	unsubscribeAll,
+} from '../src'
 
 class MockLocalStorage implements StorageCompact {
 	storage = new Map<string, string>()

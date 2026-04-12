@@ -1,5 +1,5 @@
 import { isBool, isFn } from '@superutils/core'
-import { Subscription } from 'rxjs'
+import { Subscription } from './rxjs'
 
 /**
  * Check if value is an instance of RxJS `Subscription` or subscription-like object

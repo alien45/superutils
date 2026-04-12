@@ -1,5 +1,5 @@
 import { TimeoutId } from '@superutils/core'
-import { BehaviorSubject } from './BehaviorSubject'
+import { BehaviorSubject } from './rxjs'
 
 /**
  * @summary	Extention of a BehaviorSubject with interval function

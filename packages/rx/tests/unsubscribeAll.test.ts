@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { BehaviorSubject, Subscription } from '../src/BehaviorSubject'
-import { unsubscribeAll } from '../src/unsubscribeAll'
+import { BehaviorSubject, Subscription, unsubscribeAll } from '../src'
 
 describe('unsubscribeAll', () => {
 	const subjects = new Array(100).fill(0).map(() => new BehaviorSubject(0))

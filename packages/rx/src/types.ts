@@ -14,6 +14,14 @@ export interface SubscriptionLike {
 	unsubscribe: Unsubscribe
 }
 
+/** Wrap a value from a signle subject or an array of subjects and values */
+export type UnwrapSubjectValue<T> =
+	T extends SubjectLike<infer V>
+		? V
+		: T extends readonly unknown[]
+			? { -readonly [K in keyof T]: UnwrapSubjectValue<T[K]> }
+			: T
+
 export type Unsubscribe = () => void
 
 export type UnsubscribeCandidates =

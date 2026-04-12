@@ -11,7 +11,7 @@ import PromisE, {
 	TIMEOUT_MAX,
 	TimeoutOptions,
 } from '@superutils/promise'
-import { isObservable, Subscribable } from 'rxjs'
+import { isObservable, Subscribable } from './rxjs'
 import { SubjectLike, SubscriptionLike } from './types'
 
 /**

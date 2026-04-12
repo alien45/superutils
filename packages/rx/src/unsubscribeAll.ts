@@ -28,3 +28,4 @@ export const unsubscribeAll = (
 		onError?.(err)
 	}
 }
+export default unsubscribeAll
