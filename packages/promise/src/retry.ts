@@ -114,7 +114,7 @@ export const retry = <T>(
 					error = undefined
 					result = await func()
 				} catch (err) {
-					error = err
+					error = err ?? new Error(err as undefined)
 				}
 			}
 

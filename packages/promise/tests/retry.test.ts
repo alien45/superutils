@@ -43,6 +43,16 @@ describe('PromisE.retry', () => {
 		expect(func).toHaveBeenCalledTimes(5)
 	})
 
+	it('should use "unknown error" if rejected without an error (`Promise.reject()`)', async () => {
+		const fn = vi.fn(() => Promise.reject())
+		const promise = PromisE.retry(fn, { retry: 0 })
+		let error
+		promise.catch(err => (error = err))
+		await vi.runAllTimersAsync()
+		expect(error).toEqual(new Error())
+		expect(fn).toHaveBeenCalledTimes(1)
+	})
+
 	it('should attempt to re-execute a based on condition', async () => {
 		let count = 0
 		const func = vi.fn(() => ++count)
