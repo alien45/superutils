@@ -1,3 +1,6 @@
+/**
+ * @ignore
+ */
 export {
 	BehaviorSubject,
 	isObservable,

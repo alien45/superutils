@@ -47,12 +47,12 @@ export type ValueModifier<T = unknown, TCopy = T> = (
  * Accepts async functions. Function invocation errors will be gracefully ignored.
  * PS: If the very first invokation returns `IGNORE_UPDATE_SYMBOL`, the value of `copy$.value` will be undefined.
  * Args: `newValue, previousValue, copy$`
- * @param options (optional) options to enable debouce/throttling `copy$` value changes.
+ * @param {CopyRxSubjectOptions} options (optional) options to enable debouce/throttling `copy$` value changes.
  * @param options.delay (optional) delay in milliseconds. Default: `0`
  * @param options.onError (optional) callback invoked whenever `valueModifier` execution fails.
  * @param options.throttle (optional) `true`: throttle, `false`: debounce. Default: `false`
  *
- * @returns `copy$`
+ * @returns `copy$` if provided, otherwise, a new `BehaviorSubject` instance
  *
  * @example
  * #### Auto-copy values from a single subject
@@ -67,7 +67,7 @@ export type ValueModifier<T = unknown, TCopy = T> = (
  *   null,
  *   // copy and transform the value from number$
  *   newValue => newValue % 2 === 0,
- *   // debounce/throttle value changes to even$t
+ *   // debounce/throttle value changes to even$
  *   // {
  *   //   delay: 300 //
  *   //   throttle: false,

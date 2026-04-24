@@ -109,7 +109,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> avoid re-implementing common RxJS subject and lifecycle patterns across codebases
       </td>
-      <td id="coverage_rx"><div style="color:gray">&#128221;&nbsp;Planned</div></td>
+      <td id="coverage_rx"><div style="color:green">&#128152;&nbsp;100%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View</a></td>
     </tr>
   </tbody>

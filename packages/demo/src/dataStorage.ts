@@ -38,12 +38,12 @@ globalThis.localStorage = new LocalStorage(
 
 const storage = new DataStorage<number, Product>(
 	'products.json',
-	false,
-	new Map<number, Product>([
-		[0, { title: 'No product availalbe' } as Product],
-	]),
-	// undefined,
-	// localStorage,
+	{
+		cacheDisabled: false,
+		initialValue: new Map<number, Product>([
+			[0, { title: 'No product availalbe' } as Product],
+		]),
+	},
 )
 
 console.log('onload', storage.subject.value.size)

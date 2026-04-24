@@ -1,6 +1,5 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { PromiseParams, IPromisE, OnEarlyFinalize, OnFinalize } from './types'
-import delay from './delay'
 
 const Promise = globalThis.Promise
 

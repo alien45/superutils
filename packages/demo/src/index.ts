@@ -10,10 +10,10 @@ import {
 import { PromisE, IPromisE, DeferredAsyncOptions } from '@superutils/promise'
 
 import {
+	asPromise,
 	BehaviorSubject,
 	copyRxSubject,
 	IntervalSubject,
-	subjectAsPromise,
 	SubjectLike,
 } from '@superutils/rx'
 import { delay, distinctUntilChanged } from 'rxjs'
