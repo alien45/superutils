@@ -3,10 +3,10 @@
 	"description": "RxJS utilities and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.2.0",
+		"@superutils/promise": "^1.3.5",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
-		"rxjs": "^7.0.0"
+		"rxjs": "^7.8.2"
 	},
 	"files": [
 		"dist",
@@ -24,7 +24,7 @@
 	"name": "@superutils/rx",
 	"peerDependencies": {
 		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.2.0"
+		"@superutils/promise": "^1.3.5"
 	},
 	"private": true,
 	"publishConfig": {
@@ -35,7 +35,8 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "cd ../../ && npm run test promise"
+		"start": "npm run dev",
+		"test": "cd ../../ && npm run test rx"
 	},
 	"sideEffects": false,
 	"exports": {

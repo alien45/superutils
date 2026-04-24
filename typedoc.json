@@ -4,9 +4,7 @@
 	"exclude": [
 		"packages/ai-orchestrator/",
 		"packages/demo/",
-		"packages/template/",
-		// exclude until ready
-		"packages/data-storage/"
+		"packages/template/"
 		// Not ready but already referenced in the docs pages
 		// "packages/rx/",
 		// "packages/react/"
@@ -15,6 +13,7 @@
 	"excludeExternals": true,
 	"externalPattern": ["**/node_modules/**"],
 	"excludePrivate": true,
+	"excludeInternal": true,
 	"githubPages": true,
 	"hideBreadcrumbs": true,
 	"hidePageHeader": true,
@@ -24,6 +23,5 @@
 	"out": "docs/packages/",
 	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
 	// "readme": "packages/README.md",
-	/* t4ee */
 	"pretty": true
 }

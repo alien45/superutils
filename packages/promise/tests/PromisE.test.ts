@@ -27,6 +27,17 @@ describe('PromisE', () => {
 		expect(result).toBe(42)
 	})
 
+	it('should resolve immediately', async () => {
+		const p = new PromisE(r => r(1))
+		expect(p.pending).toBe(true)
+
+		await vi.advanceTimersByTimeAsync(1)
+		expect(p.pending).toBe(false)
+		expect(p.resolved).toBe(true)
+
+		await expect(p).resolves.toBe(1)
+	})
+
 	it('should create a promises that is resolved externally', async () => {
 		const onFinalize = vi.fn()
 		const p1 = new PromisE<number>()

@@ -1,5 +1,5 @@
 import { TimeoutId } from '@superutils/core'
-import { BehaviorSubject } from './BehaviorSubject'
+import { BehaviorSubject } from './rxjs'
 
 /**
  * @summary	Extention of a BehaviorSubject with interval function
@@ -13,7 +13,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  * import { IntervalSubject } from '@superutils/rx'
  *
  * const initialValue = 0
- * const rxInterval = new IntervalSubject(
+ * const interval$ = new IntervalSubject(
  * 	true, // auto-start
  * 	60 * 1000, // interval delay. increment counter every "x" milliseconds
  *  initialValue, // initial counter value
@@ -30,7 +30,7 @@ import { BehaviorSubject } from './BehaviorSubject'
  *
  * // BehaviorSubject automatically resolves with the initial value if subscribed immediately.
  * // subscribe to the subject and execute `onChange`: first time immediately and then every 60 seconds
- * rxInterval.subscribe(onChange)
+ * interval$.subscribe(onChange)
  * ```
  */
 export class IntervalSubject extends BehaviorSubject<number> {
@@ -70,7 +70,7 @@ export class IntervalSubject extends BehaviorSubject<number> {
 	resume = () => this.start()
 
 	start = () => {
-		if (!this.running) {
+		if (!this._running) {
 			this._running = true
 			this._intervalId = setInterval(
 				() => this.next(this.value + this.incrementBy),
@@ -86,5 +86,4 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		return this
 	}
 }
-
 export default IntervalSubject

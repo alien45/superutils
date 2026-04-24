@@ -9,7 +9,7 @@ import { DeferredOptions } from './types'
  *
  * @param callback function to be invoked after delay
  * @param delay (optional) delay duration in milliseconds. Default: `50`
- * @param config (optional) debounce or throttle configuration options
+ * @param options (optional) debounce or throttle configuration options
  *
  * @returns Callback function that can be invoked in one of the following 2 methods:
  * - debounced: when `throttle` is `false` or `undefined`
@@ -18,10 +18,10 @@ import { DeferredOptions } from './types'
 export const deferred = <TArgs extends unknown[], ThisArg, Delay = unknown>(
 	callback: (this: ThisArg, ...args: TArgs) => ValueOrPromise<unknown>,
 	delay: Delay = 50 as Delay,
-	config: DeferredOptions<ThisArg> = {},
+	options: DeferredOptions<ThisArg> = {},
 ) =>
-	config.throttle
-		? throttle<TArgs, ThisArg>(callback, delay as number, config)
-		: debounce<TArgs, ThisArg>(callback, delay as number, config)
+	options.throttle
+		? throttle<TArgs, ThisArg>(callback, delay as number, options)
+		: debounce<TArgs, ThisArg>(callback, delay as number, options)
 
 export default deferred

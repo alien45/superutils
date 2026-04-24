@@ -13,6 +13,8 @@
 - [Non-goals](#non-goals)
 - [Packages](#packages)
 - [Getting Started](#getting-started)
+    - [NPM](#npm)
+    - [CDN/Browser](#cdn-browser)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -107,7 +109,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> avoid re-implementing common RxJS subject and lifecycle patterns across codebases
       </td>
-      <td id="coverage_rx"><div style="color:gray">&#128221;&nbsp;Planned</div></td>
+      <td id="coverage_rx"><div style="color:green">&#128152;&nbsp;100%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/rx/">View</a></td>
     </tr>
   </tbody>
@@ -126,7 +128,7 @@ npm install @superutils/fetch
 
 Once installed, you can import the utilities directly into your project.
 
-```typescript
+```javascript
 import fetch from '@superutils/fetch'
 
 fetch
@@ -160,7 +162,7 @@ OR,
 
 This exposes a global `superutils` object containing the exports of any loaded packages:
 
-```javascript
+```java
 superutils.core // All exports from `@superutils/core`
 superutils.fetch // Default export (function) from `@superutils/fetch` + named exports
 superutils.PromisE // Default export (class) from `@superutils/promise` + named exports

@@ -1,4 +1,4 @@
-import { isFn, isObj } from '@superutils/core'
+import { isSubjectLike as _isSubjectLike } from '@superutils/core'
 import { SubjectLike } from './types'
 
 /**
@@ -12,8 +12,6 @@ import { SubjectLike } from './types'
 export const isSubjectLike = <T>(
 	x: unknown,
 	withValue = false,
-): x is SubjectLike<T> =>
-	isObj<SubjectLike<T>>(x, false)
-	&& isFn(x.subscribe)
-	&& isFn(x.next)
-	&& (!withValue || 'value' in x)
+): x is SubjectLike<T> => _isSubjectLike(x, withValue)
+
+export default isSubjectLike

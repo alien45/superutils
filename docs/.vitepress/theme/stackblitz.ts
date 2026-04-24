@@ -7,6 +7,7 @@ import {
 } from '@superutils/core'
 import fetch, { FetchAs } from '@superutils/fetch'
 import sdk, {
+	ProjectFiles,
 	type EmbedOptions,
 	type Project,
 	type ProjectTemplate,
@@ -207,7 +208,9 @@ export const embedPlayground = async (
 			),
 		),
 	)
-	const filesWithContent: Record<string, string> = {
+
+	const _files = {
+		[indexFile]: replaceUrls(code) || '// Your code goes here',
 		...files,
 		...externalFiles.reduce(
 			(obj, key, index) => ({
@@ -216,22 +219,72 @@ export const embedPlayground = async (
 			}),
 			{},
 		),
+		...(isTs && {
+			'tsconfig.json': JSON.stringify(
+				{
+					compilerOptions: {
+						// declaration: true,
+						esModuleInterop: true,
+						forceConsistentCasingInFileNames: true,
+						lib: ['ESNext'],
+						module: 'ESNext',
+						moduleResolution: 'bundler',
+						resolveJsonModule: true,
+						strict: true,
+						skipLibCheck: true,
+						target: 'ESNext',
+					},
+				},
+				null,
+				4,
+			),
+		}),
 	}
-	// files that need npm dependency injection
-	const filesDep = Object.keys(filesWithContent).filter(x =>
-		['ts', 'js', 'jsx', 'tsx'].includes(x.split('.').pop()),
+	const _dependencies = {
+		...(isTs && {
+			'@types/node': '^25.0.3',
+			typescript: '^5.9.3',
+		}),
+		...(isHtml && {
+			serve: 'latest',
+		}),
+		...(code && extractDependencies(code)),
+		...Object.keys(_files)
+			// files that need npm dependency injection
+			.filter(x =>
+				['ts', 'js', 'jsx', 'tsx'].includes(x.split('.').pop()),
+			)
+			.map(file => {
+				// replace placeholder urls in code.
+				// this should not be needed
+				// but just in case `replacePageUrls()` missed any elements for whatever reason
+				_files[file] = replaceUrls(_files[file])
+
+				return extractDependencies(_files[file])
+			})
+			.reduce((obj, next) => ({ ...obj, ...next }), {}),
+		...dependencies,
+	}
+	addNodeLocalStorage(_files, _dependencies, isTs)
+	_files['package.json'] = JSON.stringify(
+		{
+			name: 'playground',
+			private: true,
+			dependencies: _dependencies,
+			scripts: {
+				start: isTs
+					? 'tsc --build && node index.js'
+					: isHtml
+						? 'serve -p 54321'
+						: 'node index.js',
+				...scripts,
+			},
+			type: 'module',
+			...JSON.parse(files['package.json'] ?? '{}'),
+		},
+		null,
+		4,
 	)
-	const fileDependencies = filesDep
-		.map(file => {
-			// replace placeholder urls in code.
-			// this should not be needed
-			// but just in case `replacePageUrls()` missed any elements for whatever reason
-			filesWithContent[file] = replaceUrls(filesWithContent[file])
-
-			return extractDependencies(filesWithContent[file])
-		})
-		.reduce((obj, next) => ({ ...obj, ...next }), {})
-
 	const _project = {
 		description: 'Try @superutils in embeded StackBlitz playground',
 		title: 'Playground',
@@ -242,60 +295,7 @@ export const embedPlayground = async (
 				: isHtml
 					? 'html'
 					: 'node',
-		files: {
-			[indexFile]: replaceUrls(code) || '// Your code goes here',
-			...filesWithContent,
-			'package.json': JSON.stringify(
-				{
-					name: 'playground',
-					private: true,
-					dependencies: {
-						...(isTs && {
-							'@types/node': '^25.0.3',
-							typescript: '^5.9.3',
-						}),
-						...(isHtml && {
-							serve: 'latest',
-						}),
-						...(code && extractDependencies(code)),
-						...fileDependencies,
-						...dependencies,
-					},
-					scripts: {
-						start: isTs
-							? 'tsc --build && node index.js'
-							: isHtml
-								? 'serve -p 54321'
-								: 'node index.js',
-						...scripts,
-					},
-					type: 'module',
-					...JSON.parse(files['package.json'] ?? '{}'),
-				},
-				null,
-				4,
-			),
-			...(isTs && {
-				'tsconfig.json': JSON.stringify(
-					{
-						compilerOptions: {
-							// declaration: true,
-							esModuleInterop: true,
-							forceConsistentCasingInFileNames: true,
-							lib: ['ESNext'],
-							module: 'ESNext',
-							moduleResolution: 'bundler',
-							resolveJsonModule: true,
-							strict: true,
-							skipLibCheck: true,
-							target: 'ESNext',
-						},
-					},
-					null,
-					4,
-				),
-			}),
-		},
+		files: _files,
 	} as Project
 	const _embedOptions = {
 		height: 480,
@@ -309,6 +309,41 @@ export const embedPlayground = async (
 	// const embed = await sdk.embedProject(element, _project, _embedOptions)
 	// // const snapshot = await embed.getFsSnapshot()
 	// return embed
+}
+
+/** Add localStorage alternative using 'node-localstorage' module for use with DataStorage */
+const addNodeLocalStorage = (
+	files: Record<string, string>,
+	dependencies: Record<string, string>,
+	isTs = false,
+) => {
+	const ignore =
+		!dependencies['@superutils/rx']
+		|| !Object.values(files).find(str => str.includes('DataStorage'))
+	if (ignore) return
+
+	const newFileName = `node-localstorage.${isTs ? 'ts' : 'js'}`
+	dependencies['node-localstorage'] = 'latest'
+	files[newFileName] = `
+	import { LocalStorage } from 'node-localstorage'
+
+	// Add localStorage alternative for NodeJS that reads and writes to JSON files.
+	// This is not necessary for browsers.
+	globalThis.localStorage = new LocalStorage('./data', 1e7)
+	`
+
+	Object.keys(files).forEach(fileName => {
+		const content = files[fileName]
+		const ignore =
+			!content.includes('DataStorage')
+			// ignore for frontend files
+			|| !['js', 'ts'].includes(fileName.split('.').pop())
+			// injection not necessary
+			|| content.includes('node-localstorage')
+		if (ignore) return
+		files[fileName] = `import './${newFileName}'\n${content}`
+	})
+	return
 }
 
 /** Replace dummyjson placeholders in URLs with original URL */

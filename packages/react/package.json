@@ -35,7 +35,7 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --tsconfig ./tsconfig.dts.json --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "cd ../../ && npm run test promise"
+		"test": "cd ../../ && npm run test react"
 	},
 	"sideEffects": false,
 	"exports": {

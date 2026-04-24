@@ -17,7 +17,7 @@ export default defineConfig((options = {}) => {
 			outDir: 'dist',
 		},
 
-		{ // minified solo build with no external depencencies, suitable for browsers
+		pkgName !== 'demo' && { // minified solo build with no external depencencies, suitable for browsers
 			clean: true,
 			dts: false,
 			format: ['iife'],

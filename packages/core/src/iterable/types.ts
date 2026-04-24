@@ -56,12 +56,17 @@ export type SearchOptions<
 	ignoreCase?: boolean
 	/** limit number of results. Default: `Infinity` */
 	limit?: number
-	/** partial match for values. Default: `false` */
-	matchExact?: MatchExact
 	/** match all supplied key-value pairs. Default: `false` */
 	matchAll?: boolean
+	/** partial match for values. Default: `false` */
+	matchExact?: MatchExact
 	/** key-value pairs */
-	query: Record<PropertyKey, unknown> | RegExp | string
+	query:
+		| (V extends object
+				? { [P in keyof V]?: unknown }
+				: Record<PropertyKey, unknown>)
+		| RegExp
+		| string
 	/** If `true`, the results are sorted by relevance (match index). Default: `false` */
 	ranked?: boolean
 	/** Map to store results in. Default: `new Map()` */

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { isArr, isFn } from '@superutils/core'
+import { isFn } from '@superutils/core'
+import isSubscriptionLike from './isSubscriptionLike'
 import { UnsubscribeCandidates } from './types'
 
 /**
@@ -8,25 +7,25 @@ import { UnsubscribeCandidates } from './types'
  * @summary unsubscribe to multiple RxJS subscriptions
  * @param   {Function|Unsubscribable|Array} unsub
  */
-export const unsubscribeAll = (unsub: UnsubscribeCandidates = {}) => {
-	// single function supplied
-	if (isFn(unsub)) return unsub()
+export const unsubscribeAll = (
+	unsub: UnsubscribeCandidates = {},
+	onError?: (err: unknown) => void,
+) => {
+	if (!unsub) return
 
-	// single subscription
-	if (!isArr(unsub) && isFn(unsub.unsubscribe)) return unsub.unsubscribe()
+	try {
+		// single function supplied
+		if (isFn(unsub)) return unsub()
 
-	// multi: array/object
-	Object.values(unsub).forEach(x => {
-		try {
-			if (!x) return
-			const fn: null | ((...args: unknown[]) => unknown) = isFn(x)
-				? x
-				: isFn(x.unsubscribe)
-					? x.unsubscribe
-					: null
-			fn?.()
-		} catch (e) {
-			e
-		}
-	})
+		// single subscription
+		if (isSubscriptionLike(unsub)) return unsub.unsubscribe()
+
+		// array/object
+		Object.values(unsub as UnsubscribeCandidates[]).forEach(value =>
+			unsubscribeAll(value, onError),
+		)
+	} catch (err) {
+		onError?.(err)
+	}
 }
+export default unsubscribeAll

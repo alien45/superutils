@@ -10,29 +10,30 @@ import {
 import { PromisE, IPromisE, DeferredAsyncOptions } from '@superutils/promise'
 
 import {
+	asPromise,
 	BehaviorSubject,
 	copyRxSubject,
 	IntervalSubject,
-	subjectAsPromise,
 	SubjectLike,
 } from '@superutils/rx'
 import { delay, distinctUntilChanged } from 'rxjs'
 import fetch, { FetchAs, FetchError, ResolveIgnored } from '@superutils/fetch'
+import './dataStorage'
 
 console.log('Started')
 
-const abortCtrl = new AbortController()
-setTimeout(() => abortCtrl.abort(), 1500)
-fetch
-	.get('https://dummyjson.com/products/1?delay=3000', { abortCtrl })
-	.then(console.log, (err: FetchError) => {
-		console.log({
-			options: err.options,
-			response: err.response,
-			url: err.url,
-		})
-		console.log(err)
-	})
+// const abortCtrl = new AbortController()
+// setTimeout(() => abortCtrl.abort(), 1500)
+// fetch
+// 	.get('https://dummyjson.com/products/1?delay=3000', { abortCtrl })
+// 	.then(console.log, (err: FetchError) => {
+// 		console.log({
+// 			options: err.options,
+// 			response: err.response,
+// 			url: err.url,
+// 		})
+// 		console.log(err)
+// 	})
 
 // fetch
 // 	.get('https://dummyjson.com/products/1', {

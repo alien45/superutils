@@ -99,12 +99,12 @@ export const search = <
 	if (ignoreCase && !matchExact && !qIsRegExp) {
 		query = qIsStr
 			? (query as string).toLowerCase()
-			: objCreate(
+			: (objCreate(
 					qKeys,
 					Object.values(query).map(x =>
 						isRegExp(x) ? x : `${x as string}`.toLowerCase(),
 					),
-				)
+				) as typeof query)
 	}
 
 	options.query = query
@@ -200,7 +200,9 @@ export function matchObjOrProp<K, V>( // extends Record<string, unknown>
 ): number {
 	// Whether to search all properties
 	const global = isStr(query) || isRegExp(query) || propertyName === undefined
-	const keyword = global ? query : query[propertyName]
+	const keyword = global
+		? query
+		: (query as Record<string, unknown>)[propertyName]
 	const propVal: unknown =
 		global || !isObj(item)
 			? item

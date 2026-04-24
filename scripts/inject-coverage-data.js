@@ -65,6 +65,7 @@ async function main() {
 		d => d.isDirectory() && !excludedPackages.includes(d.name),
 	)
 
+
 	// Run coverage tests for all packages in parallel to speed up the process.
 	const coveragePromises = packagesToTest.map(dirent =>
 		getCoverageForPackage(dirent.name).then(coverage => [
