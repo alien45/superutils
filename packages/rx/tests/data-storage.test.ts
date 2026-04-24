@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
 	DataStorage,
 	StorageCompact,
+	StorageKey,
 	StorageValue,
 	unsubscribeAll,
 } from '../src'
@@ -34,6 +35,34 @@ describe('DataStorage', () => {
 	afterEach(() => {
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
+	})
+
+	it('should convert all items to an array', () => {
+		const arr = new DataStorage(null, {
+			initialValue: new Map(entries),
+		}).toArray()
+		expect(arr).toEqual(entries)
+	})
+
+	it('should convert all items to a string', () => {
+		const str = new DataStorage(null, {
+			initialValue: new Map(entries),
+		}).toString()
+		expect(str).toEqual(JSON.stringify(entries))
+	})
+
+	it('should convert all items to an object', () => {
+		const obj = new DataStorage(null, {
+			initialValue: new Map([
+				['key1', { value: 1 }],
+				['key2', { value: 2 }],
+			]),
+		}).toObject()
+
+		expect(obj).toEqual({
+			key1: { value: 1 },
+			key2: { value: 2 },
+		})
 	})
 
 	it('should read & write to mocked localStorage and initialize on first write', () => {
@@ -400,7 +429,7 @@ describe('DataStorage', () => {
 
 		it('should invoke "parse" callback', () => {
 			const handleParse = vi.fn(
-				str => new Map<unknown, StorageValue>(JSON.parse(str)),
+				str => new Map<StorageKey, StorageValue>(JSON.parse(str)),
 			)
 			const storage = new DataStorage(name, {
 				delay,
