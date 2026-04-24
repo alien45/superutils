@@ -18,6 +18,7 @@ class MockLocalStorage implements StorageCompact {
 		this.storage.set(key, value)
 	})
 }
+
 describe('DataStorage', () => {
 	let mockedStorage: MockLocalStorage
 	const delay = 0 // keep 0 to write "almost" synchronously and keep testing simpler

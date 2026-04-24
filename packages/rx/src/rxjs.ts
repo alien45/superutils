@@ -3,7 +3,7 @@ export {
 	isObservable,
 	skip,
 	Subject,
-	Subscribable,
 	Subscription,
-	Unsubscribable,
+	type Subscribable,
+	type Unsubscribable,
 } from 'rxjs'

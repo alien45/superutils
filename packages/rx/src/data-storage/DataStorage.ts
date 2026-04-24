@@ -46,13 +46,13 @@ import unsubscribeAll from '../unsubscribeAll'
  *
  * // Update all DataStorage instances with specific name(s)
  * const name = 'products'
- * rxForceUpdateCache.next([name])
+ * forceUpdateCache$.next([name])
  *
  * // Update every single instance of DataStorage that uses storage (has a "name")
- * rxForceUpdateCache.next(true)
+ * forceUpdateCache$.next(true)
  * ```
  */
-export const rxForceUpdateCache = new Subject<string | string[] | boolean>()
+export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
 export class DataStorage<
 	Key,
@@ -270,7 +270,7 @@ export class DataStorage<
 	 * ```
 	 */
 	static forceUpdateCache = (name: string | string[] | true) => {
-		rxForceUpdateCache.next(name)
+		forceUpdateCache$.next(name)
 	}
 
 	readonly get = (key: Key) => this.getAll().get(key)
@@ -302,7 +302,7 @@ export class DataStorage<
 		unsubscribeAll(this.subscriptions)
 		// update cached data from localStorage throughout the application only when triggered
 		if (!this.cacheDisabled) {
-			this.subscriptions.forceUpdateCache = rxForceUpdateCache.subscribe(
+			this.subscriptions.forceUpdateCache = forceUpdateCache$.subscribe(
 				refresh => {
 					const doRefresh = !this.name
 						? false

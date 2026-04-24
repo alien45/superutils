@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { fallbackIfFails, TimeoutId } from '@superutils/core'
+import { fallbackIfFails, noop, TimeoutId } from '@superutils/core'
 import { BehaviorSubject, Subscription } from './rxjs'
 
 export type OnResultType<TResult = unknown> = (
@@ -35,7 +35,11 @@ export type onBeforeExecType = (
  *
  * false: will use setInterval and the delay time to execute task will not affected. This may cause unwanted issues if the execution takes longer than the interval delay time. Use with caution.
  *
+ * Default: `true`
+ *
  * @param	preExecute	(optional) if true, will pre-execute task before starting the timer.
+ *
+ * Default: `true`
  *
  * @example
  * #### Execute a function sequentially
@@ -70,7 +74,7 @@ export type onBeforeExecType = (
  * runner.start(result => console.log({ result }))
  * ```
  */
-export default class IntervalRunner<
+export class IntervalRunner<
 	TResult = unknown,
 	TArgs extends unknown[] = unknown[],
 > {
@@ -82,7 +86,7 @@ export default class IntervalRunner<
 	/**
 	 * @summary RxJS BehaviorSubject to change timer delay and restart the timer
 	 */
-	readonly rxIntervalMs: BehaviorSubject<number>
+	readonly intervalMs$: BehaviorSubject<number>
 	private runCount = 0
 	private started = false
 	private subscription: Subscription | undefined
@@ -95,7 +99,7 @@ export default class IntervalRunner<
 		readonly preExecute = true, // false = delay >> execute, true = execute >> delay
 		// readonly deferStartMs = 100, // unused?
 	) {
-		this.rxIntervalMs =
+		this.intervalMs$ =
 			intervalMs instanceof BehaviorSubject
 				? intervalMs
 				: new BehaviorSubject(intervalMs)
@@ -114,7 +118,8 @@ export default class IntervalRunner<
 		let err: unknown
 		let result: TResult | undefined
 
-		clearTimeout(this.idInterval)
+		if (this.sequential || once) this.clearInterval()
+
 		try {
 			++this.runCount
 			await this.onBeforeExec?.(this.runCount, once)
@@ -130,16 +135,20 @@ export default class IntervalRunner<
 			undefined,
 		)
 
-		if (this.sequential && this.rxIntervalMs.value > this.minIntervalMs) {
+		if (
+			!once
+			&& this.sequential
+			&& this.intervalMs$.value > this.minIntervalMs
+		) {
 			this.idInterval = setTimeout(
 				this.executeTask,
-				this.rxIntervalMs.value,
+				this.intervalMs$.value,
 			)
 		}
 		return this.lastResult
 	}
 
-	/** Execute the task function regardless of the intervar runner state */
+	/** Execute the task function regardless of the interval runner state */
 	executeOnce = async (): Promise<TResult | undefined> =>
 		await this.executeTask(true)
 
@@ -185,21 +194,16 @@ export default class IntervalRunner<
 
 		this.started = true
 		let delayMs: number
-		this.subscription = this.rxIntervalMs.subscribe(newDelayMs => {
+		this.subscription = this.intervalMs$.subscribe(newDelayMs => {
 			// unchanged
-			if (delayMs !== undefined && delayMs === newDelayMs) return
+			if (delayMs === newDelayMs && newDelayMs !== undefined) return
 
-			delayMs = newDelayMs
+			delayMs = Math.max(newDelayMs ?? delayMs ?? 0, this.minIntervalMs)
+
 			this.clearInterval()
 
-			const exit = delayMs <= this.minIntervalMs
 			const preExec = this.lastResult === undefined && this.preExecute
-			preExec
-				&& this.executeTask(exit).catch(() => {
-					/* nothing to do */
-				})
-			// turn off the runner and execute task only once
-			if (exit) return
+			preExec && this.executeTask().catch(noop)
 
 			this.idInterval = !this.sequential
 				? setInterval(this.executeTask, delayMs)
@@ -226,3 +230,5 @@ export default class IntervalRunner<
 		return this
 	}
 }
+
+export default IntervalRunner
