@@ -124,7 +124,7 @@ export type StorageToJSON<K, V> = (
 ) => string
 
 export type StorageKey = string
-export type StorageValue = Record<StorageKey, unknown>
+export type StorageValue = object
 
 export interface IDataStorage<
 	Key extends StorageKey,

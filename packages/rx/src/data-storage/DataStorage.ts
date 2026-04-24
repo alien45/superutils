@@ -1,5 +1,6 @@
 import {
 	deferred,
+	EntryComparator,
 	fallbackIfFails,
 	filter,
 	find,
@@ -11,6 +12,7 @@ import {
 	isMap,
 	isPositiveNumber,
 	isStr,
+	IterableList,
 	mapJoin,
 	search,
 	sort,
@@ -240,7 +242,10 @@ export class DataStorage<
 	}
 
 	readonly find: StorageFind<Key, Value> = predicateOrOptions =>
-		find(this.getAll(), predicateOrOptions as Parameters<typeof find>[1])
+		find(
+			this.getAll() as Map<Key, Record<string, unknown>>,
+			predicateOrOptions as Parameters<typeof find>[1],
+		)
 
 	readonly filter: StorageFilter<Key, Value> = (
 		predicate,
@@ -357,7 +362,6 @@ export class DataStorage<
 	readonly parse?: StorageParseFn<Key, Value>
 
 	readonly read = () => {
-		// !this.initialized && this.init()
 		const dataStr = this.storage?.getItem(this.name) ?? '[]'
 		const data =
 			isFn(this.parse)
@@ -396,12 +400,15 @@ export class DataStorage<
 		return this
 	}
 
-	readonly sort: StorageSort<Key, Value> = ((nameOrComparator, options) => {
+	readonly sort: StorageSort<Key, Value> = ((
+		byKeyOrNameOrComparator,
+		options,
+	) => {
 		const result = sort(
 			this.getAll(),
-			nameOrComparator as string,
+			byKeyOrNameOrComparator as keyof Value,
 			options as SortOptions,
-		)
+		) as Map<Key, Value>
 		options?.save && this.setAll(result, true)
 
 		return result

@@ -47,7 +47,7 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  */
 export function sort<K, V extends object, T extends IterableList<K, V>>(
 	data: T,
-	propertyName: keyof V & string,
+	propertyName: keyof V,
 	options?: SortOptions,
 ): T
 /**
@@ -91,12 +91,6 @@ export function sort<V>(
 	comparator: ArrayComparator<V>,
 	options?: SortOptions,
 ): Set<V>
-/** Sort iterables object-value key */
-export function sort<K, V extends object, T extends IterableList<K, V>>(
-	data: T,
-	key: keyof V,
-	options?: SortOptions,
-): T
 /** Sort Array/Map/Set with `string | boolean | number` values */
 export function sort<
 	K,

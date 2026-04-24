@@ -65,6 +65,20 @@ describe('DataStorage', () => {
 		})
 	})
 
+	it('should accept interfaces and classes', () => {
+		class Test {
+			value = 1
+		}
+		new DataStorage(null, { initialValue: new Map([['key', new Test()]]) })
+
+		interface TestInterface {
+			value: number
+		}
+		new DataStorage(null, {
+			initialValue: new Map([['key', { value: 1 } as TestInterface]]),
+		})
+	})
+
 	it('should read & write to mocked localStorage and initialize on first write', () => {
 		const storage = new DataStorage(name, { delay })
 		expect(storage.initialized).toBe(false)
