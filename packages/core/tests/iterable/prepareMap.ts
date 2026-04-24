@@ -2,7 +2,10 @@ import { afterEach, beforeEach, expect } from 'vitest'
 import { getEntries } from '../../src'
 
 export type MapKey = string
-export type MapEntry = { age: number; name: string }
+export interface MapEntry {
+	age: number
+	name: string
+}
 
 /** Deep-compare two maps' entries */
 export const compareMap = (map: Map<any, any>, expected: Map<any, any>) =>

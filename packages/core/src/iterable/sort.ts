@@ -45,11 +45,11 @@ export type ArrayComparator<V> = (a: V, b: V) => number
  * // }
  * ```
  */
-export function sort<
-	K,
-	V extends Record<PropertyKey, unknown>,
-	T extends IterableList<K, V>,
->(data: T, propertyName: keyof V & string, options?: SortOptions): T
+export function sort<K, V extends object, T extends IterableList<K, V>>(
+	data: T,
+	propertyName: keyof V & string,
+	options?: SortOptions,
+): T
 /**
  * Sort `Map` by map-keys `K`
  *
@@ -70,7 +70,7 @@ export function sort<
 export function sort<K, V>(
 	data: Map<K, V>,
 	/** Whether to sort by key or Value */
-	byKey?: boolean,
+	byMapKey?: boolean,
 	options?: SortOptions,
 ): Map<K, V>
 /** Sort `Map` with comparator function */
@@ -91,21 +91,23 @@ export function sort<V>(
 	comparator: ArrayComparator<V>,
 	options?: SortOptions,
 ): Set<V>
+/** Sort iterables object-value key */
+export function sort<K, V extends object, T extends IterableList<K, V>>(
+	data: T,
+	key: keyof V,
+	options?: SortOptions,
+): T
 /** Sort Array/Map/Set with `string | boolean | number` values */
 export function sort<
 	K,
 	V extends string | boolean | number,
 	T extends IterableList<K, V>,
 >(data: T, options?: SortOptions): T
-export function sort<
-	K,
-	V = Record<PropertyKey, unknown>,
-	T extends IterableList<K, V> = IterableList<K, V>,
->(
+export function sort<K, V, T extends IterableList<K, V> = IterableList<K, V>>(
 	data: T,
 	keyOrFn?:
 		| boolean
-		| (keyof V & string)
+		| keyof V
 		| SortOptions
 		| (T extends V[] ? ArrayComparator<V> : EntryComparator<K, V>),
 	options?: SortOptions,

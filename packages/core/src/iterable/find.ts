@@ -26,7 +26,7 @@ import { IterableList, type FindOptions } from './types'
  */
 export function find<
 	K,
-	V extends Record<string, unknown>,
+	V,
 	IncludeKey extends boolean = false,
 	Return = undefined | (IncludeKey extends true ? [K, V] : V),
 >(
@@ -59,13 +59,13 @@ export function find<
  */
 export function find<
 	K,
-	V extends Record<string, unknown>,
+	V,
 	IncludeKey extends boolean = false,
 	Return = undefined | (IncludeKey extends true ? [K, V] : V),
 >(data: IterableList<K, V>, options: FindOptions<K, V, IncludeKey>): Return
 export function find<
 	K,
-	V extends Record<string, unknown>,
+	V extends object,
 	IncludeKey extends boolean = false,
 	Result = undefined | (IncludeKey extends true ? [K, V] : V),
 >(
@@ -79,7 +79,7 @@ export function find<
 		: search(data, { ...optsOrCb, asMap: true, limit: 1 })
 
 	return result[
-		(optsOrCb as Record<string, unknown>)?.includeKey
+		(optsOrCb as FindOptions<K, V, IncludeKey>)?.includeKey
 			? 'entries' // returns: [key, value]
 			: 'values' // returns: value
 	]().next().value as Result

@@ -64,7 +64,7 @@ import { IterableList, SearchOptions } from './types'
  */
 export const search = <
 	K,
-	V, // extends Record<string, unknown>,
+	V,
 	MatchExact extends boolean = false,
 	AsMap extends boolean = true,
 	Result = AsMap extends true ? Map<K, V> : V[],
