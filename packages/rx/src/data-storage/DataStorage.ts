@@ -1,6 +1,5 @@
 import {
 	deferred,
-	EntryComparator,
 	fallbackIfFails,
 	filter,
 	find,
@@ -12,7 +11,6 @@ import {
 	isMap,
 	isPositiveNumber,
 	isStr,
-	IterableList,
 	mapJoin,
 	search,
 	sort,
@@ -408,7 +406,7 @@ export class DataStorage<
 			this.getAll(),
 			byKeyOrNameOrComparator as keyof Value,
 			options as SortOptions,
-		) as Map<Key, Value>
+		)
 		options?.save && this.setAll(result, true)
 
 		return result
