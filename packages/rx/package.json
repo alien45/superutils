@@ -2,8 +2,8 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "RxJS utilities and hooks for React applications.",
 	"dependencies": {
-		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.3.5",
+		"@superutils/core": "^1.2.8",
+		"@superutils/promise": "^1.3.6",
 		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
 		"rxjs": "^7.8.2"
@@ -23,10 +23,9 @@
 	"license": "MIT",
 	"name": "@superutils/rx",
 	"peerDependencies": {
-		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.3.5"
+		"@superutils/core": "latest",
+		"@superutils/promise": "latest"
 	},
-	"private": true,
 	"publishConfig": {
 		"access": "public"
 	},
