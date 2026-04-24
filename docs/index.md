@@ -33,7 +33,7 @@ features:
     - title: '@superutils/react (Planned)'
       link: /packages/@superutils/react/
       details: A collection of React hooks and components for common UI patterns and state management.
-    - title: '@superutils/rx (Planned)'
+    - title: '@superutils/rx'
       link: /packages/@superutils/rx/
       details: A set of small, focused utilities for working with RxJS observables and subjects.
 ---
