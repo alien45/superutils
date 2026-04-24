@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import {
 	deferred,
 	fallbackIfFails,
@@ -6,6 +5,7 @@ import {
 	find,
 	getEntries,
 	getKeys,
+	getValues,
 	isArr,
 	isFn,
 	isMap,
@@ -24,6 +24,7 @@ import {
 	StorageCompact,
 	StorageFilter,
 	StorageFind,
+	StorageKey,
 	StorageMap,
 	StorageOnChangeFn,
 	StorageOnErrorFn,
@@ -55,7 +56,7 @@ import unsubscribeAll from '../unsubscribeAll'
 export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
 export class DataStorage<
-	Key,
+	Key extends StorageKey,
 	Value extends StorageValue,
 	CacheDisabled extends boolean = false,
 > implements IDataStorage<Key, Value, CacheDisabled> {
@@ -63,10 +64,8 @@ export class DataStorage<
 
 	readonly delay: number
 
-	readonly delayOptions?: DelayOptions
-
 	/** Debounce and throttle related options */
-	// readonly deferOptions
+	readonly delayOptions?: DelayOptions
 
 	readonly initialized: boolean = false
 
@@ -332,7 +331,7 @@ export class DataStorage<
 
 			this.write(data)
 			fallbackIfFails(
-				async () => await this.onChange?.(data),
+				() => this.onChange?.(data) as unknown,
 				[],
 				this.triggerOnError('onChange'),
 			)
@@ -433,16 +432,24 @@ export class DataStorage<
 		)
 	}
 
+	readonly toObject = () => {
+		const obj = {} as Record<Key, Value>
+		for (const [key, value] of this.getAll()) obj[key] = value
+
+		return obj
+	}
+
 	readonly toString = (data?: Map<Key, Value>) =>
 		this.toJSON(undefined, undefined, data)
 
 	private triggerOnError = (type: OnErrorType) => (err: unknown) => {
-		this.onError && fallbackIfFails(this.onError, [err, type], '')
+		this.onError
+			&& fallbackIfFails(this.onError as unknown, [err, type], '')
 	}
 
 	readonly unsubscribe = () => unsubscribeAll(this.subscriptions)
 
-	readonly values = () => [...this.getAll().values()]
+	readonly values = () => getValues(this.getAll())
 
 	readonly write = (data?: Map<Key, Value>) => {
 		try {

@@ -59,7 +59,7 @@ export type StorageOnErrorFn = (
 
 /** Initial options provided through the constructor */
 export type StorageOptions<
-	Key,
+	Key extends StorageKey,
 	Value extends StorageValue,
 	CacheDisabled extends boolean = false,
 > = {
@@ -123,10 +123,11 @@ export type StorageToJSON<K, V> = (
 	data?: Map<K, V>,
 ) => string
 
-export type StorageValue = Record<PropertyKey, unknown>
+export type StorageKey = string
+export type StorageValue = Record<StorageKey, unknown>
 
 export interface IDataStorage<
-	Key,
+	Key extends StorageKey,
 	Value extends StorageValue,
 	CacheDisabled extends boolean = false,
 > {
@@ -179,6 +180,15 @@ export interface IDataStorage<
 	 */
 	readonly storage?: StorageCompact | null
 
+	/**
+	 * The underlying RxJS Subject that serves as the primary reactive interface for observing data modifications.
+	 *
+	 * Its implementation type is determined by the caching strategy:
+	 * - **BehaviorSubject**: Used when caching is enabled.
+	 * It maintains the current state and emits it immediately to new subscribers.
+	 * - **Subject**: Used when caching is disabled.
+	 * It acts as a pure event pipe, emitting updates only at the moment they occur without retaining an in-memory copy.
+	 */
 	readonly subject: CacheDisabled extends true
 		? Subject<Map<Key, Value>>
 		: BehaviorSubject<Map<Key, Value>>
@@ -330,6 +340,9 @@ export interface IDataStorage<
 	/** Convert list of items (Map) to JSON string of 2D Array */
 	readonly toJSON: StorageToJSON<Key, Value>
 
+	/** Convert list of items into an object */
+	readonly toObject: () => Record<Key, Value>
+
 	/** Convert list of items (Map) to JSON string of 2D Array */
 	readonly toString: () => string
 
@@ -343,7 +356,7 @@ export interface IDataStorage<
 	 */
 	readonly unsubscribe: () => void
 
-	/** Get all values */
+	/** Get all values as an array */
 	readonly values: () => Value[]
 
 	/**
