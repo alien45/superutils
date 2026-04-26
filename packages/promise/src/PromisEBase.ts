@@ -1,7 +1,11 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
-import { PromiseParams, IPromisE, OnEarlyFinalize, OnFinalize } from './types'
-
-const Promise = globalThis.Promise
+import { Promise } from './types'
+import type {
+	PromiseParams,
+	IPromisE,
+	OnEarlyFinalize,
+	OnFinalize,
+} from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
@@ -11,9 +15,10 @@ export class PromisEBase<T = unknown>
 	private _reject: (reason: unknown) => void
 	private _state: 0 | 1 | 2 = 0
 
-	/**
-	 * callbacks to be invoked whenever PromisE instance is finalized early using non-static resolve()/reject() methods */
+	/** Callbacks to be invoked whenever promise is finalized externally using `resolve()`/`reject()` methods */
 	public onEarlyFinalize = [] as OnEarlyFinalize<T>[]
+
+	/** Callback to be invoked after promise is resolved or rejected */
 	public onFinalize = [] as OnFinalize<T>[]
 
 	/** Create a PromisE instance as a drop-in replacement for Promise */

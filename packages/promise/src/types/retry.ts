@@ -25,8 +25,10 @@ export type RetryOptions<T = unknown> = {
 	 */
 	retryBackOff?: 'exponential' | 'linear'
 	/**
-	 * Minimum delay in milliseconds between retries.
+	 * The base delay in milliseconds between retries.
 	 * Default: `300`
+	 *
+	 * Setting this to `0` disables the delay mechanism entirely, including jitter.
 	 */
 	retryDelay?: number
 	/**

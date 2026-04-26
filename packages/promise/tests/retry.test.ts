@@ -68,22 +68,20 @@ describe('PromisE.retry', () => {
 
 	it('should use exponential backoff delay', async () => {
 		const retryDelay = 1000
-		const retry = 5
+		const retry = 5 // execute total 6 times
 		const timestamps: Date[] = []
-		const func = vi.fn(() => {
-			timestamps.push(new Date())
-		})
+		const func = vi.fn(() => timestamps.push(new Date()))
 		const promise = PromisE.retry(func, {
 			retryIf: () => true, // keep re-executing regardless of result/error
-			retry, // execute total 6 times
+			retry,
 			retryBackOff: 'exponential',
 			retryDelay,
 			retryDelayJitter: false,
 			retryDelayJitterMax: undefined,
 		})
 		await vi.runAllTimersAsync()
-		await expect(promise).resolves.toBe(undefined)
-		expect(timestamps).toHaveLength(6)
+		await expect(promise).resolves.toBe(retry + 1)
+		expect(timestamps).toHaveLength(retry + 1)
 		// delays between execution
 		const arrDelays = timestamps
 			.map((d, i) => {
@@ -108,5 +106,14 @@ describe('PromisE.retry', () => {
 		await vi.advanceTimersByTimeAsync(1100)
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toBe(0)
+	})
+
+	it('should avoid circular referencing if `globalThis.Promise` is set to `PromisE`', async () => {
+		const PromiseOriginal = globalThis.Promise
+		globalThis.Promise = PromisE
+
+		await expect(() => new Promise(r => r(true))).not.toThrow()
+		await expect(() => Promise.resolve(true)).not.toThrow()
+		globalThis.Promise = PromiseOriginal
 	})
 })

@@ -1,5 +1,6 @@
 export * from './deferred'
 export * from './delay'
+export * from './Promise'
 export * from './PromisEBase'
 export * from './retry'
 export * from './timeout'

@@ -1,5 +1,5 @@
 import deferred from './deferred'
-import { IPromisE, DeferredAsyncOptions } from './types'
+import type { IPromisE, DeferredAsyncOptions } from './types'
 
 /**
  * @function PromisE.deferredCallback

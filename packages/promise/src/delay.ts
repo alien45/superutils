@@ -1,6 +1,6 @@
 import { fallbackIfFails, isFn } from '@superutils/core'
 import PromisEBase from './PromisEBase'
-import { IPromisE_Delay } from './types'
+import { type IPromisE_Delay, Promise } from './types'
 
 /**
  * Creates a promise that completes after given delay/duration.

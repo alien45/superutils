@@ -6,11 +6,10 @@ import {
 	objCopy,
 } from '@superutils/core'
 import PromisEBase from './PromisEBase'
-import {
+import { ResolveError, ResolveIgnored } from './types'
+import type {
 	IPromisE,
 	DeferredAsyncOptions,
-	ResolveError,
-	ResolveIgnored,
 	DeferredAsyncCallback,
 	GetPromiseFunc,
 	DeferredAsyncDefaults,

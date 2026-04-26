@@ -6,6 +6,8 @@ import {
 	isPositiveNumber,
 	objCopy,
 } from '@superutils/core'
+import delayReject from './delayReject'
+import PromisEBase from './PromisEBase'
 import type {
 	IPromisE_Timeout,
 	BatchFuncs,
@@ -15,8 +17,6 @@ import type {
 	IPromisE,
 } from './types'
 import TimeoutPromise, { TIMEOUT_FALLBACK, TIMEOUT_MAX } from './TimeoutPromise'
-import PromisEBase from './PromisEBase'
-import delayReject from './delayReject'
 
 /**
  * Creates a new promise that wraps one or more promises and rejects if they do not settle within a

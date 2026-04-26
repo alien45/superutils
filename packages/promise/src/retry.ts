@@ -7,7 +7,7 @@ import {
 } from '@superutils/core'
 import delay from './delay'
 import PromisEBase from './PromisEBase'
-import type { RetryOptions } from './types'
+import { Promise, type RetryOptions } from './types'
 
 /**
  * Executes a function asynchronously and retries it on failure or until a specific condition is met.
@@ -73,20 +73,25 @@ export const retry = <T>(
 ) => {
 	let finalized = false
 	const promise = PromisEBase.try<T, []>(async () => {
-		// merge options with default oasync async async ptions conditionally
-		options = objCopy(retry.defaults, options ?? {}, [], (key, value) => {
-			switch (key) {
-				// case 'retryDelayJitter':
-				// 	return true
-				case 'retry':
-				// eslint-disable-next-line no-fallthrough
-				case 'retryDelay':
-				case 'retryDelayJitterMax':
-					// use default value if  0 or negative integer
-					return value !== 0 && !isPositiveInteger(value)
-			}
-			return !!isEmpty(value) // for other properties only override if not empty
-		})
+		// merge options with default options conditionally
+		options = objCopy(
+			retry.defaults,
+			options ?? {},
+			[], //
+			(key, value) => {
+				switch (key) {
+					// case 'retryDelayJitter':
+					// 	return true
+					case 'retry':
+					// eslint-disable-next-line no-fallthrough
+					case 'retryDelay':
+					case 'retryDelayJitterMax':
+						// use default value if  0 or negative integer
+						return value !== 0 && !isPositiveInteger(value)
+				}
+				return !!isEmpty(value) // for other properties only override if not empty
+			},
+		)
 
 		const {
 			retry: maxRetries,
@@ -96,34 +101,39 @@ export const retry = <T>(
 			retryDelayJitterMax,
 		} = options as Required<RetryOptions>
 		let _retryDelay = retryDelay
-		let retryCount = -1
+		let attemptCount = 0
 		let result: T | undefined
 		let error: unknown
 		let shouldRetry = false
 		do {
-			retryCount++
-			if (retryBackOff === 'exponential' && retryCount > 1)
-				_retryDelay *= 2
-			if (retryDelayJitter)
-				_retryDelay += Math.floor(Math.random() * retryDelayJitterMax)
+			attemptCount++
+			if (retryDelay > 0 && !finalized && attemptCount > 0) {
+				if (retryBackOff === 'exponential' && attemptCount > 1)
+					// on 2nd and onward attempts add exponential delay
+					_retryDelay *= 2
 
-			if (!finalized && retryCount > 0) await delay(_retryDelay)
-
-			if (!finalized) {
-				try {
-					error = undefined
-					result = await func()
-				} catch (err) {
-					error = err ?? new Error(err as undefined)
-				}
+				const jitter = !retryDelayJitter
+					? 0
+					: Math.floor(Math.random() * retryDelayJitterMax)
+				await delay(_retryDelay + jitter)
 			}
 
-			if (finalized || maxRetries === 0 || retryCount >= maxRetries) break
+			if (finalized) break
+
+			try {
+				error = undefined
+				result = await func()
+			} catch (err) {
+				error = err ?? new Error(err as undefined)
+			}
+
+			if (finalized || maxRetries === 0 || attemptCount > maxRetries)
+				break
 
 			shouldRetry = !!(
 				(await fallbackIfFails(
 					options.retryIf ?? error, // if `retryIf` not provided, retry on error
-					[result, retryCount, error],
+					[result, attemptCount, error],
 					error, // if `retryIf` throws error, default to retry on error
 				)) ?? error
 			)
