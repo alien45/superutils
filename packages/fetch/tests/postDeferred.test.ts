@@ -30,7 +30,7 @@ describe('fetch.post.deferred', () => {
 					),
 			}),
 		)
-		vi.stubGlobal('fetch', mockPost200)
+		fetch.defaults.fetchFunc = mockPost200
 
 		vi.useFakeTimers()
 	})
@@ -39,6 +39,7 @@ describe('fetch.post.deferred', () => {
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
 		vi.clearAllMocks()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	it('should make a post request and return json result', async () => {
@@ -54,7 +55,7 @@ describe('fetch.post.deferred', () => {
 				}),
 			}),
 		)
-		vi.stubGlobal('fetch', fetch200)
+		fetch.defaults.fetchFunc = fetch200 as any
 		const promise = fetch.post(`${productsBaseUrl}`, { id: 'adam' })
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toEqual({

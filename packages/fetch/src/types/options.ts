@@ -33,11 +33,11 @@ export type ExtractAs<
 				: ExtractAs<DropFirst<T>, Fallback>
 			: ExtractAs<DropFirst<T>, Fallback>
 
-export type FetchArgs = [url: string | URL, options?: FetchOptions]
+export type FetchArgs = [url: URL | RequestInfo, options?: FetchOptions]
 
 /** Additional arguments provided to interceptors */
 export type FetchArgsInterceptor = [
-	url: string | URL,
+	url: FetchArgs[0],
 	options: FetchOptionsInterceptor,
 ]
 
@@ -190,7 +190,7 @@ export type FetchRetryOptions = Omit<
 export type PostBody = Record<string, unknown> | BodyInit | null
 
 export type PostArgs = [
-	url: string | URL,
+	url: FetchArgs[0],
 	/**
 	 * Post body or a function that returns/resolves post body.
 	 *

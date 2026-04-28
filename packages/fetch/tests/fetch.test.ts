@@ -13,28 +13,31 @@ import fetch, {
 	FetchOptions,
 	FetchOptionsInterceptor,
 } from '../src'
-import { productsBaseUrl as baseUrl, getMockedResult } from './utils'
-import { json } from 'stream/consumers'
+import {
+	productsBaseUrl as baseUrl,
+	getMockedFetch,
+	getMockedResult,
+} from './utils'
 
 describe('fetch', () => {
 	const product1Url = `${baseUrl}/1`
 	let mockedFetch
 	const mockedResult = { id: 1, title: 'mocked product' }
-	const okResponse = {
-		ok: true,
-		status: 200,
-		json: () => Promise.resolve(mockedResult),
-	}
 
 	afterEach(() => {
 		vi.useRealTimers()
 		vi.unstubAllGlobals()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	beforeEach(() => {
 		// Mock the global fetch to avoid real network requests
-		mockedFetch = vi.fn(() => Promise.resolve({ ...okResponse }))
-		vi.stubGlobal('fetch', mockedFetch)
+		fetch.defaults.fetchFunc = getMockedFetch(
+			true,
+			200,
+			'',
+			mockedResult,
+		) as any
 		vi.useFakeTimers()
 	})
 
@@ -56,7 +59,7 @@ describe('fetch', () => {
 					),
 				),
 			)
-			vi.stubGlobal('fetch', fetch200)
+			fetch.defaults.fetchFunc = fetch200
 			const promise = fetch<Response>(product1Url, null as any)
 			await vi.runAllTimersAsync()
 			const response = await promise
@@ -70,53 +73,52 @@ describe('fetch', () => {
 			expect(fetch200).toHaveBeenCalledOnce()
 		})
 
+		it('should accept Request instance', async () => {
+			const mockedFetch = getMockedFetch()
+			const request = new Request(product1Url)
+			await expect(() =>
+				fetch(request, { fetchFunc: mockedFetch }),
+			).not.toThrow()
+		})
+
 		it(`should handle "Failed to execute 'fetch' on 'Window'"`, async () => {
-			const fetchMock = vi.fn(async () =>
-				Promise.reject(
-					new TypeError(
-						`TypeError: Failed to execute 'fetch' on 'Window'`,
-					),
-				),
+			const mockFetchError = getMockedFetch(
+				false,
+				0,
+				`TypeError: Failed to execute 'fetch' on 'Window'`,
 			)
-			vi.stubGlobal('fetch', fetchMock)
-			let error: FetchError
+			fetch.defaults.fetchFunc = mockFetchError
+			let error!: FetchError
 			const handleErr = vi.fn((err: FetchError) => (error = err))
 			fetch.get(undefined as any).catch(handleErr)
 			await vi.runAllTimersAsync()
 			expect(handleErr).toHaveBeenCalledWith(expect.any(FetchError))
-			expect(error!.options).not.toBe(undefined)
-			expect(error!.response).toBe(undefined)
-			expect(error!.url).toBe(undefined)
+			expect(error.options).not.toBe(undefined)
+			expect(error.response).toBe(undefined)
+			expect(error.url).toBe(undefined)
+			expect(mockFetchError).toHaveBeenCalledOnce()
 		})
 
 		it('should handle parse error', async () => {
-			const fetch200 = vi.fn((...args: any[]) =>
-				Promise.resolve({
-					ok: true,
-					status: 200,
-					json: () => Promise.reject(new Error('Parse error')),
-				}),
-			)
-			vi.stubGlobal('fetch', fetch200)
-
+			const fetch200 = getMockedFetch(true, 200, 'Parse error')
+			fetch.defaults.fetchFunc = fetch200
 			await expect(fetch.get(product1Url)).rejects.toEqual(
 				expect.any(FetchError),
 			)
 			expect(fetch200).toHaveBeenCalledOnce()
 		})
 
-		it('should handle error returned from server', async () => {
-			const fetch400 = vi.fn((...args: any[]) =>
-				Promise.resolve({
-					ok: false,
-					status: 400,
-					json: () => ({
-						message: 'Bad request',
-					}),
-				}),
-			)
-			vi.stubGlobal('fetch', fetch400)
+		it('should use default error message when no message is returned from server', async () => {
+			mockedFetch = vi.fn(() => ({})) as any
+			await expect(
+				fetch.get(product1Url, { fetchFunc: mockedFetch }),
+			).rejects.toEqual(expect.any(FetchError))
+			expect(mockedFetch).toHaveBeenCalledOnce()
+		})
 
+		it('should handle error returned from server', async () => {
+			const fetch400 = getMockedFetch(false, 400, 'Bad request')
+			fetch.defaults.fetchFunc = fetch400
 			let error: FetchError | undefined
 			fetch
 				.get(product1Url)
@@ -136,7 +138,7 @@ describe('fetch', () => {
 				return errResponse
 			})
 
-			vi.stubGlobal('fetch', fetch400)
+			fetch.defaults.fetchFunc = fetch400 as any
 
 			let error: FetchError | undefined
 			fetch.get(product1Url, {}).catch((err: FetchError) => (error = err))
@@ -150,28 +152,18 @@ describe('fetch', () => {
 		})
 
 		it('should return successful response parsed as JSON by default', async () => {
-			const fetch200 = vi.fn((...args: any[]) =>
-				Promise.resolve({
-					ok: true,
-					status: 200,
-					json: () => ({
-						age: 33,
-						id: 'adam',
-						location: 'heaven',
-						name: 'Adam',
-					}),
-				}),
-			)
-			vi.stubGlobal('fetch', fetch200)
-			const promise = fetch.get(product1Url)
-			await vi.runAllTimersAsync()
-			await expect(promise).resolves.toEqual({
+			const entry = {
 				age: 33,
 				id: 'adam',
 				location: 'heaven',
 				name: 'Adam',
-			})
-			expect(fetch200).toHaveBeenCalledOnce()
+			}
+			const fetch2001 = getMockedFetch(true, 200, undefined, entry)
+			fetch.defaults.fetchFunc = fetch2001
+			const promise = fetch.get(product1Url)
+			await vi.runAllTimersAsync()
+			await expect(promise).resolves.toEqual(entry)
+			expect(fetch2001).toHaveBeenCalledOnce()
 		})
 
 		it('should merge options global and local options', async () => {
@@ -233,19 +225,12 @@ describe('fetch', () => {
 
 		it('should invoke body function before executing request interceptors', async () => {
 			const bodyFunc = vi.fn(() => ({ data: 1 }))
-			const fetchFunc = vi.fn(
-				async (...[_, options]: FetchOptionsInterceptor[]) => ({
-					ok: true,
-					status: 200,
-					json: () => Promise.resolve(options.body),
-				}),
-			)
-			const promise = fetch.post(baseUrl, bodyFunc, {
-				fetchFunc: fetchFunc as unknown as FetchFunc,
-			})
+			const fetchFunc = getMockedFetch(true, 200, undefined, { data: 1 })
+			fetch.defaults.fetchFunc = fetchFunc
+			const promise = fetch.post(baseUrl, bodyFunc)
 
 			await vi.runAllTimersAsync()
-			await expect(promise).resolves.toEqual(JSON.stringify({ data: 1 }))
+			await expect(promise).resolves.toEqual({ data: 1 })
 			expect(bodyFunc).toHaveBeenCalledOnce()
 			expect(fetchFunc).toHaveBeenCalledOnce()
 		})
@@ -254,19 +239,21 @@ describe('fetch', () => {
 	describe('interceptors', () => {
 		it('should throw error when invalid URL is provided', async () => {
 			const errorIntercepror = vi.fn()
+			const handleErr = vi.fn()
 			const promise = fetch.get('an invalid url', {
 				interceptors: { error: [errorIntercepror] },
 				validateUrl: true,
 			})
-			await promise.catch(noop)
+			await promise.catch(handleErr)
 			await expect(promise).rejects.toThrow('Invalid URL')
 			expect(errorIntercepror).toHaveBeenCalledOnce()
+			expect(handleErr).toHaveBeenCalledOnce()
 		})
-		it('should string returned by error interceptor', async () => {
-			const errorIntercepror = vi.fn(() => 'custom error' as any)
+		it('should use string returned by error interceptor', async () => {
+			const errorIntercepror = vi.fn(() => 'custom error')
 			const promise = fetch.get('', {
 				fetchFunc: () => Promise.reject(),
-				interceptors: { error: [errorIntercepror] },
+				interceptors: { error: [errorIntercepror as any] },
 			})
 			await promise.catch(noop)
 			await expect(promise).rejects.toThrow('custom error')
@@ -275,23 +262,21 @@ describe('fetch', () => {
 
 		it('should allow single interceptor function and convert it to an array', async () => {
 			const interceptor = vi.fn()
+			const mockedFetch = getMockedFetch(true, 200, undefined, [
+				interceptor,
+			])
 			const promise = fetch.get(product1Url, {
-				fetchFunc: async (_, options) =>
-					({
-						success: true,
-						status: 200,
-						json: () =>
-							Promise.resolve(options?.interceptors?.request),
-					}) as unknown as Promise<Response>,
+				fetchFunc: mockedFetch,
 				interceptors: { request: interceptor },
 			})
 			await vi.runAllTimersAsync()
 			await expect(promise).resolves.toEqual([interceptor])
 			expect(interceptor).toHaveBeenCalledOnce()
+			expect(mockedFetch).toHaveBeenCalledOnce()
 		})
 
 		it('should receive correct request, result & response interceptor arguments', async () => {
-			const receivedInterceptorArgs = {
+			const receivedArgs = {
 				request: [] as unknown[],
 				result: [] as unknown[],
 				response: [] as unknown[],
@@ -299,17 +284,17 @@ describe('fetch', () => {
 			const mockedInterceptors = {
 				request: [
 					(...args) => {
-						receivedInterceptorArgs.request = args
+						receivedArgs.request = args
 					},
 				] as FetchInterceptorRequest[],
 				result: [
 					(...args) => {
-						receivedInterceptorArgs.result = args
+						receivedArgs.result = args
 					},
 				] as FetchInterceptorResult[],
 				response: [
 					(...args) => {
-						receivedInterceptorArgs.response = args
+						receivedArgs.response = args
 					},
 				] as FetchInterceptorResponse[],
 			}
@@ -321,15 +306,14 @@ describe('fetch', () => {
 			const promise = fetch.get(product1Url, options)
 			await vi.runAllTimersAsync()
 			await promise
-			expect(receivedInterceptorArgs.request).toEqual(expectedArgs)
-			expect(receivedInterceptorArgs.result).toEqual([
-				mockedResult,
-				...expectedArgs,
-			])
-			expect(receivedInterceptorArgs.response).toEqual([
-				okResponse,
-				...expectedArgs,
-			])
+			expect(receivedArgs.request).toEqual(expectedArgs)
+			expect(receivedArgs.result).toEqual([mockedResult, ...expectedArgs])
+			expect(receivedArgs.response[0]).toEqual({
+				ok: true,
+				status: 200,
+				json: expect.any(Function),
+			})
+			expect(receivedArgs.response.slice(1)).toEqual(expectedArgs)
 		})
 
 		it('should receive correct error interceptor arguments', async () => {
@@ -398,17 +382,11 @@ describe('fetch', () => {
 	describe('retry', () => {
 		it('should fail fetch with 500 with exponential retry', async () => {
 			const retry = 3
-			const fetch500 = vi.fn((...args: any[]) =>
-				Promise.reject({
-					ok: false,
-					status: 500,
-					message: 'Internal Server Error',
-				}),
-			)
-			vi.stubGlobal('fetch', fetch500)
+			const fetch500 = getMockedFetch(false, 500, 'Internal Server Error')
 			let error: FetchError | undefined
 			const promise = fetch
 				.get(product1Url, {
+					fetchFunc: fetch500,
 					retry,
 					retryBackOff: 'exponential',
 					retryDelayJitter: true,
@@ -431,42 +409,36 @@ describe('fetch', () => {
 
 		it('should retry until result is as expected by using `retryIf()`', async () => {
 			let userCount = 0
-			mockedFetch = vi.fn(() => {
+			const mockedFetch = getMockedFetch(
+				true,
+				200,
+				undefined,
+				() => userCount,
+			)
+			const fetchFunc = () => {
 				++userCount
-				return Promise.resolve({
-					ok: true,
-					status: 200,
-					json: async () => userCount,
-				})
-			})
-			vi.stubGlobal('fetch', mockedFetch)
+				return mockedFetch('')
+			}
 
-			const onError = vi.fn()
-			const promise = fetch
-				.get(product1Url, {
-					retry: 5,
-					retryIf: async response => {
-						const userCount = await response?.json()
-						return userCount < 3 // wait until user count is 3
-					},
-				})
-				.catch(onError)
+			const promise = fetch.get(product1Url, {
+				fetchFunc,
+				retry: 5,
+				retryIf: (_, attemptCount) => attemptCount < 3, // wait until user count is 3,
+			})
 			await vi.runAllTimersAsync()
 
-			expect(mockedFetch).toHaveBeenCalled()
-			await expect(promise).resolves.toEqual(3)
-			await expect(promise).resolves.toEqual(userCount)
+			const result = await promise
+			expect(result).toBe(3)
+			expect(result).toBe(userCount)
+			expect(mockedFetch).toHaveBeenCalledTimes(3)
 		})
 
 		it('should handle fetch fail due to network issues with linear retry', async () => {
-			const fetchNetworkError = vi.fn(() =>
-				Promise.reject(new Error('Failed to fetch')),
-			)
-			vi.stubGlobal('fetch', fetchNetworkError)
-
+			const fetchFunc = getMockedFetch(false, 0, '', 'Failed to fetch')
 			const onError = vi.fn()
 			const promise = fetch
 				.get(product1Url, {
+					fetchFunc,
 					retry: 3,
 					retryBackOff: 'linear',
 					retryDelayJitter: true,
@@ -477,8 +449,8 @@ describe('fetch', () => {
 			await vi.advanceTimersByTimeAsync(2000)
 			await promise
 			expect(onError).toHaveBeenNthCalledWith(1, expect.any(FetchError))
-			expect(fetchNetworkError).toHaveBeenCalled()
-			expect(fetchNetworkError).toHaveBeenCalledTimes(4) // 3 retries + first call
+			expect(fetchFunc).toHaveBeenCalled()
+			expect(fetchFunc).toHaveBeenCalledTimes(4) // 3 retries + first call
 		})
 
 		it('should avoid retrying after being aborted', async () => {
@@ -499,8 +471,8 @@ describe('fetch', () => {
 				abortError.name = 'AbortError'
 				return PromisE.delayReject(timeout, abortError)
 			})
-			vi.stubGlobal('fetch', mockedFetch)
 			const promise = fetch.get(product1Url, {
+				fetchFunc: mockedFetch,
 				timeout: -1, // test invalid value => falls back to default
 			})
 			promise.catch(noop) // avoid unhandled rejection
@@ -510,8 +482,8 @@ describe('fetch', () => {
 		})
 
 		it('should abort the fetch request when promise is resolved before finalization', async () => {
-			const mockedFetch = vi.fn(() => PromisE.delay(10_000, okResponse))
-			vi.stubGlobal('fetch', mockedFetch)
+			const mockedFetch = vi.fn(() => PromisE.delay(10_000))
+			fetch.defaults.fetchFunc = mockedFetch as any
 			const promise = fetch.get(product1Url, { timeout: 5000 })
 			const cbIndex = promise.onEarlyFinalize.length
 			promise.onEarlyFinalize.push(vi.fn())
@@ -527,9 +499,7 @@ describe('fetch', () => {
 		})
 
 		it('should abort the fetch request externally', async () => {
-			const mockedFetch = vi.fn(() => {
-				return PromisE.delay(10_000, okResponse)
-			})
+			mockedFetch = vi.fn(() => PromisE.delay(10_000))
 			const promise = fetch.get(product1Url, {
 				fetchFunc: mockedFetch as any,
 				timeout: 5000,

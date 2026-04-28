@@ -1,8 +1,43 @@
-import { expect } from 'vitest'
-import { isStr, objSort } from '../../core/src'
-import fetch, { ContentType, FetchAs, FetchOptions, mergeOptions } from '../src'
+import { expect, vi } from 'vitest'
+import { isFn, isStr, objSort } from '../../core/src'
+import fetch, {
+	ContentType,
+	FetchArgs,
+	FetchAs,
+	FetchOptions,
+	mergeOptions,
+} from '../src'
 
 export const productsBaseUrl = 'https://dummyjson.com/products'
+
+export const getMockedFetch = (
+	success = true,
+	status = 200,
+	/**
+	 * If provided, will throw error with this.
+	 * - `success = false`: will throw error immediately, mimicking fetch failed error
+	 * - `success = true`: will throw error when invoking `.json()`
+	 */
+	error?: string,
+	result?: unknown,
+) =>
+	vi.fn((...args: FetchArgs) =>
+		!success
+			? Promise.reject(new Error(error || 'Failed to fetch'))
+			: Promise.resolve({
+					ok: success,
+					status,
+					json: () =>
+						error
+							? Promise.reject(new Error(error))
+							: Promise.resolve(
+									(isFn(result) ? result() : result) ?? {
+										args,
+										success,
+									},
+								),
+				}),
+	) as unknown as typeof fetch
 
 /**
  * Generate mocked result for fetch calls.

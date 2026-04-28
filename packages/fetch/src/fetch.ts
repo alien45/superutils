@@ -4,6 +4,7 @@ import {
 	isFn,
 	isObj,
 	isPromise,
+	isStr,
 	isUrlValid,
 } from '@superutils/core'
 import { timeout as PromisE_timeout } from '@superutils/promise'
@@ -11,6 +12,7 @@ import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
 import mergeOptions from './mergeOptions'
 import type {
+	FetchArgs,
 	FetchOptions,
 	FetchOptionsInterceptor,
 	FetchResult,
@@ -41,9 +43,10 @@ const fetch = <
 		: FetchAs.response,
 	TReturn = FetchResult<T>[TAs],
 >(
-	url: string | URL,
+	url: FetchArgs[0],
 	options: FetchOptions & TOptions = {} as TOptions,
 ) => {
+	// let url = url instanceof Request ? url.url : url
 	if (!isObj(options)) options = {} as TOptions
 
 	let response: Response | undefined
@@ -53,6 +56,7 @@ const fetch = <
 		fetch.defaults,
 		options,
 	)
+
 	// make sure there's always an abort controller, so that request is aborted when promise is early finalized
 	opts.abortCtrl =
 		opts.abortCtrl instanceof AbortController
@@ -128,15 +132,11 @@ const fetch = <
 			if (!isSuccess) {
 				const jsonError: unknown = await fallbackIfFails(
 					// try to parse error response as json first
-					() => response!.json(),
+					() => response?.clone()?.json(),
 					[],
 					undefined,
 				)
-				throw new Error(
-					(jsonError as Error)?.message
-						|| `${errMsgs.requestFailed} ${status}`,
-					{ cause: jsonError },
-				)
+				throw new Error(jsonError as string, { cause: jsonError })
 			}
 
 			const parseFunc = response[parseAs as keyof typeof response]
@@ -186,18 +186,22 @@ fetch.defaults = {
 
 const interceptErr = async (
 	err: Error,
-	url: string | URL,
+	url: FetchArgs[0],
 	options: FetchOptionsInterceptor,
 	response?: Response,
 ) => {
 	// invoke global and local request interceptors to intercept and/or transform `error`
 	const fErr = await executeInterceptors(
-		new FetchError(err?.message ?? err, {
-			cause: err?.cause ?? err,
-			response: response,
-			options: options,
-			url,
-		}),
+		new FetchError(
+			(err?.message ?? err)
+				|| `${options.errMsgs.requestFailed} ${response?.status}`,
+			{
+				cause: err?.cause ?? err,
+				response: response,
+				options: options,
+				url,
+			},
+		),
 		undefined, // should execute regardless of abort status
 		options.interceptors?.error,
 		url,

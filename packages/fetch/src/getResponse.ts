@@ -13,10 +13,11 @@ import { FetchArgs, FetchFunc } from './types'
  *
  * @returns A promise resolving to the Response.
  */
+// intentionally not exported
 const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
 	const fetchFunc = isFn(options.fetchFunc)
 		? options.fetchFunc
-		: (globalThis.fetch as FetchFunc)
+		: (getResponse.fetch as FetchFunc)
 	if (!isPositiveInteger(options.retry)) return fetchFunc(url, options)
 
 	let attemptCount = 0
@@ -29,7 +30,7 @@ const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
 			...options,
 			retryIf: async (res, count, error) => {
 				const { abortCtrl, retryIf, signal } = options
-				if (abortCtrl?.signal?.aborted || signal?.aborted) return false
+				if (signal?.aborted || abortCtrl?.signal?.aborted) return false
 
 				return !!(
 					(await fallbackIfFails(
@@ -51,4 +52,6 @@ const getResponse = (url: FetchArgs[0], options: FetchArgs[1] = {}) => {
 
 	return response
 }
+/** Preserve `globalThis.fetch` */
+getResponse.fetch = globalThis.fetch
 export default getResponse

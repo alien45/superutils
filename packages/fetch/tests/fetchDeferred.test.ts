@@ -23,8 +23,7 @@ describe('fetch.get.deferred', () => {
 
 	beforeEach(() => {
 		mockFetch200 = vi.fn(mockFetch(200))
-		vi.stubGlobal('fetch', mockFetch200)
-
+		fetch.defaults.fetchFunc = mockFetch200
 		vi.useFakeTimers()
 	})
 
@@ -32,6 +31,7 @@ describe('fetch.get.deferred', () => {
 		mockFetch200.mockClear()
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	it('should debounce fetch calls and only execute trailing calls', async () => {

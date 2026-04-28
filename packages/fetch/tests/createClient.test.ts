@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
+import fetch, {
 	createClient,
 	FetchArgs,
 	FetchAs,
@@ -17,6 +17,7 @@ describe('createClient', () => {
 		// Setup global fetch mock
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	beforeEach(() => {
@@ -27,7 +28,7 @@ describe('createClient', () => {
 				json: async () => ({ success: true, args }),
 			} as unknown as Response),
 		)
-		vi.stubGlobal('fetch', mockedFetch)
+		fetch.defaults.fetchFunc = mockedFetch
 		vi.useFakeTimers()
 	})
 

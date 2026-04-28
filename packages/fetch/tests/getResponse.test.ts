@@ -1,19 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { type FetchArgs } from '../src'
+import fetch, { FetchOptions, type FetchArgs } from '../src'
 import getResponse from '../src/getResponse'
-import { productsBaseUrl } from './utils'
+import { getMockedFetch, productsBaseUrl } from './utils'
 
 describe('getResponse', () => {
 	const product1Url = `${productsBaseUrl}/1`
-	const getMockedFetch = (success = true, status = 200) =>
-		vi.fn(async (...args: FetchArgs) => ({
-			ok: success,
-			status,
-			json: async () => ({
-				success,
-				args,
-			}),
-		}))
 	let mockedFetch: undefined | ((...args: FetchArgs) => Promise<any>)
 
 	afterEach(() => {
@@ -25,17 +16,39 @@ describe('getResponse', () => {
 		vi.unstubAllGlobals()
 	})
 
+	it('should avoid circular referencing when `globalThis.fetch` is set to local `fetch`', async () => {
+		const fetchOriginal = globalThis.fetch
+		globalThis.fetch = fetch
+
+		const mockedFetch = getMockedFetch()
+		vi.stubGlobal('fetch', mockedFetch)
+		await expect(() =>
+			globalThis.fetch(product1Url, { timeout: 3000 } as any),
+		).not.toThrow()
+		globalThis.fetch = fetchOriginal
+	})
+
+	it('should use `globalThis.fetch` when `fetchFunc` is not provided', async () => {
+		const fOrg = globalThis.fetch
+
+		getResponse.fetch = getMockedFetch() as any
+		await expect(() => getResponse(product1Url)).not.toThrow()
+
+		expect(getResponse.fetch).toHaveBeenCalled()
+		globalThis.fetch = fOrg
+	})
+
 	it('should return response without retrying', async () => {
 		mockedFetch = getMockedFetch()
-		vi.stubGlobal('fetch', mockedFetch!)
-		const promsie = getResponse(product1Url)
+		const promsie = getResponse(product1Url, { fetchFunc: mockedFetch })
 		await vi.runAllTimersAsync()
 		const response = await promsie
 		await vi.runAllTimersAsync()
 		const result = await response.json()
+		expect(mockedFetch).toHaveBeenCalled()
 		expect(result).toEqual({
+			args: [product1Url, { fetchFunc: mockedFetch }],
 			success: true,
-			args: [product1Url, {}],
 		})
 	})
 
@@ -49,8 +62,7 @@ describe('getResponse', () => {
 			const response = await getMockedFetch(true, 200)(...args)
 			return response
 		})
-		vi.stubGlobal('fetch', mockedFetch!)
-		const options = { retry: 5, retryIf }
+		const options = { fetchFunc: mockedFetch, retry: 5, retryIf }
 		const promsie = getResponse(product1Url, options)
 		await vi.runAllTimersAsync()
 		const response = await promsie
@@ -64,23 +76,45 @@ describe('getResponse', () => {
 		expect(retryIf).toHaveBeenCalledTimes(3)
 	})
 
-	// it('should avoid retry when request is aborted', async () => {
-	// 	const retryIf = vi.fn(() => true)
-	// 	const handleErr = vi.fn()
-	// 	mockedFetch = vi.fn(async () => {
-	// 		throw new Error('Dummy error')
-	// 	})
-	// 	vi.stubGlobal('fetch', mockedFetch)
+	it('should avoid retry when abortCtrl is aborted', async () => {
+		const retryIf = vi.fn(() => true)
+		const handleErr = vi.fn()
+		mockedFetch = vi.fn(async () => {
+			throw new Error('Dummy error')
+		})
+		const options: FetchOptions = {
+			abortCtrl: new AbortController(),
+			fetchFunc: mockedFetch,
+			retry: 5,
+			retryIf,
+		}
+		options.abortCtrl?.abort()
+		const promise = getResponse(product1Url, options).catch(handleErr)
+		await vi.runAllTimersAsync()
+		await promise
+		expect(handleErr).toBeCalledTimes(1)
+		expect(retryIf).not.toBeCalled()
+	})
 
-	// 	const options = {
-	// 		abortCtrl: new AbortController(),
-	// 		retry: 5,
-	// 		retryIf,
-	// 	}
-	// 	options.abortCtrl.abort()
-	// 	const promise = getResponse(product1Url, options).catch(handleErr)
-	// 	await vi.runAllTimersAsync()
-	// 	await promise
-	// 	expect(handleErr).toBeCalledTimes(1)
-	// })
+	it('should avoid retry when signal is aborted', async () => {
+		const retryIf = vi.fn(() => true)
+		const handleErr = vi.fn()
+		mockedFetch = vi.fn(async () => {
+			throw new Error('Dummy error')
+		})
+
+		const abortCtrl = new AbortController()
+		abortCtrl.abort()
+		const options: FetchOptions = {
+			fetchFunc: mockedFetch,
+			retry: 5,
+			retryIf,
+			signal: abortCtrl.signal,
+		}
+		const promise = getResponse(product1Url, options).catch(handleErr)
+		await vi.runAllTimersAsync()
+		await promise
+		expect(handleErr).toBeCalledTimes(1)
+		expect(retryIf).not.toBeCalled()
+	})
 })

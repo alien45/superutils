@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPostClient, FetchArgs, FetchAs, PostOptions } from '../src'
+import fetch, {
+	createPostClient,
+	FetchArgs,
+	FetchAs,
+	PostOptions,
+} from '../src'
 import getClientDeferredSimulator from './client-deferred-simulator'
 import { productsBaseUrl } from './utils'
 
@@ -11,6 +16,7 @@ describe('createPostClient', () => {
 		// Setup global fetch mock
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	beforeEach(() => {
@@ -21,7 +27,7 @@ describe('createPostClient', () => {
 				json: async () => ({ success: true, args }),
 			} as unknown as Response),
 		)
-		vi.stubGlobal('fetch', mockedFetch)
+		fetch.defaults.fetchFunc = mockedFetch
 		vi.useFakeTimers()
 	})
 

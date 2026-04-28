@@ -6,6 +6,7 @@ describe('fetch.post', () => {
 	afterEach(() => {
 		vi.useRealTimers()
 		vi.unstubAllGlobals()
+		fetch.defaults.fetchFunc = undefined
 	})
 
 	beforeEach(() => {
@@ -26,7 +27,7 @@ describe('fetch.post', () => {
 				json: async () => newUser,
 			}),
 		)
-		vi.stubGlobal('fetch', post201)
+		fetch.defaults.fetchFunc = post201 as any
 		const promise = fetch.post(postUrl, () => newUser)
 		await vi.runAllTimersAsync()
 		await expect(promise).resolves.toEqual(newUser)
@@ -37,7 +38,7 @@ describe('fetch.post', () => {
 		const post201 = vi.fn((...[_url, body]: any[]) =>
 			Promise.resolve(new Response(body)),
 		)
-		vi.stubGlobal('fetch', post201)
+		fetch.defaults.fetchFunc = post201
 		const promise = fetch.post(postUrl, 'body', { as: FetchAs.response })
 		await vi.runAllTimersAsync()
 		const response = await promise
