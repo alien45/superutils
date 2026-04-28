@@ -36,24 +36,21 @@ globalThis.localStorage = new LocalStorage(
 	500 * 1024 * 1024 * 1024,
 )
 
-const storage = new DataStorage<number, Product>(
-	'products.json',
-	{
-		cacheDisabled: false,
-		initialValue: new Map<number, Product>([
-			[0, { title: 'No product availalbe' } as Product],
-		]),
-	},
-)
+const storage = new DataStorage<string, Product>('products.json', {
+	cacheDisabled: false,
+	initialValue: new Map([
+		['0', { title: 'No product availalbe' } as Product],
+	]),
+})
 
 console.log('onload', storage.subject.value.size)
 storage.onChange = () => {}
 fetch
 	.get<{ products: Product[] }>('https://dummyjson.com/products')
 	.then(({ products }) => {
-		storage.setAll(new Map(products.map(p => [p.id, p])), true)
+		storage.setAll(new Map(products.map(p => [p.id.toString(), p])), true)
 		console.log(storage.getAll().size, storage.getAll(true).size)
-		console.log(storage.get(10)) // print product with id `1`
+		console.log(storage.get('10')) // print product with id `1`
 
 		// const searchOptions: Parameters<typeof storage.search>[0] = {
 		// 	query: {

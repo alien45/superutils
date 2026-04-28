@@ -17,10 +17,20 @@ import {
 	SubjectLike,
 } from '@superutils/rx'
 import { delay, distinctUntilChanged } from 'rxjs'
-import fetch, { FetchAs, FetchError, ResolveIgnored } from '@superutils/fetch'
+import {
+	fetch as f,
+	FetchAs,
+	FetchError,
+	ResolveIgnored,
+} from '@superutils/fetch'
 import './dataStorage'
+globalThis.fetch = f as typeof fetch
+
+let count = 0
+f.defaults.interceptors.request.push(() => console.log(++count))
 
 console.log('Started')
+fetch('https://dummyjson.com/products/1').then(console.log)
 
 // const abortCtrl = new AbortController()
 // setTimeout(() => abortCtrl.abort(), 1500)

@@ -102,7 +102,9 @@ This monorepo contains the following packages. Each is independently versioned a
     </tr>
     <tr>
       <td>
-        <code>@superutils/rx</code>
+        <a href="https://www.npmjs.com/package/@superutils/rx">
+          <code>@superutils/rx</code>
+        </a>
       </td>
       <td>
         A set of small, focused utilities for working with RxJS observables and subjects.
