@@ -1,6 +1,6 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "RxJS utilities and hooks for React applications.",
+	"description": "A set of small, focused utilities for working with RxJS observables and subjects.",
 	"dependencies": {
 		"@superutils/core": "^1.2.9",
 		"@superutils/promise": "^1.3.8",

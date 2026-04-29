@@ -6,7 +6,7 @@ import {
 	StorageKey,
 	StorageValue,
 	unsubscribeAll,
-} from '../src'
+} from '../../src'
 
 class MockLocalStorage implements StorageCompact {
 	storage = new Map<string, string>()

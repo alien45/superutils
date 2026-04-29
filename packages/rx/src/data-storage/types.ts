@@ -29,19 +29,25 @@ export type OnErrorType =
 /** Storage type with only properties that are used by `DataStorage` */
 export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
 
-export type StorageFilter<K, V extends StorageValue> = <
-	IncludeKey extends boolean = false,
->(
-	...args: DropFirst<Parameters<typeof filter<K, V, IncludeKey>>>
-) => ReturnType<typeof filter<K, V, IncludeKey>>
+export type StorageFilter<
+	K,
+	V extends StorageValue,
+	AsArray extends boolean = false,
+> = (
+	...args: DropFirst<Parameters<typeof filter<K, V, AsArray>>>
+) => ReturnType<typeof filter<K, V>>
 
-export type StorageFind<K, V extends StorageValue> = (
+export type StorageFind<
+	K,
+	V extends StorageValue,
+	AsArray extends boolean = false,
+> = (
 	predicateOrOptions:
-		| Parameters<StorageFilter<K, V>>[0]
+		| Parameters<StorageFilter<K, V, AsArray>>[0]
 		| Parameters<StorageSearch<K, V>>[0],
 ) => V | undefined
 
-export type StorageMap<K, V extends StorageValue> = <T>(
+export type StorageMap<K, V extends StorageValue, T = unknown> = (
 	callback: (value: V, key: K, data: [K, V][], index: number) => T,
 ) => T[]
 
@@ -86,10 +92,12 @@ export type StorageParseFn<K, V extends StorageValue> = (
 	data: string,
 ) => Map<K, V>
 
-export type StorageSearch<K, V extends StorageValue> = <
+export type StorageSearch<
+	K,
+	V extends StorageValue,
 	MatchExact extends boolean = false,
 	AsMap extends boolean = true,
->(
+> = (
 	...args: DropFirst<Parameters<typeof search<K, V, MatchExact, AsMap>>>
 ) => ReturnType<typeof search<K, V, MatchExact, AsMap>>
 
