@@ -1,18 +1,20 @@
 import { isObj } from '../is'
+import { StrictMap } from './types'
 
 /**
  * Converts an object into a Map with strong, heterogeneous typing.
+ * Unlike a standard Map<string, Value>, the returned Map tracks the specific type
+ * of each key-value pair based on the input object's structure.
  *
- * @param input
- * @param asObject (optional) if true will convert individual values into objects. See example for more details.
- *
- * Default: `false`
- *
- * @returns converted map
+ * @param input - An object to convert. If null or not an object, an empty Map is returned.
+ * @template T - The type of the input object.
+ * @returns A Map (specifically a {@link StrictMap}) populated with the object's own enumerable string properties.
  *
  * @example
  * #### Convert an object to a map
  * ```typescript
+ * import { objToMap } from '@superutils/core'
+ *
  * const obj = {
  * 	a: 1,
  * 	b: false,
@@ -20,46 +22,59 @@ import { isObj } from '../is'
  * }
  *
  * const map = objToMap(obj)
- * const x = map.get('a') // type: number | undefined
+ * const x = map.get('a') // TypeScript knows this is: number | undefined
  * console.log(x) // Prints: 1
- * ```
  *
- * @example
- * #### Convert an object to a map of objects with "value" as object key
- * ```typescript
- * const obj = {
- * 	a: 1,
- * 	b: false,
- * 	c: 'c',
- * }
- *
- * const map = objToMap(obj)
- * const x = map.get('a') // type: { value: number } | undefined
- * console.log(x) // Prints: { value: 1 }
+ * const y = map.get('b') // TypeScript knows this is: boolean | undefined
+ * console.log(y) // Prints: false
  * ```
  */
 export function objToMap<
 	T extends object,
 	Key extends keyof T & string,
 	Value extends T[Key],
-	AsObj extends boolean = false,
-	const Value2 = AsObj extends true ? { value: Value } : Value,
->(input: T, asObject = false as AsObj) {
-	if (!isObj(input)) return new Map<Key, Value2>()
+>(input: T) {
+	const entries = Object.entries(!isObj(input) ? {} : input) as [Key, Value][]
 
-	const mapper = asObject
-		? ([k, v]: [Key, Value]) => [k, { value: v }] as [Key, Value2]
-		: ([k, v]: [Key, Value]) => [k, v] as unknown as [Key, Value2]
-
-	return new Map(
-		(Object.entries(input) as [Key, Value][]).map(mapper),
-	) as Omit<Map<Key, Value2>, 'get' | 'set'> & {
-		get<K extends Key>(
-			key: K,
-		): (AsObj extends true ? { value: T[K] } : T[K]) | undefined
-
-		set<K extends Key>(key: K, value: T[K]): Map<Key, Value2>
-	}
+	return new Map(entries.map(([k, v]) => [k, v])) as StrictMap<T>
 }
 
+/**
+ * Converts an object into a Map of objects with strong, heterogeneous typing.
+ * Each property value from the input object is wrapped in a new object using the specified `propertyName`.
+ *
+ * @param input - The object to convert.
+ * @param propertyName - The name of the property to wrap values in. Defaults to 'value'.
+ * @template T - The type of the input object.
+ * @returns a map of objects with strict typing
+ *
+ * @example
+ * #### Convert an object to a map of objects and places individual values a predefined property
+ * This can be useful when storing to databases such as CouchDB enforces value to be an object.
+ * ```typescript
+ * import { objToMapOfObj } from '@superutils/core'
+ *
+ * const obj = {
+ * 	a: 1,
+ * 	b: false,
+ * 	c: 'c',
+ * }
+ *
+ * const map = objToMapOfObj(obj, 'value')
+ * const x = map.get('a') // type: { value: number } | undefined
+ * console.log(x) // Prints: { value: 1 }
+ * ```
+ */
+export function objToMapOfObj<
+	T extends object,
+	PropertyName extends string = 'value',
+	Key extends keyof T = keyof T,
+	Value extends Record<PropertyName, T[Key]> = Record<PropertyName, T[Key]>,
+>(input: T, propertyName: PropertyName = 'value' as PropertyName) {
+	const entries = Object.entries(!isObj(input) ? {} : input) as [Key, Value][]
+
+	return new Map(
+		entries.map(([key, v]) => [key, { [propertyName as keyof Value]: v }]),
+	) as StrictMap<Record<Key, Value>>
+}
 export default objToMap
