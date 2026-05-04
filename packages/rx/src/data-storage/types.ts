@@ -369,6 +369,7 @@ export interface IDataStorage<
 	 *   return JSON.stringify(entries)
 	 * }
 	 * const storage = new DataStorage('users', { stringify })
+	 * ```
 	 */
 	readonly stringify?: StorageStringifyFn<Key, Value, CacheDisabled>
 
