@@ -1,5 +1,5 @@
 import { isObj } from '../is'
-import { TypedMap } from './types'
+import { TypedMap } from '../map/types'
 
 /**
  * Converts an object into a Map with strong, heterogeneous typing.

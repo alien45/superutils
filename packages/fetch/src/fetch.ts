@@ -4,7 +4,6 @@ import {
 	isFn,
 	isObj,
 	isPromise,
-	isStr,
 	isUrlValid,
 } from '@superutils/core'
 import { timeout as PromisE_timeout } from '@superutils/promise'
