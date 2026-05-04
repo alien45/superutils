@@ -22,10 +22,10 @@ export type ObjReadOnlyConfig<T, Revocable extends true | false = false> = {
  *
  * @template T - The object structure providing the key-value types.
  */
-export type StrictMap<
+export type TypedMap<
 	T extends object,
 	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
+	Value = T[Key],
 > = Omit<Map<Key, Value>, 'get' | 'set'> & {
 	get<K extends Key>(key: K): T[K] | undefined
 
