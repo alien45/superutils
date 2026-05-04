@@ -7,9 +7,9 @@ import {
 	isSubjectLike,
 } from '@superutils/core'
 import PromisE, {
-	IPromisE_Timeout,
+	type IPromisE_Timeout,
 	TIMEOUT_MAX,
-	TimeoutOptions,
+	type TimeoutOptions,
 } from '@superutils/promise'
 import { isObservable, Subscribable } from './rxjs'
 import { SubjectLike, SubscriptionLike } from './types'

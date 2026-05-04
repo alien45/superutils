@@ -1,20 +1,22 @@
 import {
 	deferred,
+	EntryComparator,
 	fallbackIfFails,
 	filter,
 	find,
+	FindOptions,
 	getEntries,
 	getKeys,
 	getValues,
 	isArr,
-	isFn,
 	isMap,
+	isObj,
 	isPositiveNumber,
 	isStr,
 	mapJoin,
+	objToMap,
 	search,
 	sort,
-	SortOptions,
 } from '@superutils/core'
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
 import {
@@ -24,7 +26,6 @@ import {
 	StorageCompact,
 	StorageFilter,
 	StorageFind,
-	StorageKey,
 	StorageMap,
 	StorageOnChangeFn,
 	StorageOnErrorFn,
@@ -34,9 +35,9 @@ import {
 	StorageSort,
 	StorageStringifyFn,
 	StorageToJSON,
-	StorageValue,
 } from './types'
 import unsubscribeAll from '../unsubscribeAll'
+import { UnwrapSubjectValue } from '../types'
 
 /**
  * Force all or specific instances of DataStorage to reload data from storage
@@ -56,8 +57,8 @@ import unsubscribeAll from '../unsubscribeAll'
 export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
 export class DataStorage<
-	Key extends StorageKey,
-	Value extends StorageValue,
+	Key,
+	Value,
 	CacheDisabled extends boolean = false,
 > implements IDataStorage<Key, Value, CacheDisabled> {
 	readonly cacheDisabled: CacheDisabled
@@ -192,11 +193,7 @@ export class DataStorage<
 			storage,
 			stringify,
 		} = options ?? {}
-		this.delay = cacheDisabled
-			? 0
-			: delay === 0 || isPositiveNumber(delay)
-				? delay
-				: 300
+		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
 		this.name = `${name ?? ''}`.trim()
 		this.onError = onError
 		this.onChange = onChange
@@ -224,12 +221,12 @@ export class DataStorage<
 		isMap(initialValue) && initialValue.size && this.init(initialValue)
 	}
 
-	readonly clear = () => {
+	clear() {
 		this.setAll(new Map<Key, Value>(), true)
 		return this
 	}
 
-	readonly delete = (keys: Key | Key[]) => {
+	delete(keys: Key | Key[]) {
 		if (!isArr(keys)) keys = [keys]
 
 		const data = this.getAll()
@@ -239,18 +236,84 @@ export class DataStorage<
 		return this
 	}
 
-	readonly find: StorageFind<Key, Value> = predicateOrOptions =>
-		find(
-			this.getAll() as Map<Key, Record<string, unknown>>,
-			predicateOrOptions as Parameters<typeof find>[1],
+	find(predicateOrOptions: Parameters<StorageFind<Key, Value>>[0]) {
+		return find(
+			this.getAll(),
+			predicateOrOptions as FindOptions<Key, Value>,
 		)
+	}
 
-	readonly filter: StorageFilter<Key, Value> = (
-		predicate,
-		limit,
-		asArray,
-		result,
-	) => filter(this.getAll(), predicate, limit, asArray, result)
+	filter<AsArray extends boolean = false>(
+		...args: Parameters<StorageFilter<Key, Value, AsArray>>
+	) {
+		return filter(this.getAll(), ...args)
+	}
+
+	/**
+	 * Creates a {@link DataStorage} instance initialized from a plain object.
+	 *
+	 * This factory method automatically configures `parse` and `stringify` logic to
+	 * treat the underlying storage as a serialized object, while providing a
+	 * type-safe Map-like interface for individual properties.
+	 *
+	 * @param name (optional) The name for the storage (e.g., localStorage key or filename).
+	 * @param options (optional) Configuration options for the storage instance.
+	 * @param options.initialValue (optional) An optional object to populate the storage if it's currently empty.
+	 *
+	 * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
+	 * @template CacheDisabled (optional) Literal type determining whether to disable in-memory caching.
+	 *
+	 * @returns A new DataStorage instance mapped to the object's keys and values.
+	 *
+	 * @example
+	 * #### Store and access a User object
+	 * ```typescript
+	 * import { DataStorage } from '@superutils/rx'
+	 *
+	 * interface User {
+	 *   age: number;
+	 *   name: string;
+	 * }
+	 *
+	 * const initialValue: User = {
+	 *   age: 99,
+	 *   name: 'Ninety Nine'
+	 * }
+	 *
+	 * // Initialize storage from the object
+	 * const storage = DataStorage.fromObject<User>('user-profile', { initialValue })
+	 *
+	 * // Keys are inferred from the User interface
+	 * const name = storage.get('name') // Inferred as: string | undefined
+	 * console.log(name) // Prints: 'Ninety Nine'
+	 *
+	 * // Update properties safely
+	 * storage.set('age', 100)
+	 *
+	 * // Reconstruct the updated object
+	 * const userObj = storage.toObject<User>()
+	 * console.log(userObj) // { age: 100, name: 'Ninety Nine' }
+	 * ```
+	 */
+	static fromObject = <
+		T extends object,
+		CacheDisabled extends boolean = false,
+	>(
+		name?: string,
+		options?: Omit<
+			StorageOptions<keyof T, T[keyof T], CacheDisabled>,
+			'initialValue'
+		> & { initialValue?: T },
+	) =>
+		new DataStorage(name, {
+			parse: str => objToMap<T>(JSON.parse(str || '{}') as T),
+			stringify: data =>
+				JSON.stringify(DataStorage.prototype.toObject(data)),
+			...(options as StorageOptions<keyof T, T[keyof T], CacheDisabled>),
+			initialValue: !isObj(options?.initialValue, true)
+				? options?.initialValue
+				: objToMap<T>(options.initialValue),
+		})
 
 	/**
 	 * Trigger forced update of cached data from storage.
@@ -275,9 +338,11 @@ export class DataStorage<
 		forceUpdateCache$.next(name)
 	}
 
-	readonly get = (key: Key) => this.getAll().get(key)
+	get(key: Key) {
+		return this.getAll().get(key)
+	}
 
-	readonly getAll = (forceRead = false) => {
+	getAll(forceRead = false) {
 		const wasInitialized = this.initialized
 		if (!wasInitialized) this.init()
 
@@ -289,85 +354,109 @@ export class DataStorage<
 			return data
 		}
 
-		return (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
+		return (
+			(this.subject as BehaviorSubject<Map<Key, Value>>)?.value
+			?? new Map()
+		)
 	}
 
-	readonly has = (key: Key) => this.getAll().has(key)
+	private handleForceUpdateCacheChange = (
+		name: UnwrapSubjectValue<typeof forceUpdateCache$>,
+	) => {
+		const isTarget = !this.name
+			? false
+			: isArr(name)
+				? name.includes(this.name)
+				: isStr(name)
+					? name === this.name
+					: name === true
+		if (!isTarget) return
 
-	readonly init = (initialValue?: Map<Key, Value>) => {
+		const newData = this.read()
+		this.subject.next(newData)
+	}
+
+	private handleSubjectChange = (data: Map<Key, Value>) => {
+		// in-case non-map value is set, reset subject to an empty map
+		if (!isMap(data)) return this.subject.next(new Map())
+
+		this.write(data)
+
+		fallbackIfFails(
+			this.onChange?.bind(this) as unknown,
+			[data],
+			this.triggerOnError(OnErrorType.onChange),
+		)
+	}
+
+	has(key: Key) {
+		return this.getAll().has(key)
+	}
+
+	init(initialValue?: Map<Key, Value>) {
 		if (this.initialized) return false
 		;(this.initialized as unknown) = true
 
-		this.subject instanceof BehaviorSubject
-			&& this.subject.next(this.read())
+		let isEmpty = true
+		if (!!initialValue?.size || !this.cacheDisabled) {
+			const existingValue = this.read()
+			// ignore initial value if storage contains existing value
+			if (existingValue.size) initialValue = existingValue
+			isEmpty = this.cacheDisabled || existingValue.size === 0
+		}
+
+		initialValue?.size && this.subject.next(initialValue)
 
 		unsubscribeAll(this.subscriptions)
 		// update cached data from localStorage throughout the application only when triggered
 		if (!this.cacheDisabled) {
 			this.subscriptions.forceUpdateCache = forceUpdateCache$.subscribe(
-				refresh => {
-					const doRefresh = !this.name
-						? false
-						: isArr(refresh)
-							? refresh.includes(this.name)
-							: isStr(refresh)
-								? refresh === this.name
-								: refresh === true
-
-					if (!doRefresh) return
-					const newData = this.read()
-					this.subject.next(newData)
-				},
+				this.handleForceUpdateCacheChange,
 			)
 		}
-		!(this.subject as BehaviorSubject<Map<Key, Value>>)?.value?.size
-			&& isMap(initialValue)
-			&& !!initialValue?.size
-			&& this.setAll(initialValue)
-
-		const piped = this.subject.pipe(
-			skip(this.cacheDisabled || !!initialValue?.size ? 0 : 1),
-		)
-		let handleChange = (data: Map<Key, Value>) => {
-			// in-case non-map value is set, set it to empty map
-			if (!isMap(data)) return this.subject.next(new Map<Key, Value>())
-
-			this.write(data)
-			fallbackIfFails(
-				() => this.onChange?.(data) as unknown,
-				[],
-				this.triggerOnError('onChange'),
-			)
-		}
-		if (this.delay > 0)
-			handleChange = deferred(handleChange, this.delay, this.delayOptions)
 		// Subscribe to data changes and write to storage.
-		this.subscriptions.subject = piped.subscribe(handleChange)
+		this.subscriptions.subject = this.subject
+			.pipe(skip(this.cacheDisabled || isEmpty ? 0 : 1))
+			.subscribe(
+				!this.cacheDisabled && this.delay > 0
+					? deferred(this.handleSubjectChange, this.delay, {
+							thisArg: this,
+							...this.delayOptions,
+						})
+					: this.handleSubjectChange,
+			)
+
 		return true
 	}
 
-	readonly keys = () => getKeys(this.getAll())
+	keys() {
+		return getKeys(this.getAll())
+	}
 
-	readonly map: StorageMap<Key, Value> = callback =>
-		this.toArray().map(([key, value], index, data) =>
+	map<T>(callback: Parameters<StorageMap<Key, Value, T>>[0]) {
+		return this.toArray().map(([key, value], index, data) =>
 			callback(value, key, data, index),
 		)
+	}
 
-	onChange?: StorageOnChangeFn<Key, Value>
+	onChange?: StorageOnChangeFn<Key, Value, CacheDisabled>
 
-	onError?: StorageOnErrorFn
+	onError?: StorageOnErrorFn<Key, Value, CacheDisabled>
 
-	readonly parse?: StorageParseFn<Key, Value>
+	readonly parse?: StorageParseFn<Key, Value, CacheDisabled>
 
-	readonly read = () => {
-		const dataStr = this.storage?.getItem(this.name) ?? '[]'
-		const data =
-			isFn(this.parse)
-			&& fallbackIfFails(
-				this.parse,
-				[dataStr],
-				this.triggerOnError('parse'),
-			)
+	read() {
+		const dataStr = this.storage?.getItem(this.name) ?? ''
+		const parse = this.parse?.bind(this) as StorageParseFn<
+			Key,
+			Value,
+			CacheDisabled
+		>
+		const data = fallbackIfFails(
+			parse,
+			[dataStr],
+			this.triggerOnError(OnErrorType.parse),
+		)
 		if (isMap<Key, Value>(data)) return data
 
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
@@ -375,20 +464,23 @@ export class DataStorage<
 			fallbackIfFails(
 				() => JSON.parse(dataStr) as [Key, Value][],
 				[],
-				this.triggerOnError('parse-json'),
+				this.triggerOnError(OnErrorType.parse_json),
 			),
 		)
 	}
 
-	readonly search: StorageSearch<Key, Value> = options =>
-		search(this.getAll(), options)
+	search<MatchExact extends boolean = false, AsMap extends boolean = true>(
+		options: Parameters<StorageSearch<Key, Value, MatchExact, AsMap>>[0],
+	) {
+		return search(this.getAll(), options)
+	}
 
-	readonly set = (key: Key, value: Value) => {
+	set(key: Key, value: Value) {
 		this.setAll(new Map([[key, value]]), false)
 		return this
 	}
 
-	readonly setAll = (data = new Map<Key, Value>(), replace = false) => {
+	setAll(data = new Map<Key, Value>(), replace = false) {
 		if (!isMap(data)) return this
 
 		data = replace
@@ -398,74 +490,100 @@ export class DataStorage<
 		return this
 	}
 
-	readonly sort: StorageSort<Key, Value> = ((
-		byKeyOrNameOrComparator,
-		options,
-	) => {
+	sort(...args: Parameters<StorageSort<Key, Value>>) {
 		const result = sort(
 			this.getAll(),
-			byKeyOrNameOrComparator as keyof Value,
-			options as SortOptions,
+			args[0] as EntryComparator<Key, Value>,
+			args[1],
 		)
-		options?.save && this.setAll(result, true)
+		args[1]?.save && this.setAll(result, true)
 
 		return result
-	}) as StorageSort<Key, Value>
+	}
 
-	readonly stringify?: StorageStringifyFn<Key, Value>
+	readonly stringify?: StorageStringifyFn<Key, Value, CacheDisabled>
 
-	readonly toArray = () => getEntries(this.getAll())
+	toArray() {
+		return getEntries(this.getAll())
+	}
 
-	readonly toJSON: StorageToJSON<Key, Value> = (
-		replacer,
-		spacing = this.spaces,
-		data = this.getAll(),
-	) => {
-		const arr = Array.from(data)
+	toJSON(
+		...[replacer, spacing = this.spaces, data = this.getAll()]: Parameters<
+			StorageToJSON<Key, Value>
+		>
+	) {
+		const stringify = this.stringify?.bind(this) as StorageStringifyFn<
+			Key,
+			Value,
+			CacheDisabled
+		>
 		const str = fallbackIfFails(
-			() => this.stringify?.(data),
-			[],
-			this.triggerOnError('stringify'),
+			stringify,
+			[data],
+			this.triggerOnError(OnErrorType.stringify),
 		)
 		if (isStr(str)) return str
 
 		// use fallback JSON.stringify if this.stringify is not provided, returns non-string value or fails
 		return fallbackIfFails(
-			() => JSON.stringify(arr, replacer as undefined, spacing),
+			() =>
+				JSON.stringify(
+					Array.from(data),
+					replacer as undefined,
+					spacing,
+				),
 			[],
-			this.triggerOnError('stringify-json'),
+			this.triggerOnError<string>(OnErrorType.stringify_json, ''),
 		)
 	}
 
-	readonly toObject = () => {
-		const obj = {} as Record<Key, Value>
-		for (const [key, value] of this.getAll()) obj[key] = value
+	toObject<T extends object = object>(
+		data: Map<Key, Value> = this?.getAll?.(),
+	) {
+		const obj = {} as T
+
+		data = !isMap(data) ? new Map<Key, Value>() : data
+		for (const [key, value] of data)
+			obj[key as unknown as keyof T] = value as T[keyof T]
 
 		return obj
 	}
 
-	readonly toString = (data?: Map<Key, Value>) =>
-		this.toJSON(undefined, undefined, data)
-
-	private triggerOnError = (type: OnErrorType) => (err: unknown) => {
-		this.onError
-			&& fallbackIfFails(this.onError as unknown, [err, type], '')
+	toString(data?: Map<Key, Value>) {
+		return this.toJSON(undefined, undefined, data)
 	}
 
-	readonly unsubscribe = () => unsubscribeAll(this.subscriptions)
+	private triggerOnError =
+		<T = undefined>(type: OnErrorType, returnValue: T = undefined as T) =>
+		(err: unknown) => {
+			fallbackIfFails(
+				this.onError?.bind(this) as unknown,
+				[err, type],
+				'',
+			)
 
-	readonly values = () => getValues(this.getAll())
+			return returnValue
+		}
 
-	readonly write = (data?: Map<Key, Value>) => {
+	unsubscribe() {
+		return unsubscribeAll(this.subscriptions)
+	}
+
+	values() {
+		return getValues(this.getAll())
+	}
+
+	write(data?: Map<Key, Value>) {
 		try {
 			!this.initialized && this.init()
 			data ??= (this.subject as BehaviorSubject<Map<Key, Value>>).value
-
 			if (!this.name || !this.storage || !isMap(data)) return false
+
 			this.storage.setItem(this.name, this.toString(data))
+
 			return true
 		} catch (err) {
-			this.triggerOnError('write')(err)
+			this.triggerOnError(OnErrorType.write)(err)
 			return false
 		}
 	}

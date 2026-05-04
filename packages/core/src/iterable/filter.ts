@@ -3,20 +3,26 @@ import { isMap, isPositiveInteger } from '../is'
 import { IterableList } from './types'
 
 /**
- * Filter {@link IterableList} (Array, Map, Set) items.
+ * Filters items from an {@link IterableList} (Array, Map, or Set).
  *
- * @param data
- * @param predicate callback function to filter values
- * Parameters:
- * 1. `item`: current item
- * 2. `key`: index/key
- * 3. `data`: value provided in the first argument (`data`)
- * @param limit	(optional) limit number of results
- * @param asArray
+ * @param data The iterable collection to filter.
+ * @param predicate A function to test each element. Receives `(item, key, data)`.
+ * @param limit (optional) maximum number of results to return. Defaults to `Infinity`.
+ * @param asArray (optional) Whether to transform the result to an array or a map:
+ * - `true`: array of values.
+ * - `false` (default): Map with resptective keys/indexes preserved as map keys
+ * @param result (optional) existing Map instance to populate.
+ *
+ * @template K The type of keys (Map) or indices (Array/Set) in the collection.
+ * @template V The type of values in the collection.
+ * @template AsArray Literal type determining whether the output is an Array or Map.
+ * @template Result The inferred return type (Map<K, V> or V[]).
+ *
+ * Default: `false`
  *
  * @returns new Map with filtered items
  *
- * @example
+ * @example filter a Map
  * ```typescript
  * import { filter } from '@superutils/core'
  *
@@ -26,12 +32,29 @@ import { IterableList } from './types'
  * 	[3, { name: 'Charlie', age: 35 }],
  * ])
  *
- * const filtered = filter(map, item => item.age >= 30)
- * console.log({ filtered })
- * // result: Map(2) {
- * //   1 => { name: 'Alice', age: 30 },
- * //   3 => { name: 'Charlie', age: 35 }
- * // }
+ * // Result as a map  (default)
+ * console.log(filter(map, item => item.age >= 30))
+ * // Prints: Map(2) { 1 => { name: 'Alice', age: 30 }, 3 => { name: 'Charlie', age: 35 } }
+ *
+ * // Result as an array
+ * console.log(filter(map, item => item.age >= 30), true)
+ * // Prints: [{ name: 'Alice', age: 30 }, { name: 'Charlie', age: 35 }]
+ * ```
+ *
+ * @example
+ * #### Filter an Array
+ * ```typescript
+ * import { filter } from '@superutils/core'
+ *
+ * const numbers = [10, 20, 30, 40, 50]
+ *
+ * // Result as a map (default)
+ * console.log(filter(numbers, n => n > 25, 2))
+ * // Prints: Map(2) { 2 => 30, 3 => 40 }
+ *
+ * // Result as an array
+ * console.log(filter(numbers, n => n > 25, 2, true))
+ * // Prints: [30, 40]
  * ```
  */
 export const filter = <

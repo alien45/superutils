@@ -6,6 +6,7 @@ import {
 	reverse,
 	randomInt,
 	deferred,
+	filter,
 } from '@superutils/core'
 import { PromisE, IPromisE, DeferredAsyncOptions } from '@superutils/promise'
 
@@ -18,19 +19,35 @@ import {
 } from '@superutils/rx'
 import { delay, distinctUntilChanged } from 'rxjs'
 import {
+	createClient,
+	createPostClient,
 	fetch as f,
 	FetchAs,
 	FetchError,
 	ResolveIgnored,
 } from '@superutils/fetch'
-import './dataStorage'
-globalThis.fetch = f as typeof fetch
-
+// import './dataStorage'
 let count = 0
 f.defaults.interceptors.request.push(() => console.log(++count))
 
 console.log('Started')
-fetch('https://dummyjson.com/products/1').then(console.log)
+
+// ToDo: test filter(), find() and search() with non-object values
+// filter(new Map([] as const))
+
+// const client = createClient()
+// client('https://dummyjson.com/products/add', {
+// 	method: 'POST',
+// 	body: {
+// 		title: 'some title',
+// 		description: 'some description',
+// 	},
+// 	interceptors: {
+// 		response: (_, url, options) => {
+// 			console.log(options.body)
+// 		},
+// 	},
+// }).then(r => console.log('product created', r))
 
 // const abortCtrl = new AbortController()
 // setTimeout(() => abortCtrl.abort(), 1500)
