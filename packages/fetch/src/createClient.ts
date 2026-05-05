@@ -81,6 +81,13 @@ export const createClient = <
 	commonOptions?: FetchOptions & CommonOptions,
 	commonDeferOptions?: DeferredAsyncOptions<unknown, CommonDelay>,
 ) => {
+	/**
+	 * Executes the HTTP request using pre-configured client options.
+	 *
+	 * @param url The request URL.
+	 * @param options Individual request options that can override common options.
+	 * @returns A promise resolving to the parsed result or response.
+	 */
 	function client<
 		T extends ClientData<FixedOptions> = never,
 		TOptions extends ExcludeOptions<FixedOptions> | undefined =
