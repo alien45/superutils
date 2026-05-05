@@ -196,6 +196,25 @@ export type FetchRetryOptions = Omit<
  * @param percent The progress percentage (0-100), or `null` if Content-Length is unknown.
  * @param received The total number of bytes received so far.
  * @param total The total number of bytes expected, or `null` if Content-Length is unknown.
+ *
+ * @example
+ * #### Download a file as Blob
+ * ```javascript
+ * import fetch from '@superutils/fetch'
+ *
+ * fetch.get(
+ *   'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils', // dynamic image file
+ *   {
+ *     as: FetchAs.blob,
+ *     onDownloadProgress: (parcent, received, total) =>
+ *     	 console.log({
+ *         percent: `${(parcent ?? 0).toFixed(2)}%`,
+ *         received,
+ *         total,
+ *       }),
+ *   },
+ * ).then(r => console.log('result', r), console.log)
+ * ```
  */
 export type OnDownloadProgress = (
 	percent: number | null,

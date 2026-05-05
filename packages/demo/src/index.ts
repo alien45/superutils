@@ -18,7 +18,7 @@ import {
 	SubjectLike,
 } from '@superutils/rx'
 import { delay, distinctUntilChanged } from 'rxjs'
-import {
+import fetch, {
 	createClient,
 	createPostClient,
 	fetch as f,
@@ -27,10 +27,23 @@ import {
 	ResolveIgnored,
 } from '@superutils/fetch'
 // import './dataStorage'
-let count = 0
-f.defaults.interceptors.request.push(() => console.log(++count))
 
 console.log('Started')
+
+fetch
+	.get(
+		'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils',
+		{
+			as: FetchAs.blob,
+			onDownloadProgress: (parcent, received, total) =>
+				console.log({
+					percent: `${(parcent ?? 0).toFixed(2)}%`,
+					received,
+					total,
+				}),
+		},
+	)
+	.then(r => console.log('downloaded'), console.log)
 
 // ToDo: test filter(), find() and search() with non-object values
 // filter(new Map([] as const))
