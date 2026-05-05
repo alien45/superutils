@@ -4,14 +4,12 @@ import PromisE from '../../promise/src'
 import fetch, {
 	FetchAs,
 	FetchError,
-	FetchFunc,
 	FetchInterceptorError,
 	FetchInterceptorRequest,
 	FetchInterceptorResponse,
 	FetchInterceptorResult,
 	FetchInterceptors,
 	FetchOptions,
-	FetchOptionsInterceptor,
 } from '../src'
 import {
 	productsBaseUrl as baseUrl,
@@ -376,6 +374,216 @@ describe('fetch', () => {
 			expect(mockedInterceptors.result[0]).toBeCalled()
 			expect(mockedInterceptors.response[0]).toBeCalled()
 			fetch.defaults.interceptors = interceptors
+		})
+	})
+
+	describe('onDownloadProgress', () => {
+		const createStreamResponse = (
+			content: string | Uint8Array,
+			contentType: string,
+			includeContentLength = true,
+		) => {
+			const uint8 =
+				typeof content === 'string'
+					? new TextEncoder().encode(content)
+					: content
+			const stream = new ReadableStream({
+				start(controller) {
+					// Split into two chunks to ensure progress is reported multiple times
+					const half = Math.floor(uint8.length / 2)
+					controller.enqueue(uint8.slice(0, half))
+					controller.enqueue(uint8.slice(half))
+					controller.close()
+				},
+			})
+			const headers: Record<string, string> = {
+				'Content-Type': contentType,
+			}
+			if (includeContentLength)
+				headers['Content-Length'] = uint8.length.toString()
+
+			return new Response(stream, { headers })
+		}
+
+		it('should report progress and return JSON', async () => {
+			const onDownloadProgress = vi.fn()
+			const data = { hello: 'world' }
+			const content = JSON.stringify(data)
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(content, 'application/json'),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toEqual(data)
+			expect(onDownloadProgress).toHaveBeenCalled()
+			const lastCall = onDownloadProgress.mock.calls.at(-1)!
+			expect(lastCall).toEqual([100, content.length, content.length])
+		})
+
+		it('should report progress and return Text', async () => {
+			const onDownloadProgress = vi.fn()
+			const text = 'some text content'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(createStreamResponse(text, 'text/plain')),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.text,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBe(text)
+			expect(onDownloadProgress).toHaveBeenCalled()
+		})
+
+		it('should report progress and return Blob', async () => {
+			const onDownloadProgress = vi.fn()
+			const text = 'blob data'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(text, 'application/octet-stream'),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.blob,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(Blob)
+			expect(await (result as Blob).text()).toBe(text)
+		})
+
+		it('should report progress and return ArrayBuffer', async () => {
+			const onDownloadProgress = vi.fn()
+			const text = 'buffer'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(text, 'application/octet-stream'),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.arrayBuffer,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(ArrayBuffer)
+			expect(new TextDecoder().decode(result as ArrayBuffer)).toBe(text)
+		})
+
+		it('should report progress and return bytes (Uint8Array)', async () => {
+			const onDownloadProgress = vi.fn()
+			const text = 'bytes'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(text, 'application/octet-stream'),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.bytes,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(Uint8Array)
+			expect(new TextDecoder().decode(result as Uint8Array)).toBe(text)
+		})
+
+		it('should report progress and return FormData', async () => {
+			const onDownloadProgress = vi.fn()
+			const formDataText = 'key=value'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(
+						formDataText,
+						'application/x-www-form-urlencoded',
+					),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.formData,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(FormData)
+			expect((result as FormData).get('key')).toBe('value')
+		})
+
+		it('should return FormData when body contains "=" even if Content-Type is not form-urlencoded', async () => {
+			const onDownloadProgress = vi.fn()
+			const formDataText = 'name=John&age=30'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(formDataText, 'text/plain'),
+				),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.formData,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(FormData)
+			expect((result as FormData).get('name')).toBe('John')
+			expect((result as FormData).get('age')).toBe('30')
+		})
+
+		it('should return FormData with "file" key as fallback when no "=" and not form-urlencoded', async () => {
+			const onDownloadProgress = vi.fn()
+			const text = 'plain text content without equals'
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(createStreamResponse(text, 'text/plain')),
+			)
+
+			const result = await fetch.get(product1Url, {
+				as: FetchAs.formData,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(result).toBeInstanceOf(FormData)
+			const file = (result as FormData).get('file') as Blob
+			expect(file).toBeInstanceOf(Blob)
+			expect(await file.text()).toBe(text)
+		})
+
+		it('should handle missing Content-Length (total = null)', async () => {
+			const onDownloadProgress = vi.fn()
+			const data = { a: 1 }
+			const fetchFunc = vi.fn(() =>
+				Promise.resolve(
+					createStreamResponse(
+						JSON.stringify(data),
+						'application/json',
+						false,
+					),
+				),
+			)
+
+			await fetch.get(product1Url, {
+				as: FetchAs.json,
+				fetchFunc,
+				onDownloadProgress,
+			})
+
+			expect(onDownloadProgress).toHaveBeenCalled()
+			const firstCall = onDownloadProgress.mock.calls[0]
+			expect(firstCall[0]).toBe(null) // percent
+			expect(firstCall[2]).toBe(null) // total
 		})
 	})
 

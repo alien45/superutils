@@ -63,6 +63,7 @@ export type FetchCustomOptions = {
 	 */
 	abortCtrl?: AbortController
 	body?: PostArgs[1]
+	errMsgs?: FetchErrMsgs
 	/**
 	 * Custom fetch function to use instead of the global `fetch`.
 	 * Useful for testing or using a different fetch implementation (e.g. `node-fetch` in older Node versions).
@@ -70,12 +71,14 @@ export type FetchCustomOptions = {
 	 * Default: `globalThis.fetch`
 	 */
 	fetchFunc?: FetchFunc
-	errMsgs?: FetchErrMsgs
 	/**
 	 * Interceptor/transformer callback executed at different stages of the request.
 	 * See {@link FetchInterceptors} for more details.
 	 */
 	interceptors?: FetchInterceptors
+
+	onDownloadProgress?: OnDownloadProgress
+
 	/** Whether to validate URL before making the request. Default: `false` */
 	validateUrl?: boolean
 } & FetchRetryOptions
@@ -187,6 +190,23 @@ export type FetchRetryOptions = Omit<
 	retryIf?: RetryIfFunc<Response>
 }
 
+/**
+ * Callback function for monitoring download progress.
+ *
+ * @param percent The progress percentage (0-100), or `null` if Content-Length is unknown.
+ * @param received The total number of bytes received so far.
+ * @param total The total number of bytes expected, or `null` if Content-Length is unknown.
+ */
+export type OnDownloadProgress = (
+	percent: number | null,
+	received: number,
+	total: number | null,
+) => ValueOrPromise<void>
+
+/**
+ * Possible types for the request body.
+ * Can be a plain object (which will be stringified if JSON), standard BodyInit, or null.
+ */
 export type PostBody = Record<string, unknown> | BodyInit | null
 
 export type PostArgs = [

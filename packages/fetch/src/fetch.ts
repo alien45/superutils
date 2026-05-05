@@ -1,7 +1,6 @@
 import {
 	fallbackIfFails,
 	isError,
-	isFn,
 	isObj,
 	isPromise,
 	isUrlValid,
@@ -9,6 +8,7 @@ import {
 import { timeout as PromisE_timeout } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'
+import getResult from './getResult'
 import mergeOptions from './mergeOptions'
 import type {
 	FetchArgs,
@@ -138,11 +138,12 @@ const fetch = <
 				throw new Error(jsonError as string, { cause: jsonError })
 			}
 
-			const parseFunc = response[parseAs as keyof typeof response]
-			let result: unknown = !isFn(parseFunc)
-				? response
-				: parseFunc.bind(response)()
-			if (isPromise(result))
+			let result: unknown = getResult(
+				response,
+				parseAs,
+				opts.onDownloadProgress,
+			)
+			if (isPromise(result)) {
 				result = await result.catch((err: Error) =>
 					Promise.reject(
 						new Error(
@@ -151,6 +152,7 @@ const fetch = <
 						),
 					),
 				)
+			}
 			// invoke global and local request interceptors to intercept and/or transform parsed `result`
 			result = await executeInterceptors(
 				result,
@@ -183,6 +185,15 @@ fetch.defaults = {
 	validateUrl: false,
 } as FetchOptionsDefault
 
+/**
+ * Internal helper to handle and intercept errors.
+ *
+ * @param err The error to intercept.
+ * @param url The original request URL.
+ * @param options The interceptor options.
+ * @param response The response object, if available.
+ * @returns A promise resolving to the (potentially transformed) FetchError.
+ */
 const interceptErr = async (
 	err: Error,
 	url: FetchArgs[0],
