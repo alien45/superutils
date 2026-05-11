@@ -226,7 +226,7 @@ export type OnDownloadProgress = (
  * Possible types for the request body.
  * Can be a plain object (which will be stringified if JSON), standard BodyInit, or null.
  */
-export type PostBody = Record<string, unknown> | BodyInit | null
+export type PostBody = object | Record<string, unknown> | BodyInit | null
 
 export type PostArgs = [
 	url: FetchArgs[0],
