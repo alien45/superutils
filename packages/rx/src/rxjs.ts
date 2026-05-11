@@ -1,3 +1,6 @@
+/**
+ * @ignore fixes could not resolve .png files from rxjs
+ */
 export {
 	BehaviorSubject,
 	isObservable,
