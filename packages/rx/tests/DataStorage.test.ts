@@ -23,11 +23,16 @@ describe('DataStorage', () => {
 	let mockedStorage: MockLocalStorage
 	const delay = 0 // keep 0 to write synchronously and keep testing simpler
 	const name = 'test'
-	const key = 'key'
+	const key: string = 'key'
 	const value = { value: 1 }
-	const entries = [[key, value]] as [string, { value: number }][]
+	type Key = string
+	type Value = { value: number }
+	const entries = [[key, value]] as [Key, Value][]
 	const entriesStr = JSON.stringify(entries)
+	let initialValue: Map<Key, Value>
+
 	beforeEach(() => {
+		initialValue = new Map<Key, Value>(entries)
 		mockedStorage = new MockLocalStorage()
 		vi.stubGlobal('localStorage', mockedStorage)
 	})
@@ -38,16 +43,12 @@ describe('DataStorage', () => {
 
 	describe('initialization and general', () => {
 		it('should convert all items to an array', () => {
-			const arr = new DataStorage(null, {
-				initialValue: new Map(entries),
-			}).toArray()
+			const arr = new DataStorage(null, { initialValue }).toArray()
 			expect(arr).toEqual(entries)
 		})
 
 		it('should convert all items to a string', () => {
-			const str = new DataStorage(null, {
-				initialValue: new Map(entries),
-			}).toString()
+			const str = new DataStorage(null, { initialValue }).toString()
 			expect(str).toEqual(JSON.stringify(entries))
 		})
 
@@ -143,6 +144,13 @@ describe('DataStorage', () => {
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(5)
 		})
 
+		it('should use RxJS `Subject` when no name provided and cache is disabled', () => {
+			const storage = new DataStorage(null, {
+				cacheDisabled: true,
+			})
+			expect(storage.subject).instanceOf(Subject)
+		})
+
 		it('should set initial value', () => {
 			const initialValue = new Map(entries)
 			const storage = new DataStorage(name, { delay, initialValue })
@@ -168,7 +176,7 @@ describe('DataStorage', () => {
 		it('should ignore init() call if already initialized', () => {
 			const storage = new DataStorage(name, {
 				delay,
-				initialValue: new Map(entries),
+				initialValue,
 			})
 			expect(storage.initialized).toBe(true)
 			expect(storage.init()).toBe(false)
@@ -187,20 +195,20 @@ describe('DataStorage', () => {
 		it('should return empty map if non-map value is set directly to the subject', () => {
 			const storage = new DataStorage(name, {
 				delay,
-				initialValue: new Map(entries),
+				initialValue,
 			})
 			expect(storage.subject instanceof BehaviorSubject).toBe(true)
 			storage.subject.next(null as any)
 			expect(storage.getAll()).toEqual(new Map())
 		})
 
-		it('should create a storage instance form an object', () => {
+		it('should create a storage instance from an object', () => {
 			const storage = DataStorage.fromObject(name, {
 				delay,
 				initialValue: {
 					age: 99,
 					name: 'Ninety Nine',
-				} as const,
+				},
 			})
 			expect(storage.get('age')).toBe(99)
 			expect(storage.get('age')).toBeTypeOf('number')
@@ -209,7 +217,7 @@ describe('DataStorage', () => {
 			expect(storage.getAll().size).toBe(2)
 		})
 
-		it('should create a storage instance form an object without initial value', () => {
+		it('should create a storage instance from an object without initial value', () => {
 			const storage = DataStorage.fromObject<{
 				age: Number
 				name: string
@@ -220,14 +228,14 @@ describe('DataStorage', () => {
 		})
 
 		it('should convert all items to an object using toObject()', () => {
-			const storage = new DataStorage(null, {
-				initialValue: new Map(entries),
-			})
-			expect(storage.toObject()).toEqual({ key: { value: 1 } })
+			const storage = new DataStorage(null, { initialValue })
+			const obj = storage.toObject<{ string: Value }>()
+			expect(obj).toEqual({ key: { value: 1 } })
 		})
 
 		it('should ignore when non-map value is provided to toObject()', () => {
-			expect(DataStorage.prototype.toObject(null as any)).toEqual({})
+			const storage = new DataStorage(name, { initialValue })
+			expect(storage.toObject(null as any)).toEqual({})
 		})
 
 		it('should unsubscribe all internall subscriptions', () => {
@@ -244,15 +252,20 @@ describe('DataStorage', () => {
 			storage.set('keyx', { value: 2 })
 			const newEntries = [...entries, ['keyx', { value: 2 }]]
 			expect(storage.toArray()).toEqual(newEntries)
-			expect(mockedStorage.getItem(storage.name)).toEqual(
+			expect(mockedStorage.getItem(storage.name!)).toEqual(
 				JSON.stringify(entries),
 			)
 
 			// write manually
 			storage.write()
-			expect(mockedStorage.getItem(storage.name)).toEqual(
+			expect(mockedStorage.getItem(storage.name!)).toEqual(
 				JSON.stringify(newEntries),
 			)
+		})
+
+		it('should return subject value when name is not defined', () => {
+			const storage = new DataStorage(null, { initialValue })
+			expect(storage.read()).toBe(initialValue)
 		})
 	})
 
@@ -279,7 +292,7 @@ describe('DataStorage', () => {
 		it('should write to storage immediately when delay is 0', async () => {
 			const storage = new DataStorage(name, {
 				delay,
-				initialValue: new Map(entries),
+				initialValue,
 			})
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
 
@@ -359,15 +372,14 @@ describe('DataStorage', () => {
 			mockedStorage.getItem = (() => 'malformed JSON') as any
 			vi.stubGlobal('localStorage', mockedStorage)
 
-			let thisArg: DataStorage<string, { value: number }, true>
+			let thisArg: DataStorage<Key, Value, true>
 			const onError = vi.fn(function (this: typeof thisArg) {
 				thisArg ??= this
 			})
 			const storage = new DataStorage(name, {
 				cacheDisabled: true,
-				initialValue: new Map(entries),
+				initialValue,
 				onError,
-
 				storage: mockedStorage,
 			})
 			expect(onError).toHaveBeenCalledTimes(1)
@@ -396,14 +408,17 @@ describe('DataStorage', () => {
 		})
 
 		it('should invoke "parse" callback', () => {
-			let thisArg: DataStorage<string, object, false>
-			const parse = vi.fn(function (this: typeof thisArg, str: string) {
+			let thisArg: DataStorage<Key, Value, false>
+			const parse = vi.fn(function (
+				this: typeof thisArg,
+				str?: string | null,
+			) {
 				thisArg ??= this
-				return new Map<string, object>(JSON.parse(str))
+				return new Map<Key, Value>(JSON.parse(str ?? ''))
 			})
 			const storage = new DataStorage(name, {
 				delay,
-				initialValue: new Map(entries),
+				initialValue,
 				parse,
 			})
 			expect(storage.parse === parse).toBe(true)
@@ -415,7 +430,7 @@ describe('DataStorage', () => {
 		})
 
 		it('should invoke "stringify" callback', () => {
-			let thisArg: DataStorage<string, object, false>
+			let thisArg: DataStorage<Key, Value, false>
 			const stringify = vi.fn(function (
 				this: typeof thisArg,
 				map: Map<unknown, unknown>,
@@ -425,7 +440,7 @@ describe('DataStorage', () => {
 			})
 			const storage = new DataStorage(name, {
 				delay,
-				initialValue: new Map(entries),
+				initialValue,
 				stringify,
 			})
 			expect(storage.stringify === stringify).toBe(true)
@@ -438,13 +453,15 @@ describe('DataStorage', () => {
 	})
 
 	describe('data manipulation', () => {
+		type Key = string
+		type Value = { age: number; name: string }
 		const entries = [
 			['bob', { age: 22, name: 'bob' }],
 			['charlie', { age: 23, name: 'charlie' }],
 			['alice', { age: 21, name: 'alice' }],
 			['dave', { age: 24, name: 'dave' }],
-		] as [string, { age: number; name: string }][]
-		let storage: DataStorage<string, { age: number; name: string }>
+		] as [Key, Value][]
+		let storage: DataStorage<Key, Value>
 
 		beforeEach(() => {
 			storage = new DataStorage(name, {
@@ -470,11 +487,15 @@ describe('DataStorage', () => {
 
 		it('should find item by predicate and search options', () => {
 			expect(storage.find({ query: 'bob' })?.name).toBe('bob')
+			expect(storage.find({ query: 'bob', includeKey: true })).toEqual([
+				'bob',
+				{ age: 22, name: 'bob' },
+			])
 			expect(storage.find(item => item.age === 21)?.name).toBe('alice')
 		})
 
 		it('should filter items', () => {
-			const result = storage.filter(item => item.age > 21, 5, true)
+			const result = storage.filter(item => item.age > 21, 5)
 			expect(result.length).toBe(3)
 		})
 
@@ -505,11 +526,7 @@ describe('DataStorage', () => {
 							: [storageName]
 				const subjectOnChange = vi.fn()
 				const storages = names.map(
-					name =>
-						new DataStorage(name, {
-							delay,
-							initialValue: new Map(entries),
-						}),
+					name => new DataStorage(name, { delay, initialValue }),
 				)
 
 				// make sure the initial value is stored
@@ -522,8 +539,10 @@ describe('DataStorage', () => {
 						...entries,
 						['key1', { value: 1 }],
 					])
-					mockedStorage.setItem(storage.name, newStr)
-					expect(mockedStorage.storage.get(storage.name)).toBe(newStr)
+					mockedStorage.setItem(storage.name!, newStr)
+					expect(mockedStorage.storage.get(storage.name!)).toBe(
+						newStr,
+					)
 					return sub
 				})
 

@@ -2,10 +2,14 @@ import {
 	DebounceOptions,
 	DropFirst,
 	filter,
+	FilterPredicate,
+	find,
+	FindOptions,
 	search,
 	sort,
 	SortOptions,
 	ThrottleOptions,
+	TypedMap,
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from '../rxjs'
@@ -48,38 +52,29 @@ export enum OnErrorType {
 /** Storage type with only properties that are used by `DataStorage` */
 export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
 
-export type StorageFilter<K, V, AsArray extends boolean = false> = (
-	...args: DropFirst<Parameters<typeof filter<K, V, AsArray>>>
-) => ReturnType<typeof filter<K, V>>
-
-export type StorageFind<K, V, AsArray extends boolean = false> = (
-	predicateOrOptions:
-		| Parameters<StorageFilter<K, V, AsArray>>[0]
-		| Parameters<StorageSearch<K, V>>[0],
-) => V | undefined
-
-export type StorageMap<K, V, T = unknown> = (
-	callback: (value: V, key: K, data: [K, V][], index: number) => T,
-) => T[]
-
-export type StorageOnChangeFn<K, V, CD extends boolean = false> = (
-	this: IDataStorage<K, V, CD>,
-	data: Map<K, V>,
-) => ValueOrPromise<void | Map<K, V>>
-
-export type StorageOnErrorFn<K, V, CD extends boolean = false> = (
-	this: IDataStorage<K, V, CD>,
-	err: unknown,
-	type: OnErrorType,
-) => ValueOrPromise<void>
-
 /** Initial options provided through the constructor */
 export type StorageOptions<
 	Key,
 	Value,
 	CacheDisabled extends boolean = false,
 > = {
-	/** value to set, only if storage is empty. Default: `new Map()` */
+	/**
+	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
+	 *
+	 * **Data Precedence:**
+	 * Persistent data associated with the instance's specific `name` takes priority. This value is
+	 * only utilized if the storage entry for that `name` does not exist (e.g., first-time use).
+	 *
+	 * **Initialization Behavior:**
+	 * - If provided and non-empty, the instance initializes immediately during construction.
+	 * - Otherwise, initialization is lazy, occurring upon an explicit `init()` call or the first read/write operation.
+	 *
+	 * **Type Inference:**
+	 * When provided, it enables automatic inference of the `Key` and `Value` generic types.
+	 * If omitted, these default to `unknown` and `object` respectively, unless explicitly defined.
+	 *
+	 * @default undefined
+	 */
 	initialValue?: Map<Key, Value>
 } & Pick<
 	Partial<IDataStorage<Key, Value, CacheDisabled>>,
@@ -98,10 +93,10 @@ export type StorageOptions<
 			>
 		: { delay?: never; delayOptions?: never })
 
-export type StorageParseFn<K, V, CD extends boolean = false> = (
-	this: IDataStorage<K, V, CD>,
-	data: string,
-) => Map<K, V>
+export type StorageParseFn<ResultMap, ThisArg> = (
+	this: ThisArg,
+	text: string | null | undefined,
+) => ResultMap | void
 
 export type StorageSearch<
 	K,
@@ -118,12 +113,10 @@ export type StorageSort<K, V> = (
 		| StorageSortByPropertyName<V>
 		| StorageSortByKey
 ) => Map<K, V>
-
 export type StorageSortByComparator<K, V> = [
 	comparator: Parameters<typeof sort<K, V>>[1],
 	options?: StorageSortOptions,
 ]
-
 export type StorageSortByKey = [byKey: true, options?: StorageSortOptions]
 export type StorageSortByPropertyName<V> = [
 	propertyName: keyof V & string,
@@ -132,10 +125,10 @@ export type StorageSortByPropertyName<V> = [
 
 export type StorageSortOptions = SortOptions & { save?: boolean }
 
-export type StorageStringifyFn<K, V, CD extends boolean = false> = (
-	this: IDataStorage<K, V, CD>,
-	data: Map<K, V>,
-) => string
+export type StorageStringify<Data, ThisArg> = (
+	this: ThisArg,
+	data: Data,
+) => string | undefined | void
 
 export type StorageToJSON<K, V> = (
 	replacer?: null | ((key: K, value: V) => unknown),
@@ -174,7 +167,59 @@ export interface IDataStorage<
 	 *
 	 * Default: `''`
 	 */
-	readonly name?: string
+	readonly name?: string | null
+
+	/**
+	 * A callback function executed whenever a data change occurs within the storage.
+	 *
+	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
+	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
+	 * callback with the type {@link OnErrorType.onChange}.
+	 *
+	 * Note: Execution of this callback is managed by internal subscriptions and will stop
+	 * firing once {@link unsubscribe} is called.
+	 */
+	onChange?: (
+		this: IDataStorage<Key, Value, CacheDisabled>,
+		data: Map<Key, Value>,
+	) => ValueOrPromise<void | Map<Key, Value>>
+
+	/**
+	 * A global error handler invoked whenever an internal operation fails.
+	 *
+	 * It captures failures in the following areas:
+	 * - Data parsing and serialization (JSON or custom logic).
+	 * - Storage access (e.g., `localStorage` quota or permission errors).
+	 * - Execution of user-provided callbacks like {@link onChange}.
+	 *
+	 * **Note:** If this handler itself throws an error, the exception is
+	 * ignored gracefully to prevent application crashes during storage cycles.
+	 */
+	onError?: (
+		this: IDataStorage<Key, Value, CacheDisabled>,
+		err: unknown,
+		type: OnErrorType,
+	) => ValueOrPromise<void>
+
+	/**
+	 * A callback to customize the deserialization of data read from storage.
+	 *
+	 * This allows you to transform the raw string from the underlying storage back into a
+	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
+	 *
+	 * **Fallback Behavior:** The system falls back to internal `JSON.parse` logic if `parse`:
+	 * - is not a non-function
+	 * - throws an error
+	 * - returns a non-Map value,
+	 *
+	 * **Error Triggers:**
+	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link OnErrorType.parse}.
+	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link OnErrorType.parse_json}.
+	 */
+	parse?: StorageParseFn<
+		Map<Key, Value>,
+		IDataStorage<Key, Value, CacheDisabled>
+	>
 
 	/** Get the number of items */
 	readonly size: number
@@ -198,6 +243,49 @@ export interface IDataStorage<
 	readonly storage?: StorageCompact | null
 
 	/**
+	 * A callback function to customize the serialization of data before it is written to storage.
+	 *
+	 * This allows you to transform the data `Map<Key, Value>` into a string format suitable
+	 * for the underlying storage (e.g., JSON). It serves as the functional inverse of {@link parse}.
+	 *
+	 * Use this to sanitize data, remove circular references, or optimize the storage size by
+	 * only persisting necessary fields.
+	 *
+	 * **Fallback Behavior:**
+	 * If this function is not defined, throws an error, or returns `undefined` or a non-string value,
+	 * the system falls back to internal `JSON.stringify` logic.
+	 *
+	 * **Error Triggers:**
+	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link OnErrorType.stringify}.
+	 * - If the default `JSON.stringify` fallback fails: {@link onError} is triggered with
+	 * {@link OnErrorType.stringify_json}.
+	 *
+	 * @param data a map of all values stored in this storage
+	 *
+	 * @returns string or undefined
+	 *
+	 * @example
+	 * #### Sanitize data before saving
+	 * ```javascript
+	 * import { DataStorage } from '@superutils/rx'
+	 *
+	 * const stringify = data => {
+	 *   // Convert Map to an array of entries, removing sensitive fields
+	 *   const entries = Array.from(data).map(([id, user]) => {
+	 *     const { password, ...publicData } = user
+	 *     return [id, publicData]
+	 *   })
+	 *   return JSON.stringify(entries)
+	 * }
+	 * const storage = new DataStorage('users', { stringify })
+	 * ```
+	 */
+	stringify?: StorageStringify<
+		Map<Key, Value>,
+		IDataStorage<Key, Value, CacheDisabled>
+	>
+
+	/**
 	 * The underlying RxJS Subject that serves as the primary reactive interface for observing data modifications.
 	 *
 	 * Its implementation type is determined by the caching strategy:
@@ -218,11 +306,17 @@ export interface IDataStorage<
 		key: Key | Key[],
 	) => IDataStorage<Key, Value, CacheDisabled>
 
-	/** Find an item by predicate or search criteria */
-	readonly find: StorageFind<Key, Value>
-
 	/** Filter items by predicate */
-	readonly filter: StorageFilter<Key, Value>
+	readonly filter: <AsArray extends boolean = false>(
+		...args: DropFirst<Parameters<typeof filter<Key, Value, AsArray>>>
+	) => ReturnType<typeof filter<Key, Value, AsArray>>
+
+	/** Find an item by predicate or search criteria */
+	readonly find: <IncludeKey extends boolean = false>(
+		predicateOrOptions:
+			| FindOptions<Key, Value, IncludeKey>
+			| Parameters<IDataStorage<Key, Value, CacheDisabled>['filter']>[0],
+	) => ReturnType<typeof find<Key, Value, IncludeKey>>
 
 	/** Get item by key */
 	readonly get: (key: Key) => Value | undefined
@@ -231,8 +325,9 @@ export interface IDataStorage<
 	 * Get all items
 	 *
 	 * @param forceUpdate (optional) if `true` and cache is enabled, reads & updates data directly from storage
+	 * Default: `false`
 	 */
-	readonly getAll: (forceUpdate: boolean) => Map<Key, Value>
+	readonly getAll: (forceUpdate?: boolean) => Map<Key, Value>
 
 	/** Check if key exists */
 	readonly has: (key: Key) => boolean
@@ -254,59 +349,64 @@ export interface IDataStorage<
 	readonly keys: () => Key[]
 
 	/** Map each item on the data to an Array */
-	readonly map: StorageMap<Key, Value>
+	readonly map: <T = unknown>(
+		callback: (
+			value: Value,
+			key: Key,
+			entries: [Key, Value][],
+			index: number,
+		) => T,
+	) => T[]
+	/**
+	 * Reads and parses data directly from the persistent storage medium.
+	 *
+	 * This operation is synchronous and does not trigger reactive updates via `subject`.
+	 * It is useful for debugging custom `parse` logic or manual data retrieval.
+	 *
+	 * @param dataStr (optional) A raw string to parse. If omitted, the method fetches
+	 * the current value associated with the instance `name` from the underlying `storage`.
+	 */
+	readonly read: (dataStr?: string | null) => Map<Key, Value>
 
 	/**
-	 * A callback function executed whenever a data change occurs within the storage.
+	 * Search through the stored data (`Map<Key, Value>`).
+	 * It supports both a global search (using a string or RegExp) across all properties
+	 * of an item, and a detailed, field-specific search using a query object.
 	 *
-	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
-	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
-	 * callback with the type {@link OnErrorType.onChange}.
+	 * @param options The search criteria. See {@link SearchOptions} for available properties.
 	 *
-	 * Note: Execution of this callback is managed by internal subscriptions and will stop
-	 * firing once {@link unsubscribe} is called.
+	 * @returns A `Map` or an `Array` containing the matched items, based on the `asMap` option.
+	 *
+	 * @example
+	 * #### Search for users in a specific city
+	 * ```typescript
+	 * import { DataStorage } from '@superutils/rx'
+	 *
+	 * const storage = new DataStorage('users', {
+	 *   initialValue: new Map([
+	 *     [1, { name: 'John Doe', city: 'New York' }],
+	 *     [2, { name: 'Jane Doe', city: 'London' }],
+	 *     [3, { name: 'Peter Jones', city: 'New York' }],
+	 *   ])
+	 * })
+	 *
+	 * const nyUsers = storage.search({ query: { city: 'New York' } })
+	 * console.log(nyUsers.size) // 2
+	 * ```
 	 */
-	onChange?: StorageOnChangeFn<Key, Value, CacheDisabled>
-
-	/**
-	 * A global error handler invoked whenever an internal operation fails.
-	 *
-	 * It captures failures in the following areas:
-	 * - Data parsing and serialization (JSON or custom logic).
-	 * - Storage access (e.g., `localStorage` quota or permission errors).
-	 * - Execution of user-provided callbacks like {@link onChange}.
-	 *
-	 * **Note:** If this handler itself throws an error, the exception is
-	 * ignored gracefully to prevent application crashes during storage cycles.
-	 */
-	onError?: StorageOnErrorFn<Key, Value, CacheDisabled>
-
-	/**
-	 * A callback to customize the deserialization of data read from storage.
-	 *
-	 * This allows you to transform the raw string from the underlying storage back into a
-	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
-	 *
-	 * **Fallback Behavior:**
-	 * If this function is not defined, throws an error, or returns a non-Map value,
-	 * the system falls back to internal `JSON.parse` logic.
-	 *
-	 * **Error Triggers:**
-	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link OnErrorType.parse}.
-	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link OnErrorType.parse_json}.
-	 */
-	readonly parse?: StorageParseFn<Key, Value, CacheDisabled>
-
-	/** Read directly from the localStorage (browser) or file (NodeJS) without triggering the `this.subject`. */
-	readonly read: () => Map<Key, Value>
-
-	/** Search items */
-	readonly search: StorageSearch<Key, Value>
+	readonly search: <
+		MatchExact extends boolean = false,
+		AsMap extends boolean = true,
+	>(
+		...args: DropFirst<
+			Parameters<typeof search<Key, Value, MatchExact, AsMap>>
+		>
+	) => ReturnType<typeof search<Key, Value, MatchExact, AsMap>>
 
 	/** Set item by key */
-	readonly set: (
-		key: Key,
-		value: Value,
+	readonly set: <K extends Key, V extends Value>(
+		key: K,
+		value: V,
 	) => IDataStorage<Key, Value, CacheDisabled>
 
 	/**
@@ -338,41 +438,6 @@ export interface IDataStorage<
 	 */
 	readonly sort: StorageSort<Key, Value>
 
-	/**
-	 * A callback function to customize the serialization of data before it is written to storage.
-	 *
-	 * This allows you to transform the data `Map<Key, Value>` into a string format suitable
-	 * for the underlying storage (e.g., JSON). It serves as the functional inverse of {@link parse}.
-	 *
-	 * Use this to sanitize data, remove circular references, or optimize the storage size by
-	 * only persisting necessary fields.
-	 *
-	 * **Fallback Behavior:**
-	 * If this function is not defined, throws an error, or returns a non-string value,
-	 * the system falls back to internal `JSON.stringify` logic.
-	 *
-	 * **Error Triggers:**
-	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link OnErrorType.stringify}.
-	 * - If the default `JSON.stringify` fallback fails: {@link onError} is triggered with {@link OnErrorType.stringify_json}.
-	 *
-	 * @example
-	 * #### Sanitize data before saving
-	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
-	 *
-	 * const stringify = data => {
-	 *   // Convert Map to an array of entries, removing sensitive fields
-	 *   const entries = Array.from(data).map(([id, user]) => {
-	 *     const { password, ...publicData } = user
-	 *     return [id, publicData]
-	 *   })
-	 *   return JSON.stringify(entries)
-	 * }
-	 * const storage = new DataStorage('users', { stringify })
-	 * ```
-	 */
-	readonly stringify?: StorageStringifyFn<Key, Value, CacheDisabled>
-
 	/** Convert list of items (Map) to 2D Array */
 	readonly toArray: () => [Key, Value][]
 
@@ -380,10 +445,10 @@ export interface IDataStorage<
 	readonly toJSON: StorageToJSON<Key, Value>
 
 	/** Convert list of items into an object */
-	readonly toObject: (data?: Map<Key, Value>) => Record<Key & string, Value>
+	readonly toObject: <T extends object = object>(data?: Map<Key, Value>) => T
 
 	/** Convert list of items (Map) to JSON string of 2D Array */
-	readonly toString: () => string
+	readonly toString: (data?: Map<Key, Value>) => string
 
 	/**
 	 * Unsubscribe from all internal subscriptions.
@@ -404,12 +469,34 @@ export interface IDataStorage<
 	 * @param data (optional) Data to write.
 	 * - If provided, it overwrites the storage.
 	 * - If not provided, the current in-memory data is used (if cache is enabled).
-	 * @param silent (optional) Whether to suppress errors if the write operation fails.
-	 * - `true`: Returns `false` on failure without throwing.
-	 * - `false`: Throws an error on failure.
-	 *
-	 * Default: `this.silent`
 	 * @returns `true` if the write was successful, `false` otherwise.
 	 */
-	readonly write: (data?: Map<Key, Value>, silent?: boolean) => void
+	readonly write: (data?: Map<Key, Value>) => void
+}
+
+// @ts-expect-error force override properties while preserving documentation of IDataStorage
+export interface IObjectStorage<
+	T extends object,
+	CacheDisabled extends boolean = false,
+	ObjectMap extends TypedMap<T> = TypedMap<T>,
+> extends IDataStorage<keyof T, T[keyof T], CacheDisabled> {
+	get<Key extends keyof T>(key: Key): T[Key] | undefined
+
+	getAll(forceRead?: boolean): TypedMap<T>
+
+	parse?: StorageParseFn<ObjectMap, IObjectStorage<T, CacheDisabled>>
+
+	set<Key extends keyof T, Value extends T[Key]>(
+		key: Key,
+		value: Value,
+	): IObjectStorage<T, CacheDisabled>
+
+	setAll(
+		data?: ObjectMap,
+		replace?: boolean,
+	): IObjectStorage<T, CacheDisabled>
+
+	stringify?: StorageStringify<ObjectMap, IObjectStorage<T, CacheDisabled>>
+
+	toObject<O extends object = T>(data?: Map<keyof T, T[keyof T]>): O
 }
