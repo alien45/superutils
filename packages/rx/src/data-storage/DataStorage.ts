@@ -193,7 +193,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  *   console.log('Saving to database...', data)
  * })
  * // unsubscribe from subject
- * setTimeout(()=> sub.unsbuscribe(), 1000)
+ * setTimeout(()=> sub.unsubscribe(), 1000)
  *
  * // add an entry to storage
  * storage.set('bob', { age: 99, id: 'bob', name: 'Bob' })
