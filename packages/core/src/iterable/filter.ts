@@ -8,14 +8,14 @@ import { IterableList } from './types'
  * @param data The iterable collection to filter.
  * @param predicate A function to test each element. Receives `(item, key, data)`.
  * @param limit (optional) maximum number of results to return. Defaults to `Infinity`.
- * @param asArray (optional) Whether to transform the result to an array or a map:
- * - `true`: array of values.
- * - `false` (default): Map with resptective keys/indexes preserved as map keys
+ * @param asMap (optional) Whether to transform the result to an array or a map:
+ * - `false`: array of values.
+ * - `true` (default): Map with resptective keys/indexes preserved as map keys
  * @param result (optional) existing Map instance to populate.
  *
  * @template K The type of keys (Map) or indices (Array/Set) in the collection.
  * @template V The type of values in the collection.
- * @template AsArray Literal type determining whether the output is an Array or Map.
+ * @template AsMap Literal type determining whether the output is an Array or Map.
  * @template Result The inferred return type (Map<K, V> or V[]).
  *
  * Default: `false`
@@ -37,7 +37,7 @@ import { IterableList } from './types'
  * // Prints: Map(2) { 1 => { name: 'Alice', age: 30 }, 3 => { name: 'Charlie', age: 35 } }
  *
  * // Result as an array
- * console.log(filter(map, item => item.age >= 30), true)
+ * console.log(filter(map, item => item.age >= 30), false)
  * // Prints: [{ name: 'Alice', age: 30 }, { name: 'Charlie', age: 35 }]
  * ```
  *
@@ -53,20 +53,20 @@ import { IterableList } from './types'
  * // Prints: Map(2) { 2 => 30, 3 => 40 }
  *
  * // Result as an array
- * console.log(filter(numbers, n => n > 25, 2, true))
+ * console.log(filter(numbers, n => n > 25, 2, false))
  * // Prints: [30, 40]
  * ```
  */
 export const filter = <
 	K,
 	V,
-	AsArray extends boolean = false,
-	Result = AsArray extends true ? V[] : Map<K, V>,
+	AsMap extends boolean = false,
+	Result = AsMap extends true ? Map<K, V> : V[],
 >(
 	data: IterableList<K, V>,
 	predicate: (item: V, key: K, data: IterableList<K, V>) => boolean,
 	limit?: number,
-	asArray?: AsArray,
+	asMap?: AsMap,
 	result?: Map<K, V>,
 ): Result => {
 	if (!isMap(result)) result = new Map()
@@ -79,6 +79,6 @@ export const filter = <
 			&& result.set(key, item)
 	}
 
-	return (asArray ? [...result.values()] : result) as Result
+	return (asMap ? result : [...result.values()]) as Result
 }
 export default filter
