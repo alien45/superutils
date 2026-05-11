@@ -21,12 +21,7 @@ import {
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
 import { UnwrapSubjectValue } from '../types'
 import unsubscribeAll from '../unsubscribeAll'
-import type {
-	DelayOptions,
-	IDataStorage,
-	IObjectStorage,
-	StorageOptions,
-} from './types'
+import type { IDataStorage, IObjectStorage, StorageOptions } from './types'
 import { OnErrorType } from './types'
 
 /**
@@ -138,7 +133,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * import { DataStorage } from '@superutils/rx'
  * import fetch from '@superutils/fetch'
  *
- * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
+ * const { products } = await fetch.get('[DUMMYJSON-DOT-COM]/products')
  * const storage = new DataStorage('products', {
  *   initialValue: new Map(products.map(p => [p.id, p])) // convert to Map
  * })
@@ -164,7 +159,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * globalThis.localStorage = new LocalStorage('./data', 1e7)
  *
  * const storage = new DataStorage('products')
- * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
+ * const { products } = await fetch.get('[DUMMYJSON-DOT-COM]/products')
  * // save all items to storage
  * storage.setAll(
  *   new Map(products.map(p => [p.id, p])), // convert to Map

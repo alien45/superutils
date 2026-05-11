@@ -2,7 +2,6 @@ import {
 	DebounceOptions,
 	DropFirst,
 	filter,
-	FilterPredicate,
 	find,
 	FindOptions,
 	search,
@@ -379,7 +378,7 @@ export interface IDataStorage<
 	 *
 	 * @example
 	 * #### Search for users in a specific city
-	 * ```typescript
+	 * ```javascript
 	 * import { DataStorage } from '@superutils/rx'
 	 *
 	 * const storage = new DataStorage('users', {
