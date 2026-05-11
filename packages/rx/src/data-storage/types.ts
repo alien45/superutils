@@ -2,7 +2,6 @@ import {
 	DebounceOptions,
 	DropFirst,
 	filter,
-	FilterPredicate,
 	find,
 	FindOptions,
 	search,

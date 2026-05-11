@@ -21,12 +21,7 @@ import {
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
 import { UnwrapSubjectValue } from '../types'
 import unsubscribeAll from '../unsubscribeAll'
-import type {
-	DelayOptions,
-	IDataStorage,
-	IObjectStorage,
-	StorageOptions,
-} from './types'
+import type { IDataStorage, IObjectStorage, StorageOptions } from './types'
 import { OnErrorType } from './types'
 
 /**
