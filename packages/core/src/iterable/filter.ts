@@ -1,6 +1,6 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { isMap, isPositiveInteger } from '../is'
-import { IterableList } from './types'
+import { FilterPredicate, IterableList } from './types'
 
 /**
  * Filters items from an {@link IterableList} (Array, Map, or Set).
@@ -81,11 +81,7 @@ import { IterableList } from './types'
  */
 export const filter = <Key, Value, AsMap extends boolean = false>(
 	data: IterableList<Key, Value>,
-	predicate: (
-		item: Value,
-		key: Key,
-		data: IterableList<Key, Value>,
-	) => boolean,
+	predicate: FilterPredicate<Key, Value>,
 	limit?: number,
 	asMap?: AsMap,
 	result?: Map<Key, Value>,

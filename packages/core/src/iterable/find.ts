@@ -1,7 +1,7 @@
 import { isFn } from '../is'
 import filter from './filter'
 import search from './search'
-import { IterableList, type FindOptions } from './types'
+import type { IterableList, FindOptions, FilterPredicate } from './types'
 
 /**
  * Finds a first item using predicate in an iterable list (Array, Map or Set).
@@ -29,15 +29,12 @@ export function find<
 	V,
 	IncludeKey extends boolean = false,
 	Return = undefined | (IncludeKey extends true ? [K, V] : V),
->(
-	data: IterableList<K, V>,
-	predicate: Parameters<typeof filter<K, V>>[1],
-): Return
+>(data: IterableList<K, V>, predicate: FilterPredicate<K, V>): Return
 /**
  * Find the first item in an iterable list (Array, Map or Set) using `search()` function
  *
  * @param data items to search
- * @param options filter options. See {@link FindOptions}
+ * @param options search options. See {@link FindOptions}
  *
  * @example
  * #### Find item using search options
@@ -70,9 +67,7 @@ export function find<
 	Result = undefined | (IncludeKey extends true ? [K, V] : V),
 >(
 	data: IterableList<K, V>,
-	optsOrCb:
-		| ((value: V, key: K, data: IterableList<K, V>) => boolean)
-		| FindOptions<K, V, IncludeKey>,
+	optsOrCb: FilterPredicate<K, V> | FindOptions<K, V, IncludeKey>,
 ): Result {
 	const result = isFn(optsOrCb)
 		? filter(data, optsOrCb, 1)
