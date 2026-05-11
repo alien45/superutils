@@ -13,6 +13,13 @@ export type FindOptions<K, V, IncludeKey extends boolean = false> = Omit<
 	includeKey?: IncludeKey
 }
 
+/** Predicate function for the filter and find functions */
+export type FilterPredicate<Key, Value> = (
+	item: Value,
+	key: Key,
+	data: IterableList<Key, Value>,
+) => boolean
+
 /** A general type to capture all iterables like Array, Map, Set.... */
 export type IterableList<K = unknown, V = unknown> = {
 	entries: () => IterableIterator<[K, V]>

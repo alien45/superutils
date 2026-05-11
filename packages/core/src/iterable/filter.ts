@@ -1,6 +1,6 @@
 import fallbackIfFails from '../fallbackIfFails'
 import { isMap, isPositiveInteger } from '../is'
-import { IterableList } from './types'
+import { FilterPredicate, IterableList } from './types'
 
 /**
  * Filters items from an {@link IterableList} (Array, Map, or Set).
@@ -8,14 +8,14 @@ import { IterableList } from './types'
  * @param data The iterable collection to filter.
  * @param predicate A function to test each element. Receives `(item, key, data)`.
  * @param limit (optional) maximum number of results to return. Defaults to `Infinity`.
- * @param asArray (optional) Whether to transform the result to an array or a map:
- * - `true`: array of values.
- * - `false` (default): Map with resptective keys/indexes preserved as map keys
- * @param result (optional) existing Map instance to populate.
+ * @param asMap (optional) Whether to transform the result to an array or a map:
+ * - `false` (default): array of values.
+ * - `true`: Map with resptective keys/indexes preserved as map keys
+ * @param result (optional) existing Map instance to populate the result.
  *
  * @template K The type of keys (Map) or indices (Array/Set) in the collection.
  * @template V The type of values in the collection.
- * @template AsArray Literal type determining whether the output is an Array or Map.
+ * @template AsMap Literal type determining whether the output is an Array or Map.
  * @template Result The inferred return type (Map<K, V> or V[]).
  *
  * Default: `false`
@@ -33,11 +33,22 @@ import { IterableList } from './types'
  * ])
  *
  * // Result as a map  (default)
- * console.log(filter(map, item => item.age >= 30))
+ * const resultMap = filter(
+ *   map,
+ *   item => item.age >= 30, // predicate
+ *   2, // limit
+ *   true, // asMap
+ * )
+ * console.log(resultMap)
  * // Prints: Map(2) { 1 => { name: 'Alice', age: 30 }, 3 => { name: 'Charlie', age: 35 } }
  *
  * // Result as an array
- * console.log(filter(map, item => item.age >= 30), true)
+ * const resultArray = filter(
+ *   map,
+ *   item => item.age >= 30,
+ *   2,
+ * )
+ * console.log(resultArray)
  * // Prints: [{ name: 'Alice', age: 30 }, { name: 'Charlie', age: 35 }]
  * ```
  *
@@ -49,26 +60,32 @@ import { IterableList } from './types'
  * const numbers = [10, 20, 30, 40, 50]
  *
  * // Result as a map (default)
- * console.log(filter(numbers, n => n > 25, 2))
+ * const resultMap = filter(
+ *   numbers,
+ *   n => n > 25, // predicate
+ *   2, // limit
+ *   true, // asMap
+ * )
+ * console.log(resultMap)
  * // Prints: Map(2) { 2 => 30, 3 => 40 }
  *
  * // Result as an array
- * console.log(filter(numbers, n => n > 25, 2, true))
+ * const resultArray = filter(
+ *   numbers,
+ *   n => n > 25,
+ *   2,
+ * )
+ * console.log(resultArray)
  * // Prints: [30, 40]
  * ```
  */
-export const filter = <
-	K,
-	V,
-	AsArray extends boolean = false,
-	Result = AsArray extends true ? V[] : Map<K, V>,
->(
-	data: IterableList<K, V>,
-	predicate: (item: V, key: K, data: IterableList<K, V>) => boolean,
+export const filter = <Key, Value, AsMap extends boolean = false>(
+	data: IterableList<Key, Value>,
+	predicate: FilterPredicate<Key, Value>,
 	limit?: number,
-	asArray?: AsArray,
-	result?: Map<K, V>,
-): Result => {
+	asMap?: AsMap,
+	result?: Map<Key, Value>,
+) => {
 	if (!isMap(result)) result = new Map()
 
 	if (!isPositiveInteger(limit)) limit = Infinity
@@ -79,6 +96,8 @@ export const filter = <
 			&& result.set(key, item)
 	}
 
-	return (asArray ? [...result.values()] : result) as Result
+	return (asMap ? result : [...result.values()]) as AsMap extends true
+		? Map<Key, Value>
+		: Value[]
 }
 export default filter

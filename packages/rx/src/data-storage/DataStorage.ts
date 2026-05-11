@@ -4,11 +4,11 @@ import {
 	fallbackIfFails,
 	filter,
 	find,
-	FindOptions,
 	getEntries,
 	getKeys,
 	getValues,
 	isArr,
+	isDefined,
 	isMap,
 	isObj,
 	isPositiveNumber,
@@ -19,166 +19,253 @@ import {
 	sort,
 } from '@superutils/core'
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
-import {
+import { UnwrapSubjectValue } from '../types'
+import unsubscribeAll from '../unsubscribeAll'
+import type {
 	DelayOptions,
 	IDataStorage,
-	OnErrorType,
-	StorageCompact,
-	StorageFilter,
-	StorageFind,
-	StorageMap,
-	StorageOnChangeFn,
-	StorageOnErrorFn,
+	IObjectStorage,
 	StorageOptions,
-	StorageParseFn,
-	StorageSearch,
-	StorageSort,
-	StorageStringifyFn,
-	StorageToJSON,
 } from './types'
-import unsubscribeAll from '../unsubscribeAll'
-import { UnwrapSubjectValue } from '../types'
+import { OnErrorType } from './types'
 
 /**
- * Force all or specific instances of DataStorage to reload data from storage
+ * RxJS Subject to trigger forced update of cached data from underlying storage of {@link DataStorage} instances.
+ *
+ * `value`: determines which cache-enabled storage instances to be updated
+ * - name (`string` | `string[]`): update all instances with a specific name(s)
+ * - global (`true`): update all instances globally
  *
  * @example
  * ```javascript
+ * import { DataStorage, forceUpdateCache$ } from '@superutils/rx'
+ *
+ * const names = ['products', 'users']
+ *
+ * // Update all DataStorage instances by a list of their names
+ * forceUpdateCache$.next(names)
+ * // alternatively: DataStorage.forceUpdateCache(names)
+ *
+ * // Update all DataStorage instances with a specific name
+ * forceUpdateCache$.next(names[0])
+ * // alternatively: DataStorage.forceUpdateCache(names[0])
+ *
+ * // Update every single instance of DataStorage that uses storage (has a "name" property)
+ * forceUpdateCache$(true)
+ * // alternatively: DataStorage.forceUpdateCache(true)
+ * ```
+ *
+ * @example
+ *
+ * #### Practical example
+ * ```typescript
  * import { DataStorage } from '@superutils/rx'
  *
- * // Update all DataStorage instances with specific name(s)
- * const name = 'products'
- * forceUpdateCache$.next([name])
+ * const name = 'user-profile'
+ * type User = {
+ *   age: number
+ *   name: string
+ *   roles?: string[]
+ * }
+ * const userStore = DataStorage.(name, { delay: 0 }) // delay is set to zero to simplify the example
+ * userStore.set('name', 'John Doe')
+ * userStore.set('name', 'John Doe')
  *
- * // Update every single instance of DataStorage that uses storage (has a "name")
- * forceUpdateCache$.next(true)
  * ```
  */
 export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
+/**
+ *
+ *
+ * @remarks
+ * **On the `This` template parameter:**
+ * Using `This` as a self-referential template is a **good practice** in this context because:
+ * - It provides accurate **type inference** for method return types that depend on the generic parameters.
+ * - It enables **type-safe property access** through `This['methodName']`, allowing the implementation
+ *   to reference interface contracts without circular dependencies or casting issues.
+ * - It allows **fluent API chains** (returning `this`) while maintaining proper generic type information.
+ * - It prevents **type widening** that would occur if methods returned the concrete class type instead
+ *   of the interface type, which is important for generic constraints and polymorphism.
+ *
+ * However, it increases **cognitive complexity** and is only warranted when:
+ * - The class implements a complex generic interface with interdependent type parameters.
+ * - Type-safe property references are essential to avoid runtime errors or casting.
+ * - Fluent interfaces or chaining is a core API feature.
+ *
+ *
+ */
+
+/**
+ * A generic, reactive data storage class that provides a Map-like interface with advanced features
+ * such as search, filtering, and sorting. Supports both in-memory caching and persistent storage
+ * (LocalStorage in browsers, JSON files in NodeJS via `node-localstorage` NPM module).
+ *
+ * #### Notes:
+ * - **Performance**: `DataStorage` is optimized for small to medium datasets.
+ *   - For datasets > 1MB, consider increasing the `delay` option to reduce write frequency.
+ *   - It is **NOT** recommended for datasets larger than 3MB due to synchronous serialization costs.
+ * - **RxJS Integration**: Built on RxJS for reactive data handling, though no prior RxJS knowledge is required.
+ * - **Storage Behavior**:
+ *   - If `name` is omitted, the instance operates in-memory only and data is not persisted to storage.
+ *   - If `cacheDisabled` is `true`, data is not kept in memory; every read/write operation accesses the underlying
+ * storage directly.
+ *
+ * @template Key The type of keys stored in the map.
+ * @template Value The type of values stored in the map.
+ * @template CacheDisabled A literal boolean type indicating whether in-memory caching is disabled.
+ * @template This A self-referential interface type extending {@link IDataStorage} used for accurate
+ *   method signature inference and type-safe property access. This allows method implementations to
+ *   reference their return types and other method signatures through the interface definition.
+ *
+ * @see {@link forceUpdateCache$} for cache invalidation across instances.
+ * @see {@link DataStorage.fromObject} for object-oriented storage initialization.
+ *
+ * @example
+ * #### Browser Usage 1: use like a map
+ * ```javascript
+ * import { DataStorage } from '@superutils/rx'
+ *
+ * const userStorage = new DataStorage('users')
+ * userStorage.set(1, { name: 'Alice', age: 30 })
+ * const user = userStorage.get(1)
+ * console.log(user) // prints: {name: 'Alice', age: 30}
+ * ```
+ *
+ * @example
+ * #### Browser Usage 2:
+ * ```javascript
+ * import { DataStorage } from '@superutils/rx'
+ * import fetch from '@superutils/fetch'
+ *
+ * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
+ * const storage = new DataStorage('products', {
+ *   initialValue: new Map(products.map(p => [p.id, p])) // convert to Map
+ * })
+ *
+ * // print product with id `1`
+ * console.log(storage.get(1))
+ *
+ * // search for items
+ * const searchResult = storage.search({
+ *   query: { availabilityStatus: 'low' }
+ * })
+ * console.log(searchResult)
+ * ```
+ * @example
+ * #### NodeJS Usage
+ * ```javascript
+ * import { DataStorage } from '@superutils/rx'
+ * import fetch from '@superutils/fetch'
+ * import { LocalStorage } from 'node-localstorage'
+ *
+ * // Add localStorage alternative for NodeJS that reads and writes to JSON files.
+ * // This is not necessary for browsers.
+ * globalThis.localStorage = new LocalStorage('./data', 1e7)
+ *
+ * const storage = new DataStorage('products')
+ * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
+ * // save all items to storage
+ * storage.setAll(
+ *   new Map(products.map(p => [p.id, p])), // convert to Map
+ * )
+ *
+ * // print product with id `1`
+ * console.log(storage.get(1))
+ *
+ * // search for items
+ * const searchResult = storage.search({
+ *   query: { availabilityStatus: 'low' }
+ * })
+ * console.log(searchResult)
+ * ```
+ *
+ * @example
+ * #### Advanced: `onChange` and RxJS subject
+ *
+ * Internally, `DataStorage` uses RxJS subject which is exposed as `subject` property.
+ * You can use this to subscribe to changes and do additional operations such as logging or sanitization etc.
+ *
+ * Alternatively, you can also set the `onChange` callback which is triggered whenever the subject changes and
+ * does not require maintaining a subscription or knowledge of RxJS subject.
+ *
+ * ```javascript
+ * import { DataStorage } from '@superutils/rx'
+ *
+ * const storage = new DataStorage('my-data')
+ * const sub = storage.subject.subscribe(data => {
+ *   // Write to the database whenever data changes
+ *   console.log('Saving to database...', data)
+ * })
+ * // unsubscribe from subject
+ * setTimeout(()=> sub.unsbuscribe(), 1000)
+ *
+ * // add an entry to storage
+ * storage.set('bob', { age: 99, id: 'bob', name: 'Bob' })
+ * ```
+ */
 export class DataStorage<
 	Key,
 	Value,
 	CacheDisabled extends boolean = false,
+	/**
+	 * @remarks
+	 * **On the `This` template parameter:**
+	 * Using `This` as a self-referential template is a **good practice** in this context because:
+	 * - It provides accurate **type inference** for method return types that depend on the generic parameters.
+	 * - It enables **type-safe property access** through `This['methodName']`, allowing the implementation
+	 *   to reference interface contracts without circular dependencies or casting issues.
+	 * - It allows **fluent API chains** (returning `this`) while maintaining proper generic type information.
+	 * - It prevents **type widening** that would occur if methods returned the concrete class type instead
+	 *   of the interface type, which is important for generic constraints and polymorphism.
+	 *
+	 * However, it increases **cognitive complexity** and is only warranted when:
+	 * - The class implements a complex generic interface with interdependent type parameters.
+	 * - Type-safe property references are essential to avoid runtime errors or casting.
+	 * - Fluent interfaces or chaining is a core API feature.
+	 */
+	This extends IDataStorage<Key, Value, CacheDisabled> = IDataStorage<
+		Key,
+		Value,
+		CacheDisabled
+	>,
 > implements IDataStorage<Key, Value, CacheDisabled> {
-	readonly cacheDisabled: CacheDisabled
+	readonly cacheDisabled: This['cacheDisabled']
 
-	readonly delay: number
+	readonly delay: This['delay']
 
 	/** Debounce and throttle related options */
-	readonly delayOptions?: DelayOptions
+	readonly delayOptions?: This['delayOptions']
 
-	readonly initialized: boolean = false
+	readonly initialized: This['initialized'] = false
 
-	readonly name: string
+	readonly name: This['name']
+
+	onChange?: This['onChange']
+
+	onError?: This['onError']
+
+	parse?: This['parse']
 
 	get size() {
 		return this.getAll().size
 	}
 
-	spaces?: number
+	spaces?: This['spaces']
 
-	readonly storage?: StorageCompact | null
+	readonly storage?: This['storage']
 
-	readonly subject!: CacheDisabled extends true
-		? Subject<Map<Key, Value>>
-		: BehaviorSubject<Map<Key, Value>>
+	stringify?: This['stringify']
+
+	readonly subject!: This['subject']
 
 	private subscriptions = {
 		subject: undefined as Subscription | undefined,
 		forceUpdateCache: undefined as Subscription | undefined,
 	}
 
-	/**
-	 * A wrapper for reading and writing to LocalStorage (browser) or JSON files (NodeJS),
-	 * providing a Map-like interface with advanced features like search, filtering, and sorting.
-	 *
-	 * #### Notes:
-	 * - **Performance**: `DataStorage` is optimized for small to medium datasets.
-	 *   - For datasets > 1MB, consider increasing the `delay` option to reduce write frequency.
-	 *   - It is **NOT** recommended for datasets larger than 3MB due to synchronous serialization costs.
-	 * - **RxJS Integration**: Built on RxJS for reactive data handling, though no prior RxJS knowledge is required.
-	 * - **Storage Behavior**:
-	 *   - If `name` is omitted, the instance operates in-memory only and data is not persisted to storage.
-	 *   - If `cacheDisabled` is `true`, data is not kept in memory; every read/write operation accesses the underlying
-	 * storage directly.
-	 *
-	 * @example
-	 * #### Browser Usage
-	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
-	 * import fetch from '@superutils/fetch'
-	 *
-	 * const storage = new DataStorage('products')
-	 * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
-	 * // save all items to storage
-	 * storage.setAll(
-	 *   new Map(products.map(p => [p.id, p])), // convert to Map
-	 * )
-	 *
-	 * // print product with id `1`
-	 * console.log(storage.get(1))
-	 *
-	 * // search for items
-	 * const searchResult = storage.search({
-	 *   query: { availabilityStatus: 'low' }
-	 * })
-	 * console.log(searchResult)
-	 * ```
-	 * @example
-	 * #### NodeJS Usage
-	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
-	 * import fetch from '@superutils/fetch'
-	 * import { LocalStorage } from 'node-localstorage'
-	 *
-	 * // Add localStorage alternative for NodeJS that reads and writes to JSON files.
-	 * // This is not necessary for browsers.
-	 * globalThis.localStorage = new LocalStorage('./data', 1e7)
-	 *
-	 * const storage = new DataStorage('products')
-	 * const { products } = await fetch('[DUMMYJSON-DOT-COM]/products')
-	 * // save all items to storage
-	 * storage.setAll(
-	 *   new Map(products.map(p => [p.id, p])), // convert to Map
-	 * )
-	 *
-	 * // print product with id `1`
-	 * console.log(storage.get(1))
-	 *
-	 * // search for items
-	 * const searchResult = storage.search({
-	 *   query: { availabilityStatus: 'low' }
-	 * })
-	 * console.log(searchResult)
-	 * ```
-	 *
-	 * @example
-	 * #### Advanced: `onChange` and RxJS subject
-	 *
-	 * Internally, `DataStorage` uses RxJS subject which is exposed as `subject` property.
-	 * You can use this to subscribe to changes and do additional operations such as logging or sanitization etc.
-	 *
-	 * Alternatively, you can also set the `onChange` callback which is triggered whenever the subject changes and
-	 * does not require maintaining a subscription or knowledge of RxJS subject.
-	 *
-	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
-	 *
-	 * const storage = new DataStorage('my-data')
-	 * const sub = storage.subject.subscribe(data => {
-	 *   // Write to the database whenever data changes
-	 *   console.log('Saving to database...', data)
-	 * })
-	 * // unsubscribe from subject
-	 * setTimeout(()=> sub.unsbuscribe(), 1000)
-	 *
-	 * // add an entry to storage
-	 * storage.set('bob', { age: 99, id: 'bob', name: 'Bob' })
-	 * ```
-	 */
 	constructor(
-		name?: string | null,
+		name?: This['name'],
 		options?: StorageOptions<Key, Value, CacheDisabled>,
 	) {
 		const {
@@ -214,19 +301,16 @@ export class DataStorage<
 		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
 		this.stringify = stringify
 		this.spaces = spaces
-		;(this.subject as unknown) = this.cacheDisabled
-			? new Subject<Map<Key, Value>>()
-			: new BehaviorSubject(undefined)
+		this.subject = (
+			this.cacheDisabled ? new Subject() : new BehaviorSubject(undefined)
+		) as This['subject']
 		this.delayOptions = delayOptions
 		isMap(initialValue) && initialValue.size && this.init(initialValue)
 	}
 
-	clear() {
-		this.setAll(new Map<Key, Value>(), true)
-		return this
-	}
+	clear: This['clear'] = () => this.setAll(new Map<Key, Value>(), true)
 
-	delete(keys: Key | Key[]) {
+	delete: This['delete'] = keys => {
 		if (!isArr(keys)) keys = [keys]
 
 		const data = this.getAll()
@@ -236,18 +320,10 @@ export class DataStorage<
 		return this
 	}
 
-	find(predicateOrOptions: Parameters<StorageFind<Key, Value>>[0]) {
-		return find(
-			this.getAll(),
-			predicateOrOptions as FindOptions<Key, Value>,
-		)
-	}
+	filter: This['filter'] = (...args) => filter(this.getAll(), ...args)
 
-	filter<AsArray extends boolean = false>(
-		...args: Parameters<StorageFilter<Key, Value, AsArray>>
-	) {
-		return filter(this.getAll(), ...args)
-	}
+	find: This['find'] = predicateOrOptions =>
+		find(this.getAll(), predicateOrOptions as Parameters<typeof find>[0])
 
 	/**
 	 * Creates a {@link DataStorage} instance initialized from a plain object.
@@ -297,52 +373,43 @@ export class DataStorage<
 	 */
 	static fromObject = <
 		T extends object,
+		Key extends keyof T = keyof T,
+		Value extends T[Key] = T[Key],
 		CacheDisabled extends boolean = false,
 	>(
-		name?: string,
+		name?: string | null,
 		options?: Omit<
-			StorageOptions<keyof T, T[keyof T], CacheDisabled>,
+			StorageOptions<Key, Value, CacheDisabled>,
 			'initialValue'
 		> & { initialValue?: T },
 	) =>
 		new DataStorage(name, {
-			parse: str => objToMap<T>(JSON.parse(str || '{}') as T),
-			stringify: data =>
-				JSON.stringify(DataStorage.prototype.toObject(data)),
-			...(options as StorageOptions<keyof T, T[keyof T], CacheDisabled>),
+			parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
+			stringify: function (data) {
+				return JSON.stringify(this.toObject(data))
+			},
+			...(options as StorageOptions<Key, Value, CacheDisabled>),
 			initialValue: !isObj(options?.initialValue, true)
 				? options?.initialValue
 				: objToMap<T>(options.initialValue),
-		})
+		}) as unknown as IObjectStorage<T, CacheDisabled>
 
 	/**
 	 * Trigger forced update of cached data from storage.
 	 *
-	 * @param name determines which storage instances to be updated.
+	 * @param name determines which cache-enabled storage instances to be updated.
 	 * - name (`string` | `string[]`): update all instances with a specific name(s)
 	 * - global (`true`): update all instances globally
 	 *
-	 * @example
-	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
-	 *
-	 * // Update all DataStorage instances with specific name(s)
-	 * const name = 'products'
-	 * DataStorage.forceUpdateCache([name])
-	 *
-	 * // Update every single instance of DataStorage that uses storage (has a "name")
-	 * DataStorage.forceUpdateCache(true)
-	 * ```
+	 * See {@link forceUpdateCache$} for more details.
 	 */
 	static forceUpdateCache = (name: string | string[] | true) => {
 		forceUpdateCache$.next(name)
 	}
 
-	get(key: Key) {
-		return this.getAll().get(key)
-	}
+	get: This['get'] = key => this.getAll().get(key)
 
-	getAll(forceRead = false) {
+	getAll: This['getAll'] = (forceRead = false) => {
 		const wasInitialized = this.initialized
 		if (!wasInitialized) this.init()
 
@@ -356,7 +423,7 @@ export class DataStorage<
 
 		return (
 			(this.subject as BehaviorSubject<Map<Key, Value>>)?.value
-			?? new Map()
+			?? new Map<Key, Value>()
 		)
 	}
 
@@ -389,19 +456,21 @@ export class DataStorage<
 		)
 	}
 
-	has(key: Key) {
-		return this.getAll().has(key)
-	}
+	has: This['has'] = key => this.getAll().has(key)
 
-	init(initialValue?: Map<Key, Value>) {
+	init: This['init'] = initialValue => {
 		if (this.initialized) return false
 		;(this.initialized as unknown) = true
 
 		let isEmpty = true
 		if (!!initialValue?.size || !this.cacheDisabled) {
-			const existingValue = this.read()
-			// ignore initial value if storage contains existing value
-			if (existingValue.size) initialValue = existingValue
+			const dataStr = this.name ? this.storage?.getItem(this.name) : null
+			const existingValue = this.read(dataStr)
+
+			// If the entry exists in storage (even if it is empty), prioritize it over initialValue.
+			// This prevents defaults from overwriting an intentionally cleared storage.
+			if (isDefined(dataStr)) initialValue = existingValue
+
 			isEmpty = this.cacheDisabled || existingValue.size === 0
 		}
 
@@ -429,35 +498,35 @@ export class DataStorage<
 		return true
 	}
 
-	keys() {
-		return getKeys(this.getAll())
-	}
+	keys: This['keys'] = () => getKeys(this.getAll())
 
-	map<T>(callback: Parameters<StorageMap<Key, Value, T>>[0]) {
-		return this.toArray().map(([key, value], index, data) =>
-			callback(value, key, data, index),
+	map: This['map'] = callback =>
+		this.toArray().map(([key, value], index, entries) =>
+			callback(value, key, entries, index),
 		)
-	}
 
-	onChange?: StorageOnChangeFn<Key, Value, CacheDisabled>
+	read: This['read'] = (
+		dataStr = this.name ? this.storage?.getItem(this.name) : null,
+	) => {
+		// no underlying storage used >> in-memory only >> no need to parse
+		if (!this.name) {
+			return (
+				(this.subject as BehaviorSubject<Map<Key, Value>>).value
+				?? new Map<Key, Value>()
+			)
+		}
 
-	onError?: StorageOnErrorFn<Key, Value, CacheDisabled>
-
-	readonly parse?: StorageParseFn<Key, Value, CacheDisabled>
-
-	read() {
-		const dataStr = this.storage?.getItem(this.name) ?? ''
-		const parse = this.parse?.bind(this) as StorageParseFn<
-			Key,
-			Value,
-			CacheDisabled
-		>
 		const data = fallbackIfFails(
-			parse,
-			[dataStr],
+			(() => this.parse?.call(this, dataStr)) as unknown as Map<
+				Key,
+				Value
+			>,
+			[],
 			this.triggerOnError(OnErrorType.parse),
 		)
 		if (isMap<Key, Value>(data)) return data
+
+		if (!isStr(dataStr)) return new Map<Key, Value>()
 
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
 		return new Map<Key, Value>(
@@ -469,18 +538,12 @@ export class DataStorage<
 		)
 	}
 
-	search<MatchExact extends boolean = false, AsMap extends boolean = true>(
-		options: Parameters<StorageSearch<Key, Value, MatchExact, AsMap>>[0],
-	) {
-		return search(this.getAll(), options)
-	}
+	search: This['search'] = (...args) => search(this.getAll(), ...args)
 
-	set(key: Key, value: Value) {
+	set: This['set'] = (key, value) =>
 		this.setAll(new Map([[key, value]]), false)
-		return this
-	}
 
-	setAll(data = new Map<Key, Value>(), replace = false) {
+	setAll: This['setAll'] = (data, replace = false) => {
 		if (!isMap(data)) return this
 
 		data = replace
@@ -490,7 +553,7 @@ export class DataStorage<
 		return this
 	}
 
-	sort(...args: Parameters<StorageSort<Key, Value>>) {
+	sort: This['sort'] = (...args) => {
 		const result = sort(
 			this.getAll(),
 			args[0] as EntryComparator<Key, Value>,
@@ -501,25 +564,16 @@ export class DataStorage<
 		return result
 	}
 
-	readonly stringify?: StorageStringifyFn<Key, Value, CacheDisabled>
+	toArray: This['toArray'] = () => getEntries(this.getAll())
 
-	toArray() {
-		return getEntries(this.getAll())
-	}
-
-	toJSON(
-		...[replacer, spacing = this.spaces, data = this.getAll()]: Parameters<
-			StorageToJSON<Key, Value>
-		>
-	) {
-		const stringify = this.stringify?.bind(this) as StorageStringifyFn<
-			Key,
-			Value,
-			CacheDisabled
-		>
+	toJSON: This['toJSON'] = (
+		replacer,
+		spacing = this.spaces,
+		data = this.getAll(),
+	) => {
 		const str = fallbackIfFails(
-			stringify,
-			[data],
+			(() => this.stringify?.call(this, data)) as unknown as string,
+			[],
 			this.triggerOnError(OnErrorType.stringify),
 		)
 		if (isStr(str)) return str
@@ -537,21 +591,18 @@ export class DataStorage<
 		)
 	}
 
-	toObject<T extends object = object>(
-		data: Map<Key, Value> = this?.getAll?.(),
-	) {
+	toObject: This['toObject'] = <T>(data = this.getAll()) => {
 		const obj = {} as T
+		if (!isMap(data)) return obj
 
-		data = !isMap(data) ? new Map<Key, Value>() : data
 		for (const [key, value] of data)
 			obj[key as unknown as keyof T] = value as T[keyof T]
 
 		return obj
 	}
 
-	toString(data?: Map<Key, Value>) {
-		return this.toJSON(undefined, undefined, data)
-	}
+	toString: This['toString'] = (data = this.getAll()) =>
+		this.toJSON(undefined, undefined, data)
 
 	private triggerOnError =
 		<T = undefined>(type: OnErrorType, returnValue: T = undefined as T) =>
@@ -565,21 +616,20 @@ export class DataStorage<
 			return returnValue
 		}
 
-	unsubscribe() {
-		return unsubscribeAll(this.subscriptions)
-	}
+	unsubscribe: This['unsubscribe'] = () => unsubscribeAll(this.subscriptions)
 
-	values() {
-		return getValues(this.getAll())
-	}
+	values: This['values'] = () => getValues(this.getAll())
 
-	write(data?: Map<Key, Value>) {
+	write: This['write'] = data => {
 		try {
 			!this.initialized && this.init()
-			data ??= (this.subject as BehaviorSubject<Map<Key, Value>>).value
-			if (!this.name || !this.storage || !isMap(data)) return false
+			const finalData =
+				data
+				?? (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
 
-			this.storage.setItem(this.name, this.toString(data))
+			if (!this.name || !this.storage || !isMap(finalData)) return false
+
+			this.storage.setItem(this.name, this.toString(finalData))
 
 			return true
 		} catch (err) {
