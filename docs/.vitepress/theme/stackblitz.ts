@@ -2,6 +2,7 @@ import {
 	debounce,
 	fallbackIfFails,
 	getValues,
+	isEnvMobile,
 	isObj,
 	isUrlValid,
 } from '@superutils/core'
@@ -304,11 +305,9 @@ export const embedPlayground = async (
 		...embedOptions,
 	} as EmbedOptions
 
-	return sdk.embedProject(element, _project, _embedOptions)
-	// // embed playground into the DOM element
-	// const embed = await sdk.embedProject(element, _project, _embedOptions)
-	// // const snapshot = await embed.getFsSnapshot()
-	// return embed
+	return isEnvMobile()
+		? sdk.openProject(_project, _embedOptions)
+		: sdk.embedProject(element, _project, _embedOptions)
 }
 
 /** Add localStorage alternative using 'node-localstorage' module for use with DataStorage */
