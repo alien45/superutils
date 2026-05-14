@@ -28,9 +28,9 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`fetch.get.deferred()`](#fetch-deferred): cancellable and debounced or throttled `fetch()`
     - [`fetch.post()`](#post): make post requests
     - [`fetch.post.deferred()`](#post-deferred): cancellable and debounced or throttled `post()`
+    - [`Interceptors/Transformers`](#interceptors)
     - [`Retry`](#retry) Retry on request failure
     - [`Timeout`](#timeout) Abort request on timeout
-    - [`Interceptors/Transformers`](#interceptors)
     - [`createClient()`](#create-client)
     - [`createPostClient()`](#create-post-client)
 
@@ -574,7 +574,8 @@ fetch
 		retryIf: async (response, retryCount, error) => {
 			if (!!error) return true
 
-			// make sure to clone the response if result stream must be consumed here.
+			// Mke sure to clone the response if result stream must be consumed here.
+			// Cloning is required to avoid "body stream already read" error.
 			const result = await response.clone().json()
 			return result !== 'expected value'
 		},
@@ -679,4 +680,24 @@ const deferredPatchClient = postClient.deferred(
 )
 deferredPatchClient({ title: 'New title 1' }) // ignored by debounce
 deferredPatchClient({ title: 'New title 2' }) // executed
+```
+
+<div id="fetchFunc"></div>
+
+### `fetchFunc`: Using Third-Party Libraries (e.g., Axios)
+
+The `fetchFunc` option allows you to replace the default request engine. This enables the use of third-party libraries like `axios` while still leveraging `@superutils/fetch` features such as [retries](#retry), [timeouts](#timeout), [debouncing/throttling](#fetch-deferred), and [interceptors](#interceptors).
+
+```typescript
+import fetch, { type FetchFunc } from '@superutils/fetch'
+import axios from 'axios'
+
+fetch
+	.get('[DUMMYJSON-DOT-COM]/products/1', {
+		// Note: The custom function must resolve with a standard Response object
+		fetchFunc: axios as FetchFunc,
+		retry: 3,
+		// ...additional options
+	})
+	.then(console.log)
 ```
