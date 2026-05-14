@@ -8,7 +8,14 @@ import isArr, {
 } from './isArr'
 import isDate, { isDateValid } from './isDate'
 import isEmpty, { isEmptySafe } from './isEmpty'
-import { isEnvBrowser, isEnvNode, isEnvTouchable } from './isEnv'
+import {
+	isEnvBrowser,
+	isEnvBun,
+	isEnvDeno,
+	isEnvMobile,
+	isEnvNode,
+	isEnvTouchable,
+} from './isEnv'
 import isFn, { isAsyncFn } from './isFn'
 import { isMap, isMapObj } from './isMap'
 import {
@@ -92,6 +99,9 @@ export const is = {
 	empty: isEmpty,
 	emptySafe: isEmptySafe,
 	envBrowser: isEnvBrowser,
+	envBun: isEnvBun,
+	envDeno: isEnvDeno,
+	envMobile: isEnvMobile,
 	envNode: isEnvNode,
 	envTouchable: isEnvTouchable,
 	error: isError,

@@ -2,6 +2,7 @@ import {
 	debounce,
 	fallbackIfFails,
 	getValues,
+	isEnvMobile,
 	isObj,
 	isUrlValid,
 } from '@superutils/core'
@@ -94,78 +95,16 @@ export const addTryNowBtnNListen = debounce(() => {
 /**
  *
  * @param project
- * @param element
- * @param embedOptions
+ * @param element (optional) HTML Element, element ID or selector to embed the playground in.
+ * If not provided, will open project on a modal.
+ * @param embedOptions (optional)
  */
 export const embedPlayground = async (
 	project: PlaygroundProject = {} as PlaygroundProject,
-	/** Element or selector to embed the playground in */
 	element?: string | HTMLElement,
 	embedOptions: EmbedOptions = {},
 ) => {
 	embedOptions.crossOriginIsolated ??= false
-	if (!element) {
-		// if element or selector is not provided, open playground on a modal
-		const modal = document.createElement('div')
-		modal.classList.add('modal', 'playground')
-		modal.style = `
-			background: var(--vp-c-bg);
-			position: fixed;
-			top: 0;
-			left: 0;
-			bottom: 0;
-			right: 0;
-			width: 100%;
-			height: 100%;
-			background: black;
-			padding: 35px 0 0;
-			z-index: 99999;
-		`
-
-		const closeButton = document.createElement('div')
-		const closeStyle = `
-			background: #32363f;
-			border: 1px solid grey;
-			border-radius: 5px;
-			cursor: pointer;
-			left: 0;
-			position: fixed;
-			right: 0;
-			padding: 5px 10px;
-			text-align: center;
-			top: 0;
-		`
-		closeButton.classList.add('close')
-		closeButton.onmouseenter = () => {
-			closeButton.style = `${closeStyle};background: black;`
-		}
-		closeButton.onmouseleave = () => {
-			closeButton.style = closeStyle
-		}
-		closeButton.onclick = () => {
-			modal.remove()
-		}
-		closeButton.style = closeStyle
-		closeButton.textContent = 'Close Playground'
-		modal.appendChild(closeButton)
-
-		const playground = document.createElement('div')
-		playground.classList.add('stackblitz')
-		modal.appendChild(playground)
-		document.body.appendChild(modal)
-		element = document.querySelector(
-			`.modal.playground > .stackblitz`,
-		) as HTMLElement
-
-		embedOptions.height = '100%'
-	} else if (typeof element === 'string') {
-		// assume query selector and embed playground in the element
-		element =
-			document.getElementById(element)
-			?? (document.querySelector(element) as HTMLElement)
-	}
-	if (!element)
-		return console.error('Element not found to embed the playground!')
 
 	const {
 		code = '',
@@ -265,7 +204,10 @@ export const embedPlayground = async (
 			.reduce((obj, next) => ({ ...obj, ...next }), {}),
 		...dependencies,
 	}
+
+	// For NodeJS examples of DataStorage
 	addNodeLocalStorage(_files, _dependencies, isTs)
+
 	_files['package.json'] = JSON.stringify(
 		{
 			name: 'playground',
@@ -304,11 +246,74 @@ export const embedPlayground = async (
 		...embedOptions,
 	} as EmbedOptions
 
-	return sdk.embedProject(element, _project, _embedOptions)
-	// // embed playground into the DOM element
-	// const embed = await sdk.embedProject(element, _project, _embedOptions)
-	// // const snapshot = await embed.getFsSnapshot()
-	// return embed
+	// on mobile devices open project in a new tab on stackblitz.com
+	if (isEnvMobile()) return sdk.openProject(_project, _embedOptions)
+
+	if (!element) {
+		// if element or selector is not provided, open playground on a modal
+		const modal = document.createElement('div')
+		modal.classList.add('modal', 'playground')
+		modal.style = `
+			background: var(--vp-c-bg);
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			width: 100%;
+			height: 100%;
+			background: black;
+			padding: 35px 0 0;
+			z-index: 99999;
+		`
+
+		const closeButton = document.createElement('div')
+		const closeStyle = `
+			background: #32363f;
+			border: 1px solid grey;
+			border-radius: 5px;
+			cursor: pointer;
+			left: 0;
+			position: fixed;
+			right: 0;
+			padding: 5px 10px;
+			text-align: center;
+			top: 0;
+		`
+		closeButton.classList.add('close')
+		closeButton.onmouseenter = () => {
+			closeButton.style = `${closeStyle};background: black;`
+		}
+		closeButton.onmouseleave = () => {
+			closeButton.style = closeStyle
+		}
+		closeButton.onclick = () => {
+			modal.remove()
+		}
+		closeButton.style = closeStyle
+		closeButton.textContent = 'Close Playground'
+		modal.appendChild(closeButton)
+
+		const playground = document.createElement('div')
+		playground.classList.add('stackblitz')
+		modal.appendChild(playground)
+		document.body.appendChild(modal)
+		element = document.querySelector(
+			`.modal.playground > .stackblitz`,
+		) as HTMLElement
+
+		embedOptions.height = '100%'
+	} else if (typeof element === 'string') {
+		// assume query selector and embed playground in the element
+		element =
+			document.getElementById(element)
+			?? (document.querySelector(element) as HTMLElement)
+	}
+
+	return (
+		element instanceof HTMLElement
+		&& sdk.embedProject(element, _project, _embedOptions)
+	)
 }
 
 /** Add localStorage alternative using 'node-localstorage' module for use with DataStorage */
@@ -327,8 +332,13 @@ const addNodeLocalStorage = (
 	files[newFileName] = `
 	import { LocalStorage } from 'node-localstorage'
 
-	// Add localStorage alternative for NodeJS that reads and writes to JSON files.
-	// This is not necessary for browsers.
+	// Provides a Node.js-compatible localStorage shim using persistent JSON storage.
+	//
+	// This implementation targets Node.js (including Bun) and is redundant in native browser runtimes.
+	// It is required here because the playground executes browser-targeted code within a Node.js container.
+	//
+	// Assigning this instance to 'globalThis' enables DataStorage to automatically resolve storage by mimicking
+	// browser behavior, eliminating the need for manual injection via constructor options.
 	globalThis.localStorage = new LocalStorage('./data', 1e7)
 	`
 
