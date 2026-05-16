@@ -26,6 +26,11 @@ export type ClientData<FixedOptions> =
  * functions. These functions can be equipped with default options like headers, timeouts, or a specific HTTP method,
  * which minimizes code repetition across your application. If a method is not specified during creation, the client
  * will default to `GET`.
+ * 
+ * **Option Priority:**
+ * 1. `fixedOptions`: Highest priority. Cannot be overridden by the caller.
+ * 2. `options`: Options passed during the specific call.
+ * 3. `commonOptions`: Default options set at creation time.
  *
  * The returned client also includes a `.deferred()` method, providing the same debounce, throttle, and sequential
  * execution capabilities found in functions like `fetch.get.deferred()`.

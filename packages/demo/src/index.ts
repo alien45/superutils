@@ -35,9 +35,9 @@ fetch
 		'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils',
 		{
 			as: FetchAs.blob,
-			onDownloadProgress: (parcent, received, total) =>
+			onDownloadProgress: (percent, received, total) =>
 				console.log({
-					percent: `${(parcent ?? 0).toFixed(2)}%`,
+					percent: `${(percent ?? 0).toFixed(2)}%`,
 					received,
 					total,
 				}),

@@ -1,5 +1,8 @@
-import { DeferredAsyncOptions, deferredCallback } from '@superutils/promise'
-import { ClientData } from './createClient'
+import {
+	type DeferredAsyncOptions,
+	deferredCallback,
+} from '@superutils/promise'
+import type { ClientData } from './createClient'
 import fetch from './fetch'
 import mergeOptions from './mergeOptions'
 import {
@@ -156,9 +159,8 @@ export const createPostClient = <
 			mergedOptions.method ??= 'post'
 
 			const headers = mergedOptions.headers as Headers
-			if (!headers.get('content-type')) {
-				headers.set('content-type', ContentType.APPLICATION_JSON)
-			}
+			!headers.get('content-type')
+				&& headers.set('content-type', ContentType.APPLICATION_JSON)
 			return fetch(args[0] as PostArgs[0], mergedOptions)
 		}
 

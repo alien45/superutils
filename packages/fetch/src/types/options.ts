@@ -1,3 +1,4 @@
+import { DropFirst, ValueOrPromise } from '@superutils/core'
 import type {
 	RetryIfFunc,
 	RetryOptions,
@@ -5,7 +6,6 @@ import type {
 } from '@superutils/promise'
 import { FetchAs } from './constants'
 import type { FetchInterceptors, FetchInterceptorsMerged } from './interceptors'
-import { DropFirst, ValueOrPromise } from '@superutils/core'
 
 /** Exclude properties of `Target` from `Options`. `headers` will always be included */
 export type ExcludeOptions<
@@ -187,6 +187,61 @@ export type FetchRetryOptions = Omit<
 	 * Default: `0`
 	 */
 	retry?: number
+	/**
+	 * An optional predicate function to determine retry eligibility.
+	 * Also useful for side effects like logging or analytics.
+	 *
+	 * Returning `true` explicitly triggers a retry, while `false` prevents it.
+	 * If the function returns `undefined` or `void`, the default library logic is used
+	 * (retry if an exception was thrown or if `response.ok` is `false`).
+	 *
+	 * @param response The Response object from the last attempt, if available.
+	 * @param retryCount The current retry attempt number (starting from 1).
+	 * @param error The error encountered during the request, if any.
+	 *
+	 * @returns A boolean indicating whether to retry, or a promise resolving to boolean.
+	 *
+	 *
+	 * @example
+	 * #### Example: Retry on specific status codes
+	 * ```javascript
+	 * import fetch from '@superutils/fetch'
+	 *
+	 * fetch
+	 * 	.get('[DUMMYJSON-DOT-COM]/products/1', {
+	 * 		retry: 3, // If request fails, retry up to three more times
+	 * 		// Retry on rate limits (429) or transient server errors (5xx).
+	 * 		retryIf: r => r.status === 429 || r.status >= 500,
+	 * 	})
+	 * 	.then(console.log)
+	 * ```
+	 *
+	 * @example
+	 * #### Example: Polling (Retry until a condition is met)
+	 * Keep retrying every minute until a product is back in stock.
+	 * ```javascript
+	 * import fetch from '@superutils/fetch'
+	 *
+	 * fetch
+	 * 	.get('[DUMMYJSON-DOT-COM]/products/1', {
+	 * 	  delay: 60_000, // Wait 1 minute between attempts
+	 * 	  retry: 10, // Attempt up to 10 more times
+	 * 	  retryIf: async (response) => {
+	 * 	    if (!response?.ok) return true // Retry on network or server errors
+	 *
+	 * 		// Use response.clone() to avoid consuming the body stream used by the final result.
+	 * 		const result = await response.clone().json()
+	 *
+	 * 		// Retry if the product is still NOT in stock
+	 * 		return result?.availabilityStatus !== 'In Stock'
+	 * 	  },
+	 *
+	 *    // Ensure the overall timeout accounts for the polling duration
+	 * 	  timeout: 60_000 * 15
+	 * 	})
+	 * 	.then(product => console.log('Product is back in stock:', product))
+	 * ```
+	 */
 	retryIf?: RetryIfFunc<Response>
 }
 

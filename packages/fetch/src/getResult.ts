@@ -7,6 +7,9 @@ import { ContentType, FetchAs, FetchResult, OnDownloadProgress } from './types'
  * If `onDownloadProgress()` is provided, it reads the body as a stream to calculate progress,
  * otherwise it uses the standard response body methods.
  *
+ * **Note:** Progress tracking is not supported when `as` is set to `FetchAs.response`,
+ * as the body stream is returned directly to the caller without being consumed here.
+ *
  * @template T The expected type of JSON result (if `as` is 'json').
  * @template As The format to parse the response as.
  * @template Result The resulting type based on the requested format.
