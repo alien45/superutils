@@ -14,20 +14,20 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 
 - [Features](#features)
 - [Installation](#installation)
-    - [NPM](#npm)
-    - [CDN/Browser](#cdn--browser)
+  - [NPM](#npm)
+  - [CDN/Browser](#cdn--browser)
 - [Usage](#usage)
-    - [`new PromisE(executor)`](#promise-executor): Drop-in replacement for `Promise`
-        - [Status tracking](#status-tracking)
-        - [Early Finalization](#early-finalization)
-    - [`new PromisE(promise)`](#promise-status): Check status of an existing promise.
-    - [`PromisE.try()`](#static-methods): Static methods
-    - [`PromisE.delay()`](#delay): Async delay
-    - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
-        - [Debounce Example](#debounce-example)
-        - [Throttle Example](#throttle-example)
-        - [Behavior with different `options`](#behavior-with-different-options)
-    - [`PromisE.timeout()`](#timeout): Reject after timeout
+  - [`new PromisE(executor)`](#promise-executor): Drop-in replacement for `Promise`
+    - [Status tracking](#status-tracking)
+    - [Early Finalization](#early-finalization)
+  - [`new PromisE(promise)`](#promise-status): Check status of an existing promise.
+  - [`PromisE.try()`](#static-methods): Static methods
+  - [`PromisE.delay()`](#delay): Async delay
+  - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
+    - [Debounce Example](#debounce-example)
+    - [Throttle Example](#throttle-example)
+    - [Behavior with different `options`](#behavior-with-different-options)
+  - [`PromisE.timeout()`](#timeout): Reject after timeout
 
 ## Features
 
@@ -73,8 +73,8 @@ const { PromisE } = superutils
 new PromisE()
 await PromisE.delay(1000)
 const handleChange = PromisE.deferredCallback(
-	event => console.log({ value: event.target.value }),
-	{ delay: 300 },
+  event => console.log({ value: event.target.value }),
+  { delay: 300 },
 )
 ```
 
@@ -102,9 +102,9 @@ const p = new Promise(resolve => setTimeout(() => resolve('done'), 1000))
 console.log(p.pending) // true
 
 p.then(result => {
-	console.log(result) // 'done'
-	console.log(p.resolved) // true
-	console.log(p.pending) // false
+  console.log(result) // 'done'
+  console.log(p.resolved) // true
+  console.log(p.pending) // false
 })
 ```
 
@@ -137,12 +137,12 @@ Drop-in replacement for all `Promise` static methods such as `.all()`, `.race()`
 import PromisE from '@superutils/promise'
 
 const p = PromisE.try(() => {
-	throw new Error('Something went wrong')
+  throw new Error('Something went wrong')
 })
 
 p.catch(error => {
-	console.error(error.message) // 'Something went wrong'
-	console.log(p.rejected) // true
+  console.error(error.message) // 'Something went wrong'
+  console.log(p.rejected) // true
 })
 ```
 
@@ -171,7 +171,7 @@ import PromisE from '@superutils/promise'
 
 // Wait until `appReady` becomes truthy but
 while (!appReady) {
-	await PromisE.delay(100)
+  await PromisE.delay(100)
 }
 ```
 
@@ -202,17 +202,17 @@ Create a function that debounces or throttles promise-returning function calls. 
 import PromisE from '@superutils/promise'
 
 const example = async (options = {}) => {
-	const df = PromisE.deferred({
-		delay: 100,
-		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
-		...options,
-	})
-	df(() => PromisE.delay(500)).then(console.log)
-	df(() => PromisE.delay(1000)).then(console.log)
-	df(() => PromisE.delay(5000)).then(console.log)
-	// delay 2 seconds and invoke df() again
-	await PromisE.delay(2000)
-	df(() => PromisE.delay(200)).then(console.log)
+  const df = PromisE.deferred({
+    delay: 100,
+    resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+    ...options,
+  })
+  df(() => PromisE.delay(500)).then(console.log)
+  df(() => PromisE.delay(1000)).then(console.log)
+  df(() => PromisE.delay(5000)).then(console.log)
+  // delay 2 seconds and invoke df() again
+  await PromisE.delay(2000)
+  df(() => PromisE.delay(200)).then(console.log)
 }
 example({ ignoreStale: false, throttle: false })
 // `200` and `1000` will be printed in the console
@@ -227,17 +227,17 @@ import PromisE from '@superutils/promise'
 
 // Simulate an example scenario
 const example = async (options = {}) => {
-	const df = PromisE.deferred({
-		delay: 100,
-		resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
-		...options,
-	})
-	df(() => PromisE.delay(5000)).then(console.log)
-	df(() => PromisE.delay(500)).then(console.log)
-	df(() => PromisE.delay(1000)).then(console.log)
-	// delay 2 seconds and invoke df() again
-	await PromisE.delay(2000)
-	df(() => PromisE.delay(200)).then(console.log)
+  const df = PromisE.deferred({
+    delay: 100,
+    resolveIgnored: ResolveIgnored.NEVER, // never resolve ignored calls
+    ...options,
+  })
+  df(() => PromisE.delay(5000)).then(console.log)
+  df(() => PromisE.delay(500)).then(console.log)
+  df(() => PromisE.delay(1000)).then(console.log)
+  // delay 2 seconds and invoke df() again
+  await PromisE.delay(2000)
+  df(() => PromisE.delay(200)).then(console.log)
 }
 example({ ignoreStale: true, throttle: true })
 // `200` will be printed in the console
@@ -251,15 +251,15 @@ example({ ignoreStale: false, throttle: true })
 - **`throttle: true`**: Switches from debounce to throttle mode.
 - **`delay: 0`**: Disables debouncing and throttling, enabling sequential/queue mode. Requests are executed one after the other. Any failed promise does not affect subsequent promises.
 - **`resolveIgnored` (enum)**: Controls how an ignored promises is handled.
-    1. `ResolveIgnored.WITH_UNDEFINED`: The promise for the ignored request resolves with `undefined`.
-    2. `ResolveIgnored.WITH_LAST`: The promise for the ignored request waits (if needed) and resolves with the last/most-recent finalized promise.
-    3. `ResolveIgnored.NEVER`: The promise for the ignored request is neither resolved nor rejected. It will remain pending indefinitely.
-        > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
+  1. `ResolveIgnored.WITH_UNDEFINED`: The promise for the ignored request resolves with `undefined`.
+  2. `ResolveIgnored.WITH_LAST`: The promise for the ignored request waits (if needed) and resolves with the last/most-recent finalized promise.
+  3. `ResolveIgnored.NEVER`: The promise for the ignored request is neither resolved nor rejected. It will remain pending indefinitely.
+     > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
 - **`resolveError` (enum)**: Controls how failed requests are handled.
-    1.  `ResolveError.NEVER`: The promise for a failed request will neither resolve nor reject, causing it to remain pending indefinitely.
-        > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
-    2.  `ResolveError.WITH_ERROR`: The promise resolves with the error object instead of being rejected.
-    3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
+  1.  `ResolveError.NEVER`: The promise for a failed request will neither resolve nor reject, causing it to remain pending indefinitely.
+      > **Warning:** Use with caution, as this may lead to memory leaks if not handled properly.
+  2.  `ResolveError.WITH_ERROR`: The promise resolves with the error object instead of being rejected.
+  3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
 
 <div id="deferredCallback"></div>
 
@@ -272,19 +272,19 @@ import PromisE from '@superutils/promise'
 
 // Input change handler
 const handleChange = (e: { target: { value: number } }) =>
-	console.log(e.target.value)
+  console.log(e.target.value)
 // Change handler with `PromisE.deferred()`
 const handleChangeDeferred = PromisE.deferredCallback(handleChange, {
-	delay: 300,
-	throttle: false,
+  delay: 300,
+  throttle: false,
 })
 // Simulate input change events after prespecified delays
 const delays = [100, 150, 200, 550, 580, 600, 1000, 1100]
 delays.forEach(timeout =>
-	setTimeout(
-		() => handleChangeDeferred({ target: { value: timeout } }),
-		timeout,
-	),
+  setTimeout(
+    () => handleChangeDeferred({ target: { value: timeout } }),
+    timeout,
+  ),
 )
 // Prints:
 // 200, 600, 1100
@@ -300,8 +300,8 @@ delays.forEach(timeout =>
 import PromisE from '@superutils/promise'
 
 PromisE.timeout(
-	5000, // timeout after 5000ms
-	api.save({ text: 'takes longer than 5s to finish' }),
+  5000, // timeout after 5000ms
+  api.save({ text: 'takes longer than 5s to finish' }),
 ).catch(console.log)
 // Error: Error('Timed out after 5000ms')
 ```
@@ -312,23 +312,23 @@ PromisE.timeout(
 import PromisE from '@superutils/promise'
 
 const loadUserNProducts = async () => {
-	const promise = PromisE.timeout(
-		5000, // timeout after 5000ms
-		fetch('[DUMMYJSON-DOT-COM]/users/1'), // fetch user
-		fetch('[DUMMYJSON-DOT-COM]/products'), // fetch products
-	)
-	const [user, products] = await promise.catch(err => {
-		// promise did not time out, but was rejected
-		// because one of the data promises rejected
-		if (!promise.timedout) return Promise.reject(err)
+  const promise = PromisE.timeout(
+    5000, // timeout after 5000ms
+    fetch('[DUMMYJSON-DOT-COM]/users/1'), // fetch user
+    fetch('[DUMMYJSON-DOT-COM]/products'), // fetch products
+  )
+  const [user, products] = await promise.catch(err => {
+    // promise did not time out, but was rejected
+    // because one of the data promises rejected
+    if (!promise.timedout) return Promise.reject(err)
 
-		// promise timed out >> print/update UI
-		console.log('Request is taking longer than expected......')
-		// now return the "data promise", the promise(s) provided in the PromisE.timeout()
-		// If more than one promises provided, then `promise.data` will be the combination of them all: `PromisE.all(...promises)`
-		return promise.data
-	})
-	return [user, products]
+    // promise timed out >> print/update UI
+    console.log('Request is taking longer than expected......')
+    // now return the "data promise", the promise(s) provided in the PromisE.timeout()
+    // If more than one promises provided, then `promise.data` will be the combination of them all: `PromisE.all(...promises)`
+    return promise.data
+  })
+  return [user, products]
 }
 loadUserNProducts().catch(console.warn)
 ```

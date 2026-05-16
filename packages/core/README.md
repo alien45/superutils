@@ -11,20 +11,20 @@ For full API reference check out the [docs page](https://alien45.github.io/super
 ## Table of Contents
 
 - [Installation](#installation)
-    - [NPM](#npm)
-    - [CDN/Browser](#cdn--browser)
+  - [NPM](#npm)
+  - [CDN/Browser](#cdn--browser)
 - [Usage](#usage)
-    - [`is`](#is): Type checkers
-    - [`debounce()`](#debounce): Debounce callbacks
-    - [`throttle()`](#throttle): Throttle callbacks
-    - [`deferred()`](#deferred): Debounce/Throttle callbacks
-    - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
-    - [`objCopy()`](#obj-copy): Deep-copy objects
-    - [`search()`](#search): Search iterable collections
-        - [Advanced search options](#search-advanced)
-        - [`Ranked search`](#search-ranked): sort results by relevance
-        - [Combine `search()` with `deferred()`](#search-deferred): simulate a search input with debounce mechanism
-    - [`curry()`](#curry): Convert any function into a curried function
+  - [`is`](#is): Type checkers
+  - [`debounce()`](#debounce): Debounce callbacks
+  - [`throttle()`](#throttle): Throttle callbacks
+  - [`deferred()`](#deferred): Debounce/Throttle callbacks
+  - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
+  - [`objCopy()`](#obj-copy): Deep-copy objects
+  - [`search()`](#search): Search iterable collections
+    - [Advanced search options](#search-advanced)
+    - [`Ranked search`](#search-ranked): sort results by relevance
+    - [Combine `search()` with `deferred()`](#search-deferred): simulate a search input with debounce mechanism
+  - [`curry()`](#curry): Convert any function into a curried function
 
 ## Installation
 
@@ -56,7 +56,13 @@ This will expose a global namespace `superutils` with the following:
 // Namespace: an object containing all exports from `@superutils/core`
 superutils.core
 
-const { deferred, fallbackIfFails, objCopy, search, throttle } = superutils.core
+const {
+  deferred,
+  fallbackIfFails,
+  objCopy,
+  search,
+  throttle
+} = superutils.core
 
 deferred()
 fallbackIfFails()
@@ -100,14 +106,14 @@ Simply remove the dot (".") and uppercase the first letter of the function name.
 
 ```javascript
 import {
-	isArr,
-	isFn,
-	isArrLike,
-	isDate,
-	isEmpty,
-	isMap,
-	isNumber,
-	isUrl,
+  isArr,
+  isFn,
+  isArrLike,
+  isDate,
+  isEmpty,
+  isMap,
+  isNumber,
+  isUrl,
 } from '@superutils/core'
 ```
 
@@ -119,11 +125,11 @@ import {
 import { debounce } from '@superutils/core'
 
 const handleChange = debounce(
-	event => console.log(event.target.value),
-	300, // debounce delay in milliseconds
-	{
-		leading: false, // default
-	},
+  event => console.log(event.target.value),
+  300, // debounce delay in milliseconds
+  {
+    leading: false, // default
+  },
 )
 handleChange({ target: { value: 1 } }) // will be ignored, unless `leading = true`
 handleChange({ target: { value: 2 } }) // will be ignored
@@ -139,11 +145,11 @@ handleChange({ target: { value: 4 } }) // will be executed
 import { throttle } from '@superutils/core'
 
 const handleChange = throttle(
-	event => console.log(event.target.value),
-	300, // throttle duration in milliseconds
-	{
-		trailing: false, // default
-	},
+  event => console.log(event.target.value),
+  300, // throttle duration in milliseconds
+  {
+    trailing: false, // default
+  },
 )
 handleChange({ target: { value: 1 } }) // will be executed
 handleChange({ target: { value: 2 } }) // will be ignored
@@ -161,9 +167,9 @@ Create debounced/throttled functions using the `throttle` switch.
 import { deferred } from '@superutils/core'
 
 const handleChange = deferred(
-	event => console.log(event.target.value),
-	300, // delay in milliseconds
-	{ throttle: false }, // determines whether to create a debounced or throttled function
+  event => console.log(event.target.value),
+  300, // delay in milliseconds
+  { throttle: false }, // determines whether to create a debounced or throttled function
 )
 handleChange({ target: { value: 1 } }) // will be ignored
 handleChange({ target: { value: 2 } }) // will be ignored
@@ -184,13 +190,13 @@ import { fallbackIfFails } from '@superutils/core'
 const allProducts = []
 // an example sync function that may fail
 const getProducts = () => {
-	if (!allProducts?.length) throw new Error('No products available')
-	return allProducts
+  if (!allProducts?.length) throw new Error('No products available')
+  return allProducts
 }
 const result = fallbackIfFails(
-	getProducts, // function to invoke
-	[], // Parameters to be provided to the function. A function can also be used here that returns an array
-	[], // Fallback value to be returned when function throws an error.
+  getProducts, // function to invoke
+  [], // Parameters to be provided to the function. A function can also be used here that returns an array
+  [], // Fallback value to be returned when function throws an error.
 )
 console.log({ result })
 // Result: []
@@ -204,18 +210,18 @@ import { fallbackIfFails } from '@superutils/core'
 const allProducts = []
 // an example sync function that may fail
 const getProducts = () =>
-	fetch('[DUMMYJSON-DOT-COM]/products').then(r => r.json())
+  fetch('[DUMMYJSON-DOT-COM]/products').then(r => r.json())
 fallbackIfFails(
-	getProducts, // function to invoke
-	[], // Parameters to be provided to the function. A function can also be used here that returns an array
-	{ products: [] }, // Fallback value to be returned when function throws an error.
+  getProducts, // function to invoke
+  [], // Parameters to be provided to the function. A function can also be used here that returns an array
+  { products: [] }, // Fallback value to be returned when function throws an error.
 ).then(console.log)
 // Prints the result when request is successful or fallback value when request fails
 
 // use a promise
 fallbackIfFails(
-	Promise.reject('error'),
-	[], //
+  Promise.reject('error'),
+  [], //
 )
 ```
 
@@ -227,24 +233,24 @@ fallbackIfFails(
 import { objCopy } from '@superutils/core'
 
 const source = {
-	a: 1,
-	b: 2,
-	c: 3,
-	x: {
-		a: 1,
-		b: 2,
-	},
+  a: 1,
+  b: 2,
+  c: 3,
+  x: {
+    a: 1,
+    b: 2,
+  },
 }
 const dest = {
-	d: 4,
-	e: 5,
+  d: 4,
+  e: 5,
 }
 const copied = objCopy(
-	source,
-	dest,
-	['a', 'x.b'], // exclude source property
-	'empty', // only override if dest doesn't have the property or value is "empty" (check `is.emtpy()`)
-	true, // recursively copies child objects. If false, child objects are copied by reference.
+  source,
+  dest,
+  ['a', 'x.b'], // exclude source property
+  'empty', // only override if dest doesn't have the property or value is "empty" (check `is.emtpy()`)
+  true, // recursively copies child objects. If false, child objects are copied by reference.
 )
 console.log({ copied })
 // Result:
@@ -266,11 +272,11 @@ import { search } from '@superutils/core'
 
 // sample colletion
 const data = new Map([
-	[1, { age: 30, name: 'Alice' }],
-	[2, { age: 25, name: 'Bob' }],
-	[3, { age: 35, name: 'Charlie' }],
-	[4, { age: 28, name: 'Dave' }],
-	[5, { age: 22, name: 'Eve' }],
+  [1, { age: 30, name: 'Alice' }],
+  [2, { age: 25, name: 'Bob' }],
+  [3, { age: 35, name: 'Charlie' }],
+  [4, { age: 28, name: 'Dave' }],
+  [5, { age: 22, name: 'Eve' }],
 ])
 
 // Case-insensitive search by name
@@ -315,30 +321,30 @@ import { search } from '@superutils/core'
 
 // Sample colletion
 const data = new Map([
-	[1, { age: 30, name: 'Alice' }],
-	[2, { age: 25, name: 'Bob' }],
-	[3, { age: 35, name: 'Charlie' }],
-	[4, { age: 28, name: 'Dave' }],
-	[5, { age: 22, name: 'Eve' }],
+  [1, { age: 30, name: 'Alice' }],
+  [2, { age: 25, name: 'Bob' }],
+  [3, { age: 35, name: 'Charlie' }],
+  [4, { age: 28, name: 'Dave' }],
+  [5, { age: 22, name: 'Eve' }],
 ])
 const result = search(data, {
-	asMap: false, // Result type: true => Map (default, keys preserved), false => Array
-	ignoreCase: false, // For text case-sensitivity
-	limit: 10, // Number of items returned. Default: no limit
-	matchExact: true, // true: match exact value. false (default): partial matching
-	matchAll: true, // if true, item will be matched only when all of the query properties match
-	query: {
-		age: /(2[5-9])|(3[0-5])/, // match ages 25-35
-		name: /ali|ob|ve/i,
-	},
-	// transform the property values (or item itself when searching all properties in global search mode using `query: string | RegExp`)
-	transform: (item, value, property) => {
-		// exclude items by returning undefined or emptry string
-		if (item.age < 18) return ''
+  asMap: false, // Result type: true => Map (default, keys preserved), false => Array
+  ignoreCase: false, // For text case-sensitivity
+  limit: 10, // Number of items returned. Default: no limit
+  matchExact: true, // true: match exact value. false (default): partial matching
+  matchAll: true, // if true, item will be matched only when all of the query properties match
+  query: {
+    age: /(2[5-9])|(3[0-5])/, // match ages 25-35
+    name: /ali|ob|ve/i,
+  },
+  // transform the property values (or item itself when searching all properties in global search mode using `query: string | RegExp`)
+  transform: (item, value, property) => {
+    // exclude items by returning undefined or emptry string
+    if (item.age < 18) return ''
 
-		// return value as string to search continue search as per criteria
-		return `${value}`
-	},
+    // return value as string to search continue search as per criteria
+    return `${value}`
+  },
 })
 console.log({ result })
 // Result:
@@ -360,17 +366,17 @@ import { search } from '@superutils/core'
 
 // Sample colletion
 const data = new Map([
-	[2, { age: 25, name: 'Bob' }],
-	[3, { age: 35, name: 'Charlie' }],
-	[4, { age: 28, name: 'Dave' }],
-	[5, { age: 22, name: 'Eve' }],
-	[1, { age: 30, name: 'Alice' }],
+  [2, { age: 25, name: 'Bob' }],
+  [3, { age: 35, name: 'Charlie' }],
+  [4, { age: 28, name: 'Dave' }],
+  [5, { age: 22, name: 'Eve' }],
+  [1, { age: 30, name: 'Alice' }],
 ])
 const result = search(data, {
-	asMap: false, // Result type: true => Map (default, keys preserved), false => Array
-	limit: 10, // Number of items returned. Default: no limit
-	query: /li/i,
-	ranked: true,
+  asMap: false, // Result type: true => Map (default, keys preserved), false => Array
+  limit: 10, // Number of items returned. Default: no limit
+  query: /li/i,
+  ranked: true,
 })
 console.log(result)
 // [ { age: 30, name: 'Alice' }, { age: 35, name: 'Charlie' } ]
@@ -385,25 +391,25 @@ import { deferred, search } from '@superutils/core'
 
 // sample colletion
 const data = new Map([
-	[1, { age: 30, name: 'Alice' }],
-	[2, { age: 25, name: 'Bob' }],
-	[3, { age: 35, name: 'Charlie' }],
-	[4, { age: 28, name: 'Dave' }],
-	[5, { age: 22, name: 'Eve' }],
+  [1, { age: 30, name: 'Alice' }],
+  [2, { age: 25, name: 'Bob' }],
+  [3, { age: 35, name: 'Charlie' }],
+  [4, { age: 28, name: 'Dave' }],
+  [5, { age: 22, name: 'Eve' }],
 ])
 
 const searchDeferred = deferred(
-	event => {
-		const result = search(data, {
-			query: {
-				name: new RegExp(event?.target?.value, 'i'),
-			},
-		})
-		// print result to console
-		console.log(result)
-	},
-	300, // debounce duration in milliseconds
-	{ leading: false }, // optional defer options
+  event => {
+    const result = search(data, {
+      query: {
+        name: new RegExp(event?.target?.value, 'i'),
+      },
+    })
+    // print result to console
+    console.log(result)
+  },
+  300, // debounce duration in milliseconds
+  { leading: false }, // optional defer options
 )
 
 // ignored
