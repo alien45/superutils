@@ -31,8 +31,9 @@ For full API reference check out the [docs page](https://alien45.github.io/super
     - [`Interceptors/Transformers`](#interceptors)
     - [`Retry`](#retry) Retry on request failure
     - [`Timeout`](#timeout) Abort request on timeout
-    - [`createClient()`](#create-client)
-    - [`createPostClient()`](#create-post-client)
+    - [`createClient()`](#create-client):
+    - [`createPostClient()`](#create-post-client):
+    - [`fetchFunc`](#fetch-func): Using with third-party libraries (e.g., Axios)
 
 ## Features
 
@@ -433,7 +434,6 @@ const requestNewToken = fetch.post.deferred(
 	}),
 )
 
-// First authenticate user to get the initial refresh token and then request new referesh tokens
 // First authenticate user to get the initial refresh token and then request new refresh tokens
 fetch
 	.post<{ refreshToken: string }>(
@@ -511,9 +511,8 @@ const interceptors = {
 	response: [
 		(response, url, options) => {
 			if (response.ok) return
-			console.log('request was successful', { url, options })
+			console.log('request was not successful', { url, options })
 
-			// You can transform the response by returning different `Response` object or even make a completely new HTTP reuqest.
 			// You can transform the response by returning different `Response` object or even make a completely new HTTP request.
 			// The subsequent response interceptors will receive the returned response
 			return fetch('[DUMMYJSON-DOT-COM]/products/1') // promise will be resolved automatically
@@ -570,15 +569,8 @@ import fetch from '@superutils/fetch'
 fetch
 	.get('[DUMMYJSON-DOT-COM]/products/1', {
 		retry: 3, // If request fails, retry up to three more times
-		// Additionally, you can control the retry strategy by using a function
-		retryIf: async (response, retryCount, error) => {
-			if (!!error) return true
-
-			// Mke sure to clone the response if result stream must be consumed here.
-			// Cloning is required to avoid "body stream already read" error.
-			const result = await response.clone().json()
-			return result !== 'expected value'
-		},
+		// Retry on rate limits (429) or transient server errors (5xx).
+		retryIf: r => r.status === 429 || r.status >= 500,
 	})
 	.then(console.log)
 ```
@@ -669,7 +661,7 @@ const deferredPatchClient = postClient.deferred(
 		delay: 300,
 		// prints only successful results
 		onResult: result =>
-			console.log('Product updated using deferred funciton:', result),
+			console.log('Product updated using deferred function:', result),
 	},
 	'[DUMMYJSON-DOT-COM]/products/add',
 	undefined, // data to be provided later
@@ -682,22 +674,37 @@ deferredPatchClient({ title: 'New title 1' }) // ignored by debounce
 deferredPatchClient({ title: 'New title 2' }) // executed
 ```
 
-<div id="fetchFunc"></div>
+<div id="fetch-func"></div>
 
-### `fetchFunc`: Using Third-Party Libraries (e.g., Axios)
+### `fetchFunc`: Using with third-party libraries (e.g., Axios)
 
 The `fetchFunc` option allows you to replace the default request engine. This enables the use of third-party libraries like `axios` while still leveraging `@superutils/fetch` features such as [retries](#retry), [timeouts](#timeout), [debouncing/throttling](#fetch-deferred), and [interceptors](#interceptors).
 
 ```typescript
-import fetch, { type FetchFunc } from '@superutils/fetch'
+import fetch, {
+	FetchCustomOptions,
+	FetchFunc,
+	FetchOptions,
+} from '@superutils/fetch'
 import axios from 'axios'
 
+type Product = {
+	id: number
+	title: string
+}
 fetch
-	.get('[DUMMYJSON-DOT-COM]/products/1', {
-		// Note: The custom function must resolve with a standard Response object
+	.get<{ data: Product }>('[DUMMYJSON-DOT-COM]/products/1', {
+		/**
+		 * Note: Ensure request options are compatible with the third-party
+		 * engine's configuration schema.
+		 *
+		 * Check {@link FetchOptions} (includes `FetchCustomOptions`).
+		 */
 		fetchFunc: axios as FetchFunc,
+
+		// if request fails retry maximus 3 more times
 		retry: 3,
 		// ...additional options
 	})
-	.then(console.log)
+	.then(({ data }) => console.log({ product: data }))
 ```

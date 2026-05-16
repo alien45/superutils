@@ -140,40 +140,33 @@ export type FetchInterceptorResponse = Interceptor<
  * ```javascript
  * import fetch from '@superutils/fetch'
  *
- * // first transform result (user object) and ensure user result alwasy contain a hexadecimal crypto balance
- * const ensureBalanceHex = (user = {}) => {
- *   user.crypto ??= {}
- *   user.crypto.balance ??= '0x0'
- *   return user
- * }
- * // then check convert hexadecimal number to BigInt
- * const hexToBigInt = user => {
- *   user.crypto.balance = BigInt(user.crypto.balance)
- *   return user
- * }
- * // then log balance (no transformation)
- * const logBalance = (result, url) => {
- *   // only log balance for single user requests
- *   const shouldLog = result?.hasOwnProperty('crypto') && /^[0-9]+$/.test(
- *     url?.split('/users/')[1].replace('/', '')
- *   )
- *   shouldLog && console.log(
- *     new Date().toISOString(),
- *     '[UserBalance] UserID:', result.id,
- *     result.crypto.balance
- *   )
- * }
- * // now we make the actaul fetch request
  * const result = await fetch.get('[DUMMYJSON-DOT-COM]/users/1', {
  *   interceptors: {
  *     result: [
- * 	     ensureBalanceHex,
- * 	     hexToBigInt,
- * 	     logBalance
+ *       // 1. check & convert user crypto balance to BigInt
+ * 	     userCryptoBalanceToBigInt,
+ *
+ *       // 2. log balance (no transformation)
+ * 	     logUserBalance
  * 	   ]
  *   }
  * })
  * console.log({result})
+ *
+ * function userCryptoBalanceToBigInt(user = {}) {
+ *   user.crypto ??= {}
+ *   user.crypto.balance ??= '0x0'
+ *   user.crypto.balance = BigInt(user.crypto.balance || '0x0')
+ *   return user
+ * }
+ *
+ * function logUserBalance(user, url) {
+ *   console.log(
+ *     new Date().toISOString(),
+ *     '[UserBalance] UserID:', user.id,
+ *     user.crypto.balance
+ *   )
+ * }
  * ```
  */
 export type FetchInterceptorResult<
