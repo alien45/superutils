@@ -240,7 +240,7 @@ export const embedPlayground = async (
 		files: _files,
 	} as Project
 	const _embedOptions = {
-		height: 480,
+		height: window.innerHeight,
 		openFile: indexFile,
 		view: isHtml ? 'preview' : 'default',
 		...embedOptions,
