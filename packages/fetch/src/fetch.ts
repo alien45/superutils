@@ -136,7 +136,9 @@ const fetch = <
 					[],
 					undefined,
 				)
-				throw new Error(jsonError as string, { cause: jsonError })
+				throw new Error((jsonError as Error)?.message ?? jsonError, {
+					cause: jsonError,
+				})
 			}
 
 			let result: unknown = getResult(

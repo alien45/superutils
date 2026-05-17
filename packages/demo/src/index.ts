@@ -30,20 +30,22 @@ import fetch, {
 
 console.log('Started')
 
-fetch
-	.get(
-		'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils',
-		{
-			as: FetchAs.blob,
-			onDownloadProgress: (percent, received, total) =>
-				console.log({
-					percent: `${(percent ?? 0).toFixed(2)}%`,
-					received,
-					total,
-				}),
-		},
-	)
-	.then(r => console.log('downloaded'), console.log)
+fetch('https://dummyjson.com/auth/me').then(console.log, console.warn)
+
+// fetch
+// 	.get(
+// 		'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils',
+// 		{
+// 			as: FetchAs.blob,
+// 			onDownloadProgress: (percent, received, total) =>
+// 				console.log({
+// 					percent: `${(percent ?? 0).toFixed(2)}%`,
+// 					received,
+// 					total,
+// 				}),
+// 		},
+// 	)
+// 	.then(r => console.log('downloaded'), console.log)
 
 // ToDo: test filter(), find() and search() with non-object values
 // filter(new Map([] as const))
