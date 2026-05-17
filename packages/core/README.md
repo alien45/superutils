@@ -414,10 +414,13 @@ const searchDeferred = deferred(
 
 // ignored
 searchDeferred({ target: { value: 'l' } })
+
 // ignored
 setTimeout(() => searchDeferred({ target: { value: 'li' } }), 50)
+
 // executed: prints `Map(1) { 3 => { age: 35, name: 'Charlie' } }`
 setTimeout(() => searchDeferred({ target: { value: 'lie' } }), 200)
+
 // executed: prints `Map(1) { 1 => { age: 30, name: 'Alice' } }`
 setTimeout(() => searchDeferred({ target: { value: 'lic' } }), 510)
 ```
@@ -430,10 +433,10 @@ setTimeout(() => searchDeferred({ target: { value: 'lic' } }), 510)
 import { curry } from '@superutils/core'
 
 const func = (
-	first: string,
-	second: number,
-	third?: boolean,
-	fourth?: string,
+  first: string,
+  second: number,
+  third?: boolean,
+  fourth?: string,
 ) => `${first}-${second}-${third}-${fourth}`
 // We create a new function from the `func()` function that acts like a type-safe curry function
 // while also being flexible with the number of arguments supplied.

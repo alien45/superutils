@@ -26,7 +26,7 @@ export type ClientData<FixedOptions> =
  * functions. These functions can be equipped with default options like headers, timeouts, or a specific HTTP method,
  * which minimizes code repetition across your application. If a method is not specified during creation, the client
  * will default to `GET`.
- * 
+ *
  * **Option Priority:**
  * 1. `fixedOptions`: Highest priority. Cannot be overridden by the caller.
  * 2. `options`: Options passed during the specific call.
@@ -101,7 +101,6 @@ export const createClient = <
 		Result = GetFetchResult<[FixedOptions, TOptions, CommonOptions], T>,
 	>(url: FetchArgs[0], options?: TOptions): IPromise_Fetch<Result> {
 		const mergedOptions = mergeOptions(
-			fetch.defaults,
 			commonOptions,
 			options,
 			fixedOptions, // fixed options will always override other options
@@ -139,7 +138,6 @@ export const createClient = <
 				: [options?: TOptions]
 		): IPromise_Fetch<Result> => {
 			const mergedOptions = mergeOptions(
-				fetch.defaults,
 				commonOptions,
 				defaultOptions,
 				(defaultUrl === undefined ? args[1] : args[0]) as TOptions,

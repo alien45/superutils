@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 // Re-export fetch relevant & useful things from '@superutils/promise' for ease of use
 export {
 	ResolveError,
@@ -18,6 +17,7 @@ export type {
 } from '@superutils/promise'
 
 /* All local exports */
+export * from './ApiClient'
 export * from './createClient'
 export * from './createPostClient'
 export * from './executeInterceptors'
@@ -25,33 +25,9 @@ export * from './fetch'
 export * from './getResponse'
 export * from './mergeOptions'
 export * from './types'
-import createClient from './createClient'
-import createPostClient from './createPostClient'
+import ApiClient from './ApiClient'
 import _fetch from './fetch'
 import { FetchAs, FetchCustomOptions, FetchInterceptors } from './types'
-
-const methods = {
-	/** Make HTTP requests with method GET */
-	get: createClient({ method: 'get' }),
-
-	/** Make HTTP requests with method HEAD */
-	head: createClient({ method: 'head' }),
-
-	/** Make HTTP requests with method OPTIONS */
-	options: createClient({ method: 'options' }),
-
-	/** Make HTTP requests with method DELETE */
-	delete: createPostClient({ method: 'delete' }),
-
-	/** Make HTTP requests with method PATCH */
-	patch: createPostClient({ method: 'patch' }),
-
-	/** Make HTTP requests with method POST */
-	post: createPostClient({ method: 'post' }),
-
-	/** Make HTTP requests with method PUT */
-	put: createPostClient({ method: 'put' }),
-}
 
 /**
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
@@ -175,13 +151,24 @@ const methods = {
  * })
  * ```
  */
-export const fetch = _fetch as typeof _fetch & typeof methods
-fetch.delete = methods.delete
-fetch.get = methods.get
-fetch.head = methods.head
-fetch.options = methods.options
-fetch.patch = methods.patch
-fetch.post = methods.post
-fetch.put = methods.put
+export const fetch = _fetch as typeof _fetch & ApiClient
 
+const globalClient = new ApiClient(undefined, {
+	commonOptions: { ignoreGlobalDefaults: false },
+	withBaseClients: false,
+})
+Object.defineProperties(
+	fetch,
+	['delete', 'get', 'head', 'options', 'patch', 'post', 'put'].reduce(
+		(obj, method) => ({
+			[method]: {
+				enumerable: false,
+				value: globalClient[method as keyof ApiClient],
+				writable: false,
+			},
+			...obj,
+		}),
+		{},
+	),
+)
 export default fetch

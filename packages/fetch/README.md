@@ -31,8 +31,7 @@ For full API reference check out the [docs page](https://alien45.github.io/super
   - [`Interceptors/Transformers`](#interceptors)
   - [`Retry`](#retry) Retry on request failure
   - [`Timeout`](#timeout) Abort request on timeout
-  - [`createClient()`](#create-client):
-  - [`createPostClient()`](#create-post-client):
+  - [`ApiClient`](#api-client): Isolated API client factory
   - [`fetchFunc`](#fetch-func): Using with third-party libraries (e.g., Axios)
 
 ## Features
@@ -555,9 +554,9 @@ interceptors.error.push((err, url, options) => {
 fetch('[DUMMYJSON-DOT-COM]/products/1').then(console.log, console.warn)
 ```
 
-<div id="retry"></div>
-
 ### Retry
+
+<div id="retry"></div>
 
 The `retry` option provides a robust mechanism to automatically re-attempt failed requests, with support for both linear and exponential backoff strategies to gracefully handle transient network issues.
 
@@ -573,103 +572,99 @@ fetch
   .then(console.log)
 ```
 
-<div id="create-client"></div>
+### `ApiClient`: Isolated API client factory
 
-### `createClient(fixedOptions, commonOptions, commonDeferOptions)`
+<div id="api-client>
 
-The `createClient` utility streamlines the creation of dedicated API clients by generating pre-configured fetch functions. These functions can be equipped with default options like headers, timeouts, or a specific HTTP method, which minimizes code repetition across your application. If a method is not specified during creation, the client will default to `GET`.
+A fully encapsulated and isolated API client factory designed to simplify creation of dedicated API clients with integrated request execution controls.
 
-The returned client also includes a `.deferred()` method, providing the same debounce, throttle, and sequential execution capabilities found in functions like `fetch.get.deferred()`.
+`ApiClient` creates a sandboxed environment for a specific API service. It provides complete isolation by ignoring global `fetch.defaults` by default, ensuring that instance-specific configurations remain clean and predictable. It bundles RESTful methods (`delete`, `get`, `head`, `options`, `patch`, `post`, `put`) and execution controls (debounce/throttle) into a single, cohesive unit.
+
+#### Options Precedence & Merging
+
+- **Options follow a strict hierarchy**: `fixedOptions` > `call options` > `commonOptions`.
+- Global `fetch.defaults` are ignored by default.
+- **Headers**: Merged by key. Call-level headers override common headers with the same name.
+- **Interceptors**: Cumulative. Interceptors execute sequentially (Common → Call → Fixed).
+- **Error Messages**: Merged by key, allowing per-service customization without losing global messages.
+
+#### Key Features
+
+- **Isolation**: Instance-specific options scoped to the client and isolated from other instances.
+- **Base Resolution**: Automatic path joining when `apiBaseUrl` is provided.
+- **Unified Error Handling**: Optional `errorPrefix` to namespace errors for easier debugging.
+- **Method Suite**: Integrated `delete`, `get`, `head`, `options`, `patch`, `post`, and `put` methods.
+- **Deferred Variants**: All methods support `.deferred()` for debouncing, throttling, and sequential execution.
+
+#### Example: Creating an API client
 
 ```javascript
-import { createClient } from '@superutils/fetch'
+import { ApiClient } from '@superutils/fetch'
 
-// Create a "GET" client with default headers and a 5-second timeout
-const apiClient = createClient(
+// Create a client for a specific API service
+const productsClient = new ApiClient(
+  'https://dummyjson.com/api', // base URL
   {
-    // fixed options (cannot be overridden)
-    method: 'get',
-  },
-  {
-    // common options (can be overridden)
-    headers: {
-      Authorization: 'Bearer my-secret-token',
-      'Content-Type': 'application/json',
+    fixedOptions: {
+      // Options that cannot be overridden
+      headers: { Authorization: 'Bearer secret-token' },
     },
-    timeout: 5000,
-  },
-  {
-    // defer options (can be overridden)
-    delay: 300,
-    retry: 2, // If request fails, retry up to two more times
+    commonOptions: {
+      // Default options (can be overridden per request)
+      timeout: 5000,
+    },
+    commonDeferOptions: {
+      // Defer options for deferred methods
+      delay: 300,
+      retry: 2,
+    },
+    errorPrefix: '[Products API] ', // Prefix for error messages
   },
 )
 
-// Use it just like the standard fetch
-apiClient('[DUMMYJSON-DOT-COM]/products/1', {
-  // The 'method' property cannot be overridden as it is used in the fixed options when creating the client.
-  // In TypeScript, the compiler will not allow this property.
-  // In Javascript, it will simply be ignored.
-  // method: 'post',
-  timeout: 3000, // The 'timeout' property can be overridden
-}).then(console.log, console.warn)
+// Use the integrated methods
+productsClient.get('/products/1').then(console.log, console.warn)
 
-// create a deferred client using "apiClient"
-const deferredClient = apiClient.deferred(
-  { retry: 0 }, // disable retrying by overriding the `retry` defer option
-  '[DUMMYJSON-DOT-COM]/products/1',
-  { timeout: 3000 },
-)
-deferredClient({ timeout: 10000 }) // timeout is overridden by individual request
+// Override per request
+productsClient
+  .post(
+    '/products/add',
+    { title: 'New Product' },
+    {
+      timeout: 10000, // Override timeout
+    },
+  )
   .then(console.log, console.warn)
+
+// Use deferred (debounced) methods
+const deferredSearch = productsClient.get.deferred(
+  { delay: 300 },
+  '/products/search',
+)
+deferredSearch({ q: 'iphone' }).then(console.log)
 ```
 
-<div id="create-post-client"></div>
-
-### `createPostClient(fixedOptions, commonOptions, commonDeferOptions)`
-
-While `createClient()` is versatile enough for any HTTP method, `createPostClient()` is specifically designed for methods that require a request body, such as `DELETE`, `PATCH`, `POST`, and `PUT`. If a method is not provided, it defaults to `POST`. The generated client accepts an additional second parameter (`data`) for the request payload.
-
-Similar to `createClient`, the returned function comes equipped with a `.deferred()` method, enabling debounced, throttled, or sequential execution.
+#### Example: Multiple clients with different configurations
 
 ```javascript
-import { createPostClient } from '@superutils/fetch'
+import { ApiClient } from '@superutils/fetch'
 
-// Create a POST client with 10-second as the default timeout
-const postClient = createPostClient(
-  {
-    headers: { 'content-type': 'application/json' },
+// Client for public API (no auth required)
+const publicApi = new ApiClient('https://api.example.com/public')
+
+// Client for authenticated endpoints
+const privateApi = new ApiClient('https://api.example.com/private', {
+  fixedOptions: {
+    headers: { Authorization: 'Bearer token' },
   },
-  {
-    method: 'post',
+  commonOptions: {
     timeout: 10000,
   },
-)
+})
 
-// Invoking `postClient()` automatically applies the pre-configured options
-postClient(
-  '[DUMMYJSON-DOT-COM]/products/add',
-  { title: 'New Product' }, // data/body
-  {}, // other options
-).then(result => console.log('Product created:', result))
-
-// create a deferred client using "postClient"
-const deferredPatchClient = postClient.deferred(
-  {
-    delay: 300,
-    // prints only successful results
-    onResult: result =>
-      console.log('Product updated using deferred function:', result),
-  },
-  '[DUMMYJSON-DOT-COM]/products/add',
-  undefined, // data to be provided later
-  {
-    method: 'patch', // default method for deferredPatchClient
-    timeout: 3000,
-  },
-)
-deferredPatchClient({ title: 'New title 1' }) // ignored by debounce
-deferredPatchClient({ title: 'New title 2' }) // executed
+// Use them independently
+publicApi.get('/posts').then(console.log)
+privateApi.post('/user/profile', { name: 'John' }).then(console.log)
 ```
 
 <div id="fetch-func"></div>

@@ -95,7 +95,7 @@ export const createPostClient = <
 		) as PostOptions
 		mergedOptions.as ??= FetchAs.json
 		mergedOptions.body = data ?? mergedOptions.body
-		mergedOptions.method ??= 'post'
+		mergedOptions.method ??= 'POST'
 
 		const headers = mergedOptions.headers as Headers
 		if (!headers.get('content-type')) {
@@ -142,7 +142,6 @@ export const createPostClient = <
 			// add default data after the url
 			if (defaultData !== undefined) args.splice(1, 0, defaultData)
 			const mergedOptions = mergeOptions(
-				fetch.defaults,
 				commonOptions,
 				defaultOptions,
 				args[2] as Options,
