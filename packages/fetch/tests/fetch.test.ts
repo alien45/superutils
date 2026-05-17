@@ -171,6 +171,7 @@ describe('fetch', () => {
 				headers: {
 					'content-type': 'something else',
 				},
+				ignoreGlobalDefaults: false,
 				interceptors: {
 					error: [vi.fn()],
 					request: [

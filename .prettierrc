@@ -7,6 +7,15 @@
 	"experimentalTernaries": false,
 	"jsxSingleQuote": true,
 	"objectWrap": "preserve",
+	"overrides": [
+		{
+			"files": ["*.md"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 2
+			}
+		}
+	],
 	"plugins": [],
 	"printWidth": 80,
 	"quoteProps": "as-needed",

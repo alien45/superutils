@@ -48,6 +48,7 @@ export type FetchCustomOptions = {
 	 * Default: 'json'
 	 */
 	as?: FetchAs
+
 	/**
 	 * An `AbortController` instance to control the request.
 	 *
@@ -64,6 +65,15 @@ export type FetchCustomOptions = {
 	abortCtrl?: AbortController
 	body?: PostArgs[1]
 	errMsgs?: FetchErrMsgs
+
+	/**
+	 * If set to `true`, the global `fetch.defaults` (including global headers, interceptors,
+	 * and timeout settings) will not be merged into the options for this request.
+	 *
+	 * Default: `false`
+	 */
+	ignoreGlobalDefaults?: boolean
+
 	/**
 	 * Custom fetch function to use instead of the global `fetch`.
 	 * Useful for testing or using a different fetch implementation (e.g. `node-fetch` in older Node versions).
@@ -71,6 +81,7 @@ export type FetchCustomOptions = {
 	 * Default: `globalThis.fetch`
 	 */
 	fetchFunc?: FetchFunc
+
 	/**
 	 * Interceptor/transformer callback executed at different stages of the request.
 	 * See {@link FetchInterceptors} for more details.
@@ -108,7 +119,14 @@ export type FetchOptions = Omit<RequestInit, 'body'> & FetchCustomOptions
 /** Default fetch options */
 export type FetchOptionsDefault = Omit<
 	FetchOptionsInterceptor,
-	'abortCtrl' | 'as' | 'body' | 'method' | 'signal' | 'timeout' | 'headers'
+	| 'abortCtrl'
+	| 'as'
+	| 'body'
+	| 'ignoreGlobalDefaults'
+	| 'method'
+	| 'signal'
+	| 'timeout'
+	| 'headers'
 > & {
 	/**
 	 * Request headers.

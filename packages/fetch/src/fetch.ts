@@ -28,13 +28,14 @@ import {
 	FetchOptionsDefault,
 } from './types'
 
-const defaultErrorMsgs = Object.freeze({
+export const defaultErrorMsgs = Object.freeze({
 	aborted: 'Request aborted',
 	invalidUrl: 'Invalid URL',
 	parseFailed: 'Failed to parse response as',
 	timedout: 'Request timed out',
 	requestFailed: 'Request failed with status code:',
 }) as Required<FetchErrMsgs>
+export const POST_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE']
 
 const fetch = <
 	T = unknown,
@@ -54,7 +55,7 @@ const fetch = <
 	// merge `defaults` with `options` to make sure default values are used where appropriate
 	const opts = mergeOptions(
 		{ errMsgs: defaultErrorMsgs },
-		fetch.defaults,
+		options.ignoreGlobalDefaults ? undefined : fetch.defaults,
 		options,
 	)
 
@@ -64,7 +65,7 @@ const fetch = <
 			? opts.abortCtrl
 			: new AbortController()
 	opts.as ??= FetchAs.response
-	opts.method ??= 'get'
+	opts.method ??= 'GET'
 	opts.signal ??= opts.abortCtrl.signal
 	const { abortCtrl, as: parseAs, headers, onAbort, onTimeout } = opts
 	opts.onAbort = async () => {
@@ -109,9 +110,7 @@ const fetch = <
 				throw new Error(errMsgs.invalidUrl)
 
 			const stringify =
-				['delete', 'patch', 'post', 'put'].includes(
-					`${opts.method}`.toLowerCase(),
-				)
+				POST_METHODS.includes(`${opts.method}`.toUpperCase())
 				&& !['undefined', 'string'].includes(typeof body)
 				&& isObj(body, true)
 				&& headers.get('content-type') === ContentType.APPLICATION_JSON
@@ -172,7 +171,7 @@ const fetch = <
 		}
 	}) as IPromise_Fetch<TReturn>
 }
-/** Default fetch options */
+/** Global default fetch options */
 fetch.defaults = {
 	abortOnEarlyFinalize: true,
 	errMsgs: { ...defaultErrorMsgs }, // all error messages must be defined here

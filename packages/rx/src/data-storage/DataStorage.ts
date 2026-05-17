@@ -65,7 +65,6 @@ import { OnErrorType } from './types'
  * const userStore = DataStorage.(name, { delay: 0 }) // delay is set to zero to simplify the example
  * userStore.set('name', 'John Doe')
  * userStore.set('name', 'John Doe')
- *
  * ```
  */
 export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
@@ -326,6 +325,8 @@ export class DataStorage<
 	 * This factory method automatically configures `parse` and `stringify` logic to
 	 * treat the underlying storage as a serialized object, while providing a
 	 * type-safe Map-like interface for individual properties.
+	 *
+	 * This default behavior can be overridden by providing custom `parse` and `stringify` implementations in `options`.
 	 *
 	 * @param name (optional) The name for the storage (e.g., localStorage key or filename).
 	 * @param options (optional) Configuration options for the storage instance.

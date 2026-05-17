@@ -13,8 +13,8 @@
 - [Non-goals](#non-goals)
 - [Packages](#packages)
 - [Getting Started](#getting-started)
-    - [NPM](#npm)
-    - [CDN/Browser](#cdn--browser)
+  - [NPM](#npm)
+  - [CDN/Browser](#cdn--browser)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -134,18 +134,18 @@ Once installed, you can import the utilities directly into your project.
 import fetch from '@superutils/fetch'
 
 fetch
-	.get('[DUMMYJSON-DOT-COM]/products', {
-		interceptors: {
-			// transform result
-			result: products =>
-				products.map(p => ({
-					...p,
-					updated: new Date().toISOString(),
-				})),
-		},
-		timeout: 5000,
-	})
-	.then(console.log)
+  .get('[DUMMYJSON-DOT-COM]/products', {
+    interceptors: {
+      // transform result
+      result: products =>
+        products.map(p => ({
+          ...p,
+          updated: new Date().toISOString(),
+        })),
+    },
+    timeout: 5000,
+  })
+  .then(console.log)
 ```
 
 ### CDN / Browser
@@ -164,7 +164,7 @@ OR,
 
 This exposes a global `superutils` object containing the exports of any loaded packages:
 
-```java
+```
 superutils.core // All exports from `@superutils/core`
 superutils.fetch // Default export (function) from `@superutils/fetch` + named exports
 superutils.PromisE // Default export (class) from `@superutils/promise` + named exports
