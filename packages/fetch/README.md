@@ -574,7 +574,7 @@ fetch
 
 ### `ApiClient`: Isolated API client factory
 
-<div id="api-client>
+<div id="api-client"></div>
 
 A fully encapsulated and isolated API client factory designed to simplify creation of dedicated API clients with integrated request execution controls.
 
