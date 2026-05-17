@@ -603,7 +603,7 @@ import { ApiClient } from '@superutils/fetch'
 
 // Create a client for a specific API service
 const productsClient = new ApiClient(
-  'https://dummyjson.com/api', // base URL
+  '[DUMMYJSON-DOT-COM]', // base URL
   {
     fixedOptions: {
       // Options that cannot be overridden
@@ -650,12 +650,20 @@ deferredSearch({ q: 'iphone' }).then(console.log)
 import { ApiClient } from '@superutils/fetch'
 
 // Client for public API (no auth required)
-const publicApi = new ApiClient('https://api.example.com/public')
+const publicApi = new ApiClient('[DUMMYJSON-DOT-COM]')
 
+let authToken = ''
 // Client for authenticated endpoints
-const privateApi = new ApiClient('https://api.example.com/private', {
+const authApi = new ApiClient('[DUMMYJSON-DOT-COM]/auth', {
   fixedOptions: {
     headers: { Authorization: 'Bearer token' },
+    interceptors: {
+      request: (url, options) => {
+        if (!authToken) return
+
+        options.headers.set('Authorization', `Bearer ${authToken}`)
+      },
+    },
   },
   commonOptions: {
     timeout: 10000,
@@ -663,8 +671,25 @@ const privateApi = new ApiClient('https://api.example.com/private', {
 })
 
 // Use them independently
-publicApi.get('/posts').then(console.log)
-privateApi.post('/user/profile', { name: 'John' }).then(console.log)
+const result = await authApi.post(
+  '/login',
+  {
+    username: 'emilys',
+    password: 'emilyspass',
+    expiresInMins: 30, // optional, defaults to 60
+  },
+  { credentials: 'include' },
+)
+authToken = result.accessToken
+await authApi
+  .get('/me/')
+  .then(user =>
+    console.log(`authApi success: ${user.firstName} ${user.lastName}`),
+  )
+
+await publicApi
+  .get('/auth/me')
+  .catch(err => console.log(`publicApi error: ${err.message}`))
 ```
 
 <div id="fetch-func"></div>
