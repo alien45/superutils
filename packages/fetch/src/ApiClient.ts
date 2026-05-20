@@ -1,9 +1,15 @@
-import { isStr } from '@superutils/core'
+import { isFn, isObj, isStr } from '@superutils/core'
 import { DeferredAsyncOptions } from '@superutils/promise'
 import createClient from './createClient'
 import createPostClient from './createPostClient'
 import mergeOptions from './mergeOptions'
-import { FetchOptions, ExcludeOptions, FetchInterceptors } from './types'
+import {
+	FetchOptions,
+	ExcludeOptions,
+	FetchInterceptors,
+	GET_METHODS,
+	POST_METHODS,
+} from './types'
 
 /**
  * Configuration for the ApiClient instance.
@@ -19,9 +25,10 @@ export type ApiClientConfig<
 	commonDeferOptions?: DeferredAsyncOptions<unknown, CommonDelay>
 	errorPrefix?: string
 	fixedOptions?: FixedOptions
-	withBaseClients?: boolean
 }
 export type ApiClientFetchOptions = Omit<FetchOptions, 'method'>
+
+const URL_REGEX = /^(?:https?:)?\/\//i
 
 /**
  * A fully encapsulated and isolated API client factory.
@@ -49,7 +56,7 @@ export type ApiClientFetchOptions = Omit<FetchOptions, 'method'>
  */
 export class ApiClient<
 	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	FixedOptions extends ApiClientFetchOptions = {}, // "{}" is required to correct infer common options
+	FixedOptions extends ApiClientFetchOptions = {}, // "{}" is required to correctly infer common options
 	CommonOptions extends ExcludeOptions<FixedOptions, ApiClientFetchOptions> =
 		ExcludeOptions<FixedOptions, ApiClientFetchOptions>,
 	CommonDelay extends number = number,
@@ -88,87 +95,144 @@ export class ApiClient<
 	/**
 	 * Creates a new ApiClient instance.
 	 *
-	 * @param apiBaseUrl - The base URL for the API. Relative paths passed to methods will be appended to this.
+	 * @param baseUrl - The base URL for the API. Relative paths passed to methods will be appended to this.
 	 * @param config - Optional configuration for headers, interceptors, and default behavior.
 	 */
 	constructor(
-		public apiBaseUrl?: string,
+		public baseUrl?: string | null,
 		config: ApiClientConfig<FixedOptions, CommonOptions, CommonDelay> = {},
 	) {
 		const {
 			errorPrefix,
 			fixedOptions = {} as FixedOptions,
-			commonOptions = {} as CommonOptions,
 			commonDeferOptions = {},
-			withBaseClients = true,
 		} = config
-		const interceptors: FetchInterceptors = {}
-		if (errorPrefix)
-			interceptors.error = [
-				err => {
-					err.message = `${errorPrefix} ${err.message}`
-					return err
-				},
-			]
+		let { commonOptions = {} as CommonOptions } = config
 
-		if (isStr(this.apiBaseUrl)) {
-			interceptors.request = [
-				url => {
-					const useBaseUrl =
-						isStr(url)
-						&& !url.startsWith('http://')
-						&& !url.startsWith('https://')
-						&& !url.startsWith(this.apiBaseUrl!)
-					if (useBaseUrl) url = `${this.apiBaseUrl}${url as string}`
-					return url
-				},
-			]
-		}
+		if (this.baseUrl?.endsWith('/'))
+			this.baseUrl = this.baseUrl.slice(0, -1)
 
-		const getMethods = [
-			withBaseClients ? 'client' : '',
-			'get',
-			'head',
-			'options',
-		].filter(Boolean)
-		const postMethods = [
-			withBaseClients ? 'postClient' : '',
-			'delete',
-			'patch',
-			'post',
-			'put',
-		].filter(Boolean)
-		const methods = [...getMethods, ...postMethods].reduce(
-			(obj, method) => {
-				const isBaseClient = method.toLowerCase().includes('client')
-				const _createClient = (
-					getMethods.includes(method)
-						? createClient
-						: createPostClient
-				) as typeof createClient
+		// make sure "method" and "body" are non-existent from both options
+		Reflect.deleteProperty(fixedOptions, 'body')
+		Reflect.deleteProperty(fixedOptions, 'method')
+		Reflect.deleteProperty(commonOptions, 'body')
+		Reflect.deleteProperty(commonOptions, 'method')
 
-				return {
-					[method]: {
-						enumerable: false,
-						value: _createClient(
-							mergeOptions(fixedOptions, {
-								interceptors,
-								method: isBaseClient
-									? undefined
-									: method.toUpperCase(),
-							}),
-							{ ignoreGlobalDefaults: true, ...commonOptions },
-							commonDeferOptions,
-						),
-						writable: false,
+		// add interceptors to to common options, to be executed before user-provided interceptors
+		const interceptors: FetchInterceptors = {
+			error: !errorPrefix
+				? undefined
+				: err => {
+						err.message = `${errorPrefix} ${err.message}`
+						return err
 					},
-					...obj,
-				}
-			},
-			{},
+			request: !isStr(this.baseUrl)
+				? undefined
+				: url =>
+						isStr(url)
+						&& !URL_REGEX.test(url)
+						&& !!this.baseUrl
+						&& !url.startsWith(this.baseUrl)
+							? `${this.baseUrl}${url.startsWith('/') ? url : `/${url}`}`
+							: url,
+		}
+		commonOptions = mergeOptions(
+			{ ignoreGlobalDefaults: true, interceptors },
+			commonOptions,
+		) as CommonOptions
+		this.client = createClient(
+			fixedOptions,
+			commonOptions,
+			commonDeferOptions,
 		)
-		Object.defineProperties(this, methods)
+		this.postClient = createPostClient(
+			fixedOptions,
+			commonOptions,
+			commonDeferOptions,
+		)
+
+		Object.defineProperties(
+			this,
+			[...GET_METHODS, ...POST_METHODS].reduce((obj, method) => {
+				obj[method.toLowerCase()] = {
+					enumerable: false,
+					value: createMethodProxy(
+						this,
+						method,
+						!GET_METHODS.includes(
+							method as (typeof GET_METHODS)[number],
+						),
+					),
+					writable: false,
+				}
+				return obj
+			}, {} as PropertyDescriptorMap),
+		)
 	}
 }
-
 export default ApiClient
+
+const addMethodToOptions = (
+	args: unknown[],
+	optionsIndex: number,
+	method: string,
+) => {
+	if (!isObj(args[optionsIndex])) args[optionsIndex] = {}
+	;(args[optionsIndex] as FetchOptions).method = method
+	return args
+}
+
+/**
+ * Create proxy traps to intercept calls to ApiClient methods and their respective .deferred() functions to:
+ * 1. re-use the appropriate base client instead of creating base client for each method
+ * 2. enforce respective HTTP method
+ */
+const createMethodProxy = (
+	instance: ApiClient,
+	method: string,
+	isPost = false,
+	baseClient = isPost ? instance.postClient : instance.client,
+) =>
+	new Proxy(baseClient, {
+		// trap to enforce options.method into instance[METHOD]() calls
+		apply: (
+			_target,
+			thisArg: unknown,
+			args: Parameters<typeof baseClient>,
+		) =>
+			Reflect.apply(
+				baseClient,
+				thisArg,
+				addMethodToOptions(args, isPost ? 2 : 1, method),
+			) as typeof baseClient,
+		// trap to enforce options.method into individual .deferred()() calls
+		get: (_target, propName: string) => {
+			const propVal = Reflect.get(
+				baseClient,
+				propName,
+			) as (typeof baseClient)[keyof typeof baseClient]
+			if (propName !== 'deferred' || !isFn(propVal)) return propVal
+
+			const deferred = (...args: unknown[]) => {
+				const deferredFn = Reflect.apply(
+					propVal,
+					baseClient,
+					args,
+				) as (typeof baseClient)['deferred']
+
+				let optionsIndex = isPost ? 2 : 1
+				if (args[1] !== undefined) optionsIndex-- // defaultUrl provided
+				if (isPost && args[2] !== undefined) optionsIndex-- // defaultData provided
+
+				return new Proxy(deferredFn, {
+					apply: (target, thisArg, callArgs) =>
+						Reflect.apply(
+							target,
+							thisArg,
+							addMethodToOptions(callArgs, optionsIndex, method),
+						) as ReturnType<(typeof baseClient)['deferred']>,
+				})
+			}
+			return deferred
+		},
+	})

@@ -24,3 +24,6 @@ export enum FetchAs {
 	response = 'response',
 	text = 'text',
 }
+
+export const GET_METHODS = ['GET', 'HEAD', 'OPTIONS'] as const
+export const POST_METHODS = ['DELETE', 'PATCH', 'POST', 'PUT'] as const
