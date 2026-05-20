@@ -429,7 +429,7 @@ setTimeout(() => searchDeferred({ target: { value: 'lic' } }), 510)
 
 ### `curry(fn, arity)`: Convert any function into a curried function
 
-```javascript
+```typescript
 import { curry } from '@superutils/core'
 
 const func = (
