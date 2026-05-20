@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiClient } from '../src/ApiClient'
 import fetch from '../src/fetch'
+import { GET_METHODS, POST_METHODS } from '../src/types'
 import { getMockedFetch } from './utils'
 
 describe('ApiClient', () => {
@@ -27,25 +28,21 @@ describe('ApiClient', () => {
 		expect(api.options).toBeDefined()
 		expect(api.client).toBeDefined()
 		expect(api.postClient).toBeDefined()
+
+		expect((api.get.deferred as any).test).toBeUndefined()
+		expect((api.post as any).test).toBeUndefined()
 	})
 
 	it('should have non-enumerable and non-writable properties for methods', () => {
 		const api = new ApiClient()
-		const methods = [
-			'get',
-			'post',
-			'put',
-			'patch',
-			'delete',
-			'head',
-			'options',
-			'client',
-			'postClient',
-		]
-		for (const method of methods) {
-			const descriptor = Object.getOwnPropertyDescriptor(api, method)
+		const methodDescriptors = [...GET_METHODS, ...POST_METHODS].map(m =>
+			Object.getOwnPropertyDescriptor(api, m.toLowerCase()),
+		)
+		for (const descriptor of methodDescriptors) {
 			expect(descriptor?.enumerable).toBe(false)
 			expect(descriptor?.writable).toBe(false)
+			expect(descriptor?.value).toBeInstanceOf(Function)
+			expect(descriptor?.value.deferred).toBeInstanceOf(Function)
 		}
 	})
 

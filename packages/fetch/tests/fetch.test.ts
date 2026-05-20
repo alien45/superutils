@@ -10,6 +10,8 @@ import fetch, {
 	FetchInterceptorResult,
 	FetchInterceptors,
 	FetchOptions,
+	GET_METHODS,
+	POST_METHODS,
 } from '../src'
 import {
 	productsBaseUrl as baseUrl,
@@ -38,8 +40,19 @@ describe('fetch', () => {
 		) as any
 		vi.useFakeTimers()
 	})
-
 	describe('general', () => {
+		it('should contain methods and .deferred() functions', () => {
+			const methodDescriptors = [...GET_METHODS, ...POST_METHODS].map(m =>
+				Object.getOwnPropertyDescriptor(fetch, m.toLowerCase()),
+			)
+			for (const descriptor of methodDescriptors) {
+				expect(descriptor?.enumerable).toBe(false)
+				expect(descriptor?.writable).toBe(false)
+				expect(descriptor?.value).toBeInstanceOf(Function)
+				expect(descriptor?.value.deferred).toBeInstanceOf(Function)
+			}
+		})
+
 		it('should return `Response` by default', async () => {
 			const fetch200 = vi.fn((...args: any[]) =>
 				Promise.resolve(
