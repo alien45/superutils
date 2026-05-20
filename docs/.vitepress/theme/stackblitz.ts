@@ -246,74 +246,76 @@ export const embedPlayground = async (
 		...embedOptions,
 	} as EmbedOptions
 
-	// on mobile devices open project in a new tab on stackblitz.com
-	if (isEnvMobile()) return sdk.openProject(_project, _embedOptions)
+	// // on mobile devices open project in a new tab on stackblitz.com
+	// if (isEnvMobile()) return sdk.openProject(_project, _embedOptions)
 
-	if (!element) {
-		// if element or selector is not provided, open playground on a modal
-		const modal = document.createElement('div')
-		modal.classList.add('modal', 'playground')
-		modal.style = `
-			background: var(--vp-c-bg);
-			position: fixed;
-			top: 0;
-			left: 0;
-			bottom: 0;
-			right: 0;
-			width: 100%;
-			height: 100%;
-			background: black;
-			padding: 35px 0 0;
-			z-index: 99999;
-		`
+	// if (!element) {
+	// 	// if element or selector is not provided, open playground on a modal
+	// 	const modal = document.createElement('div')
+	// 	modal.classList.add('modal', 'playground')
+	// 	modal.style = `
+	// 		background: var(--vp-c-bg);
+	// 		position: fixed;
+	// 		top: 0;
+	// 		left: 0;
+	// 		bottom: 0;
+	// 		right: 0;
+	// 		width: 100%;
+	// 		height: 100%;
+	// 		background: black;
+	// 		padding: 35px 0 0;
+	// 		z-index: 99999;
+	// 	`
 
-		const closeButton = document.createElement('div')
-		const closeStyle = `
-			background: #32363f;
-			border: 1px solid grey;
-			border-radius: 5px;
-			cursor: pointer;
-			left: 0;
-			position: fixed;
-			right: 0;
-			padding: 5px 10px;
-			text-align: center;
-			top: 0;
-		`
-		closeButton.classList.add('close')
-		closeButton.onmouseenter = () => {
-			closeButton.style = `${closeStyle};background: black;`
-		}
-		closeButton.onmouseleave = () => {
-			closeButton.style = closeStyle
-		}
-		closeButton.onclick = () => {
-			modal.remove()
-		}
-		closeButton.style = closeStyle
-		closeButton.textContent = 'Close Playground'
-		modal.appendChild(closeButton)
+	// 	const closeButton = document.createElement('div')
+	// 	const closeStyle = `
+	// 		background: #32363f;
+	// 		border: 1px solid grey;
+	// 		border-radius: 5px;
+	// 		cursor: pointer;
+	// 		left: 0;
+	// 		position: fixed;
+	// 		right: 0;
+	// 		padding: 5px 10px;
+	// 		text-align: center;
+	// 		top: 0;
+	// 	`
+	// 	closeButton.classList.add('close')
+	// 	closeButton.onmouseenter = () => {
+	// 		closeButton.style = `${closeStyle};background: black;`
+	// 	}
+	// 	closeButton.onmouseleave = () => {
+	// 		closeButton.style = closeStyle
+	// 	}
+	// 	closeButton.onclick = () => {
+	// 		modal.remove()
+	// 	}
+	// 	closeButton.style = closeStyle
+	// 	closeButton.textContent = 'Close Playground'
+	// 	modal.appendChild(closeButton)
 
-		const playground = document.createElement('div')
-		playground.classList.add('stackblitz')
-		modal.appendChild(playground)
-		document.body.appendChild(modal)
-		element = document.querySelector(
-			`.modal.playground > .stackblitz`,
-		) as HTMLElement
+	// 	const playground = document.createElement('div')
+	// 	playground.classList.add('stackblitz')
+	// 	modal.appendChild(playground)
+	// 	document.body.appendChild(modal)
+	// 	element = document.querySelector(
+	// 		`.modal.playground > .stackblitz`,
+	// 	) as HTMLElement
 
-		embedOptions.height = '100%'
-	} else if (typeof element === 'string') {
-		// assume query selector and embed playground in the element
-		element =
-			document.getElementById(element)
-			?? (document.querySelector(element) as HTMLElement)
-	}
+	// 	embedOptions.height = '100%'
+	// } else if (typeof element === 'string') {
+	// 	// assume query selector and embed playground in the element
+	// 	element =
+	// 		document.getElementById(element)
+	// 		?? (document.querySelector(element) as HTMLElement)
+	// }
 
-	return (
-		element instanceof HTMLElement
-		&& sdk.embedProject(element, _project, _embedOptions)
-	)
+	// return (
+	// 	element instanceof HTMLElement
+	// 	&& sdk.embedProject(element, _project, _embedOptions)
+	// )
+
+	return sdk.openProject(_project, _embedOptions)
 }
 
 /** Add localStorage alternative using 'node-localstorage' module for use with DataStorage */
