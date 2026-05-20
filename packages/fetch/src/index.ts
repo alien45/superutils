@@ -27,7 +27,13 @@ export * from './mergeOptions'
 export * from './types'
 import ApiClient from './ApiClient'
 import _fetch from './fetch'
-import { FetchAs, FetchCustomOptions, FetchInterceptors } from './types'
+import {
+	FetchAs,
+	FetchCustomOptions,
+	FetchInterceptors,
+	GET_METHODS,
+	POST_METHODS,
+} from './types'
 
 /**
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
@@ -153,22 +159,24 @@ import { FetchAs, FetchCustomOptions, FetchInterceptors } from './types'
  */
 export const fetch = _fetch as typeof _fetch & ApiClient
 
-const globalClient = new ApiClient(undefined, {
+const globalClient = new ApiClient(null, {
 	commonOptions: { ignoreGlobalDefaults: false },
-	withBaseClients: false,
 })
 Object.defineProperties(
 	fetch,
-	['delete', 'get', 'head', 'options', 'patch', 'post', 'put'].reduce(
-		(obj, method) => ({
-			[method]: {
-				enumerable: false,
-				value: globalClient[method as keyof ApiClient],
-				writable: false,
-			},
-			...obj,
-		}),
-		{},
-	),
+	[...GET_METHODS, ...POST_METHODS]
+		.map(x => x.toLowerCase())
+		.reduce(
+			(obj, method) => ({
+				[method]: {
+					enumerable: false,
+					value: globalClient[method as keyof ApiClient],
+					writable: false,
+				},
+				...obj,
+			}),
+			{},
+		),
 )
+
 export default fetch

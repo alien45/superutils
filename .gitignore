@@ -13,4 +13,5 @@ credentials.json
 #vitepress/docs
 docs/.vitepress/dist
 docs/.vitepress/cache
-docs/packages/@superutils
+# auto-generated using typedoc
+docs/packages

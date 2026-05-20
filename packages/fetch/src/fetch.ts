@@ -26,6 +26,7 @@ import {
 	FetchErrMsgs,
 	FetchError,
 	FetchOptionsDefault,
+	POST_METHODS,
 } from './types'
 
 export const defaultErrorMsgs = Object.freeze({
@@ -35,7 +36,6 @@ export const defaultErrorMsgs = Object.freeze({
 	timedout: 'Request timed out',
 	requestFailed: 'Request failed with status code:',
 }) as Required<FetchErrMsgs>
-export const POST_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE']
 
 const fetch = <
 	T = unknown,
@@ -110,7 +110,9 @@ const fetch = <
 				throw new Error(errMsgs.invalidUrl)
 
 			const stringify =
-				POST_METHODS.includes(`${opts.method}`.toUpperCase())
+				POST_METHODS.includes(
+					`${opts.method}`.toUpperCase() as (typeof POST_METHODS)[number],
+				)
 				&& !['undefined', 'string'].includes(typeof body)
 				&& isObj(body, true)
 				&& headers.get('content-type') === ContentType.APPLICATION_JSON
