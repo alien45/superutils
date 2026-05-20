@@ -18,7 +18,7 @@ For full API reference check out the [docs page](https://alien45.github.io/super
   - [CDN / Browser](#cdn--browser)
   - [Defaults](#defaults)
     - [Timeout](#timeout)
-    - [Conent Type](#content-type)
+    - [Content Type](#content-type)
     - [Response Parsing](#fetch-as)
 - [Usage](#usage)
   - [`fetch()`](#fetch): drop-in replacement for built-in `fetch()`
@@ -90,7 +90,7 @@ new PromisE()
 await PromisE.delay(1000)
 ```
 
-The `@superutils/fetch` browser build includes `PromisE` most (if not all) of it is used internally.
+The `@superutils/fetch` browser build includes `PromisE` because most (if not all) of it is used internally.
 Loading `@superutils/promise` separately will take precedence and override it.
 
 ### Defaults
@@ -115,7 +115,7 @@ fetch.defaults.timeout = TIMEOUT_MAX
 
 #### Content Type
 
-By defualt `fetch()` does not have any default content type header to match the behavior of the built-in `fetch`.
+By default `fetch()` does not have any default content type header to match the behavior of the built-in `fetch`.
 
 All functions derived from `createPostClient` (eg: `fetch.post()`, `fetch.put()`) will use the default content-type header `application/json`.
 
@@ -169,7 +169,7 @@ fetch('[DUMMYJSON-DOT-COM]/products/1')
 
 All fetch calls return a `TimeoutPromise` instance from (`@superutils/promise`) which means they come with additional features:
 
-1. Status tracking: all instances come additional properties that indicate the current state of the promise and request.
+1. Status tracking: all instances come with additional properties that indicate the current state of the promise and request.
 
 ```javascript
 import fetch from '@superutils/fetch'
@@ -209,7 +209,7 @@ request.reject(new Error('No longer needed'))
 
 3. `abortCtrl`: an `AbortController` instance either provided in the options or created internally.
 
-4. `cancelAbort()`: function internally stop listening to abort signals. PS: the signal that has been passed to built-in `fetch` cannot be undone.
+4. `cancelAbort()`: function to internally stop listening to abort signals. PS: the signal that has been passed to built-in `fetch` cannot be undone.
 
 5. `clearTimeout()`: function to clear timeout, effectively disabling abort on timeout.
 
@@ -220,7 +220,7 @@ request.reject(new Error('No longer needed'))
 
 Both of these promises can be externally finalized which will result in the fetch/timeout promise to be resolved or rejected and `abortCtrl` aborted.
 
-7. `options`: all options provided to the fetch function
+7. `options`: all options provided to the fetch function after being processed by the interceptors/transformers
 
 <div id="methods"></div>
 
@@ -271,12 +271,12 @@ fetch
 A practical utility that combines `PromisE.deferred()` from the `@superutils/promise` package with `fetch()`. It's perfect for implementing cancellable, debounced, or throttled search inputs.
 
 ```javascript
-import fetch from '@superutils/fetch'
+import fetch, { ResolveIgnored } from '@superutils/fetch'
 
 // Create a debounced search function with a 300ms delay.
 const searchProducts = fetch.get.deferred({
   delay: 300, // Debounce delay
-  resolveIgnored: 'WITH_UNDEFINED', // Ignored (aborted) promises will resolve with `undefined`
+  resolveIgnored: ResolveIgnored.WITH_UNDEFINED, // Ignored (aborted) promises will resolve with `undefined`
 })
 
 // User types 'iphone'
@@ -317,36 +317,6 @@ setTimeout(() => {
   2.  `ResolveError.WITH_ERROR`: The promise resolves with the `FetchError` object instead of being rejected.
   3.  `ResolveError.WITH_UNDEFINED`: The promise resolves with an `undefined` value upon failure.
   4.  `ResolveError.REJECT`: (Default) The promise is rejected with a `FetchError`, adhering to standard promise behavior.
-
-<!-- #### Using defaults to reduce redundancy
-
-```javascript
-import fetch from '@superutils/fetch'
-
-// Create a throttled function to fetch a random quote.
-// The URL and a 3-second timeout are set as defaults, creating a reusable client.
-const getRandomQuote = fetch.get.deferred(
-	{
-		delay: 300, // Throttle window
-		throttle: true,
-		// Ignored calls will resolve with the result of the last successful call.
-		resolveIgnored: 'WITH_LAST',
-	},
-	'[DUMMYJSON-DOT-COM]/quotes/random', // Default URL
-	{ timeout: 3000 }, // Default fetch options
-)
-
-// Call the function multiple times in quick succession.
-getRandomQuote().then(quote => console.log('Call 1 resolved:', quote))
-getRandomQuote().then(quote => console.log('Call 2 resolved:', quote))
-getRandomQuote().then(quote => console.log('Call 3 resolved:', quote))
-
-// Outcome:
-// Due to throttling, only one network request is made.
-// Because `resolveIgnored` is `WITH_LAST`, all three promises resolve with the same quote.
-// The promises for the two ignored calls resolve as soon as the first successful call resolves.
-// Console output will show the same quote ID for all three calls.
-``` -->
 
 <div id="post"></div>
 
@@ -567,6 +537,7 @@ fetch
   .get('[DUMMYJSON-DOT-COM]/products/1', {
     retry: 3, // If request fails, retry up to three more times
     // Retry on rate limits (429) or transient server errors (5xx).
+    // If `retryIf` is not provided or returns `undefined`, will retry if request fails.
     retryIf: r => r.status === 429 || r.status >= 500,
   })
   .then(console.log)
