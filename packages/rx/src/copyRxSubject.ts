@@ -7,9 +7,9 @@ import {
 	isPositiveNumber,
 } from '@superutils/core'
 import { BehaviorSubject, skip } from './rxjs'
-import isSubjectLike from './isSubjectLike'
-import { SubjectLike, UnwrapSubjectValue } from './types'
+import { UnwrapSubjectValue } from './types'
 import { unsubscribeAll } from './unsubscribeAll'
+import { isObservable, Subject, type SubjectLike } from 'rxjs'
 
 /** Symbol used to signal to ignore an update when using a `valueModifier()` callback with {@link copyRxSubject} */
 export const IGNORE_UPDATE_SYMBOL = Symbol('ignore-rx-update')
@@ -103,7 +103,8 @@ export function copyRxSubject<
 	TCopy extends T,
 	TSource$,
 	T = UnwrapSubjectValue<TSource$>,
-	TCopy$ extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
+	TCopy$ extends BehaviorSubject<TCopy> | Subject<TCopy> =
+		BehaviorSubject<TCopy>,
 	ThisArg = unknown,
 >(
 	source$: TSource$,
@@ -117,7 +118,8 @@ export function copyRxSubject<
 	TCopy,
 	TSource$,
 	T = UnwrapSubjectValue<TSource$>,
-	TCopy$ extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
+	TCopy$ extends BehaviorSubject<TCopy> | Subject<TCopy> =
+		BehaviorSubject<TCopy>,
 	ThisArg = unknown,
 >(
 	source$: TSource$,
@@ -130,7 +132,8 @@ export function copyRxSubject<
 	TCopy,
 	TSource$,
 	T = UnwrapSubjectValue<TSource$>,
-	TCopy$ extends SubjectLike<TCopy> = BehaviorSubject<TCopy>,
+	TCopy$ extends BehaviorSubject<TCopy> | Subject<TCopy> =
+		BehaviorSubject<TCopy>,
 	ThisArg = unknown,
 >(
 	source$: TSource$,
@@ -138,14 +141,14 @@ export function copyRxSubject<
 	valueModifier?: ValueModifier<T, TCopy> | null,
 	options?: CopyRxSubjectOptions<ThisArg>,
 ): TCopy$ {
-	copy$ = isSubjectLike(copy$)
-		? copy$
-		: (new BehaviorSubject(undefined) as unknown as TCopy$)
+	if (!(copy$ instanceof BehaviorSubject || copy$ instanceof Subject))
+		copy$ = new BehaviorSubject(undefined) as unknown as TCopy$
+
 	options = {
 		...copyRxSubject.defaults,
 		...(options ?? {}),
 	} as CopyRxSubjectOptions<ThisArg>
-	const sourceArr = isSubjectLike(source$)
+	const sourceArr = isObservable(source$)
 		? [source$]
 		: isArr(source$)
 			? source$
@@ -153,8 +156,8 @@ export function copyRxSubject<
 	const cache = new Map(
 		sourceArr.map((subject, i) => [
 			i,
-			isSubjectLike(subject)
-				? subject.value // use subject value if available
+			isObservable(subject)
+				? (subject as BehaviorSubject<T>).value // use subject value if available
 				: subject, // fixed value provided
 		]),
 	)
@@ -168,7 +171,7 @@ export function copyRxSubject<
 			[currentValue as T, undefined, copy$],
 			err => {
 				fallbackIfFails(
-					options.onError?.bind(options.thisArg as ThisArg),
+					options.onError?.bind?.(options.thisArg as ThisArg),
 					[err],
 					undefined,
 				)
@@ -178,13 +181,13 @@ export function copyRxSubject<
 		modifiedValue !== IGNORE_UPDATE_SYMBOL
 			&& copy$.next(modifiedValue as TCopy)
 	}
-	const triggerChangeDeferred = isPositiveNumber(options.delay)
+	const handleNext = isPositiveNumber(options.delay)
 		? deferred(triggerChange, options.delay, options)
 		: triggerChange
 
 	const subscriptions = sourceArr
 		.map((subject, i) => {
-			if (!isSubjectLike(subject) || subject.closed) return
+			if (!isObservable(subject) || (subject as Subject<T>).closed) return
 
 			return (
 				subject instanceof BehaviorSubject
@@ -192,14 +195,16 @@ export function copyRxSubject<
 							skip(1), // skip initial value
 						) as typeof subject)
 					: subject
-			).subscribe(newValue => {
-				cache.set(i, newValue)
-				triggerChangeDeferred()
+			).subscribe({
+				next: newValue => {
+					cache.set(i, newValue)
+					handleNext()
+				},
 			})
 		})
 		.filter(Boolean)
 
-	const unsubscribeOrg = copy$?.unsubscribe?.bind(copy$)
+	const unsubscribeOrg = copy$.unsubscribe?.bind(copy$)
 	copy$.unsubscribe = (...args) => {
 		unsubscribeOrg?.(...args)
 		unsubscribeAll(subscriptions)
@@ -213,7 +218,7 @@ export function copyRxSubject<
 copyRxSubject.defaults = {
 	delay: 0,
 	throttle: false,
-} as { delay: number } & DeferredOptions<unknown>
+} as Required<DeferredOptions<unknown> & { delay: number }>
 copyRxSubject.IGNORE_UPDATE_SYMBOL = IGNORE_UPDATE_SYMBOL
 
 export default copyRxSubject

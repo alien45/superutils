@@ -1,7 +1,7 @@
 import { noop } from '@superutils/core'
 import { BehaviorSubject, interval, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { asPromise } from '../src'
+import { asPromise } from '../src/asPromise'
 
 describe('subjectAsPromise', () => {
 	afterEach(() => {
@@ -13,7 +13,14 @@ describe('subjectAsPromise', () => {
 
 	it('should throw error if subject is not an observable or subject', async () => {
 		vi.useRealTimers()
-		await expect(asPromise(null as any)).rejects.toThrow()
+		const p = asPromise(null as any)
+		await expect(p).rejects.toThrow()
+		expect(p.rejected).toBe(true)
+		await expect(p.data).rejects.toThrow(asPromise.defaults.invalidInputMsg)
+		expect(p.resolved).toBe(false)
+		expect(p.aborted).toBe(false)
+		expect(p.timedout).toBe(false)
+
 		await expect(asPromise(undefined as any)).rejects.toThrow()
 		await expect(asPromise({} as any)).rejects.toThrow()
 		await expect(asPromise(interval(1))).resolves.toBe(0)

@@ -1,6 +1,6 @@
 import { isFn } from '@superutils/core'
 import isSubscriptionLike from './isSubscriptionLike'
-import { UnsubscribeCandidates } from './types'
+import { UnsubscribeCandidate } from './types'
 
 /**
  * @function    unsubscribeAll
@@ -8,7 +8,7 @@ import { UnsubscribeCandidates } from './types'
  * @param   {Function|Unsubscribable|Array} unsub
  */
 export const unsubscribeAll = (
-	unsub: UnsubscribeCandidates = {},
+	unsub: UnsubscribeCandidate = {},
 	onError?: (err: unknown) => void,
 ) => {
 	if (!unsub) return
@@ -21,7 +21,7 @@ export const unsubscribeAll = (
 		if (isSubscriptionLike(unsub)) return unsub.unsubscribe()
 
 		// array/object
-		Object.values(unsub as UnsubscribeCandidates[]).forEach(value =>
+		Object.values(unsub as UnsubscribeCandidate[]).forEach(value =>
 			unsubscribeAll(value, onError),
 		)
 	} catch (err) {

@@ -4,25 +4,22 @@ import {
 	isFn,
 	isObj,
 	isPositiveNumber,
-	isSubjectLike,
 } from '@superutils/core'
-import PromisE, {
+import {
+	timeout,
 	type IPromisE_Timeout,
 	TIMEOUT_MAX,
-	type TimeoutOptions,
 } from '@superutils/promise'
-import { isObservable, Subscribable } from './rxjs'
-import { SubjectLike, SubscriptionLike } from './types'
+import { isObservable, Observable, skip, SubscriptionLike } from './rxjs'
+import { AsPromise_Defaults, AsPromise_Options } from './types'
 
 /**
  * @summary Create a promise using RxJS subject and wait until an expected value is received
  *
- * @param subject RxJS subject or observable
+ * @param input$ RxJS subject or observable
  * @param expectedValue	(optional) if undefined, will resolve as soon as any value is received.
  * If function, it should return true or false to indicate whether the value should be resolved.
- * @param timeoutOrOptions (optional)
- * @param timeoutOrOptions.timeout (optional) timeout duration in milliseconds if no value received within given time
- * @param timeoutOrOptions.timeoutMsg (optional) error message to use when times out.
+ * @param timeoutOrOptions (optional) timeout duration or options
  *
  * @returns timeout promise
  *
@@ -43,56 +40,50 @@ import { SubjectLike, SubscriptionLike } from './types'
  * ```
  */
 export const asPromise = <T = unknown>(
-	subject: Subscribable<T> | SubjectLike<T>,
+	input$: Observable<T>,
 	expectedValue?: T | ((value: T) => boolean),
-	timeoutOrOptions?:
-		| number
-		| (Omit<TimeoutOptions, 'batchFunc'> & { timeoutMsg?: string | Error }),
+	timeoutOrOptions?: number | AsPromise_Options,
 ) => {
-	if (!isSubjectLike(subject) && !isObservable(subject))
-		return PromisE.reject<T>(
-			new Error('subject must be an instance of BehaviorSubject'),
-		) as unknown as IPromisE_Timeout<T>
-
 	let subscription: SubscriptionLike
 	const options = isObj(timeoutOrOptions)
 		? timeoutOrOptions
 		: { timeout: timeoutOrOptions }
-
 	options.timeout = isPositiveNumber(options.timeout)
 		? options.timeout
 		: TIMEOUT_MAX
 
-	const promise = PromisE.timeout(
+	const promise = timeout(
 		{
 			...options,
 			onTimeout: async () => {
-				const { onTimeout, timeoutMsg } = options
-
-				const msg = await fallbackIfFails(onTimeout, [], undefined)
+				const msg = options.timeoutMsg || asPromise.defaults.timeoutMsg
 				return (
-					msg
-					?? (isError(timeoutMsg)
-						? timeoutMsg
-						: new Error(
-								timeoutMsg
-									?? 'request timed out before an expected value is received',
-							))
+					(await fallbackIfFails(options.onTimeout, [], undefined))
+					?? (isError(msg) ? msg : new Error(msg))
 				)
 			},
 		},
-		new PromisE<T>(resolve => {
-			subscription = subject.subscribe((value: T) => {
-				const shouldResolve =
-					value === expectedValue  // exact match
-					// no expected value set. resolve with first value received
-					|| expectedValue === undefined
-					// expected value is a function and returns boolean
-					|| (isFn(expectedValue)
-						&& fallbackIfFails(expectedValue, [value], false))
+		new Promise<T>((resolve, reject) => {
+			if (!isObservable(input$))
+				return reject(new Error(asPromise.defaults.invalidInputMsg))
 
-				shouldResolve && resolve(value)
-			})
+			subscription = input$
+				.pipe(skip(options.skip ?? 0))
+				.subscribe(value => {
+					const shouldResolve =
+						value === expectedValue  // exact match
+						// no expected value set. resolve with first value received
+						|| expectedValue === undefined
+						// expected value is a function and returns boolean
+						|| (isFn(expectedValue)
+							&& fallbackIfFails(
+								expectedValue,
+								[value as T],
+								false,
+							))
+
+					shouldResolve && resolve(value as T)
+				})
 		}),
 	)
 
@@ -101,4 +92,9 @@ export const asPromise = <T = unknown>(
 	})
 	return promise as IPromisE_Timeout<T>
 }
+asPromise.defaults = {
+	invalidInputMsg: 'Input must be an observable or subject instance',
+	timeoutMsg: 'Request timed out before an expected value is received',
+} as AsPromise_Defaults
+
 export default asPromise
