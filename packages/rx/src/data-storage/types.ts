@@ -356,11 +356,14 @@ export interface IDataStorage<
 			index: number,
 		) => T,
 	) => T[]
+
 	/**
 	 * Reads and parses data directly from the persistent storage medium.
 	 *
 	 * This operation is synchronous and does not trigger reactive updates via `subject`.
 	 * It is useful for debugging custom `parse` logic or manual data retrieval.
+	 *
+	 * If `instance.parse` function is provided and invokation fails, an empty Map will be returned.
 	 *
 	 * @param dataStr (optional) A raw string to parse. If omitted, the method fetches
 	 * the current value associated with the instance `name` from the underlying `storage`.
@@ -403,9 +406,9 @@ export interface IDataStorage<
 	) => ReturnType<typeof search<Key, Value, MatchExact, AsMap>>
 
 	/** Set item by key */
-	readonly set: <K extends Key, V extends Value>(
-		key: K,
-		value: V,
+	readonly set: (
+		key: Key,
+		value: Value | ((currentValue?: Value) => Value),
 	) => IDataStorage<Key, Value, CacheDisabled>
 
 	/**
@@ -487,7 +490,7 @@ export interface IObjectStorage<
 
 	set<Key extends keyof T, Value extends T[Key]>(
 		key: Key,
-		value: Value,
+		value: Value | ((currentValue?: Value) => Value),
 	): IObjectStorage<T, CacheDisabled>
 
 	setAll(

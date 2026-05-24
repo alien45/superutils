@@ -8,7 +8,9 @@ import {
 	getKeys,
 	getValues,
 	isArr,
+	isArr2D,
 	isDefined,
+	isFn,
 	isMap,
 	isObj,
 	isPositiveNumber,
@@ -505,29 +507,35 @@ export class DataStorage<
 		dataStr = this.name ? this.storage?.getItem(this.name) : null,
 	) => {
 		// no underlying storage used >> in-memory only >> no need to parse
-		if (!this.name) {
+		if (!this.name)
 			return (
 				(this.subject as BehaviorSubject<Map<Key, Value>>).value
 				?? new Map<Key, Value>()
 			)
-		}
 
 		const data = fallbackIfFails(
-			(() => this.parse?.call(this, dataStr)) as unknown as Map<
-				Key,
-				Value
-			>,
+			() => this.parse?.call(this, dataStr),
 			[],
 			this.triggerOnError(OnErrorType.parse),
 		)
-		if (isMap<Key, Value>(data)) return data
-
-		if (!isStr(dataStr)) return new Map<Key, Value>()
+		if (isFn(this.parse) || !isStr(dataStr))
+			return data ?? new Map<Key, Value>()
 
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
 		return new Map<Key, Value>(
 			fallbackIfFails(
-				() => JSON.parse(dataStr) as [Key, Value][],
+				() => {
+					const entries = JSON.parse(dataStr) as [Key, Value][]
+
+					if (!isArr2D(entries)) {
+						console.log(this.name, dataStr)
+						throw new Error(
+							'Invalid JSON format. Parsed value must be a 2D array representing key-value pairs.',
+						)
+					}
+
+					return entries
+				},
 				[],
 				this.triggerOnError(OnErrorType.parse_json),
 			),
@@ -536,8 +544,12 @@ export class DataStorage<
 
 	search: This['search'] = (...args) => search(this.getAll(), ...args)
 
-	set: This['set'] = (key, value) =>
-		this.setAll(new Map([[key, value]]), false)
+	set: This['set'] = (key, value) => {
+		const data = this.getAll()
+		data.set(key, isFn(value) ? value(data.get(key)) : value)
+
+		return this.setAll(data, true)
+	}
 
 	setAll: This['setAll'] = (data, replace = false) => {
 		if (!isMap(data)) return this
@@ -570,11 +582,11 @@ export class DataStorage<
 		const str = fallbackIfFails(
 			(() => this.stringify?.call(this, data)) as unknown as string,
 			[],
-			this.triggerOnError(OnErrorType.stringify),
+			this.triggerOnError(OnErrorType.stringify, ''), // if fails return empty string
 		)
 		if (isStr(str)) return str
 
-		// use fallback JSON.stringify if this.stringify is not provided, returns non-string value or fails
+		// use fallback JSON.stringify if this.stringify returns non-string value (undefined)
 		return fallbackIfFails(
 			() =>
 				JSON.stringify(
@@ -612,7 +624,10 @@ export class DataStorage<
 			return returnValue
 		}
 
-	unsubscribe: This['unsubscribe'] = () => unsubscribeAll(this.subscriptions)
+	unsubscribe: This['unsubscribe'] = () => {
+		unsubscribeAll(this.subscriptions)
+		this.subscriptions = {} as unknown as typeof this.subscriptions
+	}
 
 	values: This['values'] = () => getValues(this.getAll())
 
