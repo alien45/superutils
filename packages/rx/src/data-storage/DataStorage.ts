@@ -72,27 +72,6 @@ import { OnErrorType } from './types'
 export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
 /**
- *
- *
- * @remarks
- * **On the `This` template parameter:**
- * Using `This` as a self-referential template is a **good practice** in this context because:
- * - It provides accurate **type inference** for method return types that depend on the generic parameters.
- * - It enables **type-safe property access** through `This['methodName']`, allowing the implementation
- *   to reference interface contracts without circular dependencies or casting issues.
- * - It allows **fluent API chains** (returning `this`) while maintaining proper generic type information.
- * - It prevents **type widening** that would occur if methods returned the concrete class type instead
- *   of the interface type, which is important for generic constraints and polymorphism.
- *
- * However, it increases **cognitive complexity** and is only warranted when:
- * - The class implements a complex generic interface with interdependent type parameters.
- * - Type-safe property references are essential to avoid runtime errors or casting.
- * - Fluent interfaces or chaining is a core API feature.
- *
- *
- */
-
-/**
  * A generic, reactive data storage class that provides a Map-like interface with advanced features
  * such as search, filtering, and sorting. Supports both in-memory caching and persistent storage
  * (LocalStorage in browsers, JSON files in NodeJS via `node-localstorage` NPM module).
@@ -291,9 +270,7 @@ export class DataStorage<
 						undefined,
 					))
 		if (this.name && !this.storage)
-			throw new Error(
-				'options.storage: LocalStorage instance or equivalent required',
-			)
+			throw new Error(DataStorage.messages.invalidOptionsStorage)
 		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
 		this.stringify = stringify
 		this.spaces = spaces
@@ -315,6 +292,13 @@ export class DataStorage<
 		this.setAll(data, true)
 		return this
 	}
+
+	static messages = Object.seal({
+		invalidJsonEntries:
+			'Invalid JSON format. Parsed value must be a 2D array representing key-value pairs.',
+		invalidOptionsStorage:
+			'options.storage: LocalStorage instance or equivalent required',
+	})
 
 	filter: This['filter'] = (...args) => filter(this.getAll(), ...args)
 
@@ -380,8 +364,8 @@ export class DataStorage<
 			StorageOptions<Key, Value, CacheDisabled>,
 			'initialValue'
 		> & { initialValue?: T },
-	) =>
-		new DataStorage(name, {
+	) => {
+		const instance = new DataStorage(name, {
 			parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
 			stringify: function (data) {
 				return JSON.stringify(this.toObject(data))
@@ -391,6 +375,10 @@ export class DataStorage<
 				? options?.initialValue
 				: objToMap<T>(options.initialValue),
 		}) as unknown as IObjectStorage<T, CacheDisabled>
+
+		;(instance as { isObjectStorage: true }).isObjectStorage = true
+		return instance
+	}
 
 	/**
 	 * Trigger forced update of cached data from storage.
@@ -527,12 +515,8 @@ export class DataStorage<
 				() => {
 					const entries = JSON.parse(dataStr) as [Key, Value][]
 
-					if (!isArr2D(entries)) {
-						console.log(this.name, dataStr)
-						throw new Error(
-							'Invalid JSON format. Parsed value must be a 2D array representing key-value pairs.',
-						)
-					}
+					if (!isArr2D(entries))
+						throw new Error(DataStorage.messages.invalidJsonEntries)
 
 					return entries
 				},

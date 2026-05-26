@@ -206,31 +206,6 @@ describe('DataStorage', () => {
 			expect(storage.getAll()).toEqual(new Map())
 		})
 
-		it('should create a storage instance from an object', () => {
-			const storage = DataStorage.fromObject(name, {
-				delay: noDelay,
-				initialValue: {
-					age: 99,
-					name: 'Ninety Nine',
-				},
-			})
-			expect(storage.get('age')).toBe(99)
-			expect(storage.get('age')).toBeTypeOf('number')
-			expect(storage.get('name')).toBe('Ninety Nine')
-			expect(storage.get('name')).toBeTypeOf('string')
-			expect(storage.getAll().size).toBe(2)
-		})
-
-		it('should create a storage instance from an object without initial value', () => {
-			const storage = DataStorage.fromObject<{
-				age: Number
-				name: string
-			}>(name, { delay: noDelay })
-			expect(storage.get('age')).toBe(undefined)
-			expect(storage.get('name')).toBe(undefined)
-			expect(storage.getAll().size).toBe(0)
-		})
-
 		it('should convert all items to an object using toObject()', () => {
 			const storage = new DataStorage(null, { initialValue })
 			const obj = storage.toObject<{ string: Value }>()
@@ -365,20 +340,6 @@ describe('DataStorage', () => {
 			expect(storage.get(key)).toEqual({ value: 2 })
 		})
 
-		it('should invoke `value` callback on object storage instance.set()', () => {
-			let count = 0
-			const valueCallback = vi.fn(() => ++count)
-			const objStore = DataStorage.fromObject<{ [key]: number }>('obj', {
-				delay: noDelay,
-				initialValue: { [key]: 0 },
-				onChange: v => console.log('objStore', v),
-			})
-
-			objStore.set(key, valueCallback)
-			expect(valueCallback).toHaveBeenCalledExactlyOnceWith(0)
-			expect(objStore.get(key)).toEqual(count)
-		})
-
 		it('should trigger "onChange" callback', () => {
 			let thisArg: DataStorage<unknown, unknown, true>
 			const onChange = vi.fn(function (this: typeof thisArg) {
@@ -440,26 +401,6 @@ describe('DataStorage', () => {
 				expect.any(Error),
 				OnErrorType.write,
 			)
-		})
-
-		it('should invoke onError when JSON data type mismatch occurs', () => {
-			// create two storages with the same name but two different data types (2D array and object)
-			const name = 'mismatch'
-			const objStore = DataStorage.fromObject(name, {
-				delay: noDelay,
-				initialValue: {
-					age: 99,
-					name: 'Ninety Nine',
-				},
-				onError: vi.fn(),
-			})
-			const dataStore = new DataStorage(name, {
-				delay: noDelay,
-				initialValue,
-				onError: vi.fn(),
-			})
-			expect(dataStore.onError).toHaveBeenCalledTimes(1)
-			expect(objStore.onError).toHaveBeenCalledTimes(0)
 		})
 
 		it('should invoke "parse" callback', () => {
@@ -648,5 +589,69 @@ describe('DataStorage', () => {
 			'should update cached data for cache enabled instance by array of names',
 			simulateForceUpdateByName([name, 'test2', 'test3']),
 		)
+	})
+
+	describe('fromObject', () => {
+		it('should contains isObjectStorage=true', () => {
+			expect(DataStorage.fromObject().isObjectStorage).toBe(true)
+		})
+
+		it('should create a storage instance from an object', () => {
+			const storage = DataStorage.fromObject(name, {
+				delay: noDelay,
+				initialValue: {
+					age: 99,
+					name: 'Ninety Nine',
+				},
+			})
+			expect(storage.get('age')).toBe(99)
+			expect(storage.get('age')).toBeTypeOf('number')
+			expect(storage.get('name')).toBe('Ninety Nine')
+			expect(storage.get('name')).toBeTypeOf('string')
+			expect(storage.getAll().size).toBe(2)
+		})
+
+		it('should create a storage instance from an object without initial value', () => {
+			const storage = DataStorage.fromObject<{
+				age: Number
+				name: string
+			}>(name, { delay: noDelay })
+			expect(storage.get('age')).toBe(undefined)
+			expect(storage.get('name')).toBe(undefined)
+			expect(storage.getAll().size).toBe(0)
+		})
+
+		it('should invoke onError when JSON data type mismatch occurs', () => {
+			// create two storages with the same name but two different data types (2D array and object)
+			const name = 'mismatch'
+			const objStore = DataStorage.fromObject(name, {
+				delay: noDelay,
+				initialValue: {
+					age: 99,
+					name: 'Ninety Nine',
+				},
+				onError: vi.fn(),
+			})
+			const dataStore = new DataStorage(name, {
+				delay: noDelay,
+				initialValue,
+				onError: vi.fn(),
+			})
+			expect(dataStore.onError).toHaveBeenCalledTimes(1)
+			expect(objStore.onError).toHaveBeenCalledTimes(0)
+		})
+
+		it('should invoke `value` callback on object storage instance.set()', () => {
+			let count = 0
+			const valueCallback = vi.fn(() => ++count)
+			const objStore = DataStorage.fromObject<{ [key]: number }>('obj', {
+				delay: noDelay,
+				initialValue: { [key]: 0 },
+			})
+
+			objStore.set(key, valueCallback)
+			expect(valueCallback).toHaveBeenCalledExactlyOnceWith(0)
+			expect(objStore.get(key)).toEqual(count)
+		})
 	})
 })

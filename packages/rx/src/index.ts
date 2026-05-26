@@ -1,5 +1,5 @@
 export * from './asPromise'
-export * from './copyRxSubject'
+export * from './copyRx'
 export * from './data-storage'
 export * from './IntervalSubject'
 export * from './IntervalRunner'

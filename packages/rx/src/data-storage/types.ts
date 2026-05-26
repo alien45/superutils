@@ -482,6 +482,9 @@ export interface IObjectStorage<
 	CacheDisabled extends boolean = false,
 	ObjectMap extends TypedMap<T> = TypedMap<T>,
 > extends IDataStorage<keyof T, T[keyof T], CacheDisabled> {
+	/** Indicates this is an IObjectStorage instance   */
+	readonly isObjectStorage: true
+
 	get<Key extends keyof T>(key: Key): T[Key] | undefined
 
 	getAll(forceRead?: boolean): TypedMap<T>
