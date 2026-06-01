@@ -21,13 +21,13 @@ import {
 	sort,
 } from '@superutils/core'
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
-import { UnwrapSubjectValue } from '../types'
+import { UnwrapSourceValue } from '../types'
 import unsubscribeAll from '../unsubscribeAll'
-import type { IDataStorage, IObjectStorage, StorageOptions } from './types'
-import { OnErrorType } from './types'
+import type { IStore, IObjectStore, Store_Options } from './types'
+import { Store_OnErrorType } from './types'
 
 /**
- * RxJS Subject to trigger forced update of cached data from underlying storage of {@link DataStorage} instances.
+ * RxJS Subject to trigger forced update of cached data from underlying storage of {@link Store} instances.
  *
  * `value`: determines which cache-enabled storage instances to be updated
  * - name (`string` | `string[]`): update all instances with a specific name(s)
@@ -89,12 +89,12 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * @template Key The type of keys stored in the map.
  * @template Value The type of values stored in the map.
  * @template CacheDisabled A literal boolean type indicating whether in-memory caching is disabled.
- * @template This A self-referential interface type extending {@link IDataStorage} used for accurate
+ * @template This A self-referential interface type extending {@link IStore} used for accurate
  *   method signature inference and type-safe property access. This allows method implementations to
  *   reference their return types and other method signatures through the interface definition.
  *
  * @see {@link forceUpdateCache$} for cache invalidation across instances.
- * @see {@link DataStorage.fromObject} for object-oriented storage initialization.
+ * @see {@link Store.fromObject} for object-oriented storage initialization.
  *
  * @example
  * #### Browser Usage 1: use like a map
@@ -179,7 +179,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * storage.set('bob', { age: 99, id: 'bob', name: 'Bob' })
  * ```
  */
-export class DataStorage<
+export class Store<
 	Key,
 	Value,
 	CacheDisabled extends boolean = false,
@@ -199,12 +199,12 @@ export class DataStorage<
 	 * - Type-safe property references are essential to avoid runtime errors or casting.
 	 * - Fluent interfaces or chaining is a core API feature.
 	 */
-	This extends IDataStorage<Key, Value, CacheDisabled> = IDataStorage<
+	This extends IStore<Key, Value, CacheDisabled> = IStore<
 		Key,
 		Value,
 		CacheDisabled
 	>,
-> implements IDataStorage<Key, Value, CacheDisabled> {
+> implements IStore<Key, Value, CacheDisabled> {
 	readonly cacheDisabled: This['cacheDisabled']
 
 	readonly delay: This['delay']
@@ -239,9 +239,11 @@ export class DataStorage<
 		forceUpdateCache: undefined as Subscription | undefined,
 	}
 
+	type = 'map'
+
 	constructor(
 		name?: This['name'],
-		options?: StorageOptions<Key, Value, CacheDisabled>,
+		options?: Store_Options<Key, Value, CacheDisabled>,
 	) {
 		const {
 			cacheDisabled = false as CacheDisabled,
@@ -270,7 +272,7 @@ export class DataStorage<
 						undefined,
 					))
 		if (this.name && !this.storage)
-			throw new Error(DataStorage.messages.invalidOptionsStorage)
+			throw new Error(Store.messages.invalidOptionsStorage)
 		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
 		this.stringify = stringify
 		this.spaces = spaces
@@ -306,7 +308,7 @@ export class DataStorage<
 		find(this.getAll(), predicateOrOptions as Parameters<typeof find>[0])
 
 	/**
-	 * Creates a {@link DataStorage} instance initialized from a plain object.
+	 * Creates a {@link Store} instance initialized from a plain object.
 	 *
 	 * This factory method automatically configures `parse` and `stringify` logic to
 	 * treat the underlying storage as a serialized object, while providing a
@@ -361,22 +363,23 @@ export class DataStorage<
 	>(
 		name?: string | null,
 		options?: Omit<
-			StorageOptions<Key, Value, CacheDisabled>,
+			Store_Options<Key, Value, CacheDisabled>,
 			'initialValue'
 		> & { initialValue?: T },
 	) => {
-		const instance = new DataStorage(name, {
+		const instance = new Store(name, {
 			parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
 			stringify: function (data) {
 				return JSON.stringify(this.toObject(data))
 			},
-			...(options as StorageOptions<Key, Value, CacheDisabled>),
+			...(options as Store_Options<Key, Value, CacheDisabled>),
 			initialValue: !isObj(options?.initialValue, true)
 				? options?.initialValue
 				: objToMap<T>(options.initialValue),
-		}) as unknown as IObjectStorage<T, CacheDisabled>
+		}) as unknown as IObjectStore<T, CacheDisabled>
 
-		;(instance as { isObjectStorage: true }).isObjectStorage = true
+		instance.type = 'object'
+
 		return instance
 	}
 
@@ -414,7 +417,7 @@ export class DataStorage<
 	}
 
 	private handleForceUpdateCacheChange = (
-		name: UnwrapSubjectValue<typeof forceUpdateCache$>,
+		name: UnwrapSourceValue<typeof forceUpdateCache$>,
 	) => {
 		const isTarget = !this.name
 			? false
@@ -438,7 +441,7 @@ export class DataStorage<
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,
 			[data],
-			this.triggerOnError(OnErrorType.onChange),
+			this.triggerOnError(Store_OnErrorType.onChange),
 		)
 	}
 
@@ -491,6 +494,8 @@ export class DataStorage<
 			callback(value, key, entries, index),
 		)
 
+	static objToMap = objToMap
+
 	read: This['read'] = (
 		dataStr = this.name ? this.storage?.getItem(this.name) : null,
 	) => {
@@ -504,7 +509,7 @@ export class DataStorage<
 		const data = fallbackIfFails(
 			() => this.parse?.call(this, dataStr),
 			[],
-			this.triggerOnError(OnErrorType.parse),
+			this.triggerOnError(Store_OnErrorType.parse),
 		)
 		if (isFn(this.parse) || !isStr(dataStr))
 			return data ?? new Map<Key, Value>()
@@ -516,12 +521,12 @@ export class DataStorage<
 					const entries = JSON.parse(dataStr) as [Key, Value][]
 
 					if (!isArr2D(entries))
-						throw new Error(DataStorage.messages.invalidJsonEntries)
+						throw new Error(Store.messages.invalidJsonEntries)
 
 					return entries
 				},
 				[],
-				this.triggerOnError(OnErrorType.parse_json),
+				this.triggerOnError(Store_OnErrorType.parse_json),
 			),
 		)
 	}
@@ -566,7 +571,7 @@ export class DataStorage<
 		const str = fallbackIfFails(
 			(() => this.stringify?.call(this, data)) as unknown as string,
 			[],
-			this.triggerOnError(OnErrorType.stringify, ''), // if fails return empty string
+			this.triggerOnError(Store_OnErrorType.stringify, ''), // if fails return empty string
 		)
 		if (isStr(str)) return str
 
@@ -579,7 +584,7 @@ export class DataStorage<
 					spacing,
 				),
 			[],
-			this.triggerOnError<string>(OnErrorType.stringify_json, ''),
+			this.triggerOnError<string>(Store_OnErrorType.stringify_json, ''),
 		)
 	}
 
@@ -597,7 +602,10 @@ export class DataStorage<
 		this.toJSON(undefined, undefined, data)
 
 	private triggerOnError =
-		<T = undefined>(type: OnErrorType, returnValue: T = undefined as T) =>
+		<T = undefined>(
+			type: Store_OnErrorType,
+			returnValue: T = undefined as T,
+		) =>
 		(err: unknown) => {
 			fallbackIfFails(
 				this.onError?.bind(this) as unknown,
@@ -628,9 +636,9 @@ export class DataStorage<
 
 			return true
 		} catch (err) {
-			this.triggerOnError(OnErrorType.write)(err)
+			this.triggerOnError(Store_OnErrorType.write)(err)
 			return false
 		}
 	}
 }
-export default DataStorage
+export default Store

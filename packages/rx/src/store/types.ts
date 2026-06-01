@@ -13,8 +13,14 @@ import {
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from '../rxjs'
 
+// re-export useful stuff from core package
+export { type TypedMap } from '@superutils/core'
+
+/** Storage type with only properties that are used by `DataStorage` */
+export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
+
 /** Throttle & debounce related options */
-export type DelayOptions =
+export type Store_DelayOptions =
 	| ({
 			throttle: true
 	  } & Omit<ThrottleOptions, 'onError' | 'thisArg'>)
@@ -28,7 +34,7 @@ export type DelayOptions =
  * These types are passed to the `onError` callback to help identify which phase of the
  * data lifecycle (reading, writing, or processing) failed.
  */
-export enum OnErrorType {
+export enum Store_OnErrorType {
 	/** Occurs when the user-provided `onChange` callback throws an exception. */
 	onChange = 'onChange',
 	/** Occurs when the user-provided `parse` function fails to process the raw storage string. */
@@ -48,15 +54,9 @@ export enum OnErrorType {
 	/** Occurs when the attempt to save data to the underlying storage (e.g., `localStorage.setItem`) fails. */
 	write = 'write',
 }
-/** Storage type with only properties that are used by `DataStorage` */
-export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
 
 /** Initial options provided through the constructor */
-export type StorageOptions<
-	Key,
-	Value,
-	CacheDisabled extends boolean = false,
-> = {
+export type Store_Options<Key, Value, CacheDisabled extends boolean = false> = {
 	/**
 	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
 	 *
@@ -76,7 +76,7 @@ export type StorageOptions<
 	 */
 	initialValue?: Map<Key, Value>
 } & Pick<
-	Partial<IDataStorage<Key, Value, CacheDisabled>>,
+	Partial<IStore<Key, Value, CacheDisabled>>,
 	| 'cacheDisabled'
 	| 'onChange'
 	| 'onError'
@@ -87,17 +87,17 @@ export type StorageOptions<
 >
 	& (CacheDisabled extends false
 		? Pick<
-				Partial<IDataStorage<Key, Value, CacheDisabled>>,
+				Partial<IStore<Key, Value, CacheDisabled>>,
 				'delay' | 'delayOptions'
 			>
 		: { delay?: never; delayOptions?: never })
 
-export type StorageParseFn<ResultMap, ThisArg> = (
+export type Store_Parse<ResultMap, ThisArg> = (
 	this: ThisArg,
 	text: string | null | undefined,
 ) => ResultMap | void
 
-export type StorageSearch<
+export type Store_Search<
 	K,
 	V,
 	MatchExact extends boolean = false,
@@ -106,40 +106,38 @@ export type StorageSearch<
 	...args: DropFirst<Parameters<typeof search<K, V, MatchExact, AsMap>>>
 ) => ReturnType<typeof search<K, V, MatchExact, AsMap>>
 
-export type StorageSort<K, V> = (
+export type Store_Sort<K, V> = (
 	...args:
-		| StorageSortByComparator<K, V>
-		| StorageSortByPropertyName<V>
-		| StorageSortByKey
+		| Store_SortByComparator<K, V>
+		| Store_SortByPropertyName<V>
+		| Store_SortByKey
 ) => Map<K, V>
-export type StorageSortByComparator<K, V> = [
+export type Store_SortByComparator<K, V> = [
 	comparator: Parameters<typeof sort<K, V>>[1],
-	options?: StorageSortOptions,
+	options?: Store_SortOptions,
 ]
-export type StorageSortByKey = [byKey: true, options?: StorageSortOptions]
-export type StorageSortByPropertyName<V> = [
+export type Store_SortByKey = [byKey: true, options?: Store_SortOptions]
+export type Store_SortByPropertyName<V> = [
 	propertyName: keyof V & string,
-	options?: StorageSortOptions,
+	options?: Store_SortOptions,
 ]
 
-export type StorageSortOptions = SortOptions & { save?: boolean }
+export type Store_SortOptions = SortOptions & { save?: boolean }
 
-export type StorageStringify<Data, ThisArg> = (
+export type Store_Stringify<Data, ThisArg> = (
 	this: ThisArg,
 	data: Data,
 ) => string | undefined | void
 
-export type StorageToJSON<K, V> = (
+export type Store_ToJSON<K, V> = (
 	replacer?: null | ((key: K, value: V) => unknown),
 	spacing?: string | number,
 	data?: Map<K, V>,
 ) => string
 
-export interface IDataStorage<
-	Key,
-	Value,
-	CacheDisabled extends boolean = false,
-> {
+// export type
+
+export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	/** Disable in-memory cache and only directly read/write from storage (local storage or JSON fle) */
 	readonly cacheDisabled: CacheDisabled
 
@@ -153,7 +151,7 @@ export interface IDataStorage<
 	 */
 	readonly delay: number
 
-	readonly delayOptions?: DelayOptions
+	readonly delayOptions?: Store_DelayOptions
 
 	/**
 	 * Indicates wherether storage has been initialized (`init()` function invoked).
@@ -169,17 +167,24 @@ export interface IDataStorage<
 	readonly name?: string | null
 
 	/**
+	 * Indicates type of data parsed as
+	 *
+	 * Default: 'map'
+	 */
+	type: string
+
+	/**
 	 * A callback function executed whenever a data change occurs within the storage.
 	 *
 	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
 	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
-	 * callback with the type {@link OnErrorType.onChange}.
+	 * callback with the type {@link Store_OnErrorType.onChange}.
 	 *
 	 * Note: Execution of this callback is managed by internal subscriptions and will stop
 	 * firing once {@link unsubscribe} is called.
 	 */
 	onChange?: (
-		this: IDataStorage<Key, Value, CacheDisabled>,
+		this: IStore<Key, Value, CacheDisabled>,
 		data: Map<Key, Value>,
 	) => ValueOrPromise<void | Map<Key, Value>>
 
@@ -195,9 +200,9 @@ export interface IDataStorage<
 	 * ignored gracefully to prevent application crashes during storage cycles.
 	 */
 	onError?: (
-		this: IDataStorage<Key, Value, CacheDisabled>,
+		this: IStore<Key, Value, CacheDisabled>,
 		err: unknown,
-		type: OnErrorType,
+		type: Store_OnErrorType,
 	) => ValueOrPromise<void>
 
 	/**
@@ -212,13 +217,10 @@ export interface IDataStorage<
 	 * - returns a non-Map value,
 	 *
 	 * **Error Triggers:**
-	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link OnErrorType.parse}.
-	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link OnErrorType.parse_json}.
+	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
+	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link Store_OnErrorType.parse_json}.
 	 */
-	parse?: StorageParseFn<
-		Map<Key, Value>,
-		IDataStorage<Key, Value, CacheDisabled>
-	>
+	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CacheDisabled>>
 
 	/** Get the number of items */
 	readonly size: number
@@ -239,7 +241,7 @@ export interface IDataStorage<
 	 * - browser: `localStorage`
 	 * - node: `undefined` (in-memory mode)
 	 */
-	readonly storage?: StorageCompact | null
+	readonly storage?: StorageCompact | Storage | null
 
 	/**
 	 * A callback function to customize the serialization of data before it is written to storage.
@@ -255,9 +257,9 @@ export interface IDataStorage<
 	 * the system falls back to internal `JSON.stringify` logic.
 	 *
 	 * **Error Triggers:**
-	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link OnErrorType.stringify}.
+	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link Store_OnErrorType.stringify}.
 	 * - If the default `JSON.stringify` fallback fails: {@link onError} is triggered with
-	 * {@link OnErrorType.stringify_json}.
+	 * {@link Store_OnErrorType.stringify_json}.
 	 *
 	 * @param data a map of all values stored in this storage
 	 *
@@ -279,9 +281,9 @@ export interface IDataStorage<
 	 * const storage = new DataStorage('users', { stringify })
 	 * ```
 	 */
-	stringify?: StorageStringify<
+	stringify?: Store_Stringify<
 		Map<Key, Value>,
-		IDataStorage<Key, Value, CacheDisabled>
+		IStore<Key, Value, CacheDisabled>
 	>
 
 	/**
@@ -298,12 +300,10 @@ export interface IDataStorage<
 		: BehaviorSubject<Map<Key, Value>>
 
 	/** Clear all items */
-	readonly clear: () => IDataStorage<Key, Value, CacheDisabled>
+	readonly clear: () => IStore<Key, Value, CacheDisabled>
 
 	/** Delete one or more items by their respective keys */
-	readonly delete: (
-		key: Key | Key[],
-	) => IDataStorage<Key, Value, CacheDisabled>
+	readonly delete: (key: Key | Key[]) => IStore<Key, Value, CacheDisabled>
 
 	/** Filter items by predicate */
 	readonly filter: <AsArray extends boolean = false>(
@@ -314,7 +314,7 @@ export interface IDataStorage<
 	readonly find: <IncludeKey extends boolean = false>(
 		predicateOrOptions:
 			| FindOptions<Key, Value, IncludeKey>
-			| Parameters<IDataStorage<Key, Value, CacheDisabled>['filter']>[0],
+			| Parameters<IStore<Key, Value, CacheDisabled>['filter']>[0],
 	) => ReturnType<typeof find<Key, Value, IncludeKey>>
 
 	/** Get item by key */
@@ -409,7 +409,7 @@ export interface IDataStorage<
 	readonly set: (
 		key: Key,
 		value: Value | ((currentValue?: Value) => Value),
-	) => IDataStorage<Key, Value, CacheDisabled>
+	) => IStore<Key, Value, CacheDisabled>
 
 	/**
 	 * Set multiple entries at once and/or replace the storage entries
@@ -424,7 +424,7 @@ export interface IDataStorage<
 	readonly setAll: (
 		data?: Map<Key, Value>,
 		replace?: boolean,
-	) => IDataStorage<Key, Value, CacheDisabled>
+	) => IStore<Key, Value, CacheDisabled>
 
 	/**
 	 * Sort items in the storage.
@@ -438,13 +438,13 @@ export interface IDataStorage<
 	 *
 	 * @returns The sorted Map.
 	 */
-	readonly sort: StorageSort<Key, Value>
+	readonly sort: Store_Sort<Key, Value>
 
 	/** Convert list of items (Map) to 2D Array */
 	readonly toArray: () => [Key, Value][]
 
 	/** Convert list of items (Map) to JSON string of 2D Array */
-	readonly toJSON: StorageToJSON<Key, Value>
+	readonly toJSON: Store_ToJSON<Key, Value>
 
 	/** Convert list of items into an object */
 	readonly toObject: <T extends object = object>(data?: Map<Key, Value>) => T
@@ -477,31 +477,30 @@ export interface IDataStorage<
 }
 
 // @ts-expect-error force override properties while preserving documentation of IDataStorage
-export interface IObjectStorage<
+export interface IObjectStore<
 	T extends object,
 	CacheDisabled extends boolean = false,
 	ObjectMap extends TypedMap<T> = TypedMap<T>,
-> extends IDataStorage<keyof T, T[keyof T], CacheDisabled> {
-	/** Indicates this is an IObjectStorage instance   */
-	readonly isObjectStorage: true
+> extends IStore<keyof T, T[keyof T], CacheDisabled> {
+	/**
+	 * Default: `object`
+	 */
+	type: string
 
 	get<Key extends keyof T>(key: Key): T[Key] | undefined
 
 	getAll(forceRead?: boolean): TypedMap<T>
 
-	parse?: StorageParseFn<ObjectMap, IObjectStorage<T, CacheDisabled>>
+	parse?: Store_Parse<ObjectMap, IObjectStore<T, CacheDisabled>>
 
 	set<Key extends keyof T, Value extends T[Key]>(
 		key: Key,
 		value: Value | ((currentValue?: Value) => Value),
-	): IObjectStorage<T, CacheDisabled>
+	): IObjectStore<T, CacheDisabled>
 
-	setAll(
-		data?: ObjectMap,
-		replace?: boolean,
-	): IObjectStorage<T, CacheDisabled>
+	setAll(data?: ObjectMap, replace?: boolean): IObjectStore<T, CacheDisabled>
 
-	stringify?: StorageStringify<ObjectMap, IObjectStorage<T, CacheDisabled>>
+	stringify?: Store_Stringify<ObjectMap, IObjectStore<T, CacheDisabled>>
 
 	toObject<O extends object = T>(data?: Map<keyof T, T[keyof T]>): O
 }

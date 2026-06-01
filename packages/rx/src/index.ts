@@ -1,6 +1,6 @@
 export * from './asPromise'
 export * from './copyRx'
-export * from './data-storage'
+export * from './store'
 export * from './IntervalSubject'
 export * from './IntervalRunner'
 export * from './isSubscriptionLike'

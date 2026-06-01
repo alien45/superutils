@@ -15,7 +15,7 @@ describe('copyObservable', () => {
 	beforeEach(() => vi.useFakeTimers())
 
 	it('should create a new subject when only value provided instead of source subject', () => {
-		const rxCopy = copyRx(0)
+		const rxCopy = copyRx(0 as any)
 		const spy = vi.fn()
 		sub = rxCopy.subscribe(spy)
 		expect(spy).toHaveBeenCalledTimes(1)
@@ -186,7 +186,7 @@ describe('copyObservable', () => {
 			let onErrorThis: string
 
 			copyRx(
-				null,
+				new Subject(),
 				function () {
 					transformThis = this
 					throw new Error('error') // trigger onError
@@ -220,7 +220,7 @@ describe('copyObservable', () => {
 			sub.unsubscribe()
 		})
 
-		it('should avoid `transform` call race conditions when `transformSequentially` is enabled', async () => {
+		it('should avoid `transform` race conditions when `transformSequentially = true`', async () => {
 			const input = new BehaviorSubject<number>(0)
 			const receivedValues: number[] = []
 			let count = 0
@@ -267,7 +267,7 @@ describe('copyObservable', () => {
 			sub.unsubscribe()
 		})
 
-		it('should avoid `transform` call race conditions when `transformSequentially` and debounce/throttle (delay > 0) are enabled', async () => {
+		it('should avoid `transform` race conditions when `transformSequentially = true` and `delay > 0`', async () => {
 			const input = new BehaviorSubject<number>(0)
 			const receivedValues: number[] = []
 			let count = 0
@@ -297,12 +297,11 @@ describe('copyObservable', () => {
 
 			await vi.advanceTimersByTimeAsync(801)
 			expect(spy).toHaveBeenNthCalledWith(1, undefined) // because of async transform
-			expect(spy).toHaveBeenNthCalledWith(2, '0.00')
-			expect(spy).toHaveBeenNthCalledWith(3, '2.00')
-			expect(spy).toHaveBeenNthCalledWith(4, '5.00')
+			expect(spy).toHaveBeenNthCalledWith(2, '2.00')
+			expect(spy).toHaveBeenNthCalledWith(3, '5.00')
 
 			// ensures values received sequentially
-			expect(receivedValues).toEqual(['0.00', '2.00', '5.00'])
+			expect(receivedValues).toEqual(['2.00', '5.00'])
 			sub.unsubscribe()
 		})
 	})

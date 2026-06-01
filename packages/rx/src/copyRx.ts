@@ -10,6 +10,7 @@ import {
 	isSubjectLike,
 	ValueOrPromise,
 } from '@superutils/core'
+import PromisE from '@superutils/promise'
 import {
 	BehaviorSubject,
 	isObservable,
@@ -17,9 +18,8 @@ import {
 	skip,
 	Subject,
 } from './rxjs'
-import type { UnwrapSubjectValue } from './types'
+import type { UnwrapSourceValue, UnwrapSourceValueStrict } from './types'
 import { unsubscribeAll } from './unsubscribeAll'
-import PromisE from '@superutils/promise'
 
 /** Symbol used to signal to ignore an update when using a `transform()` callback with {@link copyRx} */
 export const IGNORE_UPDATE_SYMBOL = Symbol('ignore-update')
@@ -32,14 +32,6 @@ export type CopyRx_Options<TOut, ThisArg> = {
 	 * @default undefined
 	 */
 	delay?: number
-	/**
-	 * Number of initial emissions to skip from the input observable(s).
-	 *
-	 * If an array is provided, each element corresponds to the observable at the same index.
-	 *
-	 * @default 1 for `BehaviorSubject` (to avoid redundant updates of the initial value), otherwise 0.
-	 */
-	skipEmits?: number | (number | undefined | null)[]
 
 	/**
 	 * The initial value for the output subject.
@@ -54,24 +46,43 @@ export type CopyRx_Options<TOut, ThisArg> = {
 	 */
 	output?: BehaviorSubject<TOut> | Subject<TOut>
 
+	/**
+	 * Number of initial emissions to skip from the input observable(s).
+	 *
+	 * If an array is provided, each element corresponds to the observable at the same index.
+	 *
+	 * @default 1 for `BehaviorSubject` (to avoid redundant updates of the initial value), otherwise 0.
+	 */
+	skipEmits?: number | (number | undefined | null)[]
+
 	/** Use this only if  */
 	transformSequentially?: boolean
 } & DeferredOptions<ThisArg>
 
 /**
- * Value modifier function definition for {@link copyRx}
+ * Value modifier function definition for {@link copyRx}.
  *
- * Returning {@link copyRx.IGNORE} will ignore the update.
+ * This function is executed for each new value emitted by the input observable(s).
+ *
+ * - **`this` context**: The `this` context within the `transform` function can be set using the `options.thisArg`
+ * - **Ignoring updates**: Returning {@link copyRx.IGNORE} will prevent the output observable from emitting the current update.
+ * - **Asynchronous transformations**: If a `Promise` is returned, the output observable will only be updated once the promise resolves.
+ *   However, this can introduce race conditions if new input values arrive before the previous promise resolves.
+ *   To prevent such race conditions, enable the `transformSequentially` flag in `CopyRx_Options`.
+ * - **Error handling**: If the `transform` function throws an error, the update is gracefully ignored, and the `onError` callback (if provided in `CopyRx_Options`) will be invoked.
  */
 export type CopyRx_Transform<TIn = unknown, TOut = TIn, ThisArg = unknown> = (
 	this: ThisArg,
 	/**
 	 * The current value from the input observable (or an array of values if multiple sources are provided).
 	 *
+	 * - If `input` to `copyRx` is a single observable, `newValue` will be the value emitted by that observable.
+	 * - If `input` is an array of observables/values, `newValue` will be an array containing the latest values from all sources.
+	 *
 	 * **Note:** If the transformation is asynchronous, a `BehaviorSubject` output will emit `undefined` (or the
 	 * `initialValue`) immediately upon subscription until the first `transform` promise resolves.
 	 */
-	newValue: TIn | undefined,
+	newValue: TIn,
 	/**
 	 * The destination observable/subject where the results are being copied.
 	 */
@@ -84,7 +95,7 @@ export type CopyRx_Transform<TIn = unknown, TOut = TIn, ThisArg = unknown> = (
  * Established a unidirectional data flow from source(s) to a destination subject.
  * Changes to the destination subject are NOT applied back to the source.
  *
- * @param input     RxJS input observable(s) or static value(s). If an array is provided,
+ * @param source$     RxJS input observable(s) or static value(s). If an array is provided,
  *                  the output subject will emit an array of values by default.
  * @param transform (optional) A function to map or filter values before they are emitted by the output subject.
  *                  Supports async functions. If it throws, the update is ignored.
@@ -130,136 +141,136 @@ export type CopyRx_Transform<TIn = unknown, TOut = TIn, ThisArg = unknown> = (
  */
 export function copyRx<
 	TOut,
-	Input,
-	TIn = UnwrapSubjectValue<Input>,
-	Output extends BehaviorSubject<TOut> | Subject<TOut> =
-		BehaviorSubject<TOut>,
+	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
+		Observable<any>,
+	TIn = UnwrapSourceValueStrict<Source$>,
+	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
 >(
-	input: Input,
+	source$: Source$,
 	transform?: CopyRx_Transform<TIn, TOut, ThisArg> | null,
 	options?: CopyRx_Options<TOut, ThisArg>,
-): Output
+): Copy$
 
 // Overload to allow transform() to change T into TCopy
 export function copyRx<
 	TOut,
-	Input,
-	TIn = UnwrapSubjectValue<Input>,
-	Output extends BehaviorSubject<TOut> | Subject<TOut> =
-		BehaviorSubject<TOut>,
+	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
+		Observable<any>,
+	TIn = UnwrapSourceValueStrict<Source$>,
+	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
 >(
-	input: Input,
-	transform: CopyRx_Transform<TIn, TOut, ThisArg> | undefined | null,
+	source$: Source$,
+	transform: CopyRx_Transform<TIn, TOut, ThisArg>,
 	options?: CopyRx_Options<TOut, ThisArg>,
-): Output
+): Copy$
 
 export function copyRx<
 	TOut,
-	Input,
-	Transform extends CopyRx_Transform<TIn, TOut, ThisArg> | undefined | null,
-	TIn = UnwrapSubjectValue<Input>,
-	Output extends BehaviorSubject<TOut> | Subject<TOut> =
-		BehaviorSubject<TOut>,
+	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
+		Observable<any>,
+	TIn = UnwrapSourceValueStrict<Source$>,
+	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
 >(
-	input: Input,
-	transform?: Transform,
+	source$: Source$,
+	transform?: null | CopyRx_Transform<TIn, TOut, ThisArg>,
 	options?: CopyRx_Options<TOut, ThisArg>,
-): Output {
-	options = {
-		...copyRx.defaults,
-		...(options ?? {}),
-	} as CopyRx_Options<TOut, ThisArg>
-	if (!isArr(options.skipEmits)) options.skipEmits = [options.skipEmits]
-	if (options.thisArg !== undefined) {
-		options.onError = options.onError?.bind?.(options.thisArg)
-		transform = transform?.bind?.(options.thisArg) as Transform
-	}
-	if (isFn(transform) && options.transformSequentially)
-		transform = PromisE.deferredCallback(transform, {
-			delay: 0,
-		}) as Transform
-
-	const inputArr = isObservable(input)
-		? [input]
-		: isArr(input)
-			? input
-			: [input]
+): Copy$ {
+	const sourceArr = isObservable(source$)
+		? [source$]
+		: isArr(source$)
+			? source$
+			: [source$]
 	const cache = new Map(
-		inputArr.map((x, i) => [
+		sourceArr.map((x, i) => [
 			i,
 			isObservable(x)
 				? (x as BehaviorSubject<TIn>).value // use subject value if available
 				: x, // fixed value provided
 		]),
 	)
-	let subscriptions: unknown[] = []
-	const output = (
-		isSubjectLike(options.output)
-			? options.output!
-			: new BehaviorSubject(options.initialValue)
-	) as Output
-	const unsubscribeOrg = output.unsubscribe?.bind(output)
-	output.unsubscribe = (...args) => {
-		unsubscribeOrg?.(...args)
-		unsubscribeAll(subscriptions)
-		cache.clear()
+	options = {
+		...copyRx.defaults,
+		...(options ?? {}),
+	} as CopyRx_Options<TOut, ThisArg>
+
+	if (!isArr(options.skipEmits)) options.skipEmits = [options.skipEmits]
+	if (options.thisArg !== undefined) {
+		options.onError = options.onError?.bind?.(options.thisArg)
+		transform = transform?.bind?.(options.thisArg)
 	}
+	if (isFn(transform) && options.transformSequentially)
+		transform = PromisE.deferredCallback(transform, {
+			delay: 0, // enables sequential execution
+			onError: options.onError,
+			thisArg: options.thisArg,
+		})
 
-	const update = (value: TOut | symbol) =>
-		value !== copyRx.IGNORE && output.next(value as TOut)
+	const copy$ = (
+		isSubjectLike(options.output)
+			? options.output
+			: new BehaviorSubject(options.initialValue)
+	) as Copy$
 
-	const handleChange = () => {
-		const currentValue = isArr(input) ? [...cache.values()] : cache.get(0)
-		if (!isFn(transform)) return output.next(currentValue as TOut)
+	const updateOutput = (value: TOut | symbol) =>
+		value !== copyRx.IGNORE && copy$.next(value as TOut)
+
+	let handleChange = () => {
+		const currentValue = isArr(source$)
+			? [...cache.values()] //
+			: cache.get(0)
+		if (!isFn(transform)) return copy$.next(currentValue as TOut)
 
 		const result = fallbackIfFails(
 			transform,
-			[currentValue as TIn, output] as const,
+			[currentValue as TIn, copy$] as const,
 			err => {
 				fallbackIfFails(options.onError, [err], undefined)
 				return copyRx.IGNORE
 			},
 		) as ValueOrPromise<TOut | symbol>
 
-		!isPromise(result) ? update(result as TOut) : result.then(update)
+		!isPromise(result)
+			? updateOutput(result as TOut)
+			: result.then(updateOutput)
 	}
-	const handleNext = isPositiveNumber(options.delay)
+	handleChange = isPositiveNumber(options.delay)
 		? deferred(handleChange, options.delay, options)
 		: handleChange
 
-	subscriptions = inputArr
-		.map((x, i) => {
-			if (!isObservable(x) || (x as Subject<TIn>).closed) return
+	const subscriptions = sourceArr.map((x, i) => {
+		if (!isObservable(x) || (x as BehaviorSubject<TIn>).closed) return
 
-			return x
-				.pipe(
-					skip(
-						(options.skipEmits as number[])[i]
-							?? (x instanceof BehaviorSubject ? 1 : 0),
-					),
-				)
-				.subscribe({
-					next: newValue => {
-						cache.set(i, newValue)
-						handleNext()
-					},
-				})
+		const skipEmit =
+			(options.skipEmits as number[])[i]
+			?? (x instanceof BehaviorSubject ? 1 : 0)
+		if (skipEmit > 0) x = x.pipe(skip(skipEmit))
+
+		return (x as Observable<TIn>).subscribe({
+			next: newValue => {
+				cache.set(i, newValue)
+				handleChange()
+			},
 		})
-		.filter(Boolean)
+	})
+
+	const unsubscribeOrg = copy$.unsubscribe?.bind(copy$)
+	copy$.unsubscribe = (...args) => {
+		unsubscribeOrg?.(...args)
+		unsubscribeAll(subscriptions)
+		cache.clear()
+	}
 
 	// update with the initial values
 	handleChange()
-	return output
+	return copy$
 }
 copyRx.defaults = {
 	delay: 0,
 	throttle: false,
 } as Required<Omit<DeferredOptions<unknown>, 'thisArg'> & { delay: number }>
-
-/** Use this in the `transform` function to signal that an update should be ignored. */
 copyRx.IGNORE = IGNORE_UPDATE_SYMBOL
 
 export default copyRx

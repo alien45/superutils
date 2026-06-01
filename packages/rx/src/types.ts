@@ -29,10 +29,34 @@ export type UnsubscribeCandidate =
 	| null
 	| boolean
 
-/** Wrap a value from a signle subject or an array of subjects and values */
-export type UnwrapSubjectValue<T> =
+/**
+ * Recursively extracts the emitted value type from an Observable, an array of Observables,
+ * or returns the type itself if it's a static value.
+ *
+ * @template T - The input type to unwrap.
+ */
+export type UnwrapSourceValue<T> =
 	T extends Observable<infer V>
 		? V
 		: T extends readonly unknown[]
-			? { -readonly [K in keyof T]: UnwrapSubjectValue<T[K]> }
+			? { -readonly [K in keyof T]: UnwrapSourceValue<T[K]> }
+			: T
+
+/**
+ * Recursively extracts the emitted value type from an Observable or an array of Observables,
+ * similar to {@link UnwrapSourceValue}.
+ *
+ * However, if the Observable does not have a `.value` property (i.e., it is not a `BehaviorSubject`),
+ * the resulting type is unioned with `undefined` to reflect that an initial value may not be
+ * immediately available.
+ *
+ * @template T - The input type to unwrap.
+ */
+export type UnwrapSourceValueStrict<T> =
+	T extends Observable<infer V>
+		? T extends { value: infer V }
+			? V // a subject with value
+			: V | undefined // observable without value
+		: T extends readonly unknown[]
+			? { -readonly [K in keyof T]: UnwrapSourceValueStrict<T[K]> }
 			: T
