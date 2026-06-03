@@ -1,23 +1,11 @@
 import { BehaviorSubject, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-	Store,
-	Store_OnErrorType,
-	type StorageCompact,
-	unsubscribeAll,
-} from '../src'
-
-export class MockLocalStorage implements StorageCompact {
-	storage = new Map<string, string>()
-
-	getItem = vi.fn((key: string): string | null => {
-		return this.storage.get(key) ?? null
-	})
-
-	setItem = vi.fn((key: string, value: string): void => {
-		this.storage.set(key, value)
-	})
-}
+import createObjectStore from '../../src/store/createObjectStore'
+import Store from '../../src/store/Store'
+import { Store_OnErrorType, type StorageCompact } from '../../src/store/types'
+import unsubscribeAll from '../../src/unsubscribeAll'
+import MockLocalStorage from './MockLocalStorage'
+import { objToMap } from '@superutils/core'
 
 describe('Srore', () => {
 	let mockedStorage: MockLocalStorage
@@ -327,46 +315,6 @@ describe('Srore', () => {
 	})
 
 	describe('callbacks', () => {
-		it('should invoke `value` callback on instance.set()', () => {
-			let count = 0
-			const valueCallback = vi.fn(() => ({ value: ++count }))
-			const storage = new Store<Key, Value>(name, {
-				delay: noDelay,
-				initialValue: new Map(),
-			})
-
-			storage.set(key, valueCallback)
-			expect(valueCallback).toHaveBeenCalledExactlyOnceWith(undefined)
-			expect(storage.get(key)).toEqual({ value: 1 })
-
-			storage.set(key, valueCallback)
-			expect(valueCallback).toHaveBeenNthCalledWith(2, { value: 1 })
-			expect(storage.get(key)).toEqual({ value: 2 })
-		})
-
-		it('should trigger "onChange" callback', () => {
-			let thisArg: Store<unknown, unknown, true>
-			const onChange = vi.fn(function (this: typeof thisArg) {
-				thisArg ??= this
-			})
-			const storage = new Store(name, {
-				cacheDisabled: true,
-				onChange,
-			})
-			expect(onChange).not.toHaveBeenCalled()
-			storage.set(key, value)
-			expect(onChange).toHaveBeenCalledWith(new Map(entries))
-			expect(onChange).toHaveBeenCalledTimes(1)
-
-			storage.set('key2', { value: 2 })
-			expect(onChange).toHaveBeenCalledTimes(2)
-
-			storage.clear()
-			expect(onChange).toHaveBeenCalledTimes(3)
-
-			expect(thisArg!).toBe(storage)
-		})
-
 		it('should invoke "onError" callback', () => {
 			mockedStorage = new MockLocalStorage()
 			mockedStorage.getItem = (() => 'malformed JSON') as any
@@ -407,6 +355,29 @@ describe('Srore', () => {
 			)
 		})
 
+		it('should trigger "onChange" callback', () => {
+			let thisArg: Store<unknown, unknown, true>
+			const onChange = vi.fn(function (this: typeof thisArg) {
+				thisArg ??= this
+			})
+			const storage = new Store(name, {
+				cacheDisabled: true,
+				onChange,
+			})
+			expect(onChange).not.toHaveBeenCalled()
+			storage.set(key, value)
+			expect(onChange).toHaveBeenCalledWith(new Map(entries))
+			expect(onChange).toHaveBeenCalledTimes(1)
+
+			storage.set('key2', { value: 2 })
+			expect(onChange).toHaveBeenCalledTimes(2)
+
+			storage.clear()
+			expect(onChange).toHaveBeenCalledTimes(3)
+
+			expect(thisArg!).toBe(storage)
+		})
+
 		it('should invoke "parse" callback', () => {
 			let thisArg: Store<Key, Value, false>
 			const parse = vi.fn(function (
@@ -421,7 +392,6 @@ describe('Srore', () => {
 				initialValue,
 				parse,
 			})
-			expect(storage.parse === parse).toBe(true)
 			expect(parse).toHaveBeenCalledTimes(1)
 			storage.getAll(true) // force read from storage and invoke "parse" callback
 			expect(parse).toHaveBeenCalledTimes(2)
@@ -443,12 +413,42 @@ describe('Srore', () => {
 				initialValue,
 				stringify,
 			})
-			expect(storage.stringify === stringify).toBe(true)
 			expect(stringify).toHaveBeenCalledTimes(1)
 			storage.clear()
 			expect(stringify).toHaveBeenCalledTimes(2)
 
 			expect(thisArg!).toBe(storage)
+		})
+
+		it('should invoke "parse" and "stingify" callbacks when in in-memory mode (no name provided)', () => {
+			let count = 0
+			const parse = vi.fn(() => objToMap({ count: ++count }))
+			const stringify = vi.fn(() => '')
+			const storage = new Store<string, number>(null, {
+				delay: noDelay,
+				parse,
+				stringify,
+			})
+			expect(parse).not.toHaveBeenCalled()
+			storage.init()
+			expect(parse).toHaveBeenCalledOnce()
+		})
+
+		it('should invoke `value` callback on instance.set()', () => {
+			let count = 0
+			const valueCallback = vi.fn(() => ({ value: ++count }))
+			const storage = new Store<Key, Value>(name, {
+				delay: noDelay,
+				initialValue: new Map(),
+			})
+
+			storage.set(key, valueCallback)
+			expect(valueCallback).toHaveBeenCalledExactlyOnceWith(undefined)
+			expect(storage.get(key)).toEqual({ value: 1 })
+
+			storage.set(key, valueCallback)
+			expect(valueCallback).toHaveBeenNthCalledWith(2, { value: 1 })
+			expect(storage.get(key)).toEqual({ value: 2 })
 		})
 	})
 
@@ -597,11 +597,11 @@ describe('Srore', () => {
 
 	describe('fromObject', () => {
 		it('should contain the correct type property', () => {
-			expect(Store.fromObject().type).toBe('object')
+			expect(createObjectStore().type).toBe('object')
 		})
 
 		it('should create a storage instance from an object', () => {
-			const storage = Store.fromObject(name, {
+			const storage = createObjectStore(name, {
 				delay: noDelay,
 				initialValue: {
 					age: 99,
@@ -616,7 +616,7 @@ describe('Srore', () => {
 		})
 
 		it('should create a storage instance from an object without initial value', () => {
-			const storage = Store.fromObject<{
+			const storage = createObjectStore<{
 				age: Number
 				name: string
 			}>(name, { delay: noDelay })
@@ -628,7 +628,7 @@ describe('Srore', () => {
 		it('should invoke onError when JSON data type mismatch occurs', () => {
 			// create two storages with the same name but two different data types (2D array and object)
 			const name = 'mismatch'
-			const objStore = Store.fromObject(name, {
+			const objStore = createObjectStore(name, {
 				delay: noDelay,
 				initialValue: {
 					age: 99,
@@ -648,7 +648,7 @@ describe('Srore', () => {
 		it('should invoke `value` callback on object storage instance.set()', () => {
 			let count = 0
 			const valueCallback = vi.fn(() => ++count)
-			const objStore = Store.fromObject<{ [key]: number }>('obj', {
+			const objStore = createObjectStore<{ [key]: number }>('obj', {
 				delay: noDelay,
 				initialValue: { [key]: 0 },
 			})

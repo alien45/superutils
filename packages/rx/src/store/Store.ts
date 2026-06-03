@@ -1,6 +1,6 @@
 import {
 	deferred,
-	EntryComparator,
+	type EntryComparator,
 	fallbackIfFails,
 	filter,
 	find,
@@ -12,7 +12,6 @@ import {
 	isDefined,
 	isFn,
 	isMap,
-	isObj,
 	isPositiveNumber,
 	isStr,
 	mapJoin,
@@ -23,8 +22,7 @@ import {
 import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
 import { UnwrapSourceValue } from '../types'
 import unsubscribeAll from '../unsubscribeAll'
-import type { IStore, IObjectStore, Store_Options } from './types'
-import { Store_OnErrorType } from './types'
+import { type IStore, Store_OnErrorType, type Store_Options } from './types'
 
 /**
  * RxJS Subject to trigger forced update of cached data from underlying storage of {@link Store} instances.
@@ -80,6 +78,8 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * - **Performance**: `DataStorage` is optimized for small to medium datasets.
  *   - For datasets > 1MB, consider increasing the `delay` option to reduce write frequency.
  *   - It is **NOT** recommended for datasets larger than 3MB due to synchronous serialization costs.
+ *   - For one-off operations or standalone scripts, data size is constrained only by available system memory
+ *   and processing power.
  * - **RxJS Integration**: Built on RxJS for reactive data handling, though no prior RxJS knowledge is required.
  * - **Storage Behavior**:
  *   - If `name` is omitted, the instance operates in-memory only and data is not persisted to storage.
@@ -261,7 +261,7 @@ export class Store<
 		this.name = `${name ?? ''}`.trim()
 		this.onError = onError
 		this.onChange = onChange
-		this.parse = parse
+		this.parse = parse?.bind(this)
 		this.storage =
 			storage === null
 				? null
@@ -274,7 +274,7 @@ export class Store<
 		if (this.name && !this.storage)
 			throw new Error(Store.messages.invalidOptionsStorage)
 		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
-		this.stringify = stringify
+		this.stringify = stringify?.bind(this)
 		this.spaces = spaces
 		this.subject = (
 			this.cacheDisabled ? new Subject() : new BehaviorSubject(undefined)
@@ -306,82 +306,6 @@ export class Store<
 
 	find: This['find'] = predicateOrOptions =>
 		find(this.getAll(), predicateOrOptions as Parameters<typeof find>[0])
-
-	/**
-	 * Creates a {@link Store} instance initialized from a plain object.
-	 *
-	 * This factory method automatically configures `parse` and `stringify` logic to
-	 * treat the underlying storage as a serialized object, while providing a
-	 * type-safe Map-like interface for individual properties.
-	 *
-	 * This default behavior can be overridden by providing custom `parse` and `stringify` implementations in `options`.
-	 *
-	 * @param name (optional) The name for the storage (e.g., localStorage key or filename).
-	 * @param options (optional) Configuration options for the storage instance.
-	 * @param options.initialValue (optional) An optional object to populate the storage if it's currently empty.
-	 *
-	 * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
-	 * @template CacheDisabled (optional) Literal type determining whether to disable in-memory caching.
-	 *
-	 * @returns A new DataStorage instance mapped to the object's keys and values.
-	 *
-	 * @example
-	 * #### Store and access a User object
-	 * ```typescript
-	 * import { DataStorage } from '@superutils/rx'
-	 *
-	 * interface User {
-	 *   age: number;
-	 *   name: string;
-	 * }
-	 *
-	 * const initialValue: User = {
-	 *   age: 99,
-	 *   name: 'Ninety Nine'
-	 * }
-	 *
-	 * // Initialize storage from the object
-	 * const storage = DataStorage.fromObject<User>('user-profile', { initialValue })
-	 *
-	 * // Keys are inferred from the User interface
-	 * const name = storage.get('name') // Inferred as: string | undefined
-	 * console.log(name) // Prints: 'Ninety Nine'
-	 *
-	 * // Update properties safely
-	 * storage.set('age', 100)
-	 *
-	 * // Reconstruct the updated object
-	 * const userObj = storage.toObject<User>()
-	 * console.log(userObj) // { age: 100, name: 'Ninety Nine' }
-	 * ```
-	 */
-	static fromObject = <
-		T extends object,
-		Key extends keyof T = keyof T,
-		Value extends T[Key] = T[Key],
-		CacheDisabled extends boolean = false,
-	>(
-		name?: string | null,
-		options?: Omit<
-			Store_Options<Key, Value, CacheDisabled>,
-			'initialValue'
-		> & { initialValue?: T },
-	) => {
-		const instance = new Store(name, {
-			parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
-			stringify: function (data) {
-				return JSON.stringify(this.toObject(data))
-			},
-			...(options as Store_Options<Key, Value, CacheDisabled>),
-			initialValue: !isObj(options?.initialValue, true)
-				? options?.initialValue
-				: objToMap<T>(options.initialValue),
-		}) as unknown as IObjectStore<T, CacheDisabled>
-
-		instance.type = 'object'
-
-		return instance
-	}
 
 	/**
 	 * Trigger forced update of cached data from storage.
@@ -416,7 +340,7 @@ export class Store<
 		)
 	}
 
-	private handleForceUpdateCacheChange = (
+	private handleForceUpdateCache = (
 		name: UnwrapSourceValue<typeof forceUpdateCache$>,
 	) => {
 		const isTarget = !this.name
@@ -469,7 +393,7 @@ export class Store<
 		// update cached data from localStorage throughout the application only when triggered
 		if (!this.cacheDisabled) {
 			this.subscriptions.forceUpdateCache = forceUpdateCache$.subscribe(
-				this.handleForceUpdateCacheChange,
+				this.handleForceUpdateCache,
 			)
 		}
 		// Subscribe to data changes and write to storage.
@@ -500,19 +424,23 @@ export class Store<
 		dataStr = this.name ? this.storage?.getItem(this.name) : null,
 	) => {
 		// no underlying storage used >> in-memory only >> no need to parse
-		if (!this.name)
+		if (!this.name && !isFn(this.parse))
 			return (
 				(this.subject as BehaviorSubject<Map<Key, Value>>).value
 				?? new Map<Key, Value>()
 			)
 
 		const data = fallbackIfFails(
-			() => this.parse?.call(this, dataStr),
-			[],
+			this.parse,
+			[dataStr],
 			this.triggerOnError(Store_OnErrorType.parse),
 		)
-		if (isFn(this.parse) || !isStr(dataStr))
-			return data ?? new Map<Key, Value>()
+		if (!this.name || !isStr(dataStr))
+			return (
+				data
+				?? (this.subject as BehaviorSubject<Map<Key, Value>>).value
+				?? new Map<Key, Value>()
+			)
 
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
 		return new Map<Key, Value>(
@@ -568,9 +496,14 @@ export class Store<
 		spacing = this.spaces,
 		data = this.getAll(),
 	) => {
+		// const str = fallbackIfFails(
+		// 	(() => this.stringify?.call(this, data)) as unknown as string,
+		// 	[],
+		// 	this.triggerOnError(Store_OnErrorType.stringify, ''), // if fails return empty string
+		// )
 		const str = fallbackIfFails(
-			(() => this.stringify?.call(this, data)) as unknown as string,
-			[],
+			this.stringify as unknown as string,
+			[data],
 			this.triggerOnError(Store_OnErrorType.stringify, ''), // if fails return empty string
 		)
 		if (isStr(str)) return str
@@ -626,13 +559,14 @@ export class Store<
 	write: This['write'] = data => {
 		try {
 			!this.initialized && this.init()
-			const finalData =
-				data
-				?? (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
 
-			if (!this.name || !this.storage || !isMap(finalData)) return false
+			data ??= (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
+			if (!isMap(data)) return false
 
-			this.storage.setItem(this.name, this.toString(finalData))
+			const jsonStr = this.toString(data)
+			if (!this.name || !this.storage) return false
+
+			this.storage.setItem(this.name, jsonStr)
 
 			return true
 		} catch (err) {

@@ -405,7 +405,22 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 		>
 	) => ReturnType<typeof search<Key, Value, MatchExact, AsMap>>
 
-	/** Set item by key */
+	/**
+	 * Set item by key
+	 *
+	 * @param key
+	 * @param value
+	 *
+	 * @example
+	 *
+	 * ```javascript
+	 * import { Store } from '@superutils/rx'
+	 *
+	 * const store = new Store<string, number>()
+	 * store.set('count', 1)
+	 * store.set('count', (prevCount = 0) => prevCount + 1)
+	 * ```
+	 */
 	readonly set: (
 		key: Key,
 		value: Value | ((currentValue?: Value) => Value),
