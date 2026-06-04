@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
-import createStore from '../../src/store/createStore'
+import { createStore, type IStore } from '../src'
 import MockLocalStorage from './MockLocalStorage'
-import { IStore } from '../../dist'
 
 describe('createStore', () => {
 	let mockedStorage: MockLocalStorage

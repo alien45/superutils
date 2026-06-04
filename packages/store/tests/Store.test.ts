@@ -1,11 +1,13 @@
+import { unsubscribeAll } from '@superutils/rx'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import createObjectStore from '../../src/store/createObjectStore'
-import Store from '../../src/store/Store'
-import { Store_OnErrorType, type StorageCompact } from '../../src/store/types'
-import unsubscribeAll from '../../src/unsubscribeAll'
+import {
+	createObjectStore,
+	Store,
+	Store_OnErrorType,
+	type StorageCompact,
+} from '../src'
 import MockLocalStorage from './MockLocalStorage'
-import { objToMap } from '@superutils/core'
 
 describe('Srore', () => {
 	let mockedStorage: MockLocalStorage
@@ -67,7 +69,7 @@ describe('Srore', () => {
 			expect(storage.initialized).toBe(false)
 			storage.getAll(true)
 			storage.set(key, value)
-			expect(storage.subject).instanceOf(BehaviorSubject)
+			expect(storage.subject$).instanceOf(BehaviorSubject)
 			expect(storage.initialized).toBe(true)
 			expect(storage.get(key)).toEqual(value)
 			expect(storage.has(key)).toBe(true)
@@ -111,7 +113,7 @@ describe('Srore', () => {
 			vi.stubGlobal('localStorage', null)
 			const storage = new Store(null, { delay: noDelay })
 			storage.set(key, value)
-			expect(storage.subject).instanceOf(Subject)
+			expect(storage.subject$).instanceOf(Subject)
 			expect(storage.toArray()).toEqual(entries)
 			expect(mockedStorage.getItem).not.toHaveBeenCalled()
 			expect(mockedStorage.setItem).not.toHaveBeenCalled()
@@ -121,7 +123,7 @@ describe('Srore', () => {
 			const storage = new Store(name, { cacheDisabled: true })
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(0)
 			expect(storage.cacheDisabled).toBe(true)
-			expect(storage.subject).instanceOf(Subject)
+			expect(storage.subject$).instanceOf(Subject)
 			storage.set(key, value)
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(1)
@@ -141,7 +143,7 @@ describe('Srore', () => {
 			const storage = new Store(null, {
 				cacheDisabled: true,
 			})
-			expect(storage.subject).instanceOf(Subject)
+			expect(storage.subject$).instanceOf(Subject)
 		})
 
 		it('should set initial value', () => {
@@ -193,8 +195,8 @@ describe('Srore', () => {
 				delay: noDelay,
 				initialValue,
 			})
-			expect(storage.subject instanceof BehaviorSubject).toBe(true)
-			storage.subject.next(null as any)
+			expect(storage.subject$ instanceof BehaviorSubject).toBe(true)
+			storage.subject$.next(null as any)
 			expect(storage.getAll()).toEqual(new Map())
 		})
 
@@ -422,7 +424,7 @@ describe('Srore', () => {
 
 		it('should invoke "parse" and "stingify" callbacks when in in-memory mode (no name provided)', () => {
 			let count = 0
-			const parse = vi.fn(() => objToMap({ count: ++count }))
+			const parse = vi.fn(() => new Map([['count', ++count]]))
 			const stringify = vi.fn(() => '')
 			const storage = new Store<string, number>(null, {
 				delay: noDelay,
@@ -546,7 +548,7 @@ describe('Srore', () => {
 
 				// make sure the initial value is stored
 				const subs = storages.map(storage => {
-					const sub = storage.subject.subscribe(subjectOnChange)
+					const sub = storage.subject$.subscribe(subjectOnChange)
 					expect(storage.toArray()).toEqual(entries)
 
 					// manually set value to the underlying storage

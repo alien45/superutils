@@ -11,12 +11,14 @@ import {
 	TypedMap,
 	ValueOrPromise,
 } from '@superutils/core'
-import { BehaviorSubject, Subject } from '../rxjs'
+import { BehaviorSubject, Subject } from 'rxjs'
 
 // re-export useful stuff from core package
 export { type TypedMap } from '@superutils/core'
 
-/** Storage type with only properties that are used by `DataStorage` */
+export type ForceUpdateCacheName = string | string[] | boolean
+
+/** Storage type with only properties that are used by `Store` */
 export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
 
 /** Throttle & debounce related options */
@@ -29,7 +31,7 @@ export type Store_DelayOptions =
 	  } & Omit<DebounceOptions, 'onError' | 'thisArg'>)
 
 /**
- * Categorizes errors encountered during DataStorage operations.
+ * Categorizes errors encountered during Store operations.
  *
  * These types are passed to the `onError` callback to help identify which phase of the
  * data lifecycle (reading, writing, or processing) failed.
@@ -211,10 +213,11 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * This allows you to transform the raw string from the underlying storage back into a
 	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
 	 *
-	 * **Fallback Behavior:** The system falls back to internal `JSON.parse` logic if `parse`:
-	 * - is not a non-function
-	 * - throws an error
-	 * - returns a non-Map value,
+	 *
+	 * **Fallback Behavior:**
+	 * - If this function is not defined, or returns `undefined` or a non-map value,
+	 * the system falls back to internal `JSON.parse` logic.
+	 * - If the function throws an error, it will use and empty map.
 	 *
 	 * **Error Triggers:**
 	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
@@ -253,8 +256,9 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * only persisting necessary fields.
 	 *
 	 * **Fallback Behavior:**
-	 * If this function is not defined, throws an error, or returns `undefined` or a non-string value,
+	 * - If this function is not defined, or returns `undefined` or a non-string value,
 	 * the system falls back to internal `JSON.stringify` logic.
+	 * - If the function throws an error, it will use and empty string.
 	 *
 	 * **Error Triggers:**
 	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link Store_OnErrorType.stringify}.
@@ -268,7 +272,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * @example
 	 * #### Sanitize data before saving
 	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
+	 * import { Store } from '@superutils/store'
 	 *
 	 * const stringify = data => {
 	 *   // Convert Map to an array of entries, removing sensitive fields
@@ -278,7 +282,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 *   })
 	 *   return JSON.stringify(entries)
 	 * }
-	 * const storage = new DataStorage('users', { stringify })
+	 * const storage = new Store('users', { stringify })
 	 * ```
 	 */
 	stringify?: Store_Stringify<
@@ -295,7 +299,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - **Subject**: Used when caching is disabled.
 	 * It acts as a pure event pipe, emitting updates only at the moment they occur without retaining an in-memory copy.
 	 */
-	readonly subject: CacheDisabled extends true
+	readonly subject$: CacheDisabled extends true
 		? Subject<Map<Key, Value>>
 		: BehaviorSubject<Map<Key, Value>>
 
@@ -360,7 +364,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	/**
 	 * Reads and parses data directly from the persistent storage medium.
 	 *
-	 * This operation is synchronous and does not trigger reactive updates via `subject`.
+	 * This operation is synchronous and does not trigger reactive updates via `subject$`.
 	 * It is useful for debugging custom `parse` logic or manual data retrieval.
 	 *
 	 * If `instance.parse` function is provided and invokation fails, an empty Map will be returned.
@@ -382,9 +386,9 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * @example
 	 * #### Search for users in a specific city
 	 * ```javascript
-	 * import { DataStorage } from '@superutils/rx'
+	 * import { Store } from '@superutils/store'
 	 *
-	 * const storage = new DataStorage('users', {
+	 * const storage = new Store('users', {
 	 *   initialValue: new Map([
 	 *     [1, { name: 'John Doe', city: 'New York' }],
 	 *     [2, { name: 'Jane Doe', city: 'London' }],
@@ -414,7 +418,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * @example
 	 *
 	 * ```javascript
-	 * import { Store } from '@superutils/rx'
+	 * import { Store } from '@superutils/store'
 	 *
 	 * const store = new Store<string, number>()
 	 * store.set('count', 1)
@@ -491,7 +495,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	readonly write: (data?: Map<Key, Value>) => void
 }
 
-// @ts-expect-error force override properties while preserving documentation of IDataStorage
+// @ts-expect-error force override properties while preserving documentation of IStore
 export interface IObjectStore<
 	T extends object,
 	CacheDisabled extends boolean = false,

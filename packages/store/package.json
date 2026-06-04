@@ -1,0 +1,51 @@
+{
+	"author": "Toufiqur Rahaman Chowdhury",
+	"description": "Generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities.",
+	"dependencies": {
+		"@superutils/core": "*",
+		"@types/react": "^18.0.0",
+		"react": ">=16.8.0",
+		"rxjs": "^7.8.2"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"keywords": [
+		"rxjs",
+		"utils",
+		"typescript",
+		"react",
+		"hooks"
+	],
+	"license": "MIT",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"name": "@superutils/store",
+	"peerDependencies": {
+		"@superutils/core": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"_build": "tsc -p tsconfig.json",
+		"_watch": "tsc -p tsconfig.json --watch",
+		"build": "tsup --config ../../tsup.config.js",
+		"dev": "npm run build -- --watch",
+		"start": "npm run dev",
+		"test": "cd ../../ && npm run test rx"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"version": "0.1.13"
+}

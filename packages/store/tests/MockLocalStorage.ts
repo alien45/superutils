@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { StorageCompact } from '../../src/store/types'
+import { StorageCompact } from '../src'
 
 export default class MockLocalStorage implements StorageCompact {
 	storage = new Map<string, string>()

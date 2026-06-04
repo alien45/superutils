@@ -1,7 +1,7 @@
 import { objToMap, isObj } from '@superutils/core'
+import createStore, { Store_Context } from './createStore'
 import Store from './Store'
 import { Store_Options, IObjectStore } from './types'
-import createStore, { Store_Context } from './createStore'
 
 /**
  * Defines the shape of the context object that can be attached to {@link IObjectStore} instance.
@@ -37,13 +37,13 @@ export type ObjectStore_Context<
  * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
  * @template CacheDisabled (optional) Literal type determining whether to disable in-memory caching.
  *
- * @returns A new DataStorage instance mapped to the object's keys and values.
+ * @returns A new Store instance mapped to the object's keys and values.
  *
  * @example
  * #### Basic property-based access
  *
  * ```typescript
- * import { createObjectStore } from '@superutils/rx'
+ * import { createObjectStore } from '@superutils/store'
  *
  * const storage = createObjectStore('user-profile', {
  *   initialValue: {
@@ -68,7 +68,7 @@ export type ObjectStore_Context<
  * #### Usage with context
  *
  * ```javascript
- * import { createObjectStore } from '@superutils/rx'
+ * import { createObjectStore } from '@superutils/store'
  *
  * // Functional context allows you to attach business logic directly to the store
  * const userStore = createObjectStore('user-profile', {

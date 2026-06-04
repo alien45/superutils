@@ -19,10 +19,13 @@ import {
 	search,
 	sort,
 } from '@superutils/core'
-import { BehaviorSubject, skip, Subject, Subscription } from '../rxjs'
-import { UnwrapSourceValue } from '../types'
-import unsubscribeAll from '../unsubscribeAll'
-import { type IStore, Store_OnErrorType, type Store_Options } from './types'
+import { BehaviorSubject, skip, Subject, Subscription } from 'rxjs'
+import {
+	ForceUpdateCacheName,
+	type IStore,
+	Store_OnErrorType,
+	type Store_Options,
+} from './types'
 
 /**
  * RxJS Subject to trigger forced update of cached data from underlying storage of {@link Store} instances.
@@ -33,28 +36,28 @@ import { type IStore, Store_OnErrorType, type Store_Options } from './types'
  *
  * @example
  * ```javascript
- * import { DataStorage, forceUpdateCache$ } from '@superutils/rx'
+ * import { Store, forceUpdateCache$ } from '@superutils/store'
  *
  * const names = ['products', 'users']
  *
- * // Update all DataStorage instances by a list of their names
+ * // Update all Store instances by a list of their names
  * forceUpdateCache$.next(names)
- * // alternatively: DataStorage.forceUpdateCache(names)
+ * // alternatively: Store.forceUpdateCache(names)
  *
- * // Update all DataStorage instances with a specific name
+ * // Update all Store instances with a specific name
  * forceUpdateCache$.next(names[0])
- * // alternatively: DataStorage.forceUpdateCache(names[0])
+ * // alternatively: Store.forceUpdateCache(names[0])
  *
- * // Update every single instance of DataStorage that uses storage (has a "name" property)
+ * // Update every single instance of Store that uses storage (has a "name" property)
  * forceUpdateCache$(true)
- * // alternatively: DataStorage.forceUpdateCache(true)
+ * // alternatively: Store.forceUpdateCache(true)
  * ```
  *
  * @example
  *
  * #### Practical example
  * ```typescript
- * import { DataStorage } from '@superutils/rx'
+ * import { Store } from '@superutils/store'
  *
  * const name = 'user-profile'
  * type User = {
@@ -62,12 +65,12 @@ import { type IStore, Store_OnErrorType, type Store_Options } from './types'
  *   name: string
  *   roles?: string[]
  * }
- * const userStore = DataStorage.(name, { delay: 0 }) // delay is set to zero to simplify the example
+ * const userStore = Store.(name, { delay: 0 }) // delay is set to zero to simplify the example
  * userStore.set('name', 'John Doe')
  * userStore.set('name', 'John Doe')
  * ```
  */
-export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
+export const forceUpdateCache$ = new Subject<ForceUpdateCacheName>()
 
 /**
  * A generic, reactive data storage class that provides a Map-like interface with advanced features
@@ -75,7 +78,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * (LocalStorage in browsers, JSON files in NodeJS via `node-localstorage` NPM module).
  *
  * #### Notes:
- * - **Performance**: `DataStorage` is optimized for small to medium datasets.
+ * - **Performance**: `Store` is optimized for small to medium datasets.
  *   - For datasets > 1MB, consider increasing the `delay` option to reduce write frequency.
  *   - It is **NOT** recommended for datasets larger than 3MB due to synchronous serialization costs.
  *   - For one-off operations or standalone scripts, data size is constrained only by available system memory
@@ -99,9 +102,9 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * @example
  * #### Browser Usage 1: use like a map
  * ```javascript
- * import { DataStorage } from '@superutils/rx'
+ * import { Store } from '@superutils/store'
  *
- * const userStorage = new DataStorage('users')
+ * const userStorage = new Store('users')
  * userStorage.set(1, { name: 'Alice', age: 30 })
  * const user = userStorage.get(1)
  * console.log(user) // prints: {name: 'Alice', age: 30}
@@ -110,11 +113,11 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * @example
  * #### Browser Usage 2:
  * ```javascript
- * import { DataStorage } from '@superutils/rx'
+ * import { Store } from '@superutils/store'
  * import fetch from '@superutils/fetch'
  *
  * const { products } = await fetch.get('[DUMMYJSON-DOT-COM]/products')
- * const storage = new DataStorage('products', {
+ * const storage = new Store('products', {
  *   initialValue: new Map(products.map(p => [p.id, p])) // convert to Map
  * })
  *
@@ -130,7 +133,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * @example
  * #### NodeJS Usage
  * ```javascript
- * import { DataStorage } from '@superutils/rx'
+ * import { Store } from '@superutils/store'
  * import fetch from '@superutils/fetch'
  * import { LocalStorage } from 'node-localstorage'
  *
@@ -138,7 +141,7 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * // This is not necessary for browsers.
  * globalThis.localStorage = new LocalStorage('./data', 1e7)
  *
- * const storage = new DataStorage('products')
+ * const storage = new Store('products')
  * const { products } = await fetch.get('[DUMMYJSON-DOT-COM]/products')
  * // save all items to storage
  * storage.setAll(
@@ -158,17 +161,17 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  * @example
  * #### Advanced: `onChange` and RxJS subject
  *
- * Internally, `DataStorage` uses RxJS subject which is exposed as `subject` property.
+ * Internally, `Store` uses RxJS subject which is exposed as `subject$` property.
  * You can use this to subscribe to changes and do additional operations such as logging or sanitization etc.
  *
  * Alternatively, you can also set the `onChange` callback which is triggered whenever the subject changes and
  * does not require maintaining a subscription or knowledge of RxJS subject.
  *
  * ```javascript
- * import { DataStorage } from '@superutils/rx'
+ * import { Store } from '@superutils/store'
  *
- * const storage = new DataStorage('my-data')
- * const sub = storage.subject.subscribe(data => {
+ * const storage = new Store('my-data')
+ * const sub = storage.subject$.subscribe(data => {
  *   // Write to the database whenever data changes
  *   console.log('Saving to database...', data)
  * })
@@ -232,7 +235,7 @@ export class Store<
 
 	stringify?: This['stringify']
 
-	readonly subject!: This['subject']
+	readonly subject$!: This['subject$']
 
 	private subscriptions = {
 		subject: undefined as Subscription | undefined,
@@ -276,9 +279,9 @@ export class Store<
 		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
 		this.stringify = stringify?.bind(this)
 		this.spaces = spaces
-		this.subject = (
+		this.subject$ = (
 			this.cacheDisabled ? new Subject() : new BehaviorSubject(undefined)
-		) as This['subject']
+		) as This['subject$']
 		this.delayOptions = delayOptions
 		isMap(initialValue) && initialValue.size && this.init(initialValue)
 	}
@@ -330,19 +333,17 @@ export class Store<
 		if (readFromStorage) {
 			const data = this.read()
 			const shouldTrigger = forceRead || (!wasInitialized && !!data.size)
-			shouldTrigger && this.subject.next(data)
+			shouldTrigger && this.subject$.next(data)
 			return data
 		}
 
 		return (
-			(this.subject as BehaviorSubject<Map<Key, Value>>)?.value
+			(this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
 			?? new Map<Key, Value>()
 		)
 	}
 
-	private handleForceUpdateCache = (
-		name: UnwrapSourceValue<typeof forceUpdateCache$>,
-	) => {
+	private handleForceUpdateCache = (name: ForceUpdateCacheName) => {
 		const isTarget = !this.name
 			? false
 			: isArr(name)
@@ -353,12 +354,12 @@ export class Store<
 		if (!isTarget) return
 
 		const newData = this.read()
-		this.subject.next(newData)
+		this.subject$.next(newData)
 	}
 
 	private handleSubjectChange = (data: Map<Key, Value>) => {
 		// in-case non-map value is set, reset subject to an empty map
-		if (!isMap(data)) return this.subject.next(new Map())
+		if (!isMap(data)) return this.subject$.next(new Map())
 
 		this.write(data)
 
@@ -387,9 +388,9 @@ export class Store<
 			isEmpty = this.cacheDisabled || existingValue.size === 0
 		}
 
-		initialValue?.size && this.subject.next(initialValue)
+		initialValue?.size && this.subject$.next(initialValue)
 
-		unsubscribeAll(this.subscriptions)
+		this.unsubscribe()
 		// update cached data from localStorage throughout the application only when triggered
 		if (!this.cacheDisabled) {
 			this.subscriptions.forceUpdateCache = forceUpdateCache$.subscribe(
@@ -397,7 +398,7 @@ export class Store<
 			)
 		}
 		// Subscribe to data changes and write to storage.
-		this.subscriptions.subject = this.subject
+		this.subscriptions.subject = this.subject$
 			.pipe(skip(this.cacheDisabled || isEmpty ? 0 : 1))
 			.subscribe(
 				!this.cacheDisabled && this.delay > 0
@@ -423,22 +424,15 @@ export class Store<
 	read: This['read'] = (
 		dataStr = this.name ? this.storage?.getItem(this.name) : null,
 	) => {
-		// no underlying storage used >> in-memory only >> no need to parse
-		if (!this.name && !isFn(this.parse))
-			return (
-				(this.subject as BehaviorSubject<Map<Key, Value>>).value
-				?? new Map<Key, Value>()
-			)
-
 		const data = fallbackIfFails(
 			this.parse,
 			[dataStr],
-			this.triggerOnError(Store_OnErrorType.parse),
+			this.triggerOnError(Store_OnErrorType.parse, new Map<Key, Value>()),
 		)
-		if (!this.name || !isStr(dataStr))
+		if (isMap(data) || !isStr(dataStr))
 			return (
 				data
-				?? (this.subject as BehaviorSubject<Map<Key, Value>>).value
+				?? (this.subject$ as BehaviorSubject<Map<Key, Value>>).value
 				?? new Map<Key, Value>()
 			)
 
@@ -474,7 +468,7 @@ export class Store<
 		data = replace
 			? data // override all entries
 			: mapJoin(this.getAll(), data) // merge with existing entries and override only matching keys
-		this.subject.next(new Map(data))
+		this.subject$.next(new Map(data))
 		return this
 	}
 
@@ -496,11 +490,6 @@ export class Store<
 		spacing = this.spaces,
 		data = this.getAll(),
 	) => {
-		// const str = fallbackIfFails(
-		// 	(() => this.stringify?.call(this, data)) as unknown as string,
-		// 	[],
-		// 	this.triggerOnError(Store_OnErrorType.stringify, ''), // if fails return empty string
-		// )
 		const str = fallbackIfFails(
 			this.stringify as unknown as string,
 			[data],
@@ -550,7 +539,9 @@ export class Store<
 		}
 
 	unsubscribe: This['unsubscribe'] = () => {
-		unsubscribeAll(this.subscriptions)
+		// unsubscribeAll(this.subscriptions)
+		this.subscriptions.forceUpdateCache?.unsubscribe()
+		this.subscriptions.subject?.unsubscribe()
 		this.subscriptions = {} as unknown as typeof this.subscriptions
 	}
 
@@ -560,7 +551,7 @@ export class Store<
 		try {
 			!this.initialized && this.init()
 
-			data ??= (this.subject as BehaviorSubject<Map<Key, Value>>)?.value
+			data ??= (this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
 			if (!isMap(data)) return false
 
 			const jsonStr = this.toString(data)

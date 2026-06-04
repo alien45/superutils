@@ -39,7 +39,7 @@ export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
  * @example
  * #### Basic store without context
  * ```javascript
- * import { createStore } from '@superutils/rx'
+ * import { createStore } from '@superutils/store'
  *
  * const store = createStore<string, number>()
  * store.set('count', 1)
@@ -49,7 +49,7 @@ export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
  * @example
  * #### Store with a static context object
  * ```javascript
- * import { createStore } from '@superutils/rx'
+ * import { createStore } from '@superutils/store'
  *
  * const store = createStore('user-settings', {
  *   context: {
@@ -67,7 +67,7 @@ export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
  * @example
  * #### Store with a functional context (access to store instance)
  * ```typescript
- * import { createStore } from '@superutils/rx'
+ * import { createStore } from '@superutils/store'
  *
  * const authStore = createStore('auth', {
  *   context: (store) => ({
