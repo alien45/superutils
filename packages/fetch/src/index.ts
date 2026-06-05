@@ -36,6 +36,7 @@ import {
 } from './types'
 
 /**
+ * @function fetch
  * A `fetch()` replacement that simplifies data fetching with automatic JSON parsing, request timeouts, retries,
  * and handy interceptors that also work as transformers. It also includes deferred and throttled request
  * capabilities for complex asynchronous control flows.
@@ -125,7 +126,7 @@ import {
  * ```
  *
  * @example
- * #### Set default options.
+ * #### Set default options
  *
  * Options' default values (excluding `as` and `method`) can be configured to be EFFECTIVE GLOBALLY.
  *

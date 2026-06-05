@@ -3,13 +3,6 @@ import { FetchError } from './FetchError'
 import { FetchArgs, FetchArgsInterceptor } from './options'
 
 /**
- * Generic definition for interceptor and transformer callbacks used throughout the fetch lifecycle.
- */
-export type Interceptor<T, TArgs extends unknown[]> = (
-	...args: [value: T, ...TArgs]
-) => ValueOrPromise<void> | ValueOrPromise<T>
-
-/**
  * Fetch error interceptor to be invoked whenever an exception occurs.
  * This interceptor can also be used as the error transformer by returning {@link FetchError}.
  *
@@ -90,7 +83,7 @@ export type FetchInterceptorRequest = Interceptor<
 /**
  * Fetch response interceptor to be invoked before making a fetch request.
  *
- * This interceptor can also be used as a transformer by return a different/modified {@link Response}.
+ * This interceptor can also be used as a transformer by return a different/modified `Response`.
  *
  * @example
  * #### Intercept and transform response:
@@ -226,3 +219,10 @@ export type FetchInterceptorsMerged = {
 	response: FetchInterceptorResponse[]
 	result: FetchInterceptorResult[]
 }
+
+/**
+ * Generic definition for interceptor and transformer callbacks used throughout the fetch lifecycle.
+ */
+export type Interceptor<T, TArgs extends unknown[]> = (
+	...args: [value: T, ...TArgs]
+) => ValueOrPromise<void> | ValueOrPromise<T>

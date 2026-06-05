@@ -33,7 +33,10 @@ export type ExtractAs<
 				: ExtractAs<DropFirst<T>, Fallback>
 			: ExtractAs<DropFirst<T>, Fallback>
 
-export type FetchArgs = [url: URL | RequestInfo, options?: FetchOptions]
+export type FetchArgs = [
+	url: string | URL | RequestInfo,
+	options?: FetchOptions,
+]
 
 /** Additional arguments provided to interceptors */
 export type FetchArgsInterceptor = [
