@@ -50,5 +50,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "./dist/index.d.ts",
-	"version": "1.2.18"
+	"version": "1.2.19"
 }
