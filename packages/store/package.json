@@ -3,8 +3,6 @@
 	"description": "Generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities.",
 	"dependencies": {
 		"@superutils/core": "*",
-		"@types/react": "^18.0.0",
-		"react": ">=16.8.0",
 		"rxjs": "^7.8.2"
 	},
 	"exports": {
