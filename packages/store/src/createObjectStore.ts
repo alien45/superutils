@@ -1,5 +1,5 @@
 import { objToMap, isObj } from '@superutils/core'
-import createStore, { ReturnTypeOrSelf, Store_Context } from './createStore'
+import createStore, { Store_ContextReturn, Store_Context } from './createStore'
 import Store from './Store'
 import { Store_Options, IObjectStore } from './types'
 
@@ -109,9 +109,7 @@ export function createObjectStore<
 		context?: Context
 		initialValue?: T
 	},
-): IObjectStore<T, CacheDisabled> & {
-	context: ReturnTypeOrSelf<Context>
-}
+): IObjectStore<T, CacheDisabled> & Store_ContextReturn<Context>
 
 /**
  * Create a {@link Store} instance from an object using `options.initialValue`.

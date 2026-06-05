@@ -16,11 +16,18 @@ import { IStore, Store_Options } from './types'
  * @template CacheDisabled - Whether caching is disabled for this store.
  */
 export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
+	| undefined
 	| object
 	| ((store: IStore<Key, Value, CacheDisabled>) => object)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ReturnTypeOrSelf<T> = T extends (...args: any[]) => infer R ? R : T
+export type Store_ContextReturn<T> = {
+	context: undefined extends T
+		? never
+		: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+			T extends (...args: any[]) => infer R
+			? R
+			: T
+}
 
 /**
  * Factory function to create a {@link Store} instance with optional context.
@@ -92,9 +99,7 @@ export function createStore<
 >(
 	name?: ConstructorParameters<typeof Store<Key, Value, CacheDisabled>>[0],
 	options?: Store_Options<Key, Value, CacheDisabled> & { context?: Context },
-): IStore<Key, Value, CacheDisabled> & {
-	context: ReturnTypeOrSelf<Context>
-}
+): IStore<Key, Value, CacheDisabled> & Store_ContextReturn<Context>
 
 /**
  * Factory method to create a {@link Store} instance.
@@ -128,8 +133,6 @@ export function createStore<
 		writable: false,
 	})
 
-	return store as typeof store & {
-		context: ReturnTypeOrSelf<Context>
-	}
+	return store as typeof store & Store_ContextReturn<Context>
 }
 export default createStore
