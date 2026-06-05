@@ -10,15 +10,21 @@ import { UnsubscribeCandidate } from './types'
 export const unsubscribeAll = (
 	candidate: UnsubscribeCandidate = {},
 	onError?: (err: unknown) => void,
-) => {
+): void => {
 	if (!candidate) return
 
 	try {
 		// single function supplied
-		if (isFn(candidate)) return candidate()
+		if (isFn(candidate)) {
+			candidate()
+			return
+		}
 
 		// single subscription
-		if (isSubscriptionLike(candidate)) return candidate.unsubscribe()
+		if (isSubscriptionLike(candidate)) {
+			candidate.unsubscribe()
+			return
+		}
 
 		// array/object
 		Object.values(candidate as UnsubscribeCandidate[]).forEach(value =>

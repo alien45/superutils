@@ -84,7 +84,7 @@ export const isEmpty = (
 	if (proto === Object.prototype || proto === null) {
 		return nonNumerable
 			? !Object.getOwnPropertyNames(x).length
-			: !Object.keys(x as object).length
+			: !Object.keys(x).length
 	}
 	return fallback
 }

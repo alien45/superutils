@@ -48,7 +48,7 @@ export const mergeOptions = (...allOptions: (FetchOptions | undefined)[]) =>
 					result: [...toArr(ints1?.result), ...toArr(ints2?.result)],
 				},
 				timeout: options.timeout ?? merged.timeout,
-			} as FetchOptions
+			}
 		},
 		{ headers: new Headers() },
 	) as FetchOptionsInterceptor

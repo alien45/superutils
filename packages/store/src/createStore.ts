@@ -19,6 +19,9 @@ export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
 	| object
 	| ((store: IStore<Key, Value, CacheDisabled>) => object)
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ReturnTypeOrSelf<T> = T extends (...args: any[]) => infer R ? R : T
+
 /**
  * Factory function to create a {@link Store} instance with optional context.
  *
@@ -90,7 +93,7 @@ export function createStore<
 	name?: ConstructorParameters<typeof Store<Key, Value, CacheDisabled>>[0],
 	options?: Store_Options<Key, Value, CacheDisabled> & { context?: Context },
 ): IStore<Key, Value, CacheDisabled> & {
-	context: Context extends (...args: any[]) => infer R ? R : Context
+	context: ReturnTypeOrSelf<Context>
 }
 
 /**
@@ -116,12 +119,17 @@ export function createStore<
 ) {
 	const store = new Store(name, options)
 
-	;(store as any).context = isFn(options?.context)
-		? options.context(store)
-		: options?.context
+	Object.defineProperty(store, 'context', {
+		configurable: false,
+		enumerable: false,
+		value: isFn(options?.context)
+			? options.context(store)
+			: options?.context,
+		writable: false,
+	})
 
 	return store as typeof store & {
-		context: Context extends (...args: any[]) => infer R ? R : Context
+		context: ReturnTypeOrSelf<Context>
 	}
 }
 export default createStore

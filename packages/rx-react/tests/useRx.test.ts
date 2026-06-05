@@ -4,7 +4,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Subject } from 'rxjs'
-import useRx from '../src/rx/useRx'
+import useRx from '../src/useRx'
 
 describe('useRx', () => {
 	beforeEach(() => {

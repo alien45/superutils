@@ -56,7 +56,7 @@ export const asPromise = <T = unknown>(
 		{
 			...options,
 			onTimeout: async () => {
-				const msg = options.timeoutMsg || asPromise.defaults.timeoutMsg
+				const msg = options.timeoutMsg ?? asPromise.defaults.timeoutMsg
 				return (
 					(await fallbackIfFails(options.onTimeout, [], undefined))
 					?? (isError(msg) ? msg : new Error(msg))
@@ -76,13 +76,9 @@ export const asPromise = <T = unknown>(
 						|| expectedValue === undefined
 						// expected value is a function and returns boolean
 						|| (isFn(expectedValue)
-							&& fallbackIfFails(
-								expectedValue,
-								[value as T],
-								false,
-							))
+							&& fallbackIfFails(expectedValue, [value], false))
 
-					shouldResolve && resolve(value as T)
+					shouldResolve && resolve(value)
 				})
 		}),
 	)

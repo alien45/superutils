@@ -171,7 +171,7 @@ const fetch = <
 			let err = _err as Error
 
 			err = await interceptErr(_err as Error, url, opts, response)
-			return Promise.reject(err as FetchError)
+			return Promise.reject(err)
 		}
 	}) as IPromise_Fetch<TReturn>
 }

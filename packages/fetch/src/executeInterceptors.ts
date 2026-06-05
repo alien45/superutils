@@ -25,11 +25,8 @@ export const executeInterceptors = async <T, TArgs extends unknown[]>(
 	for (const interceptor of [...(interceptors ?? [])].filter(isFn)) {
 		if (signal?.aborted) break
 		value =
-			((await fallbackIfFails(
-				interceptor,
-				[value, ...args],
-				undefined,
-			)) as T) ?? value // if throws error or undefined/null is returned
+			(await fallbackIfFails(interceptor, [value, ...args], undefined))
+			?? value // if throws error or undefined/null is returned
 	}
 	return value
 }

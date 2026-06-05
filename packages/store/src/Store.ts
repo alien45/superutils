@@ -287,7 +287,7 @@ export class Store<
 		// non-empty map provided - initiate the storage immediately
 		isMap(initialValue)
 			&& initialValue.size
-			&& (this.init as Function)(initialValue, false)
+			&& (this.init as (...args: unknown[]) => void)(initialValue, false)
 	}
 
 	clear: This['clear'] = () => this.setAll(new Map<Key, Value>(), true)
@@ -428,7 +428,7 @@ export class Store<
 	static objToMap = objToMap
 
 	read: This['read'] = (
-		dataStr = (this.name && this.storage?.getItem(this.name)) || null,
+		dataStr = (this.name && this.storage?.getItem(this.name)) ?? null,
 	) => {
 		const data = fallbackIfFails(
 			this.parse,

@@ -4,7 +4,6 @@ import {
 	fallbackIfFails,
 	isArr,
 	isFn,
-	isNumber,
 	isPositiveNumber,
 	isPromise,
 	isSubjectLike,
@@ -141,8 +140,8 @@ export type CopyRx_Transform<TIn = unknown, TOut = TIn, ThisArg = unknown> = (
  */
 export function copyRx<
 	TOut,
-	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
-		Observable<any>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	Source$ extends Observable<any> | unknown[] = Observable<any> | unknown[],
 	TIn = UnwrapSourceValueStrict<Source$>,
 	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
@@ -155,8 +154,8 @@ export function copyRx<
 // Overload to allow transform() to change T into TCopy
 export function copyRx<
 	TOut,
-	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
-		Observable<any>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	Source$ extends Observable<any> | unknown[] = Observable<any> | unknown[],
 	TIn = UnwrapSourceValueStrict<Source$>,
 	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
@@ -168,8 +167,8 @@ export function copyRx<
 
 export function copyRx<
 	TOut,
-	Source$ extends Observable<any> | ReadonlyArray<Observable<any> | unknown> =
-		Observable<any>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	Source$ extends Observable<any> | unknown[] = Observable<any> | unknown[],
 	TIn = UnwrapSourceValueStrict<Source$>,
 	Copy$ extends BehaviorSubject<TOut> | Subject<TOut> = BehaviorSubject<TOut>,
 	ThisArg = unknown,
@@ -191,27 +190,27 @@ export function copyRx<
 				: x, // fixed value provided
 		]),
 	)
-	options = {
+	const _options = {
 		...copyRx.defaults,
 		...(options ?? {}),
 	} as CopyRx_Options<TOut, ThisArg>
 
-	if (!isArr(options.skipEmits)) options.skipEmits = [options.skipEmits]
-	if (options.thisArg !== undefined) {
-		options.onError = options.onError?.bind?.(options.thisArg)
-		transform = transform?.bind?.(options.thisArg)
+	if (!isArr(_options.skipEmits)) _options.skipEmits = [_options.skipEmits]
+	if (_options.thisArg !== undefined) {
+		_options.onError = _options.onError?.bind?.(_options.thisArg)
+		transform = transform?.bind?.(_options.thisArg)
 	}
-	if (isFn(transform) && options.transformSequentially)
+	if (isFn(transform) && _options.transformSequentially)
 		transform = PromisE.deferredCallback(transform, {
 			delay: 0, // enables sequential execution
-			onError: options.onError,
-			thisArg: options.thisArg,
+			onError: _options.onError,
+			thisArg: _options.thisArg,
 		})
 
 	const copy$ = (
-		isSubjectLike(options.output)
-			? options.output
-			: new BehaviorSubject(options.initialValue)
+		isSubjectLike(_options.output)
+			? _options.output
+			: new BehaviorSubject(_options.initialValue)
 	) as Copy$
 
 	const updateOutput = (value: TOut | symbol) =>
@@ -225,26 +224,26 @@ export function copyRx<
 
 		const result = fallbackIfFails(
 			transform,
-			[currentValue as TIn, copy$] as const,
+			[currentValue as TIn, copy$],
 			err => {
-				fallbackIfFails(options.onError, [err], undefined)
+				fallbackIfFails(_options.onError, [err], undefined)
 				return copyRx.IGNORE
 			},
-		) as ValueOrPromise<TOut | symbol>
-
-		!isPromise(result)
+		)
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		!isPromise<TOut>(result)
 			? updateOutput(result as TOut)
 			: result.then(updateOutput)
 	}
-	handleChange = isPositiveNumber(options.delay)
-		? deferred(handleChange, options.delay, options)
+	handleChange = isPositiveNumber(_options.delay)
+		? deferred(handleChange, _options.delay, _options)
 		: handleChange
 
 	const subscriptions = sourceArr.map((x, i) => {
 		if (!isObservable(x) || (x as BehaviorSubject<TIn>).closed) return
 
 		const skipEmit =
-			(options.skipEmits as number[])[i]
+			(_options.skipEmits as number[])[i]
 			?? (x instanceof BehaviorSubject ? 1 : 0)
 		if (skipEmit > 0) x = x.pipe(skip(skipEmit))
 

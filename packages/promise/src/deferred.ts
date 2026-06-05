@@ -127,7 +127,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		options as Record<string, unknown>,
 		[],
 		'empty',
-	) as DeferredAsyncOptions<ThisArg, Delay>
+	)
 	let { onError, onIgnore, onResult } = options
 	const {
 		delay = 0,
@@ -171,7 +171,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 			switch (resolveIgnored) {
 				case ResolveIgnored.WITH_UNDEFINED:
 					// resolve with undefined
-					iItem.resolve(undefined as T)
+					iItem.resolve(undefined)
 					break
 				case ResolveIgnored.WITH_LAST:
 					// resolve/reject with most recent promise
@@ -224,7 +224,8 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 			onError && fallbackIfFails(onError, [err], undefined)
 			switch (resolveError) {
 				case ResolveError.REJECT:
-					qItem.reject(err as Error)
+					// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+					qItem.reject(err)
 				// eslint-disable-next-line no-fallthrough
 				case ResolveError.NEVER:
 					break

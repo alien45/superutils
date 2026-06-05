@@ -17,13 +17,13 @@ export const useMount = (
 ) => {
 	useEffect(() => {
 		let isMounted = true
-		onMount && fallbackIfFails(onMount, [isMounted], undefined)
+		onMount && fallbackIfFails(onMount as unknown, [isMounted], undefined)
 
 		return () => {
 			isMounted = false
 			onUnmount
 				&& fallbackIfFails(
-					onUnmount === true ? onMount : onUnmount,
+					(onUnmount === true ? onMount : onUnmount) as unknown,
 					[isMounted],
 					undefined,
 				)
@@ -34,6 +34,8 @@ export const useMount = (
 /**
  * Hook to trigger callback on component unmount
  */
-export const useUnmount = (onUnmount: UseMountCb) => useMount(null, onUnmount)
+export const useUnmount = (onUnmount: UseMountCb) => {
+	useMount(null, onUnmount)
+}
 
 export default useMount

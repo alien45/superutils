@@ -21,7 +21,8 @@ export type UnsubscribeCandidate =
 	// single subscription
 	| SubscriptionLike
 	// array of subscriptions and other values
-	| (SubscriptionLike | unknown)[]
+	| SubscriptionLike[]
+	| unknown[]
 	// object of mixed values including all above
 	| object
 	// values to be ignored

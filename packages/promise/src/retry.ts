@@ -139,7 +139,9 @@ export const retry = <T>(
 			)
 		} while (shouldRetry)
 
-		if (error !== undefined) return Promise.reject(error as Error)
+		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+		if (error !== undefined) return Promise.reject(error)
+
 		return result as T
 	})
 	promise.onEarlyFinalize.push(() => {

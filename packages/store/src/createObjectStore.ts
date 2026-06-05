@@ -1,5 +1,5 @@
 import { objToMap, isObj } from '@superutils/core'
-import createStore, { Store_Context } from './createStore'
+import createStore, { ReturnTypeOrSelf, Store_Context } from './createStore'
 import Store from './Store'
 import { Store_Options, IObjectStore } from './types'
 
@@ -110,7 +110,7 @@ export function createObjectStore<
 		initialValue?: T
 	},
 ): IObjectStore<T, CacheDisabled> & {
-	context: Context extends (...args: any[]) => infer R ? R : Context
+	context: ReturnTypeOrSelf<Context>
 }
 
 /**

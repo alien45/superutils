@@ -7,10 +7,11 @@ import {
 	isFn,
 	isPositiveNumber,
 	isStr,
+	noop,
 } from '@superutils/core'
 import { copyRx, UnwrapSourceValue } from '@superutils/rx'
 import { useEffect, useMemo, useState } from 'react'
-import { isObservable, Subject } from 'rxjs'
+import { isObservable, Subject, Subscription } from 'rxjs'
 
 /**
  * A React hook that synchronizes component state with an RxJS Observable or Subject.
@@ -108,7 +109,7 @@ export default function useRx<
 					type: 'SubjectClosed',
 				}),
 			})
-			return () => {}
+			return noop
 		}
 
 		setValue.mounted = true
@@ -145,7 +146,7 @@ export default function useRx<
 		}
 	}, [])
 
-	return [state.value, setValue, state.error, _source$]
+	return [state.value, setValue, state.error, _source$] as const
 }
 
 export type UseRx_ErrorType =
@@ -221,6 +222,7 @@ export type UseRx_SetValue<TOut> = React.Dispatch<
 	React.SetStateAction<TOut | undefined>
 > & {
 	mounted: boolean
+	subscription?: Subscription
 }
 
 export type UseRx_State<TOut> = {
@@ -275,7 +277,7 @@ const transformValue = <TIn, TOut>(
 	newValue: TIn,
 	prevState: UseRx_State<TOut>,
 	transform: UseRx_Options<TIn, TOut>['transform'],
-) =>
+): UseRx_State<TOut> =>
 	fallbackIfFails(
 		() => {
 			const value = isFn(transform)
@@ -284,6 +286,7 @@ const transformValue = <TIn, TOut>(
 			return {
 				error: undefined,
 				value:
+					// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 					value === undefined // no transfromation was done
 						? newValue
 						: value,
@@ -294,4 +297,4 @@ const transformValue = <TIn, TOut>(
 			error: new UseRx_Error(err, { type: 'TransformError' }),
 			value: prevState.value, // preserve old value
 		}),
-	) as UseRx_State<TOut>
+	)
