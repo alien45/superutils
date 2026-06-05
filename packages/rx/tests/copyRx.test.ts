@@ -1,6 +1,6 @@
 import PromisE from '@superutils/promise'
+import { BehaviorSubject, Subject, SubscriptionLike } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { BehaviorSubject, Subject, SubscriptionLike } from '../src/rxjs'
 import copyRx from '../src/copyRx'
 
 describe('copyObservable', () => {

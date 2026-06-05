@@ -1,5 +1,5 @@
+import { BehaviorSubject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { BehaviorSubject } from '../src/rxjs'
 import IntervalRunner from '../src/IntervalRunner'
 
 describe('IntervalRunner', () => {

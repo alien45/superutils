@@ -17,8 +17,8 @@ import {
 	type Observable,
 	skip,
 	Subject,
-} from './rxjs'
-import type { UnwrapSourceValue, UnwrapSourceValueStrict } from './types'
+} from 'rxjs'
+import type { UnwrapSourceValueStrict } from './types'
 import { unsubscribeAll } from './unsubscribeAll'
 
 /** Symbol used to signal to ignore an update when using a `transform()` callback with {@link copyRx} */
@@ -29,7 +29,7 @@ export type CopyRx_Options<TOut, ThisArg> = {
 	 * Debounce or throttle delay in milliseconds.
 	 * If provided, updates to the output subject will be delayed accordingly.
 	 *
-	 * @default undefined
+	 * Default: `undefined`
 	 */
 	delay?: number
 
@@ -51,7 +51,7 @@ export type CopyRx_Options<TOut, ThisArg> = {
 	 *
 	 * If an array is provided, each element corresponds to the observable at the same index.
 	 *
-	 * @default 1 for `BehaviorSubject` (to avoid redundant updates of the initial value), otherwise 0.
+	 * Default: `1` for `BehaviorSubject` (to avoid redundant updates of the initial value), otherwise `0`.
 	 */
 	skipEmits?: number | (number | undefined | null)[]
 

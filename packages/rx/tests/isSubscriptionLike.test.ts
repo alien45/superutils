@@ -1,5 +1,6 @@
+import { BehaviorSubject, Subscription } from 'rxjs'
 import { describe, expect, it } from 'vitest'
-import { BehaviorSubject, isSubscriptionLike, Subscription } from '../src'
+import { isSubscriptionLike } from '../src'
 
 describe('isSubscriptionLike', () => {
 	const subscriptionLikeObj = {

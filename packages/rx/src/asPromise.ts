@@ -10,7 +10,7 @@ import {
 	type IPromisE_Timeout,
 	TIMEOUT_MAX,
 } from '@superutils/promise'
-import { isObservable, Observable, skip, SubscriptionLike } from './rxjs'
+import { isObservable, Observable, skip, SubscriptionLike } from 'rxjs'
 import { AsPromise_Defaults, AsPromise_Options } from './types'
 
 /**
