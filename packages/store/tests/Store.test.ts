@@ -471,64 +471,70 @@ describe('Srore', () => {
 			['alice', { age: 21, name: 'alice' }],
 			['dave', { age: 24, name: 'dave' }],
 		] as [Key, User][]
-		let storage: Store<Key, User>
+		let store: Store<Key, User>
 
 		beforeEach(() => {
-			storage?.clear()
-			storage = new Store(name, {
+			store?.clear()
+			store = new Store(name, {
 				delay: noDelay,
 				initialValue: new Map(entries),
 			})
 		})
 
 		it('should merge with existing items by default when using instance.setAll', () => {
-			expect(storage.getAll().size).toBe(4)
+			expect(store.getAll().size).toBe(4)
 
-			storage.setAll(new Map([['nobody', { age: 0, name: 'nobody' }]]))
-			expect(storage.getAll().size).toBe(5)
+			store.setAll(new Map([['nobody', { age: 0, name: 'nobody' }]]))
+			expect(store.getAll().size).toBe(5)
 		})
 
 		it('should clear storage', () => {
-			expect(storage.size).toBe(4)
-			storage.clear()
-			expect(storage.getAll().size).toBe(0)
-			expect(storage.size).toBe(0)
+			expect(store.size).toBe(4)
+			store.clear()
+			expect(store.getAll().size).toBe(0)
+			expect(store.size).toBe(0)
 		})
 
 		it('should delete items', () => {
-			expect(storage.get('bob')).toEqual({ age: 22, name: 'bob' })
-			expect(storage.getAll().size).toBe(4)
-			storage.delete('bob')
-			expect(storage.get('bob')).toEqual(undefined)
-			expect(storage.size).toBe(3)
+			expect(store.get('bob')).toEqual({ age: 22, name: 'bob' })
+			expect(store.getAll().size).toBe(4)
+			store.delete('bob')
+			expect(store.get('bob')).toEqual(undefined)
+			expect(store.size).toBe(3)
+
+			// batch delete
+			store.delete(['alice', 'charlie'])
+			expect(store.get('alice')).toEqual(undefined)
+			expect(store.get('charlie')).toEqual(undefined)
+			expect(store.size).toBe(1)
 		})
 
 		it('should find item by predicate and search options', () => {
-			expect(storage.find({ query: 'bob' })?.name).toBe('bob')
-			expect(storage.find({ query: 'bob', includeKey: true })).toEqual([
+			expect(store.find({ query: 'bob' })?.name).toBe('bob')
+			expect(store.find({ query: 'bob', includeKey: true })).toEqual([
 				'bob',
 				{ age: 22, name: 'bob' },
 			])
-			expect(storage.find(item => item.age === 21)?.name).toBe('alice')
+			expect(store.find(item => item.age === 21)?.name).toBe('alice')
 		})
 
 		it('should filter items', () => {
-			const result = storage.filter(item => item.age > 21, 5)
+			const result = store.filter(item => item.age > 21, 5)
 			expect(result.length).toBe(3)
 		})
 
 		it('should search items', () => {
-			const result = storage.search({ query: /li/ })
+			const result = store.search({ query: /li/ })
 			expect(result.size).toBe(2)
 			expect(result.get('alice')?.name).toBe('alice')
 			expect(result.get('charlie')?.name).toBe('charlie')
 		})
 
 		it('should sort items', () => {
-			const initialKeys = storage.keys()
+			const initialKeys = store.keys()
 			expect(initialKeys).toEqual(['bob', 'charlie', 'alice', 'dave'])
-			storage.sort('name', { save: true })
-			expect(storage.keys()).toEqual(['alice', 'bob', 'charlie', 'dave'])
+			store.sort('name', { save: true })
+			expect(store.keys()).toEqual(['alice', 'bob', 'charlie', 'dave'])
 		})
 	})
 

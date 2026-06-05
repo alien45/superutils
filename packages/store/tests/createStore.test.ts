@@ -17,6 +17,11 @@ describe('createStore', () => {
 		vi.resetModules()
 	})
 
+	it('should create a store with no context', () => {
+		const store = createStore()
+		expect((store as any).context).toEqual(undefined)
+	})
+
 	it('should create a store with context object', () => {
 		const before = new Date()
 		const store = createStore(null, {
