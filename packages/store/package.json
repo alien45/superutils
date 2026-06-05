@@ -42,7 +42,7 @@
 		"build": "tsup --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
 		"start": "npm run dev",
-		"test": "cd ../../ && npm run test rx"
+		"test": "cd ../../ && npm run test store"
 	},
 	"sideEffects": false,
 	"type": "module",

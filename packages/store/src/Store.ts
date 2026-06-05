@@ -20,19 +20,16 @@ import {
 	sort,
 } from '@superutils/core'
 import { BehaviorSubject, skip, Subject, Subscription } from 'rxjs'
-import {
-	ForceUpdateCacheName,
-	type IStore,
-	Store_OnErrorType,
-	type Store_Options,
-} from './types'
+import { type IStore, Store_OnErrorType, type Store_Options } from './types'
 
 /**
  * RxJS Subject to trigger forced update of cached data from underlying storage of {@link Store} instances.
  *
- * `value`: determines which cache-enabled storage instances to be updated
- * - name (`string` | `string[]`): update all instances with a specific name(s)
- * - global (`true`): update all instances globally
+ * Accepted values:
+ * - `string`: Updates the cache for the instance with the matching name.
+ * - `string[]`: Updates the cache for all instances whose names are included in the array.
+ * - `true`: Triggers a global cache update for all instances that have a `name` defined.
+ * - `false`: No-op.
  *
  * @example
  * ```javascript
@@ -57,20 +54,25 @@ import {
  *
  * #### Practical example
  * ```typescript
- * import { Store } from '@superutils/store'
+ * import { createStore, forceUpdateCache$ } from '@superutils/store'
  *
  * const name = 'user-profile'
- * type User = {
- *   age: number
- *   name: string
- *   roles?: string[]
- * }
- * const userStore = Store.(name, { delay: 0 }) // delay is set to zero to simplify the example
+ * const delay = 0 // delay is set to zero to simplify the example
+ *
+ * const userStore = createStore(name, { delay })
+ * const userStore2 = createStore(name, { delay })
+ *
+ * userStore.init()
+ * userStore2.init()
+ *
  * userStore.set('name', 'John Doe')
- * userStore.set('name', 'John Doe')
+ * console.log(userStore2.get('name')) // Prints: undefined
+ *
+ * forceUpdateCache$.next(name)
+ * console.log(userStore2.get('name')) // Prints: 'John Doe'
  * ```
  */
-export const forceUpdateCache$ = new Subject<ForceUpdateCacheName>()
+export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
 
 /**
  * A generic, reactive data storage class that provides a Map-like interface with advanced features
@@ -257,33 +259,35 @@ export class Store<
 			onChange,
 			parse,
 			spaces,
-			storage,
+			storage = fallbackIfFails(
+				() => globalThis.localStorage,
+				[],
+				undefined,
+			),
 			stringify,
 		} = options ?? {}
-		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
 		this.name = `${name ?? ''}`.trim()
+		if (this.name && !storage && !options?.checkStorageOnInit)
+			throw new Error(Store.messages.invalidOptionsStorage)
+
+		this.cacheDisabled = (!!storage && cacheDisabled) as CacheDisabled
+		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
+		this.delayOptions = delayOptions
 		this.onError = onError
 		this.onChange = onChange
 		this.parse = parse?.bind(this)
-		this.storage =
-			storage === null
-				? null
-				: (storage
-					?? fallbackIfFails(
-						() => globalThis.localStorage,
-						[],
-						undefined,
-					))
-		if (this.name && !this.storage)
-			throw new Error(Store.messages.invalidOptionsStorage)
-		this.cacheDisabled = (!!this.storage && cacheDisabled) as CacheDisabled
+		this.storage = storage as This['storage']
+
 		this.stringify = stringify?.bind(this)
 		this.spaces = spaces
 		this.subject$ = (
-			this.cacheDisabled ? new Subject() : new BehaviorSubject(undefined)
+			this.cacheDisabled ? new Subject() : new BehaviorSubject(new Map())
 		) as This['subject$']
-		this.delayOptions = delayOptions
-		isMap(initialValue) && initialValue.size && this.init(initialValue)
+
+		// non-empty map provided - initiate the storage immediately
+		isMap(initialValue)
+			&& initialValue.size
+			&& (this.init as Function)(initialValue, false)
 	}
 
 	clear: This['clear'] = () => this.setAll(new Map<Key, Value>(), true)
@@ -329,7 +333,8 @@ export class Store<
 		const wasInitialized = this.initialized
 		if (!wasInitialized) this.init()
 
-		const readFromStorage = this.cacheDisabled || (this.name && forceRead)
+		const readFromStorage =
+			this.cacheDisabled || (this.storage && forceRead)
 		if (readFromStorage) {
 			const data = this.read()
 			const shouldTrigger = forceRead || (!wasInitialized && !!data.size)
@@ -337,13 +342,10 @@ export class Store<
 			return data
 		}
 
-		return (
-			(this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
-			?? new Map<Key, Value>()
-		)
+		return (this.subject$ as BehaviorSubject<Map<Key, Value>>).value
 	}
 
-	private handleForceUpdateCache = (name: ForceUpdateCacheName) => {
+	private handleForceUpdateCache = (name: string | string[] | boolean) => {
 		const isTarget = !this.name
 			? false
 			: isArr(name)
@@ -366,29 +368,33 @@ export class Store<
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,
 			[data],
-			this.triggerOnError(Store_OnErrorType.onChange),
+			this.triggerOnErrorCb(Store_OnErrorType.onChange),
 		)
 	}
 
 	has: This['has'] = key => this.getAll().has(key)
 
-	init: This['init'] = initialValue => {
+	init: This['init'] = (initialValue, checkStorage = true) => {
 		if (this.initialized) return false
 		;(this.initialized as unknown) = true
 
-		let isEmpty = true
+		if (checkStorage && this.name && !this.storage)
+			throw new Error(Store.messages.invalidOptionsStorage)
+
+		let isEmpty = !!this.cacheDisabled
+		let firstValue = initialValue
 		if (!!initialValue?.size || !this.cacheDisabled) {
 			const dataStr = this.name ? this.storage?.getItem(this.name) : null
-			const existingValue = this.read(dataStr)
+			const existingValue = this.read(dataStr ?? null)
 
 			// If the entry exists in storage (even if it is empty), prioritize it over initialValue.
 			// This prevents defaults from overwriting an intentionally cleared storage.
-			if (isDefined(dataStr)) initialValue = existingValue
+			if (isDefined(dataStr)) firstValue = existingValue
 
 			isEmpty = this.cacheDisabled || existingValue.size === 0
 		}
 
-		initialValue?.size && this.subject$.next(initialValue)
+		firstValue?.size && this.subject$.next(firstValue)
 
 		this.unsubscribe()
 		// update cached data from localStorage throughout the application only when triggered
@@ -399,7 +405,7 @@ export class Store<
 		}
 		// Subscribe to data changes and write to storage.
 		this.subscriptions.subject = this.subject$
-			.pipe(skip(this.cacheDisabled || isEmpty ? 0 : 1))
+			.pipe(skip(isEmpty ? 0 : 1))
 			.subscribe(
 				!this.cacheDisabled && this.delay > 0
 					? deferred(this.handleSubjectChange, this.delay, {
@@ -422,12 +428,15 @@ export class Store<
 	static objToMap = objToMap
 
 	read: This['read'] = (
-		dataStr = this.name ? this.storage?.getItem(this.name) : null,
+		dataStr = (this.name && this.storage?.getItem(this.name)) || null,
 	) => {
 		const data = fallbackIfFails(
 			this.parse,
 			[dataStr],
-			this.triggerOnError(Store_OnErrorType.parse, new Map<Key, Value>()),
+			this.triggerOnErrorCb(
+				Store_OnErrorType.parse,
+				new Map<Key, Value>(),
+			),
 		)
 		if (isMap(data) || !isStr(dataStr))
 			return (
@@ -448,7 +457,7 @@ export class Store<
 					return entries
 				},
 				[],
-				this.triggerOnError(Store_OnErrorType.parse_json),
+				this.triggerOnErrorCb(Store_OnErrorType.parse_json),
 			),
 		)
 	}
@@ -493,7 +502,7 @@ export class Store<
 		const str = fallbackIfFails(
 			this.stringify as unknown as string,
 			[data],
-			this.triggerOnError(Store_OnErrorType.stringify, ''), // if fails return empty string
+			this.triggerOnErrorCb(Store_OnErrorType.stringify, ''), // if fails return empty string
 		)
 		if (isStr(str)) return str
 
@@ -506,7 +515,7 @@ export class Store<
 					spacing,
 				),
 			[],
-			this.triggerOnError<string>(Store_OnErrorType.stringify_json, ''),
+			this.triggerOnErrorCb(Store_OnErrorType.stringify_json, ''),
 		)
 	}
 
@@ -523,7 +532,7 @@ export class Store<
 	toString: This['toString'] = (data = this.getAll()) =>
 		this.toJSON(undefined, undefined, data)
 
-	private triggerOnError =
+	private triggerOnErrorCb =
 		<T = undefined>(
 			type: Store_OnErrorType,
 			returnValue: T = undefined as T,
@@ -561,7 +570,7 @@ export class Store<
 
 			return true
 		} catch (err) {
-			this.triggerOnError(Store_OnErrorType.write)(err)
+			this.triggerOnErrorCb(Store_OnErrorType.write)(err)
 			return false
 		}
 	}

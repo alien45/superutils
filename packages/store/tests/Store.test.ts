@@ -81,21 +81,29 @@ describe('Srore', () => {
 			expect(storage.keys()).toEqual([key])
 		})
 
-		it('should initialize on first read when initialValue is not provided', () => {
+		it('should initialize on first read when initialValue is not provided or empty', () => {
 			const storage = new Store(name, { delay: noDelay })
 			expect(storage.initialized).toBe(false)
 			expect(storage.size).toBe(0)
 			expect(storage.initialized).toBe(true)
 		})
 
-		it('should create throw error when localStorage is not available', () => {
-			const createInstance = vi.fn(
-				() => new Store(name, { delay: noDelay, storage: null }),
-			)
-			expect(createInstance).toThrow(
+		it('should throw error when localStorage is not available', () => {
+			expect(
+				() => new Store(name, { delay: noDelay, storage: null as any }),
+			).toThrow(
 				'options.storage: LocalStorage instance or equivalent required',
 			)
-			expect(createInstance).toHaveBeenCalled()
+		})
+
+		it('should delay storage check when `checkStorageOnInit=true`', () => {
+			const store = new Store(name, {
+				delay: noDelay,
+				checkStorageOnInit: true,
+				storage: null as any,
+			})
+			expect(store.init).toThrow()
+			expect(mockedStorage.getItem).not.toHaveBeenCalled()
 		})
 
 		it('should ignore if non-Map value provided to setAll()', () => {
@@ -197,6 +205,7 @@ describe('Srore', () => {
 			})
 			expect(storage.subject$ instanceof BehaviorSubject).toBe(true)
 			storage.subject$.next(null as any)
+			expect(storage.getAll()).toEqual(new Map())
 			expect(storage.getAll()).toEqual(new Map())
 		})
 
