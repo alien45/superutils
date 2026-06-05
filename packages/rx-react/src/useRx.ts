@@ -114,7 +114,7 @@ export default function useRx<
 
 		setValue.mounted = true
 
-		const subscription = _source$.subscribe?.({
+		setValue.subscription = _source$.subscribe?.({
 			error: (error: unknown) =>
 				setValue.mounted
 				&& setState(v => ({
@@ -142,7 +142,7 @@ export default function useRx<
 
 		return () => {
 			setValue.mounted = false
-			subscription?.unsubscribe?.()
+			setValue.subscription?.unsubscribe?.()
 		}
 	}, [])
 

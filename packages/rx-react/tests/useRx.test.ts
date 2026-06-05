@@ -21,10 +21,10 @@ describe('useRx', () => {
 		const { result, unmount } = renderHook(() => useRx(test$))
 
 		// Initial state
-		expect(result.current[0]).toBeUndefined()
-		expect(result.current[1]).toBeInstanceOf(Function)
-		expect(result.current[2]).toBeUndefined()
-		expect(result.current[3]).toBe(test$)
+		expect(result.current[0]).toBeUndefined() // value
+		expect(result.current[1]).toBeInstanceOf(Function) // setValue
+		expect(result.current[2]).toBeUndefined() // error
+		expect(result.current[3]).toBe(test$) // source$
 
 		act(() => {
 			test$.next('first value')

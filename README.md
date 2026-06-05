@@ -75,7 +75,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> address recurring production issues around retries, cancellation, and request lifecycles in a consistent, observable way.
       </td>
-      <td id="coverage_fetch"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td id="coverage_fetch"><div style="color:green">&#128153;&nbsp;99.56%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/fetch/">View</a></td>
     </tr>
     <tr>
@@ -89,8 +89,22 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> provide shared async primitives used across higher-level utilities.
       </td>
-      <td id="coverage_promise"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td id="coverage_promise"><div style="color:green">&#128153;&nbsp;99.58%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/promise/">View</a></td>
+    </tr>
+    <tr>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/store">
+          <code>@superutils/store</code>
+        </a>
+      </td>
+      <td>
+        Generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities.
+        <br />
+        <b><i>Why:</i></b> simplify management of complex, searchable, and persisted datasets.
+      </td>
+      <td id="coverage_store"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/store/">View</a></td>
     </tr>
     <tr>
       <td>

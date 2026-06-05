@@ -15,7 +15,6 @@ import {
 	isPositiveNumber,
 	isStr,
 	mapJoin,
-	objToMap,
 	search,
 	sort,
 } from '@superutils/core'
@@ -266,7 +265,7 @@ export class Store<
 			),
 			stringify,
 		} = options ?? {}
-		this.name = `${name ?? ''}`.trim()
+		this.name = `${name ?? ''}`.trim() || null
 		if (this.name && !storage && !options?.checkStorageOnInit)
 			throw new Error(Store.messages.invalidOptionsStorage)
 
@@ -425,26 +424,22 @@ export class Store<
 			callback(value, key, entries, index),
 		)
 
-	static objToMap = objToMap
-
 	read: This['read'] = (
 		dataStr = (this.name && this.storage?.getItem(this.name)) ?? null,
 	) => {
 		const data = fallbackIfFails(
 			this.parse,
 			[dataStr],
-			this.triggerOnErrorCb(
-				Store_OnErrorType.parse,
-				new Map<Key, Value>(),
-			),
+			this.triggerOnErrorCb(Store_OnErrorType.parse, undefined),
 		)
+
 		if (isMap(data) || !isStr(dataStr))
 			return (
-				data
-				?? (this.subject$ as BehaviorSubject<Map<Key, Value>>).value
+				(isFn(this.parse)
+					? data
+					: (this.subject$ as BehaviorSubject<Map<Key, Value>>).value)
 				?? new Map<Key, Value>()
 			)
-
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
 		return new Map<Key, Value>(
 			fallbackIfFails(

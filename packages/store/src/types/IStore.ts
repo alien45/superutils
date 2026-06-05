@@ -57,7 +57,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * Storage name. Filename (NodeJS) or property name (browser LocalStorage).
 	 * If empty string or undefined, data will not be saved to storage and will only work in-memory.
 	 *
-	 * Default: `''`
+	 * Default: `null`
 	 */
 	readonly name?: string | null
 

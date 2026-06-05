@@ -195,7 +195,7 @@ export function deferred<T = unknown, ThisArg = unknown, Delay = unknown>(
 		}
 
 		let items = [...queue.entries()]
-		if (throttle === true && options.trailing) {
+		if (throttle && (options as { trailing: boolean }).trailing) {
 			// in throttle mode only ignore items before the current queue item
 			const currentIndex = items.findIndex(([id]) => id === currentId)
 			items = items.slice(0, currentIndex)

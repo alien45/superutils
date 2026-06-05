@@ -246,7 +246,7 @@ describe('Srore', () => {
 		})
 
 		it('should return subject value when name is not defined', () => {
-			const storage = new Store(null, { initialValue })
+			const storage = new Store(null, { delay: noDelay, initialValue })
 			expect(storage.read()).toBe(initialValue)
 		})
 	})

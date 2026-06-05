@@ -70,4 +70,12 @@ describe('PromisE.delay', () => {
 		await vi.advanceTimersByTimeAsync(10_000)
 		await expect(promise).resolves.toBe('changed value')
 	})
+
+	it('should reject after delay if function throws error', async () => {
+		const promise = PromisE.delay(10_000, () => {
+			throw new Error('error')
+		})
+		await vi.advanceTimersByTimeAsync(10_000)
+		await expect(promise).rejects.toThrow()
+	})
 })
