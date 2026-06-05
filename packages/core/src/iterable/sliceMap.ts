@@ -98,7 +98,7 @@ export const sliceMap = <
 		)
 
 		// ignore if callback execution failed
-		newValue !== undefined && result.set(key, newValue as Value)
+		newValue !== undefined && result.set(key, newValue)
 	}
 	return (asMap ? result : [...result.values()]) as Result
 }

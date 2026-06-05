@@ -190,7 +190,7 @@ export function timeout<
 	return new TimeoutPromise<Result>(
 		PromisEBase.race([dataPromise, timeoutPromise]) as IPromisE<Result>,
 		timeoutPromise,
-		opts as unknown as TimeoutOptions,
+		opts,
 		arrUnique(
 			[opts.abortCtrl?.signal, opts.signal].filter(Boolean),
 		) as AbortSignal[],

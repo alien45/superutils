@@ -331,6 +331,7 @@ const addNodeLocalStorage = (
 
 	const newFileName = `node-localstorage.${isTs ? 'ts' : 'js'}`
 	dependencies['node-localstorage'] = 'latest'
+	dependencies['@types/node-localstorage'] = 'latest'
 	files[newFileName] = `
 	import { LocalStorage } from 'node-localstorage'
 

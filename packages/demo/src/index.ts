@@ -13,11 +13,11 @@ import { PromisE, IPromisE, DeferredAsyncOptions } from '@superutils/promise'
 import {
 	asPromise,
 	BehaviorSubject,
-	copyRxSubject,
+	copyRx,
 	IntervalSubject,
 	SubjectLike,
 } from '@superutils/rx'
-import { delay, distinctUntilChanged } from 'rxjs'
+import { delay, distinctUntilChanged, Subject } from 'rxjs'
 import fetch, {
 	createClient,
 	createPostClient,
@@ -30,7 +30,27 @@ import fetch, {
 
 console.log('Started')
 
-fetch('https://dummyjson.com/auth/me').then(console.log, console.warn)
+// fetch('https://dummyjson.com/auth/me').then(console.log, console.warn)
+
+const arr = [
+	new BehaviorSubject(1),
+	new BehaviorSubject(2),
+	false,
+	new Subject<string>(),
+] as const
+const copy$ = copyRx(
+	arr,
+	values => {
+		const [v] = values ?? []
+		console.log('transform', { v })
+		return v ?? 0
+	},
+	{ initialValue: 2 },
+)
+
+copy$.subscribe(x => console.log({ x }))
+
+setInterval(() => arr[0].next(arr[0].value + 1), 100)
 
 // fetch
 // 	.get(

@@ -80,16 +80,22 @@ describe('PromisE.deferred', () => {
 		;(context as any).leading = true
 		const deferredFn = PromisE.deferred(context)
 		deferredFn(() => PromisE.delay(50, 1))
-		deferredFn(() => PromisE.delay(50, 2))
-		deferredFn(() => PromisE.delay(50, 3))
-		deferredFn(() => PromisE.delay(50, 4))
-		deferredFn(() => PromisE.delay(50, 5))
+		deferredFn(() => PromisE.delay(50, 2)) //ignored
+		deferredFn(() => PromisE.delay(50, 3)) //ignored
+		deferredFn(() => PromisE.delay(50, 4)) //ignored
+		deferredFn(() => PromisE.delay(50, 5)) //ignored
 		const last = deferredFn(() => PromisE.delay(5000, 6))
 		await vi.runAllTimersAsync()
 		expect(await last).toBe(6)
 		expect(context.data.results).toEqual([1, 6])
 		// onIgnore called twice for 2 first that were ignored
 		expect(context.data.ignored).toHaveLength(4)
+
+		const ignoredPromises = Promise.all(
+			context.data.ignored.map(fn => fn()),
+		)
+		await vi.runAllTimersAsync()
+		await expect(ignoredPromises).resolves.toEqual([2, 3, 4, 5])
 	})
 
 	it('should handle failed promises and resolve: 1. with `undefined` 2. with `reason` and 3. never', async () => {

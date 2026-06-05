@@ -1,5 +1,5 @@
-import { HTMLProps, isValidElement, ReactNode } from 'react'
 import { isObj } from '@superutils/core'
+import { HTMLProps, isValidElement, ReactNode } from 'react'
 
 /**
  * @function    toProps

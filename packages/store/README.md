@@ -1,0 +1,249 @@
+# @superutils/store
+
+A generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities. It supports both in-memory caching and persistent storage (LocalStorage in browsers, or JSON files in NodeJS).
+
+Built on RxJS for reactive data handling, it is optimized for small to medium datasets and provides a seamless way to manage application state with optional persistence.
+
+<div v-if="false">
+
+For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/store/).
+
+</div>
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+  - [Map-Based Store](#map-store)
+  - [Object-based Store](#object-based-store)
+  - [Persistent Storage (NodeJS)](#persistent-storage-nodejs)
+- [Advanced Usage](#advanced-usage)
+  - [Reactive Updates (RxJS & Callbacks)](#reactive-updates-rxjs--callbacks)
+  - [Search and Filtering](#search-and-filtering)
+  - [Attaching Context (Business Logic)](#attaching-context-business-logic)
+  - [Object-based Store With Context](#object-based-store)
+  - [OOP: Subclassing Store](#oop-subclassing-store)
+
+## Installation
+
+### NPM
+
+Install using your favorite package manager (e.g., `npm`, `yarn`, `pnpm`, `bun`, etc.):
+
+```bash
+npm install @superutils/store
+```
+
+Dependency: `@superutils/core` will be automatically installed by package manager
+
+### CDN / Browser
+
+If you are not using a bundler, you can include the minified browser build directly:
+
+```xml
+<script src="https://unpkg.com/@superutils/store@latest/dist/browser/index.min.js"></script>
+```
+
+OR,
+
+```xml
+<script src="https://cdn.jsdelivr.net/npm/@superutils/store/dist/browser/index.min.js"></script>
+```
+
+## Basic Usage
+
+### Map-based Store
+
+The `Store` class can be used just like a standard JavaScript `Map`, but with the added benefit of optional persistence and reactivity.
+
+```javascript
+import { createStore, Store } from '@superutils/store'
+
+// Initialize a store (in-memory only if no name is provided)
+const userStorage = createStore('users') // or `new Store('users')`
+
+// Set and get values
+userStorage.set('alice', { name: 'Alice', age: 30 })
+
+// functional update
+userStorage.set('alice', alice => alice ?? { name: 'Alice', age: 30 })
+
+console.log(userStorage.get('alice')) // prints: { name: 'Alice', age: 30 }
+console.log(userStorage.size) // 1
+```
+
+### Object-based Store
+
+`createObjectStore` provides a type-safe way to manage a single plain object as a store, where keys of the object become keys in the store.
+
+```javascript
+import { createObjectStore } from '@superutils/store'
+
+const userStore = createObjectStore('user-profile', {
+  initialValue: {
+    age: 25,
+    name: 'Jane Doe',
+    roles: ['guest'],
+  },
+})
+
+console.log(userStore.get('name'), userStore.get('age')) // Prints: 'Jane Doe' 25
+
+console.log(userStore.toObject()) // prints: { age: 25, name: 'Jane Doe', roles: [ 'guest' ] }
+```
+
+### Persistent Storage (NodeJS)
+
+In NodeJS environments, you can use `node-localstorage` to persist your data to the file system.
+
+```javascript
+import { createStore } from '@superutils/store'
+import { LocalStorage } from 'node-localstorage'
+
+// Provide a localStorage implementation for NodeJS that can be used throughout the application mimicking the browser LocalStorage behavior.
+globalThis.localStorage = new LocalStorage(
+  './data', // directory to store files in
+  1e7, // max file size
+)
+
+const storage = createStore('settings.json')
+storage.set('theme', 'dark') // Automatically saved to ./data/settings.json
+
+/**
+ * Alternatively, you can also provide a LocalStorage instance to each Store instance
+ */
+createStore('settings.json', { storage: new LocalStorage('./data', 1e7) })
+```
+
+## Advanced Usage
+
+### Reactive Updates (RxJS & Callbacks)
+
+You can subscribe to changes using the internal RxJS Subject or a simple `onChange` callback.
+
+```javascript
+import { createStore } from '@superutils/store'
+
+const storage = createStore('my-data', {
+  onChange: data => console.log('Data changed!', data),
+})
+
+// Or use the RxJS subject directly
+const sub = storage.subject$.subscribe(data => {
+  console.log('Reactive update:', data)
+})
+
+storage.set('key', 'value')
+```
+
+### Search and Filtering
+
+`Store` provides powerful search and filter capabilities directly on your data.
+
+```javascript
+import { createStore } from '@superutils/store'
+
+const storage = createStore('products', {
+  // Instantiate the storage with initial value
+  initialValue: new Map([
+    [1, { id: 1, name: 'Laptop', category: 'electronics', price: 1000 }],
+    [2, { id: 2, name: 'Chair', category: 'furniture', price: 150 }],
+  ]),
+})
+
+// Search for items using a query object
+const searchResult = storage.search({
+  query: { category: 'electronics' },
+})
+console.log(searchResult) // [{ id: 1, name: 'Laptop', ... }]
+
+// Filter items using a predicate
+const expensiveItems = storage.filter(val => val.price > 500)
+```
+
+### Attaching Context (Business Logic)
+
+Using `createStore`, you can attach custom business logic (context) to your store instance, allowing you to encapsulate operations without having to create a subclass.
+
+```javascript
+import { createStore } from '@superutils/store'
+
+const authStore = createStore('auth', {
+  context: store => ({
+    isAuthenticated: () => store.has('token'),
+    login: async () => {
+      store.set('token', 'some-token')
+    },
+    logout: () => store.delete('token'),
+  }),
+  initialValue: new Map(),
+})
+
+// Access your custom logic via the .context property
+if (!authStore.context.isAuthenticated()) {
+  authStore.context.login().then(() => console.log('Logged in'))
+}
+```
+
+### Object-based Store With Context
+
+`createObjectStore` supports context the same way as `createStore`.
+
+```typescript
+import { createObjectStore } from '@superutils/store'
+import fetch from '@superutils/fetch'
+
+type UserProfile = {
+  age: number
+  name: string
+  roles: string[]
+}
+
+const userStore = createObjectStore('user-profile', {
+  initialValue: {
+    age: 25,
+    name: 'Jane Doe',
+    roles: ['guest'],
+  } as UserProfile,
+  context: store => ({
+    promoteToAdmin() {
+      // Update properties with type safety
+      store.set('roles', (prev = []) => [...prev, 'admin'])
+    },
+  }),
+})
+
+userStore.context.promoteToAdmin()
+console.log(userStore.get('roles')) // ['guest', 'admin']
+```
+
+### OOP: Subclassing Store
+
+You can extend the `Store` class to create custom store implementations with specialized logic or default behaviors.
+
+```typescript
+import { Store } from '@superutils/store'
+
+interface Product {
+  id: number
+  name: string
+  price: number
+  inStock: boolean
+}
+
+class ProductStore extends Store<number, Product> {
+  constructor(name: string, options?: Parameters<typeof Store>[1]) {
+    super(name, { ...options, delay: 100 }) // Set a default delay for this store type
+  }
+
+  getInStockProducts(): Map<number, Product> {
+    return this.filter(product => product.inStock)
+  }
+}
+
+const products = new ProductStore('my-products')
+products.set(1, { id: 1, name: 'Laptop', price: 1200, inStock: true })
+products.set(2, { id: 2, name: 'Mouse', price: 25, inStock: false })
+
+console.log(products.getInStockProducts()) // Map { 1 => { id: 1, name: 'Laptop', price: 1200, inStock: true } }
+```

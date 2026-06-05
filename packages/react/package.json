@@ -2,11 +2,16 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Utilities, components and hooks for React applications.",
 	"dependencies": {
-		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.2.0",
-		"@types/react": "^18.0.0",
+		"@superutils/core": "*",
+		"@superutils/promise": "*",
+		"@superutils/rx": "*",
+		"@types/react": ">=16.8.0",
 		"react": ">=16.8.0",
+		"react-dom": ">=16.8.0",
 		"rxjs": "^7.0.0"
+	},
+	"devDependencies": {
+		"@testing-library/react": "^16.3.2"
 	},
 	"files": [
 		"dist",
@@ -23,8 +28,9 @@
 	"license": "MIT",
 	"name": "@superutils/react",
 	"peerDependencies": {
-		"@superutils/core": "^1.2.0",
-		"@superutils/promise": "^1.2.0"
+		"@superutils/core": "*",
+		"@superutils/promise": "*",
+		"@superutils/rx": "*"
 	},
 	"private": true,
 	"publishConfig": {

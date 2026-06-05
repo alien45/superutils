@@ -1,27 +1,33 @@
 import { isFn } from '@superutils/core'
 import isSubscriptionLike from './isSubscriptionLike'
-import { UnsubscribeCandidates } from './types'
+import { UnsubscribeCandidate } from './types'
 
 /**
- * @function    unsubscribeAll
- * @summary unsubscribe to multiple RxJS subscriptions
- * @param   {Function|Unsubscribable|Array} unsub
+ * Unsubscribe from one or mroe RxJS subscriptions
+ *
+ * @param candidate RxJS subscription, unsubscribe function or mix of both in array/object
  */
 export const unsubscribeAll = (
-	unsub: UnsubscribeCandidates = {},
+	candidate: UnsubscribeCandidate = {},
 	onError?: (err: unknown) => void,
-) => {
-	if (!unsub) return
+): void => {
+	if (!candidate) return
 
 	try {
 		// single function supplied
-		if (isFn(unsub)) return unsub()
+		if (isFn(candidate)) {
+			candidate()
+			return
+		}
 
 		// single subscription
-		if (isSubscriptionLike(unsub)) return unsub.unsubscribe()
+		if (isSubscriptionLike(candidate)) {
+			candidate.unsubscribe()
+			return
+		}
 
 		// array/object
-		Object.values(unsub as UnsubscribeCandidates[]).forEach(value =>
+		Object.values(candidate as UnsubscribeCandidate[]).forEach(value =>
 			unsubscribeAll(value, onError),
 		)
 	} catch (err) {

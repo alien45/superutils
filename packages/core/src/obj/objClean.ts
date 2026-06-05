@@ -56,7 +56,7 @@ export const objClean = <
 			.map(k => k.split(childPrefix)[1])
 		if (!childKeys.length) {
 			// no specific child properties provided >> include entire object
-			result[key] = value as T[Key]
+			result[key] = value
 			continue
 		}
 

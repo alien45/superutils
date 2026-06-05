@@ -78,7 +78,7 @@ export class PromisEBase<T = unknown>
 			} else if (isPromise(input)) {
 				input.then(_resolve, _reject)
 			} else if (input !== undefined) {
-				_resolve(input as T)
+				_resolve(input)
 			}
 			// If input is `undefined`, do nothing and expect external finalization.
 		})
@@ -176,7 +176,8 @@ export class PromisEBase<T = unknown>
 	static reject = <T = never>(reason: unknown) => {
 		const promise = new PromisEBase<T>()
 		// queueMicrotask required to avoid unhandled rejection
-		queueMicrotask(() => promise.reject(reason as Error))
+		// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+		queueMicrotask(() => promise.reject(reason))
 		return promise
 	}
 

@@ -144,7 +144,7 @@ export const createPostClient = <
 			const mergedOptions = mergeOptions(
 				commonOptions,
 				defaultOptions,
-				args[2] as Options,
+				args[2],
 				fixedOptions, // fixed options will always override other options
 			) as PostOptions
 			mergedOptions.as ??= FetchAs.json
