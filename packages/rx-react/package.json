@@ -1,17 +1,23 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
-	"description": "Utilities, components and hooks for React applications.",
+	"description": "RxJS based utilities, components and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "*",
-		"@superutils/promise": "*",
 		"@superutils/rx": "*",
-		"@types/react": ">=16.8.0",
+		"@types/react": "^18.0.0",
 		"react": ">=16.8.0",
 		"react-dom": ">=16.8.0",
 		"rxjs": "^7.0.0"
 	},
 	"devDependencies": {
 		"@testing-library/react": "^16.3.2"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
 	},
 	"files": [
 		"dist",
@@ -26,10 +32,11 @@
 		"hooks"
 	],
 	"license": "MIT",
-	"name": "@superutils/react",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"name": "@superutils/rx-react",
 	"peerDependencies": {
 		"@superutils/core": "*",
-		"@superutils/promise": "*",
 		"@superutils/rx": "*"
 	},
 	"private": true,
@@ -41,18 +48,9 @@
 		"_watch": "tsc -p tsconfig.json --watch",
 		"build": "tsup src/index.ts --format esm --dts --tsconfig ./tsconfig.dts.json --clean --config ../../tsup.config.js",
 		"dev": "npm run build -- --watch",
-		"test": "cd ../../ && npm run test react"
+		"test": "cd ../../ && npm run test rx-react"
 	},
 	"sideEffects": false,
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
 	"type": "module",
 	"types": "./dist/index.d.ts",
 	"version": "0.1.0"

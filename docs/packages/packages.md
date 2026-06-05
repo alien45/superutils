@@ -7,3 +7,5 @@
 - [@superutils/promise](@superutils/promise/index.md)
 - [@superutils/react](@superutils/react/index.md)
 - [@superutils/rx](@superutils/rx/index.md)
+- [@superutils/rx-react](@superutils/rx-react/index.md)
+- [@superutils/store](@superutils/store/index.md)
