@@ -205,7 +205,7 @@ export const embedPlayground = async (
 		...dependencies,
 	}
 
-	// For NodeJS examples of DataStorage
+	// For NodeJS examples of @superutils/store
 	addNodeLocalStorage(_files, _dependencies, isTs)
 
 	_files['package.json'] = JSON.stringify(
@@ -318,15 +318,17 @@ export const embedPlayground = async (
 	return sdk.openProject(_project, _embedOptions)
 }
 
-/** Add localStorage alternative using 'node-localstorage' module for use with DataStorage */
+/** Add localStorage alternative using 'node-localstorage' module for use with @supertuils/core */
 const addNodeLocalStorage = (
 	files: Record<string, string>,
 	dependencies: Record<string, string>,
 	isTs = false,
 ) => {
+	const checkContent = (str: string) =>
+		['new Store', 'createStore(', 'createObjectStore('].find(s => str.includes(s))
 	const ignore =
-		!dependencies['@superutils/rx']
-		|| !Object.values(files).find(str => str.includes('DataStorage'))
+		!dependencies['@superutils/store']
+		&& !Object.values(files).find(checkContent)
 	if (ignore) return
 
 	const newFileName = `node-localstorage.${isTs ? 'ts' : 'js'}`
@@ -340,15 +342,16 @@ const addNodeLocalStorage = (
 	// This implementation targets Node.js (including Bun) and is redundant in native browser runtimes.
 	// It is required here because the playground executes browser-targeted code within a Node.js container.
 	//
-	// Assigning this instance to 'globalThis' enables DataStorage to automatically resolve storage by mimicking
+	// Assigning this instance to 'globalThis' enables Store to automatically resolve storage by mimicking
 	// browser behavior, eliminating the need for manual injection via constructor options.
 	globalThis.localStorage = new LocalStorage('./data', 1e7)
 	`
 
+	// check each file and make sure the above file is imported
 	Object.keys(files).forEach(fileName => {
 		const content = files[fileName]
 		const ignore =
-			!content.includes('DataStorage')
+			!checkContent(content)
 			// ignore for frontend files
 			|| !['js', 'ts'].includes(fileName.split('.').pop())
 			// injection not necessary
