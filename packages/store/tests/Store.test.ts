@@ -2,14 +2,12 @@ import { unsubscribeAll } from '@superutils/rx'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-	createObjectStore,
 	Store,
 	Store_OnErrorType,
 	Store_ValidateAction,
 	type StorageCompact,
 } from '../src'
 import MockLocalStorage from './MockLocalStorage'
-import PromisE from '@superutils/promise'
 
 describe('Store', () => {
 	let mockedStorage: MockLocalStorage
