@@ -289,7 +289,7 @@ export class Store<
 		for (const [key, value] of Object.entries(_validate)) {
 			_validate[key] = value
 		}
-		this.validate = _validate as This['validate']
+		this.validate = _validate
 
 		// non-empty map provided - initiate the storage immediately
 		isMap(initialValue)

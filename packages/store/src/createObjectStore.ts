@@ -99,8 +99,6 @@ export function createObjectStore<
 		T,
 		CacheDisabled
 	>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
 >(
 	name?: string | null,
 	options?: ObjectStore_Options<T, CacheDisabled, Context>,
@@ -112,8 +110,6 @@ export function createObjectStore<
 		T,
 		CacheDisabled
 	>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
 >(
 	options: ObjectStore_Options<T, CacheDisabled, Context>,
 ): IObjectStoreWithContext<T, CacheDisabled, Context>

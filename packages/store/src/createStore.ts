@@ -1,6 +1,6 @@
 import { isFn, isObj } from '@superutils/core'
 import Store from './Store'
-import { IStore, Store_Options } from './types'
+import { Store_Options } from './types'
 import {
 	IStoreWithContext,
 	Store_Context,
@@ -68,6 +68,7 @@ import {
  * import fetch from '@superutils/fetch'
  * import { createStore } from '@superutils/store'
  *
+ * // bypass the name parameter or use null as name to create an in-memory store
  * const store = createStore({
  *   context: store => ({
  *     async getProducts() {
