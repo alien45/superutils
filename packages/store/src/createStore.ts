@@ -1,33 +1,11 @@
-import { isFn } from '@superutils/core'
+import { isFn, isObj } from '@superutils/core'
 import Store from './Store'
 import { IStore, Store_Options } from './types'
-
-/**
- * Defines the shape of the context object that can be attached to a {@link Store}.
- *
- * A context can be:
- * - A plain object containing utility methods or properties.
- * - A factory function that receives the {@link Store} instance and returns an object.
- *   This is useful for creating methods that need to interact with the store's data
- *   using the store instance itself.
- *
- * @template Key - The type of keys in the store.
- * @template Value - The type of values in the store.
- * @template CacheDisabled - Whether caching is disabled for this store.
- */
-export type Store_Context<Key, Value, CacheDisabled extends boolean = false> =
-	| undefined
-	| object
-	| ((store: IStore<Key, Value, CacheDisabled>) => object)
-
-export type Store_ContextReturn<T> = {
-	context: undefined extends T
-		? never
-		: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			T extends (...args: any[]) => infer R
-			? R
-			: T
-}
+import {
+	IStoreWithContext,
+	Store_Context,
+	Store_ContextReturn,
+} from './types/context'
 
 /**
  * Factory function to create a {@link Store} instance with optional context.
@@ -37,7 +15,17 @@ export type Store_ContextReturn<T> = {
  * and the attached context.
  *
  * @param name - The name of the storage (e.g., localStorage key). If null/undefined, the store remains in-memory.
- * @param options - Configuration options for the store, including the optional `context`.
+ * @param options - Configuration options for the store
+ * @param options.context - (optional) A plain object or a factory function that returns an object.
+ *
+ * **Purpose:**
+ * Use `context` to encapsulate domain-specific business logic, helper methods, or non-reactive state
+ * directly alongside the store instance.
+ *
+ * **Behavior:**
+ * - **Non-Reactive:** Updates to context properties do **not** trigger `onChange` or RxJS emissions.
+ * - **Non-Persistent:** Context data is purely in-memory and is **not** saved to persistent storage.
+ * - **Access to Store:** When a factory function is used, it receives the store instance as an argument.
  *
  * @template Context - The type of the context object or factory function.
  * @template Key - The type of keys stored in the map.
@@ -75,12 +63,36 @@ export type Store_ContextReturn<T> = {
  * ```
  *
  * @example
+ * #### In-memory store
+ * ```javascript
+ * import fetch from '@superutils/fetch'
+ * import { createStore } from '@superutils/store'
+ *
+ * const store = createStore({
+ *   context: store => ({
+ *     async getProducts() {
+ *       const { products } = await fetch.get('https://dummyjson.com/products')
+ *
+ *       const productsMap = new Map(products.map(p => [p.id, p]))
+ *       store.setAll(productsMap)
+ *
+ *       return productsMap
+ *     },
+ *   }),
+ * })
+ *
+ * store.context.getProducts().then(() => {
+ *   console.log(store.getAll())
+ * })
+ * ```
+ *
+ * @example
  * #### Store with a functional context (access to store instance)
- * ```typescript
+ * ```javascript
  * import { createStore } from '@superutils/store'
  *
  * const authStore = createStore('auth', {
- *   context: (store) => ({
+ *   context: store => ({
  *     isAuthenticated: () => store.has('token'),
  *     logout: () => store.delete('token')
  *   })
@@ -99,7 +111,16 @@ export function createStore<
 >(
 	name?: ConstructorParameters<typeof Store<Key, Value, CacheDisabled>>[0],
 	options?: Store_Options<Key, Value, CacheDisabled> & { context?: Context },
-): IStore<Key, Value, CacheDisabled> & Store_ContextReturn<Context>
+): IStoreWithContext<Key, Value, CacheDisabled, Context>
+
+export function createStore<
+	Context extends Store_Context<Key, Value, CacheDisabled>,
+	Key,
+	Value,
+	CacheDisabled extends boolean = false,
+>(
+	options: Store_Options<Key, Value, CacheDisabled> & { context?: Context },
+): IStoreWithContext<Key, Value, CacheDisabled, Context>
 
 /**
  * Factory method to create a {@link Store} instance.
@@ -119,9 +140,17 @@ export function createStore<
 	Value,
 	CacheDisabled extends boolean,
 >(
-	name?: ConstructorParameters<typeof Store<Key, Value, CacheDisabled>>[0],
+	name?:
+		| string
+		| null
+		| (Store_Options<Key, Value, CacheDisabled> & { context?: Context }),
 	options?: Store_Options<Key, Value, CacheDisabled> & { context?: Context },
 ) {
+	if (isObj(name)) {
+		options = name
+		name = null
+	}
+
 	const store = new Store(name, options)
 
 	Object.defineProperty(store, 'context', {

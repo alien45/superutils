@@ -1,25 +1,13 @@
 import { objToMap, isObj } from '@superutils/core'
-import createStore, { Store_ContextReturn, Store_Context } from './createStore'
+import createStore from './createStore'
 import Store from './Store'
-import { Store_Options, IObjectStore } from './types'
-
-/**
- * Defines the shape of the context object that can be attached to {@link IObjectStore} instance.
- *
- * A context can be:
- * - A plain object containing utility methods or properties.
- * - A factory function that receives the {@link Store} instance and returns an object.
- *   This is useful for creating methods that need to interact with the store's data
- *   using the store instance itself.
- *
- * @template Key - The type of keys in the store.
- * @template Value - The type of values in the store.
- * @template CacheDisabled - Whether caching is disabled for this store.
- */
-export type ObjectStore_Context<
-	T extends object,
-	CacheDisabled extends boolean = false,
-> = object | ((store: IObjectStore<T, CacheDisabled>) => object)
+import {
+	Store_Options,
+	IObjectStore,
+	ObjectStore_Context,
+	ObjectStore_Options,
+} from './types'
+import { IObjectStoreWithContext } from './types/context'
 
 /**
  * Creates a {@link Store} instance initialized from a plain object.
@@ -33,6 +21,16 @@ export type ObjectStore_Context<
  * @param name (optional) The name for the storage (e.g., localStorage key or filename).
  * @param options (optional) Configuration options for the storage instance.
  * @param options.initialValue (optional) An optional object to populate the storage if it's currently empty.
+ * @param options.context - (optional) A plain object or a factory function that returns an object.
+ *
+ * **Purpose:**
+ * Use `context` to encapsulate domain-specific business logic, helper methods, or non-reactive state
+ * directly alongside the store instance.
+ *
+ * **Behavior:**
+ * - **Non-Reactive:** Updates to context properties do **not** trigger `onChange` or RxJS emissions.
+ * - **Non-Persistent:** Context data is purely in-memory and is **not** saved to persistent storage.
+ * - **Access to Store:** When a factory function is used, it receives the store instance as an argument.
  *
  * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
  * @template CacheDisabled (optional) Literal type determining whether to disable in-memory caching.
@@ -96,20 +94,29 @@ export type ObjectStore_Context<
  */
 export function createObjectStore<
 	T extends object = Record<string, unknown>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
 	CacheDisabled extends boolean = false,
 	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
 		T,
 		CacheDisabled
 	>,
+	Key extends keyof T = keyof T,
+	Value extends T[Key] = T[Key],
 >(
 	name?: string | null,
-	options?: Omit<Store_Options<Key, Value, CacheDisabled>, 'initialValue'> & {
-		context?: Context
-		initialValue?: T
-	},
-): IObjectStore<T, CacheDisabled> & Store_ContextReturn<Context>
+	options?: ObjectStore_Options<T, CacheDisabled, Context>,
+): IObjectStoreWithContext<T, CacheDisabled, Context>
+export function createObjectStore<
+	T extends object = Record<string, unknown>,
+	CacheDisabled extends boolean = false,
+	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
+		T,
+		CacheDisabled
+	>,
+	Key extends keyof T = keyof T,
+	Value extends T[Key] = T[Key],
+>(
+	options: ObjectStore_Options<T, CacheDisabled, Context>,
+): IObjectStoreWithContext<T, CacheDisabled, Context>
 
 /**
  * Create a {@link Store} instance from an object using `options.initialValue`.
@@ -125,21 +132,22 @@ export function createObjectStore<
 
 export function createObjectStore<
 	T extends object = Record<string, unknown>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
 	CacheDisabled extends boolean = false,
-	Context extends Store_Context<Key, Value, CacheDisabled> = Store_Context<
-		Key,
-		Value,
+	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
+		T,
 		CacheDisabled
 	>,
+	Key extends keyof T = keyof T,
+	Value extends T[Key] = T[Key],
 >(
-	name?: string | null,
-	options?: Omit<Store_Options<Key, Value, CacheDisabled>, 'initialValue'> & {
-		context?: Context
-		initialValue?: T
-	},
+	name?: string | null | ObjectStore_Options<T, CacheDisabled, Context>,
+	options?: ObjectStore_Options<T, CacheDisabled, Context>,
 ) {
+	if (isObj(name)) {
+		options = name
+		name = null
+	}
+
 	const store = createStore(name, {
 		parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
 		stringify: function (data) {
@@ -149,11 +157,15 @@ export function createObjectStore<
 		initialValue: !isObj(options?.initialValue, true)
 			? options?.initialValue
 			: objToMap<T>(options.initialValue),
-	} as Parameters<typeof createStore<Context, Key, Value, CacheDisabled>>[1])
+	})
 
 	store.type = 'object'
 
-	return store
+	return store as unknown as IObjectStoreWithContext<
+		T,
+		CacheDisabled,
+		Context
+	>
 }
 
 export default createObjectStore

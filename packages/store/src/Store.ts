@@ -243,12 +243,15 @@ export class Store<
 		forceUpdateCache: undefined as Subscription | undefined,
 	}
 
-	type = 'map'
+	type: This['type'] = 'map'
+
+	validate?: This['validate']
 
 	constructor(
 		name?: This['name'],
 		options?: Store_Options<Key, Value, CacheDisabled>,
 	) {
+		this.name = `${name ?? ''}`.trim() || null
 		const {
 			cacheDisabled = false as CacheDisabled,
 			delay,
@@ -259,15 +262,15 @@ export class Store<
 			parse,
 			spaces,
 			storage = fallbackIfFails(
-				() => globalThis.localStorage,
+				() => (!name ? undefined : globalThis.localStorage),
 				[],
 				undefined,
 			),
 			stringify,
+			validate = {},
 		} = options ?? {}
-		this.name = `${name ?? ''}`.trim() || null
-		if (this.name && !storage && !options?.checkStorageOnInit)
-			throw new Error(Store.messages.invalidOptionsStorage)
+		if (this.name && !storage && storage !== null)
+			throw new Error(Store.messages.invalidStorageOptions)
 
 		this.cacheDisabled = (!!storage && cacheDisabled) as CacheDisabled
 		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
@@ -275,13 +278,18 @@ export class Store<
 		this.onError = onError
 		this.onChange = onChange
 		this.parse = parse?.bind(this)
-		this.storage = storage as This['storage']
-
-		this.stringify = stringify?.bind(this)
 		this.spaces = spaces
+		this.storage = storage as This['storage']
+		this.stringify = stringify?.bind(this)
 		this.subject$ = (
 			this.cacheDisabled ? new Subject() : new BehaviorSubject(new Map())
 		) as This['subject$']
+
+		const _validate = { ...validate } as Record<PropertyKey, unknown>
+		for (const [key, value] of Object.entries(_validate)) {
+			_validate[key] = value
+		}
+		this.validate = _validate as This['validate']
 
 		// non-empty map provided - initiate the storage immediately
 		isMap(initialValue)
@@ -289,10 +297,15 @@ export class Store<
 			&& (this.init as (...args: unknown[]) => void)(initialValue, false)
 	}
 
-	clear: This['clear'] = () => this.setAll(new Map<Key, Value>(), true)
+	clear: This['clear'] = () => {
+		this.validate?.clear?.call(this, [], 'clear')
+		return this.setAll(new Map<Key, Value>(), true)
+	}
 
 	delete: This['delete'] = keys => {
 		if (!isArr(keys)) keys = [keys]
+
+		this.validate?.delete?.call(this, [keys], 'delete')
 
 		const data = this.getAll()
 		for (const k of keys) data.delete(k)
@@ -304,8 +317,9 @@ export class Store<
 	static messages = Object.seal({
 		invalidJsonEntries:
 			'Invalid JSON format. Parsed value must be a 2D array representing key-value pairs.',
-		invalidOptionsStorage:
-			'options.storage: LocalStorage instance or equivalent required',
+		invalidStorageOptions:
+			'options.storage: LocalStorage instance or equivalent required. For NodeJS, use `node-localstorage` NPM module.',
+		validationError: 'Validation failed. Action: ',
 	})
 
 	filter: This['filter'] = (...args) => filter(this.getAll(), ...args)
@@ -362,7 +376,8 @@ export class Store<
 		// in-case non-map value is set, reset subject to an empty map
 		if (!isMap(data)) return this.subject$.next(new Map())
 
-		this.write(data)
+		// write quietly
+		fallbackIfFails(this.write, [data], null)
 
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,
@@ -375,12 +390,21 @@ export class Store<
 
 	init: This['init'] = (initialValue, checkStorage = true) => {
 		if (this.initialized) return false
-		;(this.initialized as unknown) = true
 
-		if (checkStorage && this.name && !this.storage)
-			throw new Error(Store.messages.invalidOptionsStorage)
+		if (this.name && checkStorage) {
+			Object.defineProperty(this, 'storage', {
+				value: fallbackIfFails(
+					() => this.storage ?? globalThis.localStorage,
+					[],
+					undefined,
+				),
+			})
+			if (!this.storage)
+				throw new Error(Store.messages.invalidStorageOptions)
+		}
 
-		let isEmpty = !!this.cacheDisabled
+		Object.defineProperty(this, 'initialized', { value: true })
+
 		let firstValue = initialValue
 		if (!!initialValue?.size || !this.cacheDisabled) {
 			const dataStr = this.name ? this.storage?.getItem(this.name) : null
@@ -389,8 +413,6 @@ export class Store<
 			// If the entry exists in storage (even if it is empty), prioritize it over initialValue.
 			// This prevents defaults from overwriting an intentionally cleared storage.
 			if (isDefined(dataStr)) firstValue = existingValue
-
-			isEmpty = this.cacheDisabled || existingValue.size === 0
 		}
 
 		firstValue?.size && this.subject$.next(firstValue)
@@ -402,9 +424,16 @@ export class Store<
 				this.handleForceUpdateCache,
 			)
 		}
+
+		const skipNum =
+			this.subject$ instanceof BehaviorSubject
+			&& firstValue?.size
+			&& firstValue !== initialValue
+				? 1
+				: 0
 		// Subscribe to data changes and write to storage.
 		this.subscriptions.subject = this.subject$
-			.pipe(skip(isEmpty ? 0 : 1))
+			.pipe(skip(skipNum))
 			.subscribe(
 				!this.cacheDisabled && this.delay > 0
 					? deferred(this.handleSubjectChange, this.delay, {
@@ -461,13 +490,18 @@ export class Store<
 
 	set: This['set'] = (key, value) => {
 		const data = this.getAll()
-		data.set(key, isFn(value) ? value(data.get(key)) : value)
+
+		const _value = isFn(value) ? value(data.get(key)) : value
+		this.validate?.set?.call(this, [key, _value], 'set')
+		data.set(key, _value)
 
 		return this.setAll(data, true)
 	}
 
 	setAll: This['setAll'] = (data, replace = false) => {
 		if (!isMap(data)) return this
+
+		this.validate?.setAll?.call(this, [data, replace], 'setAll')
 
 		data = replace
 			? data // override all entries
@@ -543,24 +577,24 @@ export class Store<
 		}
 
 	unsubscribe: This['unsubscribe'] = () => {
-		// unsubscribeAll(this.subscriptions)
 		this.subscriptions.forceUpdateCache?.unsubscribe()
 		this.subscriptions.subject?.unsubscribe()
-		this.subscriptions = {} as unknown as typeof this.subscriptions
+		this.subscriptions = {
+			forceUpdateCache: undefined,
+			subject: undefined,
+		}
 	}
 
 	values: This['values'] = () => getValues(this.getAll())
 
 	write: This['write'] = data => {
+		this.init()
+		data ??= (this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
+		if (!isMap(data) || !this.name || !this.storage) return false
+
+		this.validate?.write?.call(this, [data], 'write')
 		try {
-			!this.initialized && this.init()
-
-			data ??= (this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
-			if (!isMap(data)) return false
-
 			const jsonStr = this.toString(data)
-			if (!this.name || !this.storage) return false
-
 			this.storage.setItem(this.name, jsonStr)
 
 			return true

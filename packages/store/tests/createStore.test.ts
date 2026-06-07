@@ -95,4 +95,31 @@ describe('createStore', () => {
 			age: 22,
 		})
 	})
+
+	it('should create an in-memory store', () => {
+		const store = createStore({
+			context: store => ({
+				user: null as User | null,
+				getUser(id: string): User {
+					const user: User = {
+						id,
+						name: 'bob',
+						age: 22,
+					}
+					this.user = user
+					store.set(id, user)
+					return user
+				},
+			}),
+			initialValue: new Map<String, User>(),
+		})
+
+		store.context.getUser('bob')
+		expect(store.context.user?.name).toEqual('bob')
+		expect(store.get('bob')?.name).toBe('bob')
+
+		expect(store.storage).toBe(undefined)
+		expect(mockedStorage.getItem).not.toHaveBeenCalled()
+		expect(mockedStorage.setItem).not.toHaveBeenCalled()
+	})
 })

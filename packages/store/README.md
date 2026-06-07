@@ -57,10 +57,10 @@ OR,
 The `Store` class can be used just like a standard JavaScript `Map`, but with the added benefit of optional persistence and reactivity.
 
 ```javascript
-import { createStore, Store } from '@superutils/store'
+import { createStore } from '@superutils/store'
 
-// Initialize a store (in-memory only if no name is provided)
-const userStorage = createStore('users') // or `new Store('users')`
+// Initialize a store
+const userStorage = createStore('users') // or `createStore()` for in-memory store
 
 // Set and get values
 userStorage.set('alice', { name: 'Alice', age: 30 })
@@ -208,7 +208,7 @@ const userStore = createObjectStore('user-profile', {
   context: store => ({
     promoteToAdmin() {
       // Update properties with type safety
-      store.set('roles', (prev = []) => [...prev, 'admin'])
+      store.set('roles', roles => [...roles, 'admin'])
     },
   }),
 })
@@ -231,19 +231,22 @@ interface Product {
   inStock: boolean
 }
 
-class ProductStore extends Store<number, Product> {
-  constructor(name: string, options?: Parameters<typeof Store>[1]) {
+class ProductStore extends Store<number, Product, false> {
+  constructor(
+    ...[name, options]: ConstructorParameters<
+      typeof Store<number, Product, false>
+    >
+  ) {
     super(name, { ...options, delay: 100 }) // Set a default delay for this store type
   }
 
-  getInStockProducts(): Map<number, Product> {
-    return this.filter(product => product.inStock)
+  getInStockProducts(limit?: number) {
+    return this.filter(product => product.inStock, limit)
   }
 }
 
 const products = new ProductStore('my-products')
 products.set(1, { id: 1, name: 'Laptop', price: 1200, inStock: true })
 products.set(2, { id: 2, name: 'Mouse', price: 25, inStock: false })
-
 console.log(products.getInStockProducts()) // Map { 1 => { id: 1, name: 'Laptop', price: 1200, inStock: true } }
 ```
