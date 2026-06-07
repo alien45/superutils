@@ -4,7 +4,7 @@ A set of small, focused utilities for working with RxJS observables and subjects
 
 <div v-if="false">
 
-For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/rx/).
+For full API reference and example code playground check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/rx/).
 
 </div>
 

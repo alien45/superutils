@@ -8,10 +8,17 @@ import {
 } from '@superutils/core'
 import { IStore } from './IStore'
 
-/** Bare miminal storage with only properties that are used by `Store` */
+/**
+ * Represents the minimal subset of the `Storage` interface required for persistence.
+ *
+ * Any object implementing this type can be used as a storage engine, making the Store
+ * compatible with `localStorage`, `sessionStorage`, or custom file-based implementations.
+ */
 export type StorageCompact = Pick<Storage, 'getItem' | 'setItem'>
 
-/** Throttle & debounce related options */
+/**
+ * Configuration for the timing strategy used when writing data to persistent storage.
+ */
 export type Store_DelayOptions =
 	| ({
 			throttle: true
@@ -47,7 +54,11 @@ export enum Store_OnErrorType {
 	write = 'write',
 }
 
-/** Initial options provided through the constructor */
+/**
+ * Configuration options for initializing a {@link Store} or {@link ObjectStore}.
+ *
+ * These options define the behavior of caching, persistence, error handling, and validation.
+ */
 export type Store_Options<Key, Value, CacheDisabled extends boolean = false> = {
 	/**
 	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
@@ -76,31 +87,34 @@ export type Store_Options<Key, Value, CacheDisabled extends boolean = false> = {
 	| 'spaces'
 	| 'storage'
 	| 'stringify'
-> & {
-		/**
-		 * If `true`, storage validation is delayed until initialization.
-		 *
-		 * By default, if a `name` is provided, the constructor throws an error if no valid
-		 * storage mechanism (like `localStorage`) is found. Enabling this allows the
-		 * instance to be created even if storage is temporarily missing, throwing the error
-		 * only when `init()` is called - manually, on first read/write, or automatically
-		 * when non-empty `initialValue` is provided..
-		 *
-		 * Default: `false`
-		 */
-		checkStorageOnInit?: boolean
-	} & (CacheDisabled extends false
+	| 'validate'
+>
+	& (CacheDisabled extends false
 		? Pick<
 				Partial<IStore<Key, Value, CacheDisabled>>,
 				'delay' | 'delayOptions'
 			>
 		: { delay?: never; delayOptions?: never })
 
+/**
+ * Function signature for custom data deserialization.
+ *
+ * @param text The raw string retrieved from the underlying storage.
+ * @returns The parsed data structure (usually a Map) or `void` to trigger fallback behavior.
+ */
 export type Store_Parse<ResultMap, ThisArg> = (
 	this: ThisArg,
 	text: string | null | undefined,
 ) => ResultMap | void
 
+/**
+ * Function signature for the internal search utility.
+ *
+ * @template K - The type of keys.
+ * @template V - The type of values.
+ * @template MatchExact - Whether to perform exact matching.
+ * @template AsMap - Whether to return results as a Map.
+ */
 export type Store_Search<
 	K,
 	V,
@@ -110,6 +124,15 @@ export type Store_Search<
 	...args: DropFirst<Parameters<typeof search<K, V, MatchExact, AsMap>>>
 ) => ReturnType<typeof search<K, V, MatchExact, AsMap>>
 
+/**
+ * Function Signature for the sort utility, supporting multiple sorting strategies:
+ * 1. By a custom comparator function.
+ * 2. By a specific property name (for object-like values).
+ * 3. By the map keys.
+ *
+ * @template K - The type of keys.
+ * @template V - The type of values.
+ */
 export type Store_Sort<K, V> = (
 	...args:
 		| Store_SortByComparator<K, V>
@@ -126,13 +149,30 @@ export type Store_SortByPropertyName<V> = [
 	options?: Store_SortOptions,
 ]
 
+/** Configuration options for sorting, including whether to persist the result. */
 export type Store_SortOptions = SortOptions & { save?: boolean }
 
+/**
+ * Function signature for custom data serialization.
+ *
+ * @param data The current data structure to be serialized.
+ * @returns A string representation of the data, or `void/undefined` to trigger fallback behavior.
+ */
 export type Store_Stringify<Data, ThisArg> = (
 	this: ThisArg,
 	data: Data,
 ) => string | undefined | void
 
+/**
+ * Function signature for exporting the store content as a JSON string.
+ *
+ * @param replacer - A function or array that transforms the results.
+ * @param spacing - Indentation or whitespace formatting.
+ * @param data - The specific Map to stringify (defaults to all entries).
+ *
+ * @template K - The type of keys.
+ * @template V - The type of values.
+ */
 export type Store_ToJSON<K, V> = (
 	replacer?: null | ((key: K, value: V) => unknown),
 	spacing?: string | number,

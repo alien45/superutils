@@ -4,7 +4,7 @@ A collection of lightweight, dependency-free utility functions and types.
 
 <div v-if="false">
 
-For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/core/).
+For full API reference and example code playground check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/core/).
 
 </div>
 
@@ -17,7 +17,6 @@ For full API reference check out the [docs page](https://alien45.github.io/super
   - [`is`](#is): Type checkers
   - [`debounce()`](#debounce): Debounce callbacks
   - [`throttle()`](#throttle): Throttle callbacks
-  - [`deferred()`](#deferred): Debounce/Throttle callbacks
   - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
   - [`objCopy()`](#obj-copy): Deep-copy objects
   - [`search()`](#search): Search iterable collections
@@ -155,25 +154,6 @@ handleChange({ target: { value: 1 } }) // will be executed
 handleChange({ target: { value: 2 } }) // will be ignored
 handleChange({ target: { value: 3 } }) // will be ignored
 handleChange({ target: { value: 4 } }) // will be ignored, unless `trailing = true`
-```
-
-<div id="deferred"></div>
-
-### `deferred(fn, delay, options)`: debounce/throttle callbacks
-
-Create debounced/throttled functions using the `throttle` switch.
-
-```javascript
-import { deferred } from '@superutils/core'
-
-const handleChange = deferred(
-  event => console.log(event.target.value),
-  300, // delay in milliseconds
-  { throttle: false }, // determines whether to create a debounced or throttled function
-)
-handleChange({ target: { value: 1 } }) // will be ignored
-handleChange({ target: { value: 2 } }) // will be ignored
-handleChange({ target: { value: 3 } }) // will be executed
 ```
 
 <div id="fallback-if-fails"></div>

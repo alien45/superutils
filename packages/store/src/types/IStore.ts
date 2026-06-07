@@ -7,6 +7,7 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
+import { Store_Validate } from './validate'
 import {
 	StorageCompact,
 	Store_DelayOptions,
@@ -60,13 +61,6 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * Default: `null`
 	 */
 	readonly name?: string | null
-
-	/**
-	 * Indicates type of data parsed as
-	 *
-	 * Default: 'map'
-	 */
-	type: string
 
 	/**
 	 * A callback function executed whenever a data change occurs within the storage.
@@ -130,14 +124,19 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * Notes:
 	 * - Ignored when `name` is falsy (in-memory only mode)
 	 * - For NodeJS or equivalent, an instance of `LocalStorage` from "node-localstoarge" NPM module can be used.
-	 * - If `undefined`, will attempt to use `globalThis.localStorage`, if available
 	 * - A custom storage that implements {@link StorageCompact} interface can also be used both in browser and NodeJS.
+	 *
+	 * Fallback behavior:
+	 * - `undefined`: will attempt to use `globalThis.localStorage`, if available
+	 * - `null`, will defer storage check until initialization on first read/write or when `init()` invoked manually.
+	 *   - If storage is `undefined` or `null` will attempt to assign `globalTihs.localStorage` again
+	 *   - If storage is still falsy, will throw an error.
 	 *
 	 * Default:
 	 * - browser: `localStorage`
 	 * - node: `undefined` (in-memory mode)
 	 */
-	readonly storage?: StorageCompact | Storage
+	readonly storage?: StorageCompact | Storage | null
 
 	/**
 	 * A callback function to customize the serialization of data before it is written to storage.
@@ -182,6 +181,15 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 		Map<Key, Value>,
 		IStore<Key, Value, CacheDisabled>
 	>
+
+	/**
+	 * Indicates type of data parsed as
+	 *
+	 * Default: 'map'
+	 */
+	type: string
+
+	validate?: Store_Validate<Key, Value, CacheDisabled>
 
 	/**
 	 * The underlying RxJS Subject that serves as the primary reactive interface for observing data modifications.
