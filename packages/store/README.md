@@ -6,7 +6,7 @@ Built on RxJS for reactive data handling, it is optimized for small to medium da
 
 <div v-if="false">
 
-For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/store/).
+For full API reference and example code playground check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/store/).
 
 </div>
 

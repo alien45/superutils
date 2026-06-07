@@ -6,7 +6,7 @@ This package enhances the native `fetch` API by providing a streamlined interfac
 
 <div v-if="false">
 
-For full API reference check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/fetch/).
+For full API reference and example code playground check out the [docs page](https://alien45.github.io/superutils/packages/@superutils/fetch/).
 
 </div>
 
