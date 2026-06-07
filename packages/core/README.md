@@ -14,7 +14,7 @@ For full API reference and example code playground check out the [docs page](htt
   - [NPM](#npm)
   - [CDN/Browser](#cdn--browser)
 - [Usage](#usage)
-  - [`is`](#is): Type checkers
+  - [`is`](#is): Type guards
   - [`debounce()`](#debounce): Debounce callbacks
   - [`throttle()`](#throttle): Throttle callbacks
   - [`fallbackIfFails()`](#fallback-if-fails): Gracefully invoke functions or promises with a fallback
@@ -73,7 +73,7 @@ throttle()
 
 <div id="is"></div>
 
-### `is`: type checkers
+### `is`: Type guards
 
 The `is` object provides a comprehensive set of type-checking functions.
 
