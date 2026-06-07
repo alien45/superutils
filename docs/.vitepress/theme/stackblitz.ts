@@ -325,7 +325,7 @@ const addNodeLocalStorage = (
 	isTs = false,
 ) => {
 	const checkContent = (str: string) =>
-		['new Store', 'createStore(', 'createObjectStore('].find(s => str.includes(s))
+		['Store', 'createStore', 'createObjectStore'].find(s => str.includes(s))
 	const ignore =
 		!dependencies['@superutils/store']
 		&& !Object.values(files).find(checkContent)
