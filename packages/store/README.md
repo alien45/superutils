@@ -117,6 +117,42 @@ createStore('settings.json', { storage: new LocalStorage('./data', 1e7) })
 
 ## Advanced Usage
 
+### Data Validation
+
+To ensure data integrity, you can provide a `validate` object containing hooks for various operations (`set`, `setAll`, `delete`, `clear`, `write`). These hooks are executed immediately before the store's internal state is updated. If a validator throws an error, the operation is aborted.
+
+```javascript
+import { createObjectStore } from '@superutils/store'
+
+const settingsStore = createObjectStore('app-settings', {
+  initialValue: {
+    theme: 'light',
+    version: '1.0.0',
+  },
+  validate: {
+    set: ([key, value]) => {
+      if (key !== 'theme' || ['light', 'dark', 'system'].includes(value)) return
+
+      // throw error to abort operation
+      throw new Error(`Invalid theme: ${value}`)
+    },
+    delete: ([keys]) => {
+      if (!keys.includes('version')) return
+
+      throw new Error('The "version" key is protected and cannot be deleted')
+    },
+  },
+})
+
+settingsStore.set('theme', 'system')
+console.log(settingsStore.get('theme')) // 'system
+try {
+  settingsStore.set('theme', 'invalid') // throws error
+} catch (err) {
+  console.log(err)
+}
+```
+
 ### Reactive Updates (RxJS & Callbacks)
 
 You can subscribe to changes using the internal RxJS Subject or a simple `onChange` callback.

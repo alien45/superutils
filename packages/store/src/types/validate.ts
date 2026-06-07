@@ -16,6 +16,8 @@ export type Store_ValidateAction =
  * **Behavior:**
  * - Invoked immediately before the store's internal state is updated.
  * - If validation fails (throw error), the write operation is aborted and error is propagated to the caller.
+ * - The `write` validator is invoked during every persistence cycle, serving as a final check
+ * after operation-specific hooks (like `set` or `delete`).
  *
  * @param params - The specific payload for the action:
  *   - `clear`: `[]`
