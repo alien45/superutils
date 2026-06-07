@@ -18,6 +18,7 @@ For full API reference and example code playground check out the [docs page](htt
   - [Object-based Store](#object-based-store)
   - [Persistent Storage (NodeJS)](#persistent-storage-nodejs)
 - [Advanced Usage](#advanced-usage)
+  - [Data Validation](#data-validation)
   - [Reactive Updates (RxJS & Callbacks)](#reactive-updates-rxjs--callbacks)
   - [Search and Filtering](#search-and-filtering)
   - [Attaching Context (Business Logic)](#attaching-context-business-logic)
