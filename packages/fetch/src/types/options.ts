@@ -279,7 +279,7 @@ export type FetchRetryOptions = Omit<
  * import fetch from '@superutils/fetch'
  *
  * fetch.get(
- *   'https://dummyjson.com/image/4000x4000/008080/ffffff?text=Hello+@superutils', // dynamic image file
+ *   '[DUMMYJSON-DOT-COM]/image/4000x4000/008080/ffffff?text=Hello+@superutils', // dynamic image file
  *   {
  *     as: FetchAs.blob,
  *     onDownloadProgress: (parcent, received, total) =>

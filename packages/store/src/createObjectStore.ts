@@ -1,16 +1,15 @@
-import { objToMap, isObj } from '@superutils/core'
+import { objToMap, isObj, isMap, TypedMap } from '@superutils/core'
 import createStore from './createStore'
-import Store from './Store'
-import {
-	Store_Options,
+import type {
 	IObjectStore,
 	ObjectStore_Context,
 	ObjectStore_Options,
+	OmitStoreProps,
+	ValidatedObjectContext,
 } from './types'
-import { IObjectStoreWithContext } from './types/context'
 
 /**
- * Creates a {@link Store} instance initialized from a plain object.
+ * Creates a {@link IObjectStore} instance initialized from a plain object.
  *
  * This factory method automatically configures `parse` and `stringify` logic to
  * treat the underlying storage as a serialized object, while providing a
@@ -18,32 +17,30 @@ import { IObjectStoreWithContext } from './types/context'
  *
  * This default behavior can be overridden by providing custom `parse` and `stringify` implementations in `options`.
  *
- * @param name (optional) The name for the storage (e.g., localStorage key or filename).
- * @param options (optional) Configuration options for the storage instance.
+ * @param options (optional) Configuration options for the storage instance. See {@link ObjectStore_Options} for more.
  * @param options.initialValue (optional) An optional object to populate the storage if it's currently empty.
- * @param options.context - (optional) A plain object or a factory function that returns an object.
+ * @param options.name (optional) locaStorage key (or JSON filename in NodeJS) for persistence storage.
+ * @param context - (optional) A plain object or a factory function that returns an object.
  *
  * **Purpose:**
  * Use `context` to encapsulate domain-specific business logic, helper methods, or non-reactive state
- * directly alongside the store instance.
+ * directly into the store instance.
  *
- * **Behavior:**
- * - **Non-Reactive:** Updates to context properties do **not** trigger `onChange` or RxJS emissions.
- * - **Non-Persistent:** Context data is purely in-memory and is **not** saved to persistent storage.
- * - **Access to Store:** When a factory function is used, it receives the store instance as an argument.
+ * **Behavior:** See {@link createStore}.
  *
  * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
- * @template CacheDisabled (optional) Literal type determining whether to disable in-memory caching.
+ * @template CacheDisabled - Literal type determining whether to disable in-memory caching.
+ * @template Context - The type of the context object or factory function.
  *
  * @returns A new Store instance mapped to the object's keys and values.
  *
  * @example
  * #### Basic property-based access
  *
- * ```typescript
+ * ```javascript
  * import { createObjectStore } from '@superutils/store'
  *
- * const storage = createObjectStore('user-profile', {
+ * const userStore = createObjectStore('user', {
  *   initialValue: {
  *     age: 99,
  *     name: 'Ninety Nine'
@@ -51,15 +48,15 @@ import { IObjectStoreWithContext } from './types/context'
  * })
  *
  * // Keys are strictly inferred from the interface
- * const name = storage.get('name') // Type: string | undefined
+ * const name = userStore.get('name') // Type: string | undefined
  * console.log(name) // Prints: 'Ninety Nine'
  *
  * // Update properties with type safety
- * storage.set('age', 100) // Only numbers are accepted for 'age'
+ * userStore.set('age', 100) // Only numbers are accepted for 'age'
  *
  * // Export the underlying data back to a plain object
- * const userObj = storage.toObject<User>()
- * console.log(userObj) // { age: 100, name: 'Ninety Nine' }
+ * const user = userStore.toObject()
+ * console.log(user) // { age: 100, name: 'Ninety Nine' }
  * ```
  *
  * @example
@@ -68,14 +65,7 @@ import { IObjectStoreWithContext } from './types/context'
  * ```javascript
  * import { createObjectStore } from '@superutils/store'
  *
- * // Functional context allows you to attach business logic directly to the store
- * const userStore = createObjectStore('user-profile', {
- *   initialValue: {
- *     age: 25,
- *     name: 'Jane Doe',
- *     roles: ['guest']
- *   },
- *   context: store => ({
+ * const getContext = store => ({
  *     isAdmin: () => !!store.get('roles')?.includes('admin'),
  *     promoteToAdmin() {
  *       if (this.isAdmin()) return
@@ -83,11 +73,22 @@ import { IObjectStoreWithContext } from './types/context'
  *       // Use functional updates to safely modify the roles array
  *       store.set('roles', (prev = []) => [...prev, 'admin'])
  *     }
- *   })
- * })
+ *   }
+ * // Functional context allows you to attach business logic directly to the store
+ * const userStore = createObjectStore(
+ *   'user',
+ *   {
+ *     initialValue: {
+ *       age: 25,
+ *       name: 'Jane Doe',
+ *       roles: ['guest']
+ *     },
+ *   },
+ *   getContext
+ * )
  *
  * // Logic is encapsulated and easy to invoke
- * userStore.context.promoteToAdmin()
+ * userStore.promoteToAdmin()
  * console.log(userStore.get('roles')) // ['guest', 'admin']
  * ```
  *
@@ -100,68 +101,40 @@ export function createObjectStore<
 		CacheDisabled
 	>,
 >(
-	name?: string | null,
-	options?: ObjectStore_Options<T, CacheDisabled, Context>,
-): IObjectStoreWithContext<T, CacheDisabled, Context>
-export function createObjectStore<
-	T extends object = Record<string, unknown>,
-	CacheDisabled extends boolean = false,
-	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
-		T,
-		CacheDisabled
-	>,
->(
-	options: ObjectStore_Options<T, CacheDisabled, Context>,
-): IObjectStoreWithContext<T, CacheDisabled, Context>
-
-/**
- * Create a {@link Store} instance from an object using `options.initialValue`.
- */
-export function createObjectStore<
-	T extends object = Record<string, unknown>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
-	CacheDisabled extends boolean = false,
->(
-	...args: ConstructorParameters<typeof Store<Key, Value, CacheDisabled>>
-): IObjectStore<T, CacheDisabled>
-
-export function createObjectStore<
-	T extends object = Record<string, unknown>,
-	CacheDisabled extends boolean = false,
-	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
-		T,
-		CacheDisabled
-	>,
-	Key extends keyof T = keyof T,
-	Value extends T[Key] = T[Key],
->(
-	name?: string | null | ObjectStore_Options<T, CacheDisabled, Context>,
-	options?: ObjectStore_Options<T, CacheDisabled, Context>,
+	options?: null | ObjectStore_Options<T, CacheDisabled>,
+	context?: Context & ValidatedObjectContext<Context, T, CacheDisabled>,
 ) {
-	if (isObj(name)) {
-		options = name
-		name = null
-	}
-
-	const store = createStore(name, {
-		parse: str => objToMap<T>(JSON.parse(str ?? '{}') as T),
-		stringify: function (data) {
-			return JSON.stringify(this.toObject(data))
-		},
-		...(options as Store_Options<Key, Value, CacheDisabled>),
+	options = {
+		// only required for persistent store
+		...(options?.name && {
+			parse: str => objToMap(JSON.parse(str ?? '{}') as T),
+			stringify(data) {
+				return JSON.stringify(this.toObject(data))
+			},
+		}),
+		...options,
 		initialValue: !isObj(options?.initialValue, true)
 			? options?.initialValue
-			: objToMap<T>(options.initialValue),
-	})
+			: objToMap(options.initialValue),
+	} as ObjectStore_Options<T, CacheDisabled>
+
+	const store = createStore(
+		...([options, context] as unknown as Parameters<typeof createStore>),
+	) as unknown as IObjectStore<T, CacheDisabled> & OmitStoreProps<Context>
 
 	store.type = 'object'
 
-	return store as unknown as IObjectStoreWithContext<
-		T,
-		CacheDisabled,
-		Context
-	>
+	const setAll = store.setAll
+	store.setAll = function (obj, replace) {
+		if (obj && !isMap(obj)) obj = objToMap(obj)
+
+		return setAll(obj, replace)
+	}
+
+	store.toMap = data =>
+		!data ? (store.getAll() as TypedMap<T>) : objToMap(data)
+
+	return store
 }
 
 export default createObjectStore

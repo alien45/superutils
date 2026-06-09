@@ -7,8 +7,7 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
-import { Store_Validate } from './validate'
-import {
+import type {
 	StorageCompact,
 	Store_DelayOptions,
 	Store_OnErrorType,
@@ -17,6 +16,48 @@ import {
 	Store_Stringify,
 	Store_ToJSON,
 } from './types'
+
+export type Store_OptionsPickKeys =
+	| 'cacheDisabled'
+	| 'name'
+	| 'onChange'
+	| 'onError'
+	| 'parse'
+	| 'spaces'
+	| 'storage'
+	| 'stringify'
+	| 'validate'
+/**
+ * Configuration options for initializing {@link IStore} instances.
+ *
+ * These options define the behavior of caching, persistence, error handling, and validation.
+ */
+export type Store_Options<Key, Value, CacheDisabled extends boolean = false> = {
+	/**
+	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
+	 *
+	 * **Data Precedence:**
+	 * Persistent data associated with the instance's specific `name` takes priority. This value is
+	 * only utilized if the storage entry for that `name` does not exist (e.g., first-time use).
+	 *
+	 * **Initialization Behavior:**
+	 * - If provided and non-empty, the instance initializes immediately during construction.
+	 * - Otherwise, initialization is lazy, occurring upon an explicit `init()` call or the first read/write operation.
+	 *
+	 * **Type Inference:**
+	 * When provided, it enables automatic inference of the `Key` and `Value` generic types.
+	 * If omitted, these default to `unknown` and `object` respectively, unless explicitly defined.
+	 *
+	 * Default: `undefined`
+	 */
+	initialValue?: Map<Key, Value>
+} & Pick<Partial<IStore<Key, Value, CacheDisabled>>, Store_OptionsPickKeys>
+	& (CacheDisabled extends false
+		? Pick<
+				Partial<IStore<Key, Value, CacheDisabled>>,
+				'delay' | 'delayOptions'
+			>
+		: { delay?: never; delayOptions?: never })
 
 /**
  * Represents a generic, reactive, and persistent Map-like data store.
@@ -189,10 +230,8 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 */
 	type: string
 
-	validate?: Store_Validate<Key, Value, CacheDisabled>
-
 	/**
-	 * The underlying RxJS Subject that serves as the primary reactive interface for observing data modifications.
+	 * The underlying RxJS subject that serves as the primary reactive interface for observing data modifications.
 	 *
 	 * Its implementation type is determined by the caching strategy:
 	 * - **BehaviorSubject**: Used when caching is enabled.

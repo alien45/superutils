@@ -522,9 +522,7 @@ describe('Store', () => {
 					const store = new Store('validate', {
 						delay: noDelay,
 						initialValue,
-						validate: {
-							[action]: validate,
-						},
+						validate: { [action]: validate },
 					})
 
 					expect(validate).toHaveBeenCalledTimes(startIndex + 0)
