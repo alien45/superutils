@@ -129,9 +129,8 @@ createStore({
 
 To ensure data integrity, you can provide a `validate` object containing hooks for various operations (`set`, `setAll`, `delete`, `clear`, `write`). These hooks are executed immediately before the store's internal state is updated. If a validator throws an error, the operation is aborted.
 
-```javascript
+````javascript
 import { createObjectStore } from '@superutils/store'
-
 const settingsStore = createObjectStore({
   name: 'app-settings',
   initialValue: {
@@ -139,20 +138,18 @@ const settingsStore = createObjectStore({
     version: '1.0.0',
   },
   validate: {
-    set: ([key, value]) => {
+    set([key, value]) {
+      console.log(this.size) // "this" refers to the store instance
       if (key !== 'theme' || ['light', 'dark', 'system'].includes(value)) return
-
       // throw error to abort operation
       throw new Error(`Invalid theme: ${value}`)
     },
     delete: ([keys]) => {
       if (!keys.includes('version')) return
-
       throw new Error('The "version" key is protected and cannot be deleted')
     },
   },
 })
-
 settingsStore.set('theme', 'system')
 console.log(settingsStore.get('theme')) // 'system
 try {
@@ -180,7 +177,7 @@ const sub = store.subject$.subscribe(data => {
 })
 
 store.set('key', 'value')
-```
+````
 
 ### Search and Filtering
 

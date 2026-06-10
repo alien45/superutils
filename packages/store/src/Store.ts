@@ -261,7 +261,7 @@ export class Store<
 			parse,
 			spaces,
 			storage = fallbackIfFails(
-				() => (!name ? undefined : globalThis.localStorage),
+				() => (!this.name ? undefined : globalThis.localStorage),
 				[],
 				undefined,
 			),
@@ -376,7 +376,11 @@ export class Store<
 		if (!isMap(data)) return this.subject$.next(new Map())
 
 		// write quietly
-		fallbackIfFails(this.write, [data], null)
+		fallbackIfFails(
+			this.write,
+			[data],
+			this.triggerOnErrorCb(Store_OnErrorType.write),
+		)
 
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,

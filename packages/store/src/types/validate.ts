@@ -16,6 +16,42 @@ declare module './IStore' {
 		 * after operation-specific hooks (e.g., `set` or `delete`).
 		 * - For reference-type values (e.g., Objects, Maps, Arrays), validators can be used to mutate the data
 		 * (e.g., for normalization) before it is committed.
+		 * - `thisArg`: all validators are bound to the store instance.
+		 *
+		 * @example
+		 * ```javascript
+		 * import { createObjectStore } from '@superutils/store'
+		 *
+		 * const settingsStore = createObjectStore({
+		 *   name: 'app-settings',
+		 *   initialValue: {
+		 *     theme: 'light',
+		 *     version: '1.0.0',
+		 *   },
+		 *   validate: {
+		 *     set([key, value]) {
+		 *       console.log(this.size) // "this" refers to the store instance
+		 *       if (key !== 'theme' || ['light', 'dark', 'system'].includes(value)) return
+		 *
+		 *       // throw error to abort operation
+		 *       throw new Error(`Invalid theme: ${value}`)
+		 *     },
+		 *     delete: ([keys]) => {
+		 *       if (!keys.includes('version')) return
+		 *
+		 *       throw new Error('The "version" key is protected and cannot be deleted')
+		 *     },
+		 *   },
+		 * })
+		 *
+		 * settingsStore.set('theme', 'system')
+		 * console.log(settingsStore.get('theme')) // 'system'
+		 * try {
+		 *   settingsStore.set('theme', 'invalid') // throws error
+		 * } catch (err) {
+		 *   console.error(err.message)
+		 * }
+		 * ```
 		 */
 		validate?: Store_Validate<Key, Value, CD>
 	}

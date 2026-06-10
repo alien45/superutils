@@ -487,7 +487,7 @@ describe('Store', () => {
 				expect(onError).toHaveBeenCalledTimes(2)
 			})
 
-			it('should invoke "parse" and "stingify" callbacks when in in-memory mode (no name provided)', () => {
+			it('should invoke "parse" and "stringify" callbacks when in in-memory mode (no name provided)', () => {
 				let count = 0
 				const parse = vi.fn(() => new Map([['count', ++count]]))
 				const stringify = vi.fn(() => '')

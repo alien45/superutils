@@ -438,5 +438,5 @@ export interface IStore<
 	 * - If not provided, the current in-memory data is used (if cache is enabled).
 	 * @returns `true` if the write was successful, `false` otherwise.
 	 */
-	readonly write: (data?: Map<Key, Value>) => void
+	readonly write: (data?: Map<Key, Value>) => boolean
 }
