@@ -1,7 +1,8 @@
 import { IStore } from './IStore'
 
+// Augment validate object into IStore interface
 declare module './IStore' {
-	interface IStore<Key, Value, CacheDisabled extends boolean = false> {
+	interface IStore<Key, Value, CD extends boolean = false> {
 		/**
 		 * A configuration object containing optional validation hooks for specific store operations.
 		 *
@@ -16,19 +17,9 @@ declare module './IStore' {
 		 * - For reference-type values (e.g., Objects, Maps, Arrays), validators can be used to mutate the data
 		 * (e.g., for normalization) before it is committed.
 		 */
-		validate?: Store_Validate<Key, Value, CacheDisabled>
+		validate?: Store_Validate<Key, Value, CD>
 	}
 }
-
-/**
- * Literal union of all operations that can be intercepted by a validator.
- */
-export type Store_ValidateAction =
-	| 'clear'
-	| 'delete'
-	| 'set'
-	| 'setAll'
-	| 'write'
 
 /**
  * A configuration object containing optional validation hooks for specific store operations.
@@ -125,3 +116,13 @@ export type Store_Validate<
 		action: 'write',
 	) => void
 }
+
+/**
+ * Literal union of all operations that can be intercepted by a validator.
+ */
+export type Store_ValidateAction =
+	| 'clear'
+	| 'delete'
+	| 'set'
+	| 'setAll'
+	| 'write'

@@ -43,11 +43,11 @@ export type onBeforeExecType = (
  *
  * @example
  * #### Execute a function sequentially
- * Counting time will not start until function execution ends, maintaining the delay betweeen
+ * Counting time will not start until function execution ends, maintaining the delay between
  * end of execution consistent.
  * ```typescript
  * import fetch from '@superutils/fetch'
- * import { IntervalRunner } fro '@superutils/rx'
+ * import { IntervalRunner } from '@superutils/rx'
  *
  * const runner = new IntervalRunner(
  *     fetch.get,
@@ -59,11 +59,11 @@ export type onBeforeExecType = (
  *
  * @example
  * #### Execute a function at without enforcing sequential execution.
- * Will start counting time even if function execution is unfinied, maintaining the delay betweeen
+ * Will start counting time even if function execution is unfinied, maintaining the delay between
  * start of execution consistent.
  * ```typescript
  * import fetch from '@superutils/fetch'
- * import { IntervalRunner } fro '@superutils/rx'
+ * import { IntervalRunner } from '@superutils/rx'
  *
  * const runner = new IntervalRunner(
  *   fetch.get,

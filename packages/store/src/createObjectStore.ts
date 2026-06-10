@@ -1,11 +1,11 @@
-import { objToMap, isObj, isMap, TypedMap } from '@superutils/core'
+import { objToMap, isObj, isMap } from '@superutils/core'
 import createStore from './createStore'
 import type {
 	IObjectStore,
 	ObjectStore_Context,
 	ObjectStore_Options,
-	OmitStoreProps,
-	ValidatedObjectContext,
+	Store_ContextOmitProps,
+	ObjectStore_ContextValidated,
 } from './types'
 
 /**
@@ -29,7 +29,7 @@ import type {
  * **Behavior:** See {@link createStore}.
  *
  * @template T (optional) The structure of the object being stored. Can auto-infer from `options.initialValue`.
- * @template CacheDisabled - Literal type determining whether to disable in-memory caching.
+ * @template CacheDisabled - Whether store data caching is disabled.
  * @template Context - The type of the context object or factory function.
  *
  * @returns A new Store instance mapped to the object's keys and values.
@@ -102,7 +102,7 @@ export function createObjectStore<
 	>,
 >(
 	options?: null | ObjectStore_Options<T, CacheDisabled>,
-	context?: Context & ValidatedObjectContext<Context, T, CacheDisabled>,
+	context?: Context & ObjectStore_ContextValidated<Context, T, CacheDisabled>,
 ) {
 	options = {
 		// only required for persistent store
@@ -120,21 +120,20 @@ export function createObjectStore<
 
 	const store = createStore(
 		...([options, context] as unknown as Parameters<typeof createStore>),
-	) as unknown as IObjectStore<T, CacheDisabled> & OmitStoreProps<Context>
+	) as unknown as IObjectStore<T, CacheDisabled>
+		& Store_ContextOmitProps<Context>
 
 	store.type = 'object'
 
-	const setAll = store.setAll
-	store.setAll = function (obj, replace) {
+	const setAll = store.setAll.bind(store)
+	store.setAll = (obj, replace) => {
 		if (obj && !isMap(obj)) obj = objToMap(obj)
 
 		return setAll(obj, replace)
 	}
 
-	store.toMap = data =>
-		!data ? (store.getAll() as TypedMap<T>) : objToMap(data)
+	store.toMap = data => (!data ? store.getAll() : objToMap(data))
 
 	return store
 }
-
 export default createObjectStore

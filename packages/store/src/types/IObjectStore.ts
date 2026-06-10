@@ -1,10 +1,10 @@
 import { TypedMap } from '@superutils/core'
-import { IStore, Store_Options, Store_OptionsPickKeys } from './IStore'
+import { IStore, Store_OptionsPickKeys } from './IStore'
 import type { Store_Parse, Store_Stringify } from './types'
 
 // @ts-expect-error force override properties while preserving documentation of IStore
 export interface IObjectStore<
-	T extends object,
+	T extends object = Record<PropertyKey, unknown>,
 	CacheDisabled extends boolean = false,
 	ObjectMap extends TypedMap<T> = TypedMap<T>,
 > extends IStore<keyof T, T[keyof T], CacheDisabled> {
@@ -43,7 +43,7 @@ export interface IObjectStore<
  * These options define the behavior of caching, persistence, error handling, and validation.
  */
 export type ObjectStore_Options<
-	T extends object,
+	T extends object = Record<PropertyKey, unknown>,
 	CacheDisabled extends boolean = false,
 > = {
 	/**

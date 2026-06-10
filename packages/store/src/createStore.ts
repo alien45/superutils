@@ -1,19 +1,19 @@
-import { isFn } from '@superutils/core'
+import { isFn, isObj } from '@superutils/core'
 import Store from './Store'
 import {
 	Store_Options,
 	Store_Context,
-	OmitStoreProps,
-	ValidatedContext,
+	Store_ContextOmitProps,
+	Store_ContextValidated,
 	IStore,
 } from './types'
 
 /**
- * Store property names that are optional/use-provided and should not be allowed in context.
+ * Store property names that are optional/user-provided and should not be allowed in context.
  *
  * This is used to avoid optional store properties being overriden by context properties
  */
-export const OPTIONAL_PROPS = [
+export const OPTIONAL_STORE_PROPS = [
 	'delayOptions',
 	'name',
 	'onChange',
@@ -52,7 +52,7 @@ export const OPTIONAL_PROPS = [
  *
  * @template Key - The type of keys stored in the map.
  * @template Value - The type of values stored in the map.
- * @template CacheDisabled - Literal type determining whether to disable in-memory caching.
+ * @template CacheDisabled - Whether store data caching is disabled.
  * @template Context - The type of the context object or factory function.
  *
  * @returns A {@link Store} instance with augmented properties (if any).
@@ -148,8 +148,9 @@ export function createStore<
 	Context extends Store_Context<Key, Value, CacheDisabled>,
 >(
 	options?: null | Store_Options<Key, Value, CacheDisabled>,
-	context?: Context & ValidatedContext<Context, Key, Value, CacheDisabled>,
-): IStore<Key, Value, CacheDisabled> & OmitStoreProps<Context>
+	context?: Context
+		& Store_ContextValidated<Context, Key, Value, CacheDisabled>,
+): IStore<Key, Value, CacheDisabled> & Store_ContextOmitProps<Context>
 
 /** Create store without context */
 export function createStore<Key, Value, CacheDisabled extends boolean = false>(
@@ -167,36 +168,33 @@ export function createStore<
 	>,
 >(
 	options?: null | Store_Options<Key, Value, CacheDisabled>,
-	context?: Context & ValidatedContext<Context, Key, Value, CacheDisabled>,
+	context?: Context
+		& Store_ContextValidated<Context, Key, Value, CacheDisabled>,
 ) {
-	const store = new Store(options?.name, options!) as unknown as IStore<
-		Key,
-		Value,
-		CacheDisabled
-	>
-		& OmitStoreProps<Context>
+	const store = new Store(options?.name, options!)
+	const _context = isFn(context) ? (context(store) as Context) : context
 
-	const _context = isFn(context) ? context(store) : (context ?? {})
+	if (!isObj(_context, false)) return store
 
 	return new Proxy(store, {
-		get(target, prop, receiver) {
-			if (
-				(OPTIONAL_PROPS as unknown as string[]).includes(prop as string)
-				|| store[prop as keyof typeof store] !== undefined
-			)
-				return Reflect.get(target, prop, receiver)
-
-			return Reflect.get(_context, prop, receiver)
-		},
-		set(target, prop, value, receiver) {
-			if (
-				(OPTIONAL_PROPS as unknown as string[]).includes(prop as string)
-				|| store[prop as keyof typeof store] !== undefined
-			)
-				return Reflect.set(target, prop, value, receiver)
-
-			return Reflect.set(_context, prop, value, receiver)
-		},
-	})
+		get: (store, key, receiver) =>
+			Reflect.get(
+				isStoreKey(store, key) ? store : _context,
+				key,
+				receiver,
+			),
+		set: (store, key, value, receiver) =>
+			Reflect.set(
+				isStoreKey(store, key) ? store : _context,
+				key,
+				value,
+				receiver,
+			),
+	}) as unknown as Store<Key, Value, CacheDisabled>
+		& Store_ContextOmitProps<Context>
 }
 export default createStore
+
+const isStoreKey = <S extends object>(store: S, key: unknown) =>
+	OPTIONAL_STORE_PROPS.includes(key as (typeof OPTIONAL_STORE_PROPS)[number])
+	|| store[key as keyof S] !== undefined
