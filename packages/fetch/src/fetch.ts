@@ -93,7 +93,16 @@ const fetch = <
 			opts.body = await fallbackIfFails(
 				opts.body as unknown as Promise<PostBody>,
 				[],
-				(err: Error) => Promise.reject(err),
+				(err: Error) =>
+					Promise.reject(
+						new Error(
+							'Failed to execute body() function. '
+								+ err?.message,
+							{
+								cause: err,
+							},
+						),
+					),
 			)
 
 			// invoke global and local response interceptors to intercept and/or transform `url` and `options`
@@ -143,21 +152,19 @@ const fetch = <
 				})
 			}
 
-			let result: unknown = getResult(
+			let result: unknown = await getResult(
 				response,
 				parseAs,
 				opts.onDownloadProgress,
-			)
-			if (isPromise(result)) {
-				result = await result.catch((err: Error) =>
-					Promise.reject(
-						new Error(
-							`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
-							{ cause: err },
-						),
+			).catch((err: Error) =>
+				Promise.reject(
+					new Error(
+						`${errMsgs.parseFailed} ${parseAs}. ${err?.message}`,
+						{ cause: err },
 					),
-				)
-			}
+				),
+			)
+
 			// invoke global and local request interceptors to intercept and/or transform parsed `result`
 			result = await executeInterceptors(
 				result,
