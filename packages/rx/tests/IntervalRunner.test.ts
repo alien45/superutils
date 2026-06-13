@@ -165,14 +165,17 @@ describe('IntervalRunner', () => {
 		const runner = new IntervalRunner(task, [], 2000, true, true)
 
 		runner.start(() => {})
-		await vi.runOnlyPendingTimersAsync()
 
 		await vi.advanceTimersByTimeAsync(2000)
-		await vi.runOnlyPendingTimersAsync()
+		expect(task).toHaveBeenCalledTimes(2)
 
-		// Should have run twice
+		// stop and preserve run count
+		runner.stop()
+		expect(runner.runCount).toBe(2)
+		expect(runner.isStarted()).toBe(false)
+
+		// stop and reset run count
 		runner.stop(true)
-
 		expect(runner.isStarted()).toBe(false)
 		expect(vi.getTimerCount()).toBe(0)
 
@@ -207,9 +210,9 @@ describe('IntervalRunner', () => {
 		expect(onResult).toHaveBeenCalledTimes(1)
 	})
 
-	it('should ignore start() call if onResult is not provided', async () => {
+	it('should allow start() call without onResult callback', async () => {
 		const runner = new IntervalRunner(vi.fn(), [], 1000)
-		expect(runner.start(null as any)).toBe(false)
+		expect(runner.start(null as any)).toBe(true)
 	})
 
 	it('should ignore subsequent start() calls if runner is already started and running', async () => {
@@ -221,5 +224,20 @@ describe('IntervalRunner', () => {
 	it('should ignore restart if onResult is not provided', async () => {
 		const runner = new IntervalRunner(vi.fn(), [], 1000)
 		expect(runner.restart()).toBe(false)
+	})
+
+	it('should invokde args() function if provided', async () => {
+		const fn = vi.fn((...args: unknown[]) => args[0])
+		const getArgs = vi.fn((runCount: number) => [runCount])
+		const runner = new IntervalRunner(fn, getArgs, 1000)
+
+		const promise = runner.executeOnce()
+
+		await vi.runAllTimersAsync()
+
+		const result = await promise
+		expect(result).toBe(1)
+		expect(fn).toHaveBeenCalledWith(1)
+		expect(getArgs).toHaveBeenCalledWith(1)
 	})
 })
