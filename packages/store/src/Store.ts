@@ -248,7 +248,7 @@ export class Store<
 
 	constructor(
 		name?: This['name'],
-		options?: Store_Options<Key, Value, CacheDisabled>,
+		options?: Store_Options<Key, Value, CacheDisabled> | null,
 	) {
 		this.name = `${name ?? options?.name ?? ''}`.trim() || null
 		const {

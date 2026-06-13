@@ -17,8 +17,11 @@ import type {
 	Store_ToJSON,
 } from './types'
 
-export type Store_OptionsPickKeys =
+/** Store properties accepted in {@link Store_Options} */
+export type Store_OptionKeys =
 	| 'cacheDisabled'
+	| 'delay'
+	| 'delayOptions'
 	| 'name'
 	| 'onChange'
 	| 'onError'
@@ -55,7 +58,7 @@ export type Store_Options<
 	 * Default: `undefined`
 	 */
 	initialValue?: Map<Key, Value>
-} & Pick<Partial<IStore<Key, Value, CacheDisabled>>, Store_OptionsPickKeys>
+} & Pick<Partial<IStore<Key, Value, CacheDisabled>>, Store_OptionKeys>
 	& (CacheDisabled extends false
 		? Pick<
 				Partial<IStore<Key, Value, CacheDisabled>>,
@@ -78,11 +81,7 @@ export type Store_Options<
  * @template CacheDisabled - A boolean flag; if `true`, the store operates without an in-memory cache,
  * reading and writing directly to the underlying storage on every operation.
  */
-export interface IStore<
-	Key = unknown,
-	Value = unknown,
-	CD extends boolean = false,
-> {
+export interface IStore<Key, Value, CD extends boolean = false> {
 	/** Disable in-memory cache and only directly read/write from storage (local storage or JSON fle) */
 	readonly cacheDisabled: CD
 

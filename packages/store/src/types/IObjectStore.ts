@@ -1,12 +1,11 @@
 import { TypedMap } from '@superutils/core'
-import { IStore, Store_OptionsPickKeys } from './IStore'
+import { IStore, Store_OptionKeys } from './IStore'
 import type { Store_Parse, Store_Stringify } from './types'
 
 // @ts-expect-error force override properties while preserving documentation of IStore
 export interface IObjectStore<
-	T extends object = Record<PropertyKey, unknown>,
+	T extends object = object,
 	CacheDisabled extends boolean = false,
-	ObjectMap extends TypedMap<T> = TypedMap<T>,
 > extends IStore<keyof T, T[keyof T], CacheDisabled> {
 	/**
 	 * Default: `object`
@@ -17,7 +16,7 @@ export interface IObjectStore<
 
 	getAll(forceRead?: boolean): TypedMap<T>
 
-	parse?: Store_Parse<ObjectMap, IObjectStore<T, CacheDisabled>>
+	parse?: Store_Parse<TypedMap<T>, IObjectStore<T, CacheDisabled>>
 
 	set<Key extends keyof T, Value extends T[Key]>(
 		key: Key,
@@ -25,16 +24,18 @@ export interface IObjectStore<
 	): IObjectStore<T, CacheDisabled>
 
 	setAll(
-		data?: T | ObjectMap,
+		data?: T | TypedMap<T>,
 		replace?: boolean,
 	): IObjectStore<T, CacheDisabled>
 
-	stringify?: Store_Stringify<ObjectMap, IObjectStore<T, CacheDisabled>>
+	stringify?: Store_Stringify<TypedMap<T>, IObjectStore<T, CacheDisabled>>
 
 	/** Convert data/object to typed map */
-	toMap(data?: T): ObjectMap
+	toMap(data?: T): TypedMap<T>
 
-	toObject<O extends object = T>(data?: Map<keyof T, T[keyof T]>): O
+	toObject<O extends object = T>(
+		data?: Map<keyof T, T[keyof T]> | TypedMap<T>,
+	): O
 }
 
 /**
@@ -64,7 +65,7 @@ export type ObjectStore_Options<
 	 * Default: `undefined`
 	 */
 	initialValue?: T
-} & Pick<Partial<IObjectStore<T, CacheDisabled>>, Store_OptionsPickKeys>
+} & Pick<Partial<IObjectStore<T, CacheDisabled>>, Store_OptionKeys>
 	& (CacheDisabled extends false
 		? Pick<
 				Partial<IObjectStore<T, CacheDisabled>>,

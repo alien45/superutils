@@ -2,10 +2,9 @@ import { objToMap, isObj, isMap } from '@superutils/core'
 import createStore from './createStore'
 import type {
 	IObjectStore,
-	ObjectStore_Context,
 	ObjectStore_Options,
-	Store_ContextOmitProps,
-	ObjectStore_ContextValidated,
+	ContextReturn,
+	ContextValidate,
 } from './types'
 
 /**
@@ -94,18 +93,31 @@ import type {
  *
  */
 export function createObjectStore<
+	Context extends
+		| object
+		| ((store: IObjectStore<T, CacheDisabled>) => object),
 	T extends object = Record<string, unknown>,
 	CacheDisabled extends boolean = false,
-	Context extends ObjectStore_Context<T, CacheDisabled> = ObjectStore_Context<
-		T,
-		CacheDisabled
-	>,
 >(
-	options?: null | ObjectStore_Options<T, CacheDisabled>,
-	context?: Context & ObjectStore_ContextValidated<Context, T, CacheDisabled>,
-) {
+	options: undefined | null | ObjectStore_Options<T, CacheDisabled>,
+	context: Context & ContextValidate<Context, IObjectStore<T, CacheDisabled>>,
+): IObjectStore<T, CacheDisabled> & ContextReturn<Context>
+
+// Without context
+export function createObjectStore<
+	T extends object = Record<string, unknown>,
+	CacheDisabled extends boolean = false,
+>(
+	options?: ObjectStore_Options<T, CacheDisabled>,
+): IObjectStore<T, CacheDisabled>
+
+export function createObjectStore<
+	Context,
+	T extends object,
+	CacheDisabled extends boolean,
+>(options?: null | ObjectStore_Options<T, CacheDisabled>, context?: Context) {
 	options = {
-		// only required for persistent store
+		// only required for persistent store and can be overriden by options
 		...(options?.name && {
 			parse: str => objToMap(JSON.parse(str ?? '{}') as T),
 			stringify(data) {
@@ -121,7 +133,6 @@ export function createObjectStore<
 	const store = createStore(
 		...([options, context] as unknown as Parameters<typeof createStore>),
 	) as unknown as IObjectStore<T, CacheDisabled>
-		& Store_ContextOmitProps<Context>
 
 	store.type = 'object'
 
