@@ -1,12 +1,6 @@
 'use strict'
 
-import {
-	fallbackIfFails,
-	isError,
-	isObj,
-	isPromise,
-	isUrlValid,
-} from '@superutils/core'
+import { fallbackIfFails, isError, isObj, isUrlValid } from '@superutils/core'
 import { timeout as PromisE_timeout } from '@superutils/promise'
 import executeInterceptors from './executeInterceptors'
 import getResponse from './getResponse'

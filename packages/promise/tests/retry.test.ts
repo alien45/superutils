@@ -116,4 +116,16 @@ describe('PromisE.retry', () => {
 		await expect(() => Promise.resolve(true)).not.toThrow()
 		globalThis.Promise = PromiseOriginal
 	})
+
+	it('should retry without delay', async () => {
+		let count = 0
+		const fn = vi.fn(() => {
+			if (++count % 2 !== 0) throw new Error('Odd number')
+			return count
+		})
+		const promise = PromisE.retry(fn, { retryDelay: 0 })
+		await vi.advanceTimersByTimeAsync(1)
+		await expect(promise).resolves.toBe(2)
+		expect(fn).toHaveBeenCalledTimes(2)
+	})
 })
