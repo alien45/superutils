@@ -150,7 +150,7 @@ export function createStore<
 		| ((store: IStore<Key, Value, CacheDisabled>) => object),
 	Key,
 	Value,
-	CacheDisabled extends boolean = false,
+	CacheDisabled extends boolean,
 >(
 	options: undefined | null | Store_Options<Key, Value, CacheDisabled>,
 	context: Context

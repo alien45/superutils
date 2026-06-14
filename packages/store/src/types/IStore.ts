@@ -20,8 +20,6 @@ import type {
 /** Store properties accepted in {@link Store_Options} */
 export type Store_OptionKeys =
 	| 'cacheDisabled'
-	| 'delay'
-	| 'delayOptions'
 	| 'name'
 	| 'onChange'
 	| 'onError'
@@ -58,13 +56,12 @@ export type Store_Options<
 	 * Default: `undefined`
 	 */
 	initialValue?: Map<Key, Value>
-} & Pick<Partial<IStore<Key, Value, CacheDisabled>>, Store_OptionKeys>
-	& (CacheDisabled extends false
-		? Pick<
-				Partial<IStore<Key, Value, CacheDisabled>>,
-				'delay' | 'delayOptions'
-			>
-		: { delay?: never; delayOptions?: never })
+} & Partial<
+	Pick<IStore<Key, Value, CacheDisabled>, Store_OptionKeys>
+		& (CacheDisabled extends false
+			? Pick<IStore<Key, Value, CacheDisabled>, 'delay' | 'delayOptions'>
+			: { delay?: never; delayOptions?: never })
+>
 
 /**
  * Represents a generic, reactive, and persistent Map-like data store.

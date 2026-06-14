@@ -5,6 +5,7 @@ import type {
 	ObjectStore_Options,
 	ContextReturn,
 	ContextValidate,
+	Store_Options,
 } from './types'
 
 /**
@@ -112,9 +113,9 @@ export function createObjectStore<
 ): IObjectStore<T, CacheDisabled>
 
 export function createObjectStore<
-	Context,
 	T extends object,
 	CacheDisabled extends boolean,
+	Context extends object,
 >(options?: null | ObjectStore_Options<T, CacheDisabled>, context?: Context) {
 	options = {
 		// only required for persistent store and can be overriden by options
@@ -131,7 +132,8 @@ export function createObjectStore<
 	} as ObjectStore_Options<T, CacheDisabled>
 
 	const store = createStore(
-		...([options, context] as unknown as Parameters<typeof createStore>),
+		options as Store_Options,
+		context as object,
 	) as unknown as IObjectStore<T, CacheDisabled>
 
 	store.type = 'object'

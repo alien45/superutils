@@ -39,7 +39,7 @@ async function getCoverageForPackage(pkgName) {
 
 		// Extract the 'lines' coverage percentage from the 'total' section
 		const linesPct = summary.total.lines.pct
-		console.log(`[SUCCESS] Coverage for ${pkgName}: ${Number(linesPct)}%`)
+		console.log(`[SUCCESS] Coverage for ${pkgName}: ${Number(linesPct) || 0}%`)
 		return Number(linesPct) || 0
 	} catch (error) {
 		console.error(`[ERROR] Failed to get coverage for ${pkgName}:`, error)

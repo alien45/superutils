@@ -272,7 +272,9 @@ export class Store<
 			throw new Error(Store.messages.invalidStorageOptions)
 
 		this.cacheDisabled = (!!storage && cacheDisabled) as CacheDisabled
-		this.delay = delay === 0 || isPositiveNumber(delay) ? delay : 300
+		this.delay = (
+			delay === 0 || isPositiveNumber(delay) ? delay : 300
+		) as This['delay']
 		this.delayOptions = delayOptions
 		this.onError = onError
 		this.onChange = onChange
