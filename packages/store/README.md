@@ -263,7 +263,7 @@ const userStore = createObjectStore(
   store => ({
     promoteToAdmin() {
       // Update properties with type safety
-      store.set('roles', roles => [...roles, 'admin'])
+      store.set('roles', (roles = []) => [...roles, 'admin'])
     },
   }),
 )
@@ -295,13 +295,13 @@ class ProductStore extends Store<number, Product, false> {
     super(name, { ...options, delay: 100 }) // Set a default delay for this store type
   }
 
-  getInStockProducts(limit?: number) {
-    return this.filter(product => product.inStock, limit)
+  getInStockProducts(limit?: number, asMap = false) {
+    return this.filter(product => product.inStock, limit, asMap)
   }
 }
 
 const products = new ProductStore('my-products')
 products.set(1, { id: 1, name: 'Laptop', price: 1200, inStock: true })
 products.set(2, { id: 2, name: 'Mouse', price: 25, inStock: false })
-console.log(products.getInStockProducts()) // Map { 1 => { id: 1, name: 'Laptop', price: 1200, inStock: true } }
+console.log(products.getInStockProducts()) // { id: 1, name: 'Laptop', price: 1200, inStock: true }
 ```
