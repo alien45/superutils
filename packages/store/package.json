@@ -2,7 +2,7 @@
 	"author": "Toufiqur Rahaman Chowdhury",
 	"description": "Generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities.",
 	"dependencies": {
-		"@superutils/core": "^1.2.21",
+		"@superutils/core": "^1.2.22",
 		"rxjs": "^7.8.2"
 	},
 	"exports": {
@@ -45,5 +45,5 @@
 	"sideEffects": false,
 	"type": "module",
 	"types": "./dist/index.d.ts",
-	"version": "0.1.18"
+	"version": "0.1.19"
 }
