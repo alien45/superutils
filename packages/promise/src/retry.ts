@@ -66,6 +66,41 @@ import { Promise, type RetryOptions } from './types'
  * If all retries fail (either by throwing an error or when `retryIf()` returned true in every time),
  * it resolves with the last return value of `func()`. Errors thrown by `func` are caught and handled internally,
  * only re-thrown if no result is received after maximum retries.
+ *
+ * @example
+ * #### Execute function and retry on failure
+ * ```javascript
+ * import { retry } from '@superutils/promise'
+ * let count = 0
+ * const getCount = async () => {
+ * 	if (++count < 5) throw new Error('Try again')
+ *
+ * 	return count
+ * }
+ *
+ * const result = await retry(
+ *   getCount,
+ *   { retry: 10 } // retry up to 10 times
+ * )
+ * // will succeed on 5th try
+ * console.log({ result })
+ * ```
+ *
+ * @example
+ * #### Execute function and retry with custom logic
+ * ```javascript
+ * import { retry } from '@superutils/promise'
+ *
+ * let count = 0
+ * const getCount = async () => ++count
+ *
+ * const result = await retry(getCount, {
+ * 	retry: 10,
+ * 	// Keep retrying until count is >= 8
+ * 	retryIf: (result = 0, _retryCount, error) => !!error || result < 8,
+ * })
+ * console.log({ result })
+ * ```
  */
 export const retry = <T>(
 	func: () => ValueOrPromise<T>,
@@ -144,7 +179,7 @@ export const retry = <T>(
 
 		return result as T
 	})
-	promise.onEarlyFinalize.push(() => {
+	promise.onFinalize.push(() => {
 		finalized = true
 	})
 	return promise

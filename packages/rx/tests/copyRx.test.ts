@@ -180,6 +180,25 @@ describe('copyObservable', () => {
 		sub.unsubscribe()
 	})
 
+	it('should skip emits', async () => {
+		const input$ = new BehaviorSubject(0)
+		const skipEmits = 2
+		const copy$ = copyRx(input$, null, { skipEmits: [skipEmits] })
+		const spy = vi.fn()
+		sub = copy$.subscribe(spy)
+
+		input$.next(1)
+		input$.next(2)
+		input$.next(3)
+
+		expect(spy).toHaveBeenCalledTimes(skipEmits + 1) // one additional emit for the initial value
+		expect(spy).toHaveBeenNthCalledWith(1, 0)
+		expect(spy).toHaveBeenNthCalledWith(2, 2)
+		expect(spy).toHaveBeenNthCalledWith(3, 3)
+
+		sub.unsubscribe()
+	})
+
 	describe('transform', () => {
 		it('should use `thisArg` when provided', () => {
 			let transformThis: string

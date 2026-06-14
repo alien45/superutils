@@ -14,15 +14,15 @@ For full API reference and example code playground check out the [docs page](htt
 
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
-  - [Map-Based Store](#map-store)
+  - [Map-Based Store](#map-based-store)
   - [Object-based Store](#object-based-store)
   - [Persistent Storage (NodeJS)](#persistent-storage-nodejs)
 - [Advanced Usage](#advanced-usage)
   - [Data Validation](#data-validation)
   - [Reactive Updates (RxJS & Callbacks)](#reactive-updates-rxjs--callbacks)
   - [Search and Filtering](#search-and-filtering)
-  - [Attaching Context (Business Logic)](#attaching-context-business-logic)
-  - [Object-based Store With Context](#object-based-store)
+  - [Attaching Business Logic: Store Augmentation](#attaching-business-logic-store-augmentation)
+  - [Object-based Store With Augmentation](#object-based-store-with-augmentation)
   - [OOP: Subclassing Store](#oop-subclassing-store)
 
 ## Installation
@@ -60,8 +60,9 @@ The `Store` class can be used just like a standard JavaScript `Map`, but with th
 ```javascript
 import { createStore } from '@superutils/store'
 
-// Initialize a store
-const userStorage = createStore('users') // or `createStore()` for in-memory store
+// Initialize the store that saves the stringified data to `localStorage.users` in the browser.
+// Bypassing the name or using `null` will create an in-memory store.
+const userStorage = createStore({ name: 'users' })
 
 // Set and get values
 userStorage.set('alice', { name: 'Alice', age: 30 })
@@ -80,7 +81,8 @@ console.log(userStorage.size) // 1
 ```javascript
 import { createObjectStore } from '@superutils/store'
 
-const userStore = createObjectStore('user-profile', {
+const userStore = createObjectStore({
+  name: 'user-profile',
   initialValue: {
     age: 25,
     name: 'Jane Doe',
@@ -107,13 +109,18 @@ globalThis.localStorage = new LocalStorage(
   1e7, // max file size
 )
 
-const storage = createStore('settings.json')
-storage.set('theme', 'dark') // Automatically saved to ./data/settings.json
+// Create a store that saves the data to ./data/settings.json
+// Bypassing the name or using `null` will create an in-memory store.
+const store = createStore({ name: 'settings.json' })
+store.set('theme', 'dark') // Automatically saved to ./data/settings.json
 
 /**
- * Alternatively, you can also provide a LocalStorage instance to each Store instance
+ * Alternatively, you can also provide a LocalStorage instance to each Store instance.
  */
-createStore('settings.json', { storage: new LocalStorage('./data', 1e7) })
+createStore({
+  name: 'settings.json',
+  storage: new LocalStorage('./data', 1e9),
+})
 ```
 
 ## Advanced Usage
@@ -122,29 +129,27 @@ createStore('settings.json', { storage: new LocalStorage('./data', 1e7) })
 
 To ensure data integrity, you can provide a `validate` object containing hooks for various operations (`set`, `setAll`, `delete`, `clear`, `write`). These hooks are executed immediately before the store's internal state is updated. If a validator throws an error, the operation is aborted.
 
-```javascript
+````javascript
 import { createObjectStore } from '@superutils/store'
-
-const settingsStore = createObjectStore('app-settings', {
+const settingsStore = createObjectStore({
+  name: 'app-settings',
   initialValue: {
     theme: 'light',
     version: '1.0.0',
   },
   validate: {
-    set: ([key, value]) => {
+    set([key, value]) {
+      console.log(this.size) // "this" refers to the store instance
       if (key !== 'theme' || ['light', 'dark', 'system'].includes(value)) return
-
       // throw error to abort operation
       throw new Error(`Invalid theme: ${value}`)
     },
     delete: ([keys]) => {
       if (!keys.includes('version')) return
-
       throw new Error('The "version" key is protected and cannot be deleted')
     },
   },
 })
-
 settingsStore.set('theme', 'system')
 console.log(settingsStore.get('theme')) // 'system
 try {
@@ -161,17 +166,18 @@ You can subscribe to changes using the internal RxJS Subject or a simple `onChan
 ```javascript
 import { createStore } from '@superutils/store'
 
-const storage = createStore('my-data', {
+const store = createStore({
+  name: 'my-data',
   onChange: data => console.log('Data changed!', data),
 })
 
 // Or use the RxJS subject directly
-const sub = storage.subject$.subscribe(data => {
+const sub = store.subject$.subscribe(data => {
   console.log('Reactive update:', data)
 })
 
-storage.set('key', 'value')
-```
+store.set('key', 'value')
+````
 
 ### Search and Filtering
 
@@ -180,8 +186,9 @@ storage.set('key', 'value')
 ```javascript
 import { createStore } from '@superutils/store'
 
-const storage = createStore('products', {
-  // Instantiate the storage with initial value
+const store = createStore({
+  name: 'products',
+  // Pre-populate the storage with sample data
   initialValue: new Map([
     [1, { id: 1, name: 'Laptop', category: 'electronics', price: 1000 }],
     [2, { id: 2, name: 'Chair', category: 'furniture', price: 150 }],
@@ -189,42 +196,50 @@ const storage = createStore('products', {
 })
 
 // Search for items using a query object
-const searchResult = storage.search({
+const searchResult = store.search({
   query: { category: 'electronics' },
 })
 console.log(searchResult) // [{ id: 1, name: 'Laptop', ... }]
 
 // Filter items using a predicate
-const expensiveItems = storage.filter(val => val.price > 500)
+const expensiveItems = store.filter(val => val.price > 500)
 ```
 
-### Attaching Context (Business Logic)
+### Attaching Business Logic: Store Augmentation
 
-Using `createStore`, you can attach custom business logic (context) to your store instance, allowing you to encapsulate operations without having to create a subclass.
+Using `createStore`, you can attach custom business logic to your store instance, allowing you to encapsulate operations without having to create a subclass.
 
 ```javascript
 import { createStore } from '@superutils/store'
 
-const authStore = createStore('auth', {
-  context: store => ({
-    isAuthenticated: () => store.has('token'),
-    login: async () => {
-      store.set('token', 'some-token')
-    },
-    logout: () => store.delete('token'),
-  }),
-  initialValue: new Map(),
+const getContext = store => ({
+  // Context can be an object or a function that returns an object store => ({
+  get isAuthenticated() {
+    return store.has('token')
+  },
+  login: async () => {
+    store.set('token', 'some-token')
+  },
+  logout: () => store.delete('token'),
 })
 
-// Access your custom logic via the .context property
-if (!authStore.context.isAuthenticated()) {
-  authStore.context.login().then(() => console.log('Logged in'))
+const authStore = createStore(
+  {
+    initialValue: new Map(),
+    name: 'auth',
+  },
+  getContext,
+)
+
+// Access your custom logic directly from the store instance
+if (!authStore.isAuthenticated) {
+  authStore.login().then(() => console.log('Logged in'))
 }
 ```
 
-### Object-based Store With Context
+### Object-based Store With Augmentation
 
-`createObjectStore` supports context the same way as `createStore`.
+`createObjectStore` supports augmentation the same way as `createStore`.
 
 ```typescript
 import { createObjectStore } from '@superutils/store'
@@ -236,21 +251,24 @@ type UserProfile = {
   roles: string[]
 }
 
-const userStore = createObjectStore('user-profile', {
-  initialValue: {
-    age: 25,
-    name: 'Jane Doe',
-    roles: ['guest'],
-  } as UserProfile,
-  context: store => ({
+const userStore = createObjectStore(
+  {
+    name: 'user-profile',
+    initialValue: {
+      age: 25,
+      name: 'Jane Doe',
+      roles: ['guest'],
+    } as UserProfile,
+  },
+  store => ({
     promoteToAdmin() {
       // Update properties with type safety
       store.set('roles', roles => [...roles, 'admin'])
     },
   }),
-})
+)
 
-userStore.context.promoteToAdmin()
+userStore.promoteToAdmin()
 console.log(userStore.get('roles')) // ['guest', 'admin']
 ```
 

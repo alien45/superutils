@@ -6,7 +6,6 @@ import {
 	SortOptions,
 	ThrottleOptions,
 } from '@superutils/core'
-import { IStore } from './IStore'
 
 /**
  * Represents the minimal subset of the `Storage` interface required for persistence.
@@ -53,48 +52,6 @@ export enum Store_OnErrorType {
 	/** Occurs when the attempt to save data to the underlying storage (e.g., `localStorage.setItem`) fails. */
 	write = 'write',
 }
-
-/**
- * Configuration options for initializing a {@link Store} or {@link ObjectStore}.
- *
- * These options define the behavior of caching, persistence, error handling, and validation.
- */
-export type Store_Options<Key, Value, CacheDisabled extends boolean = false> = {
-	/**
-	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
-	 *
-	 * **Data Precedence:**
-	 * Persistent data associated with the instance's specific `name` takes priority. This value is
-	 * only utilized if the storage entry for that `name` does not exist (e.g., first-time use).
-	 *
-	 * **Initialization Behavior:**
-	 * - If provided and non-empty, the instance initializes immediately during construction.
-	 * - Otherwise, initialization is lazy, occurring upon an explicit `init()` call or the first read/write operation.
-	 *
-	 * **Type Inference:**
-	 * When provided, it enables automatic inference of the `Key` and `Value` generic types.
-	 * If omitted, these default to `unknown` and `object` respectively, unless explicitly defined.
-	 *
-	 * Default: `undefined`
-	 */
-	initialValue?: Map<Key, Value>
-} & Pick<
-	Partial<IStore<Key, Value, CacheDisabled>>,
-	| 'cacheDisabled'
-	| 'onChange'
-	| 'onError'
-	| 'parse'
-	| 'spaces'
-	| 'storage'
-	| 'stringify'
-	| 'validate'
->
-	& (CacheDisabled extends false
-		? Pick<
-				Partial<IStore<Key, Value, CacheDisabled>>,
-				'delay' | 'delayOptions'
-			>
-		: { delay?: never; delayOptions?: never })
 
 /**
  * Function signature for custom data deserialization.

@@ -21,13 +21,15 @@ For full API reference and example code playground check out the [docs page](htt
     - [Status tracking](#status-tracking)
     - [Early Finalization](#early-finalization)
   - [`new PromisE(promise)`](#promise-status): Check status of an existing promise.
-  - [`PromisE.try()`](#static-methods): Static methods
+  - [`Static methods`](#static-methods)
   - [`PromisE.delay()`](#delay): Async delay
-  - [`PromisE.deferred()`](#deferred): Async debounced/throttled callback
+  - [`PromisE.deferred()`](#deferred): Async debounced/throttled execution
     - [Debounce Example](#debounce-example)
     - [Throttle Example](#throttle-example)
     - [Behavior with different `options`](#behavior-with-different-options)
+  - [`PromisE.deferredCallback()`](#deferredCallback): async debounced/throttled callbacks
   - [`PromisE.timeout()`](#timeout): Reject after timeout
+  - [`PromisE.retry()`](#retry): Retry on failure or condition
 
 ## Features
 
@@ -146,20 +148,6 @@ p.catch(error => {
 })
 ```
 
-<div id="promise-status"></div>
-
-### `new PromisE(promise)`: Check status of an existing promise.
-
-```javascript
-import PromisE from '@superutils/promise'
-
-const x = Promise.resolve(1)
-const p = new PromisE(x)
-console.log(p.pending) // false
-console.log(p.resolved) // true
-console.log(p.rejected) // false
-```
-
 <div id="delay"></div>
 
 ### `PromisE.delay(duration)`: Async delay
@@ -175,7 +163,7 @@ while (!appReady) {
 }
 ```
 
-#### `PromisE.delay(duration, callback, asRejected)`: execute after delay
+#### `PromisE.delay(duration, callback, asRejected)`: Execute after delay
 
 Creates a promise that executes a function after a specified duration and returns the value the function returns.
 
@@ -192,7 +180,7 @@ PromisE.delay(3000, onReady)
 
 <div id="deferred"></div>
 
-### `PromisE.deferred(options)`: async debounced/throttled execution
+### `PromisE.deferred(options)`: Async debounced/throttled execution
 
 Create a function that debounces or throttles promise-returning function calls. This is useful for scenarios like auto-saving user input or preventing multiple rapid API calls.
 
@@ -331,4 +319,28 @@ const loadUserNProducts = async () => {
   return [user, products]
 }
 loadUserNProducts().catch(console.warn)
+```
+
+<div id="retry"></div>
+
+### `PromisE.retry()`: Retry on failure or condition
+
+Executes a function asynchronously and retries it on failure or until a specific condition is met.
+
+```javascript
+import { retry } from '@superutils/promise'
+
+let count = 0
+const getCount = () => ++count
+
+const result = await retry(getCount, {
+  retry: 10,
+  retryBackOff: 'exponential', // each subsequent retry delay will be doubled from the last
+  retryDelay: 300, //  base delay between retries
+  retryDelayJitter: true, // adds additional random delay between retries
+  retryDelayJitterMax: 100, // maximum random delay between retries
+  // Keep retrying until count is >= 8
+  retryIf: (result = 0, _retryCount, error) => !!error || result < 8,
+})
+console.log({ result })
 ```

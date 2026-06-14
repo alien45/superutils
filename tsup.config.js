@@ -6,9 +6,10 @@ export default defineConfig((options = {}) => {
 	const cwd = process.cwd()
 	let pkgName = path.basename(cwd).replaceAll('-', '_')
 	if (pkgName === 'promise') pkgName = 'PromisE'
-
+	options.esbuildOptions
 	return [
-		{ // standard ESM build (unminified)
+		{
+			// standard ESM build (unminified)
 			clean: true,
 			dts: true,
 			entry: ['src/index.ts'],
@@ -17,15 +18,15 @@ export default defineConfig((options = {}) => {
 			outDir: 'dist',
 		},
 
-		pkgName !== 'demo' && { // minified solo build with no external depencencies, suitable for browsers
+		pkgName !== 'demo' && {
+			// minified solo build with no external depencencies, suitable for browsers
 			clean: true,
 			dts: false,
 			format: ['iife'],
 			entry: [
 				fs.existsSync(path.join(cwd, 'src/browser.ts'))
 					? 'src/browser.ts'
-					: 'src/index.ts'
-
+					: 'src/index.ts',
 			],
 			esbuildOptions: (options, context) => {
 				// This forces the output filename and avoids tsup's default naming.

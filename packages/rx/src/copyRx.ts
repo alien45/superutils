@@ -147,7 +147,7 @@ export function copyRx<
 	ThisArg = unknown,
 >(
 	source$: Source$,
-	transform?: CopyRx_Transform<TIn, TOut, ThisArg> | null,
+	transform?: null | CopyRx_Transform<TIn, TOut, ThisArg>,
 	options?: CopyRx_Options<TOut, ThisArg>,
 ): Copy$
 

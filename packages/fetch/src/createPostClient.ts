@@ -101,6 +101,7 @@ export const createPostClient = <
 		if (!headers.get('content-type')) {
 			headers.set('content-type', ContentType.APPLICATION_JSON)
 		}
+
 		return fetch(url, mergedOptions)
 	}
 
@@ -158,8 +159,9 @@ export const createPostClient = <
 			mergedOptions.method ??= 'post'
 
 			const headers = mergedOptions.headers as Headers
-			!headers.get('content-type')
-				&& headers.set('content-type', ContentType.APPLICATION_JSON)
+			if (!headers.get('content-type')) {
+				headers.set('content-type', ContentType.APPLICATION_JSON)
+			}
 			return fetch(args[0] as PostArgs[0], mergedOptions)
 		}
 

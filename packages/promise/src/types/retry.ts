@@ -2,7 +2,7 @@ import { ValueOrPromise } from '@superutils/core'
 
 /** Function to determine whether retry should be attempted based on previous result/error */
 export type RetryIfFunc<T = unknown> = (
-	prevResult: T | undefined,
+	result: T | undefined,
 	retryCount: number,
 	error?: unknown,
 ) => ValueOrPromise<boolean | void>

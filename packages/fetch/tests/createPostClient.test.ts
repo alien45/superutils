@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fetch, {
+	ContentType,
 	createPostClient,
 	FetchArgs,
 	FetchAs,
@@ -39,13 +40,13 @@ describe('createPostClient', () => {
 			},
 			{
 				method: 'POST' as any, // this should be ignored
+				headers: {
+					'content-type': ContentType.TEXT_PLAIN,
+				},
 			},
 		)
 		const promise = client<ResultType>(product1Url, {
-			method: 'PUT' as any, // this should be ignored
-			headers: {
-				'x-custom-header': 'custom-value',
-			},
+			method: 'PUT', // this should be ignored
 		})
 		await vi.runAllTimersAsync()
 		const {
@@ -53,6 +54,9 @@ describe('createPostClient', () => {
 		} = await promise
 		expect(url).toBe(product1Url)
 		expect(options.method).toBe('patch')
+		expect(new Headers(options.headers).get('content-type')).toBe(
+			ContentType.TEXT_PLAIN,
+		)
 	})
 
 	it('should create a new deferred post client', async () => {
@@ -66,7 +70,12 @@ describe('createPostClient', () => {
 			},
 			product1Url,
 			undefined,
-			{ method: 'patch' as any },
+			{
+				method: 'patch' as any,
+				headers: {
+					'content-type': ContentType.TEXT_PLAIN,
+				},
+			},
 		)
 		const promise = deferredClient<ResultType>(undefined, {
 			body: { data: 'test' },
@@ -77,6 +86,9 @@ describe('createPostClient', () => {
 		} = await promise
 		expect(url).toBe(product1Url)
 		expect(options.method).toBe('post')
+		expect(new Headers(options.headers).get('content-type')).toBe(
+			ContentType.TEXT_PLAIN,
+		)
 	})
 
 	it('should allow setting options.body instead of using the data argument', async () => {
@@ -90,6 +102,18 @@ describe('createPostClient', () => {
 		} = await promsie
 		expect(url).toBe(product1Url)
 		expect(options.body).toBe('body')
+	})
+
+	it('should throw error when body() fails to execute', async () => {
+		const client = createPostClient()
+		const bodyFn = () => {
+			throw new Error('body error')
+		}
+		await client<ResultType>(product1Url, bodyFn).catch(err => {
+			expect(err.message).toBe(
+				'Failed to execute body() function. body error',
+			)
+		})
 	})
 
 	it('should correctly handle `debounce+leading` post calls', async () => {

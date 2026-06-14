@@ -24,7 +24,7 @@ describe('createStore', () => {
 
 	it('should create a store with context object', () => {
 		const before = new Date()
-		const store = createStore(null, {
+		const store = createStore(undefined, {
 			context: {
 				updatedTs: null as Date | null,
 				getUser(id: string): User {
@@ -54,6 +54,43 @@ describe('createStore', () => {
 		)
 	})
 
+	it('should accept class instance as context', () => {
+		class Ctx {
+			// direct variables and function-variables will work
+			private _count = 0
+			increment = () => {
+				this._count++
+			}
+
+			// getters and methods will not work
+			get count() {
+				return this._count
+			}
+			getCount() {
+				return this._count
+			}
+		}
+		const store = createStore({ name: 'test getter' }, new Ctx())
+		expect(store.count).toBe(0)
+		expect(store.getCount?.()).toBe(0)
+
+		expect((store as any)._count).toBe(0)
+		store.increment()
+		expect((store as any)._count).toBe(1)
+	})
+
+	it('should ignore store property names being provided as context', () => {
+		const store = createStore(null, {
+			get: 1,
+			storage: 'test',
+		} as any)
+		expect(store.get).not.toBe(1 as any)
+		expect(store.get).instanceOf(Function)
+
+		expect(store.storage).not.toBe('test')
+		expect(store.storage).toBe(undefined)
+	})
+
 	it('should create a store with context function', () => {
 		const before = new Date()
 		const context = (store: IStore<any, any>) => ({
@@ -69,25 +106,25 @@ describe('createStore', () => {
 				return user
 			},
 		})
-		const store = createStore(null, {
+		const store = createStore(
+			{
+				initialValue: new Map<String, User>(),
+			},
 			context,
-			initialValue: new Map<String, User>(),
-		})
+		)
 
-		const user = store.context.getUser('1')
+		const user = store.getUser('1')
 		const after = new Date()
 		expect(user).toEqual({
 			id: '1',
 			name: 'Bob',
 			age: 22,
 		})
-		expect(store.context.updatedTs).toBeInstanceOf(Date)
-		expect(store.context.updatedTs?.getTime()).toBeGreaterThanOrEqual(
+		expect(store.updatedTs).toBeInstanceOf(Date)
+		expect(store.updatedTs?.getTime()).toBeGreaterThanOrEqual(
 			before.getTime(),
 		)
-		expect(store.context.updatedTs?.getTime()).toBeLessThanOrEqual(
-			after.getTime(),
-		)
+		expect(store.updatedTs?.getTime()).toBeLessThanOrEqual(after.getTime())
 
 		expect(store.get('1')).toEqual({
 			id: '1',
@@ -97,8 +134,11 @@ describe('createStore', () => {
 	})
 
 	it('should create an in-memory store', () => {
-		const store = createStore({
-			context: store => ({
+		const store = createStore(
+			{
+				initialValue: new Map<String, User>(),
+			},
+			store => ({
 				user: null as User | null,
 				getUser(id: string): User {
 					const user: User = {
@@ -111,11 +151,10 @@ describe('createStore', () => {
 					return user
 				},
 			}),
-			initialValue: new Map<String, User>(),
-		})
+		)
 
-		store.context.getUser('bob')
-		expect(store.context.user?.name).toEqual('bob')
+		store.getUser('bob')
+		expect(store.user?.name).toEqual('bob')
 		expect(store.get('bob')?.name).toBe('bob')
 
 		expect(store.storage).toBe(undefined)

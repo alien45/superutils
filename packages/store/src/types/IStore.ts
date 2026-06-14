@@ -7,8 +7,7 @@ import {
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
-import { Store_Validate } from './validate'
-import {
+import type {
 	StorageCompact,
 	Store_DelayOptions,
 	Store_OnErrorType,
@@ -17,6 +16,55 @@ import {
 	Store_Stringify,
 	Store_ToJSON,
 } from './types'
+
+/** Store properties accepted in {@link Store_Options} */
+export type Store_OptionKeys =
+	| 'cacheDisabled'
+	| 'delay'
+	| 'delayOptions'
+	| 'name'
+	| 'onChange'
+	| 'onError'
+	| 'parse'
+	| 'spaces'
+	| 'storage'
+	| 'stringify'
+	| 'validate'
+/**
+ * Configuration options for initializing {@link IStore} instances.
+ *
+ * These options define the behavior of caching, persistence, error handling, and validation.
+ */
+export type Store_Options<
+	Key = unknown,
+	Value = unknown,
+	CacheDisabled extends boolean = false,
+> = {
+	/**
+	 * An optional `Map` used to seed the storage if no persistent data is found for the instance.
+	 *
+	 * **Data Precedence:**
+	 * Persistent data associated with the instance's specific `name` takes priority. This value is
+	 * only utilized if the storage entry for that `name` does not exist (e.g., first-time use).
+	 *
+	 * **Initialization Behavior:**
+	 * - If provided and non-empty, the instance initializes immediately during construction.
+	 * - Otherwise, initialization is lazy, occurring upon an explicit `init()` call or the first read/write operation.
+	 *
+	 * **Type Inference:**
+	 * When provided, it enables automatic inference of the `Key` and `Value` generic types.
+	 * If omitted, these default to `unknown` and `object` respectively, unless explicitly defined.
+	 *
+	 * Default: `undefined`
+	 */
+	initialValue?: Map<Key, Value>
+} & Pick<Partial<IStore<Key, Value, CacheDisabled>>, Store_OptionKeys>
+	& (CacheDisabled extends false
+		? Pick<
+				Partial<IStore<Key, Value, CacheDisabled>>,
+				'delay' | 'delayOptions'
+			>
+		: { delay?: never; delayOptions?: never })
 
 /**
  * Represents a generic, reactive, and persistent Map-like data store.
@@ -33,9 +81,9 @@ import {
  * @template CacheDisabled - A boolean flag; if `true`, the store operates without an in-memory cache,
  * reading and writing directly to the underlying storage on every operation.
  */
-export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
+export interface IStore<Key, Value, CD extends boolean = false> {
 	/** Disable in-memory cache and only directly read/write from storage (local storage or JSON fle) */
-	readonly cacheDisabled: CacheDisabled
+	readonly cacheDisabled: CD
 
 	/**
 	 * Debounce/throttle delay duration in milliseconds for writing to storage when caching is enabled.
@@ -73,7 +121,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * firing once {@link unsubscribe} is called.
 	 */
 	onChange?: (
-		this: IStore<Key, Value, CacheDisabled>,
+		this: IStore<Key, Value, CD>,
 		data: Map<Key, Value>,
 	) => ValueOrPromise<void | Map<Key, Value>>
 
@@ -89,7 +137,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * ignored gracefully to prevent application crashes during storage cycles.
 	 */
 	onError?: (
-		this: IStore<Key, Value, CacheDisabled>,
+		this: IStore<Key, Value, CD>,
 		err: unknown,
 		type: Store_OnErrorType,
 	) => ValueOrPromise<void>
@@ -110,7 +158,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
 	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link Store_OnErrorType.parse_json}.
 	 */
-	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CacheDisabled>>
+	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CD>>
 
 	/** Get the number of items */
 	readonly size: number
@@ -177,10 +225,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * const storage = new Store('users', { stringify })
 	 * ```
 	 */
-	stringify?: Store_Stringify<
-		Map<Key, Value>,
-		IStore<Key, Value, CacheDisabled>
-	>
+	stringify?: Store_Stringify<Map<Key, Value>, IStore<Key, Value, CD>>
 
 	/**
 	 * Indicates type of data parsed as
@@ -189,10 +234,8 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 */
 	type: string
 
-	validate?: Store_Validate<Key, Value, CacheDisabled>
-
 	/**
-	 * The underlying RxJS Subject that serves as the primary reactive interface for observing data modifications.
+	 * The underlying RxJS subject that serves as the primary reactive interface for observing data modifications.
 	 *
 	 * Its implementation type is determined by the caching strategy:
 	 * - **BehaviorSubject**: Used when caching is enabled.
@@ -200,15 +243,15 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - **Subject**: Used when caching is disabled.
 	 * It acts as a pure event pipe, emitting updates only at the moment they occur without retaining an in-memory copy.
 	 */
-	readonly subject$: CacheDisabled extends true
+	readonly subject$: CD extends true
 		? Subject<Map<Key, Value>>
 		: BehaviorSubject<Map<Key, Value>>
 
 	/** Clear all items */
-	readonly clear: () => IStore<Key, Value, CacheDisabled>
+	readonly clear: () => IStore<Key, Value, CD>
 
 	/** Delete one or more items by their respective keys */
-	readonly delete: (key: Key | Key[]) => IStore<Key, Value, CacheDisabled>
+	readonly delete: (key: Key | Key[]) => IStore<Key, Value, CD>
 
 	/** Filter items by predicate */
 	readonly filter: <AsArray extends boolean = false>(
@@ -219,7 +262,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	readonly find: <IncludeKey extends boolean = false>(
 		predicateOrOptions:
 			| FindOptions<Key, Value, IncludeKey>
-			| Parameters<IStore<Key, Value, CacheDisabled>['filter']>[0],
+			| Parameters<IStore<Key, Value, CD>['filter']>[0],
 	) => ReturnType<typeof find<Key, Value, IncludeKey>>
 
 	/** Get item by key */
@@ -330,7 +373,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	readonly set: (
 		key: Key,
 		value: Value | ((currentValue?: Value) => Value),
-	) => IStore<Key, Value, CacheDisabled>
+	) => IStore<Key, Value, CD>
 
 	/**
 	 * Set multiple entries at once and/or replace the storage entries
@@ -345,7 +388,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	readonly setAll: (
 		data?: Map<Key, Value>,
 		replace?: boolean,
-	) => IStore<Key, Value, CacheDisabled>
+	) => IStore<Key, Value, CD>
 
 	/**
 	 * Sort items in the storage.
@@ -394,5 +437,5 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - If not provided, the current in-memory data is used (if cache is enabled).
 	 * @returns `true` if the write was successful, `false` otherwise.
 	 */
-	readonly write: (data?: Map<Key, Value>) => void
+	readonly write: (data?: Map<Key, Value>) => boolean
 }

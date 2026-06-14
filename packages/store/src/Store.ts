@@ -98,16 +98,15 @@ export const forceUpdateCache$ = new Subject<string | string[] | boolean>()
  *   reference their return types and other method signatures through the interface definition.
  *
  * @see {@link forceUpdateCache$} for cache invalidation across instances.
- * @see {@link Store.fromObject} for object-oriented storage initialization.
  *
  * @example
  * #### Browser Usage 1: use like a map
  * ```javascript
  * import { Store } from '@superutils/store'
  *
- * const userStorage = new Store('users')
- * userStorage.set(1, { name: 'Alice', age: 30 })
- * const user = userStorage.get(1)
+ * const userStore = new Store('users')
+ * userStore.set(1, { name: 'Alice', age: 30 })
+ * const user = userStore.get(1)
  * console.log(user) // prints: {name: 'Alice', age: 30}
  * ```
  *
@@ -249,9 +248,9 @@ export class Store<
 
 	constructor(
 		name?: This['name'],
-		options?: Store_Options<Key, Value, CacheDisabled>,
+		options?: Store_Options<Key, Value, CacheDisabled> | null,
 	) {
-		this.name = `${name ?? ''}`.trim() || null
+		this.name = `${name ?? options?.name ?? ''}`.trim() || null
 		const {
 			cacheDisabled = false as CacheDisabled,
 			delay,
@@ -262,7 +261,7 @@ export class Store<
 			parse,
 			spaces,
 			storage = fallbackIfFails(
-				() => (!name ? undefined : globalThis.localStorage),
+				() => (!this.name ? undefined : globalThis.localStorage),
 				[],
 				undefined,
 			),
@@ -377,7 +376,11 @@ export class Store<
 		if (!isMap(data)) return this.subject$.next(new Map())
 
 		// write quietly
-		fallbackIfFails(this.write, [data], null)
+		fallbackIfFails(
+			this.write,
+			[data],
+			this.triggerOnErrorCb(Store_OnErrorType.write),
+		)
 
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,
