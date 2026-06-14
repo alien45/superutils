@@ -65,10 +65,9 @@ export type ObjectStore_Options<
 	 * Default: `undefined`
 	 */
 	initialValue?: T
-} & Pick<Partial<IObjectStore<T, CacheDisabled>>, Store_OptionKeys>
-	& (CacheDisabled extends false
-		? Pick<
-				Partial<IObjectStore<T, CacheDisabled>>,
-				'delay' | 'delayOptions'
-			>
-		: { delay?: never; delayOptions?: never })
+} & Partial<
+	Pick<IObjectStore<T, CacheDisabled>, Store_OptionKeys>
+		& (CacheDisabled extends false
+			? Pick<IObjectStore<T, CacheDisabled>, 'delay' | 'delayOptions'>
+			: { delay?: never; delayOptions?: never })
+>

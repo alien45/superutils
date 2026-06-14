@@ -1,6 +1,11 @@
 import { isFn, isObj } from '@superutils/core'
 import Store from './Store'
-import { Store_Options, ContextValidate, IStore, ContextReturn } from './types'
+import type {
+	Store_Options,
+	ContextValidate,
+	IStore,
+	ContextReturn,
+} from './types'
 
 const isStoreKey = <S extends object>(store: S, key: unknown) =>
 	OPTIONAL_STORE_PROPS.includes(key as (typeof OPTIONAL_STORE_PROPS)[number])
