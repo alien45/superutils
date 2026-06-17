@@ -2,7 +2,7 @@ import { IStore } from './IStore'
 
 // Augment validate object into IStore interface
 declare module './IStore' {
-	interface IStore<Key, Value, CD extends boolean = false> {
+	interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 		/**
 		 * A configuration object containing optional validation hooks for specific store operations.
 		 *
@@ -53,7 +53,7 @@ declare module './IStore' {
 		 * }
 		 * ```
 		 */
-		validate?: Store_Validate<Key, Value, CD>
+		validate?: Store_Validate<Key, Value, CacheDisabled>
 	}
 }
 

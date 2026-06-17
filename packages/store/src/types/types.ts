@@ -100,7 +100,8 @@ export type Store_SortByComparator<K, V> = [
 	comparator: Parameters<typeof sort<K, V>>[1],
 	options?: Store_SortOptions,
 ]
-export type Store_SortByKey = [byKey: true, options?: Store_SortOptions]
+/** Sort parameters for sorting by map key */
+export type Store_SortByKey = [byMapKey: true, options?: Store_SortOptions]
 export type Store_SortByPropertyName<V> = [
 	propertyName: keyof V & string,
 	options?: Store_SortOptions,
@@ -113,12 +114,45 @@ export type Store_SortOptions = SortOptions & { save?: boolean }
  * Function signature for custom data serialization.
  *
  * @param data The current data structure to be serialized.
+ *
  * @returns A string representation of the data, or `void/undefined` to trigger fallback behavior.
  */
-export type Store_Stringify<Data, ThisArg> = (
+export type Store_Stringify<T, ThisArg> = (
 	this: ThisArg,
-	data: Data,
+	data: T,
 ) => string | undefined | void
+
+/**
+ * Function signature for converting store data to an array format.
+ *
+ * @template Key - The type of keys in the store.
+ * @template Value - The type of values in the store.
+ * @template Mode - Determines the structure of the resulting array.
+ *
+ * @param mode - (optional) The desired array format.
+ * Default: `'entries'`
+ * @param data - (optional) data to convert to array.
+ * Default: `store.getAll()`
+ *
+ * @returns An array of entries, keys, or values based on the selected mode.
+ */
+export type Store_ToArray<Key, Value> = (
+	mode?: 'entries' | 'keys' | 'values',
+	data?: Map<Key, Value>,
+) => typeof mode extends 'keys'
+	? Key[]
+	: typeof mode extends 'values'
+		? Value[]
+		: [Key, Value][] // entries
+
+/**
+ * Specifies the content of the array returned by the `toArray` method.
+ *
+ * - `'entries'`: Returns an array of `[Key, Value]` pairs (2D Array).
+ * - `'keys'`: Returns an array containing only the keys.
+ * - `'values'`: Returns an array containing only the values.
+ */
+export type Store_ToArrayMode = 'entries' | 'keys' | 'values'
 
 /**
  * Function signature for exporting the store content as a JSON string.
@@ -127,11 +161,27 @@ export type Store_Stringify<Data, ThisArg> = (
  * @param spacing - Indentation or whitespace formatting.
  * @param data - The specific Map to stringify (defaults to all entries).
  *
- * @template K - The type of keys.
- * @template V - The type of values.
+ * @template Key - The type of keys.
+ * @template Value - The type of values.
+ *
+ * @returns JSON string or undefined (when stringification fails)
  */
-export type Store_ToJSON<K, V> = (
-	replacer?: null | ((key: K, value: V) => unknown),
-	spacing?: string | number,
-	data?: Map<K, V>,
-) => string
+export type Store_ToJSON<Key, Value> = (
+	replacer?: null | ((key: Key, value: Value) => unknown),
+	spaces?: number,
+	data?: null | Map<Key, Value>,
+) => string | undefined
+
+export type ObjectStore_ToJSON<Key, Value> = (
+	replacer?: null | ((key: Key, value: Value) => unknown) | Key[],
+	spaces?: number,
+	data?: null | Map<Key, Value>,
+) => string | undefined
+
+/**
+ * Defines the primary data representation used for persistence and internal serialization logic.
+ *
+ * - `'map'`: Data is handled and stored as a collection of entries (2D Array).
+ * - `'object'`: Data is handled and stored as a plain JavaScript object.
+ */
+export type Store_Type = 'map' | 'object'

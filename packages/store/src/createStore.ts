@@ -2,9 +2,9 @@ import { isFn, isObj } from '@superutils/core'
 import Store from './Store'
 import type {
 	Store_Options,
-	ContextValidate,
+	Store_ContextValidate,
 	IStore,
-	ContextReturn,
+	Store_ContextReturn,
 } from './types'
 
 const isStoreKey = <S extends object>(store: S, key: unknown) =>
@@ -154,8 +154,8 @@ export function createStore<
 >(
 	options: undefined | null | Store_Options<Key, Value, CacheDisabled>,
 	context: Context
-		& ContextValidate<Context, IStore<Key, Value, CacheDisabled>>,
-): IStore<Key, Value, CacheDisabled> & ContextReturn<Context>
+		& Store_ContextValidate<Context, IStore<Key, Value, CacheDisabled>>,
+): IStore<Key, Value, CacheDisabled> & Store_ContextReturn<Context>
 
 // without context
 export function createStore<Key, Value, CacheDisabled extends boolean = false>(
@@ -166,7 +166,7 @@ export function createStore<Context, Key, Value, CacheDisabled extends boolean>(
 	options?: null | Store_Options<Key, Value, CacheDisabled>,
 	context?: Context,
 ) {
-	const store = new Store(options?.name, options)
+	const store = new Store(options?.name, options || undefined)
 	const _context = isFn(context) ? (context(store) as object) : context
 
 	if (!isObj(_context, false)) return store

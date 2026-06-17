@@ -1,21 +1,15 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
-import { createObjectStore, IObjectStore, Store } from '../src'
+import { createObjectStore, IObjectStore, Store, TEXTS } from '../src'
 import MockLocalStorage from './MockLocalStorage.ts'
+import { isArr2D } from '@superutils/core'
 
 describe('createObjectStore', () => {
 	let mockedStorage: MockLocalStorage
 	const noDelay = 0 // keep 0 to write immediately and keep testing simpler
-	const name = 'test'
-	type Key = string
-	type Value = { value: number }
-	const key: Key = 'key'
-	const value: Value = { value: 1 }
-	const entries = [[key, value]] as [Key, Value][]
-	let initialValue: Map<Key, Value>
+	const name = 'createObjectStore'
 	type User = { id: string; name: string; age: number }
 
 	beforeEach(() => {
-		initialValue = new Map<Key, Value>(entries)
 		mockedStorage = new MockLocalStorage()
 		vi.stubGlobal('localStorage', mockedStorage)
 	})
@@ -67,27 +61,29 @@ describe('createObjectStore', () => {
 			onError: vi.fn(),
 			name,
 		})
-		const mapStore = new Store(name, {
-			delay: noDelay,
-			initialValue,
-			onError: vi.fn(),
-		})
-		expect(mapStore.onError).toHaveBeenCalledTimes(1)
-		expect(objStore.onError).toHaveBeenCalledTimes(0)
+		expect(objStore.onError).toHaveBeenCalledTimes(0) // correct value type => no error
+		expect(
+			() =>
+				// incorrect value type => throws error
+				new Store(name, {
+					delay: noDelay,
+					initialValue: new Map([['count', 0]]),
+				}),
+		).toThrow(TEXTS.invalidJsonEntries)
 	})
 
 	it('should invoke `value` callback on object storage instance.set()', () => {
 		let count = 0
 		const valueCallback = vi.fn(() => ++count)
-		const objStore = createObjectStore<{ [key]: number }>({
+		const objStore = createObjectStore<{ count: number }>({
 			delay: noDelay,
-			initialValue: { [key]: 0 },
+			initialValue: { count: 0 },
 			name,
 		})
 
-		objStore.set(key, valueCallback)
+		objStore.set('count', valueCallback)
 		expect(valueCallback).toHaveBeenCalledExactlyOnceWith(0)
-		expect(objStore.get(key)).toEqual(count)
+		expect(objStore.get('count')).toEqual(count)
 	})
 
 	it('should create an in-memory store', () => {
@@ -123,7 +119,7 @@ describe('createObjectStore', () => {
 		expect(mockedStorage.setItem).not.toHaveBeenCalled()
 	})
 
-	it('should conver object to map', () => {
+	it('should convert object to map', () => {
 		const store = createObjectStore({
 			delay: noDelay,
 			initialValue: {
@@ -143,5 +139,58 @@ describe('createObjectStore', () => {
 				['b', 2],
 			]),
 		)
+	})
+
+	it('should stringify with spaces', () => {
+		const initialValue = {
+			a: 0,
+			b: 0,
+		}
+		createObjectStore({
+			delay: noDelay,
+			initialValue,
+			name,
+			spaces: 2,
+		})
+
+		expect(mockedStorage.getItem(name)).toBe(
+			JSON.stringify(initialValue, null, 2),
+		)
+	})
+
+	it('should parse existing value as object', () => {
+		const name = 'createObjectStore'
+		mockedStorage.setItem(name, JSON.stringify({ a: 1, b: 2 }))
+
+		const objStore = createObjectStore({
+			delay: noDelay,
+			name,
+			initialValue: { a: 0, b: 0 },
+		})
+		expect(objStore.get('a')).toBe(1)
+		expect(objStore.get('b')).toBe(2)
+		expect(objStore.getAll().size).toBe(2)
+	})
+
+	it('should invoke onError when parsig existing value as object fails', () => {
+		const name = 'createObjectStore'
+		new Store(name, {
+			delay: noDelay,
+			initialValue: new Map([
+				['a', 1],
+				['b', 2],
+			]),
+		})
+
+		const onError = vi.fn()
+		expect(() =>
+			createObjectStore({
+				delay: noDelay,
+				name,
+				initialValue: { a: 0, b: 0 },
+				onError,
+			}),
+		).toThrow(TEXTS.invalidJsonObject)
+		expect(onError).toHaveBeenCalledTimes(1)
 	})
 })

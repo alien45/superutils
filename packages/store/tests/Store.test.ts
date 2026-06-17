@@ -38,8 +38,7 @@ describe('Store', () => {
 		})
 
 		it('should convert all items to an array', () => {
-			const arr = new Store(null, { initialValue }).toArray()
-			expect(arr).toEqual(entries)
+			expect(new Store(null, { initialValue }).entries()).toEqual(entries)
 		})
 
 		it('should convert all items to a string', () => {
@@ -143,7 +142,7 @@ describe('Store', () => {
 			const storage = new Store(null, { delay: noDelay })
 			storage.set(key, value)
 			expect(storage.subject$).instanceOf(Subject)
-			expect(storage.toArray()).toEqual(entries)
+			expect(storage.entries()).toEqual(entries)
 			expect(mockedStorage.getItem).not.toHaveBeenCalled()
 			expect(mockedStorage.setItem).not.toHaveBeenCalled()
 		})
@@ -156,7 +155,7 @@ describe('Store', () => {
 			storage.set(key, value)
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(1)
-			expect(storage.toArray()).toEqual(entries)
+			expect(storage.entries()).toEqual(entries)
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(2)
 			storage.set('key2', { value: 2 })
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(2)
@@ -241,11 +240,45 @@ describe('Store', () => {
 			expect(storage.toObject(null as any)).toEqual({})
 		})
 
-		it('should unsubscribe all internal subscriptions', () => {
+		it('should unsubscribe all internal subscriptions and stop auto-writing to underlying storage when delay is greater than 0', () => {
+			vi.useFakeTimers()
 			const initialValue = new Map(entries)
 			const onChange = vi.fn()
 			const storage = new Store('unsubscribe', {
-				delay: noDelay,
+				delay: 100,
+				initialValue,
+				onChange,
+			})
+			expect(storage.initialized).toBe(true)
+			storage.unsubscribe()
+
+			vi.advanceTimersByTime(100)
+			storage.set('keyx', { value: 2 })
+			const newEntries = [...entries, ['keyx', { value: 2 }]]
+			expect(storage.entries()).toEqual(newEntries)
+			expect(mockedStorage.getItem(storage.name!)).toEqual(
+				JSON.stringify(entries),
+			)
+
+			vi.advanceTimersByTime(300)
+			// making sure
+			expect(mockedStorage.getItem(storage.name!)).not.toEqual(
+				JSON.stringify(newEntries),
+			)
+			// write manually
+			storage.write()
+			expect(mockedStorage.getItem(storage.name!)).toEqual(
+				JSON.stringify(newEntries),
+			)
+
+			vi.useRealTimers()
+		})
+
+		it('should unsubscribe all internal subscriptions and continue as normal when delay is 0', () => {
+			const initialValue = new Map(entries)
+			const onChange = vi.fn()
+			const storage = new Store('unsubscribe', {
+				delay: 0,
 				initialValue,
 				onChange,
 			})
@@ -254,13 +287,7 @@ describe('Store', () => {
 
 			storage.set('keyx', { value: 2 })
 			const newEntries = [...entries, ['keyx', { value: 2 }]]
-			expect(storage.toArray()).toEqual(newEntries)
-			expect(mockedStorage.getItem(storage.name!)).toEqual(
-				JSON.stringify(entries),
-			)
-
-			// write manually
-			storage.write()
+			expect(storage.entries()).toEqual(newEntries)
 			expect(mockedStorage.getItem(storage.name!)).toEqual(
 				JSON.stringify(newEntries),
 			)
@@ -293,16 +320,22 @@ describe('Store', () => {
 		})
 
 		it('should write to storage immediately when delay is 0', async () => {
-			const storage = new Store(name, {
-				delay: noDelay,
+			const name = 'delay0'
+			const store = new Store(name, {
+				delay: 0,
 				initialValue,
+				storage: new MockLocalStorage(),
 			})
-			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
+			store.init()
+			expect(store.storage?.setItem).toHaveBeenCalledTimes(2)
 
-			storage.set('key', { value: 2 })
-			expect(mockedStorage.setItem).toHaveBeenCalledTimes(2)
+			// store.set('key', { value: 2 })
+			store.setAll(new Map([['key', { value: 2 }]]))
+			expect(store.storage?.setItem).toHaveBeenCalledTimes(4)
+			expect(store.get('key')).toEqual({ value: 2 })
 
-			expect(storage.get('key')).toEqual({ value: 2 })
+			store.set('key', { value: 3 })
+			expect(store.storage?.setItem).toHaveBeenCalledTimes(6)
 		})
 
 		it('should write to storage each time data changes when cache is disabled', () => {
@@ -338,7 +371,7 @@ describe('Store', () => {
 				expectedEntries.push([key, value])
 			}
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(0)
-			vi.advanceTimersByTime(storage.delay)
+			vi.advanceTimersByTime(storage.delay + 100)
 			expect(mockedStorage.setItem).toHaveBeenCalledTimes(1)
 			expect(mockedStorage.getItem).toHaveBeenCalledTimes(1)
 			const entries = mockedStorage.getItem(name) || '[]'
@@ -350,23 +383,24 @@ describe('Store', () => {
 		it('should invoke "onError" callback', () => {
 			mockedStorage = new MockLocalStorage()
 			mockedStorage.getItem = (() => 'malformed JSON') as any
-			vi.stubGlobal('localStorage', mockedStorage)
 
 			let thisArg: Store<Key, Value, true>
 			const onError = vi.fn(function (this: typeof thisArg) {
 				thisArg ??= this
 			})
-			const storage = new Store(name, {
-				cacheDisabled: true,
-				initialValue,
-				onError,
-				storage: mockedStorage,
-			})
+			expect(
+				() =>
+					new Store(name, {
+						delay: noDelay,
+						initialValue,
+						onError,
+						storage: mockedStorage,
+					}),
+			).toThrow('malformed JSON')
 			expect(onError).toHaveBeenCalledTimes(1)
-			storage.getAll(true)
-			expect(onError).toHaveBeenCalledTimes(2)
 
-			expect(thisArg!).toBe(storage)
+			expect(thisArg!).instanceOf(Store)
+			expect(thisArg!.name).toBe(name)
 		})
 
 		it('should invoke "onError" when write operation fails', () => {
@@ -418,7 +452,7 @@ describe('Store', () => {
 					str?: string | null,
 				) {
 					thisArg ??= this
-					return new Map<Key, Value>(JSON.parse(str ?? ''))
+					return new Map<Key, Value>(JSON.parse(str ?? '[]'))
 				})
 				const storage = new Store(name, {
 					delay: noDelay,
@@ -437,16 +471,16 @@ describe('Store', () => {
 				const parse = vi.fn(() => {
 					throw new Error('test')
 				})
-				const store = new Store(name, {
-					delay: noDelay,
-					onError,
-					initialValue,
-					parse,
-				})
+				expect(
+					() =>
+						new Store(name, {
+							delay: noDelay,
+							onError,
+							initialValue,
+							parse,
+						}),
+				).toThrow('test')
 				expect(onError).toHaveBeenCalledTimes(1)
-
-				store.read()
-				expect(onError).toHaveBeenCalledTimes(2)
 			})
 
 			it('should invoke "stringify" callback', () => {
@@ -463,28 +497,31 @@ describe('Store', () => {
 					initialValue,
 					stringify,
 				})
-				expect(stringify).toHaveBeenCalledTimes(1)
-				storage.clear()
 				expect(stringify).toHaveBeenCalledTimes(2)
+				storage.clear()
+				expect(stringify).toHaveBeenCalledTimes(4)
 
 				expect(thisArg!).toBe(storage)
 			})
 
-			it('should gracefully handle "stringify" callback error', () => {
+			it('should gracefully handle "stringify" callback errors and invoke "onError" callback', () => {
+				vi.useFakeTimers()
 				const onError = vi.fn()
 				const stringify = vi.fn(() => {
 					throw new Error('test')
 				})
 				const store = new Store(name, {
-					delay: noDelay,
+					delay: 100,
 					onError,
 					initialValue,
 					stringify,
 				})
-				expect(onError).toHaveBeenCalledTimes(1)
-
-				store.read()
+				vi.advanceTimersByTime(100)
 				expect(onError).toHaveBeenCalledTimes(2)
+
+				store.read('{}') // invalid json >> expected 2D array
+				expect(onError).toHaveBeenCalledTimes(3)
+				vi.useRealTimers()
 			})
 
 			it('should invoke "parse" and "stringify" callbacks when in in-memory mode (no name provided)', () => {
@@ -510,8 +547,9 @@ describe('Store', () => {
 				it(`should invoke "validate" callback on ${action}() call`, () => {
 					vi.useRealTimers()
 					let count = 0
-					const startIndex = action === 'write' ? 1 : 0 // one extra write validator call during init()
-					const invokeAction = () => (store[action] as any)(...args)
+					const startIndex = 0 // one extra write validator call during init()
+					const invokeAction = () =>
+						Reflect.apply(store[action], store, args)
 					const validate = vi.fn(
 						(_action: string, _args: unknown[]) => {
 							if (++count <= startIndex + 1) return
@@ -528,8 +566,8 @@ describe('Store', () => {
 					})
 
 					expect(validate).toHaveBeenCalledTimes(startIndex + 0)
-
 					expect(invokeAction).not.toThrow() // undefined
+
 					expect(validate).toHaveBeenNthCalledWith(
 						startIndex + 1,
 						args,
@@ -540,12 +578,54 @@ describe('Store', () => {
 					expect(validate).toHaveBeenCalledTimes(startIndex + 2)
 				})
 			}
-
 			testAction('clear')
 			testAction('delete', ['test'])
 			testAction('set', 'key', 'value')
 			testAction('setAll', new Map(), true)
-			testAction('write', new Map())
+
+			it('should should invoke "validate" callback on write() call', () => {
+				vi.useRealTimers()
+				let count = 0
+				const invokeAction = () =>
+					store.write(new Map([['count', count]]), false)
+				const validate = vi.fn((...args: unknown[]) => {
+					console.log('validate:write count', count + 1)
+					if (++count <= 3) return
+
+					throw new Error('error')
+				})
+				const store = new Store<'count', number>('validate-write', {
+					delay: noDelay,
+					// initialValue: new Map([['count', count]]),
+					storage: new MockLocalStorage(),
+					validate: {
+						write: validate,
+					},
+				})
+
+				expect(store.storage?.setItem).toHaveBeenCalledTimes(0)
+				store.init(new Map([['count', count]]))
+				expect(store.storage?.setItem).toHaveBeenCalledTimes(2)
+
+				expect(validate).toHaveBeenNthCalledWith(
+					2,
+					[new Map([['count', 0]])],
+					'write',
+				)
+				expect(invokeAction).not.toThrow()
+				expect(validate).toHaveBeenNthCalledWith(
+					3,
+					[new Map([['count', 2]])],
+					'write',
+				)
+
+				expect(invokeAction).toThrow()
+				expect(validate).toHaveBeenNthCalledWith(
+					4,
+					[new Map([['count', 3]])],
+					'write',
+				)
+			})
 		})
 
 		it('should invoke `value` callback on instance.set()', () => {
@@ -667,7 +747,7 @@ describe('Store', () => {
 				// make sure the initial value is stored
 				const subs = storages.map(storage => {
 					const sub = storage.subject$.subscribe(subjectOnChange)
-					expect(storage.toArray()).toEqual(entries)
+					expect(storage.entries()).toEqual(entries)
 
 					// manually set value to the underlying storage
 					const newStr = JSON.stringify([

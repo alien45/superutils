@@ -14,7 +14,9 @@ import type {
 	Store_Parse,
 	Store_Sort,
 	Store_Stringify,
+	Store_ToArray,
 	Store_ToJSON,
+	Store_Type,
 } from './types'
 
 /** Store properties accepted in {@link Store_Options} */
@@ -27,6 +29,7 @@ export type Store_OptionKeys =
 	| 'spaces'
 	| 'storage'
 	| 'stringify'
+	| 'type'
 	| 'validate'
 /**
  * Configuration options for initializing {@link IStore} instances.
@@ -56,6 +59,7 @@ export type Store_Options<
 	 * Default: `undefined`
 	 */
 	initialValue?: Map<Key, Value>
+	cacheDisabled?: CacheDisabled
 } & Partial<
 	Pick<IStore<Key, Value, CacheDisabled>, Store_OptionKeys>
 		& (CacheDisabled extends false
@@ -78,9 +82,9 @@ export type Store_Options<
  * @template CacheDisabled - A boolean flag; if `true`, the store operates without an in-memory cache,
  * reading and writing directly to the underlying storage on every operation.
  */
-export interface IStore<Key, Value, CD extends boolean = false> {
+export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	/** Disable in-memory cache and only directly read/write from storage (local storage or JSON fle) */
-	readonly cacheDisabled: CD
+	readonly cacheDisabled: CacheDisabled
 
 	/**
 	 * Debounce/throttle delay duration in milliseconds for writing to storage when caching is enabled.
@@ -92,6 +96,7 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 */
 	readonly delay: number
 
+	/** Debounce and throttle related options */
 	readonly delayOptions?: Store_DelayOptions
 
 	/**
@@ -106,56 +111,6 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * Default: `null`
 	 */
 	readonly name?: string | null
-
-	/**
-	 * A callback function executed whenever a data change occurs within the storage.
-	 *
-	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
-	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
-	 * callback with the type {@link Store_OnErrorType.onChange}.
-	 *
-	 * Note: Execution of this callback is managed by internal subscriptions and will stop
-	 * firing once {@link unsubscribe} is called.
-	 */
-	onChange?: (
-		this: IStore<Key, Value, CD>,
-		data: Map<Key, Value>,
-	) => ValueOrPromise<void | Map<Key, Value>>
-
-	/**
-	 * A global error handler invoked whenever an internal operation fails.
-	 *
-	 * It captures failures in the following areas:
-	 * - Data parsing and serialization (JSON or custom logic).
-	 * - Storage access (e.g., `localStorage` quota or permission errors).
-	 * - Execution of user-provided callbacks like {@link onChange}.
-	 *
-	 * **Note:** If this handler itself throws an error, the exception is
-	 * ignored gracefully to prevent application crashes during storage cycles.
-	 */
-	onError?: (
-		this: IStore<Key, Value, CD>,
-		err: unknown,
-		type: Store_OnErrorType,
-	) => ValueOrPromise<void>
-
-	/**
-	 * A callback to customize the deserialization of data read from storage.
-	 *
-	 * This allows you to transform the raw string from the underlying storage back into a
-	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
-	 *
-	 *
-	 * **Fallback Behavior:**
-	 * - If this function is not defined, or returns `undefined` or a non-map value,
-	 * the system falls back to internal `JSON.parse` logic.
-	 * - If the function throws an error, it will use and empty map.
-	 *
-	 * **Error Triggers:**
-	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
-	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link Store_OnErrorType.parse_json}.
-	 */
-	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CD>>
 
 	/** Get the number of items */
 	readonly size: number
@@ -184,6 +139,87 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	readonly storage?: StorageCompact | Storage | null
 
 	/**
+	 * Specifies how the store's data is represented when stored in and parsed from
+	 * the underlying persistent storage.
+	 *
+	 * - `'map'`: Data is serialized as a 2D array (map entries).
+	 * - `'object'`: Data is serialized as a plain object, with keys and values
+	 *   converted using {@link IStore.toObject}.
+	 *
+	 * Default: `'map'`
+	 */
+	readonly type: Store_Type
+
+	/**
+	 * The underlying RxJS subject that serves as the primary reactive interface for observing data modifications.
+	 *
+	 * Its implementation type is determined by the caching strategy:
+	 * - **BehaviorSubject**: Used when caching is enabled.
+	 * It maintains the current state and emits it immediately to new subscribers.
+	 * - **Subject**: Used when caching is disabled.
+	 * It acts as a pure event pipe, emitting updates only at the moment they occur without retaining an in-memory copy.
+	 */
+	readonly subject$: CacheDisabled extends true
+		? Subject<Map<Key, Value>>
+		: BehaviorSubject<Map<Key, Value>>
+
+	//
+	//
+	//---------------- User provided methods -------------
+	//
+	//
+
+	/**
+	 * A callback function executed whenever a data change occurs within the storage.
+	 *
+	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
+	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
+	 * callback with the type {@link Store_OnErrorType.onChange}.
+	 *
+	 * Note: Execution of this callback is managed by internal subscriptions and will stop
+	 * firing once {@link unsubscribe} is called.
+	 */
+	onChange?: (
+		this: IStore<Key, Value, CacheDisabled>,
+		data: Map<Key, Value>,
+	) => ValueOrPromise<void | Map<Key, Value>>
+
+	/**
+	 * A global error handler invoked whenever an internal operation fails.
+	 *
+	 * It captures failures in the following areas:
+	 * - Data parsing and serialization (JSON or custom logic).
+	 * - Storage access (e.g., `localStorage` quota or permission errors).
+	 * - Execution of user-provided callbacks like {@link onChange}.
+	 *
+	 * **Note:** If this handler itself throws an error, the exception is
+	 * ignored gracefully to prevent application crashes during storage cycles.
+	 */
+	onError?: (
+		this: IStore<Key, Value, CacheDisabled>,
+		err: unknown,
+		type: Store_OnErrorType,
+	) => ValueOrPromise<void>
+
+	/**
+	 * A callback to customize the deserialization of data read from storage.
+	 *
+	 * This allows you to transform the raw string from the underlying storage back into a
+	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
+	 *
+	 *
+	 * **Fallback Behavior:**
+	 * - If this function is not defined, or returns `undefined` or a non-map value,
+	 * the system falls back to internal `JSON.parse` logic.
+	 * - If the function throws an error, it will use and empty map.
+	 *
+	 * **Error Triggers:**
+	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
+	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link Store_OnErrorType.parse_json}.
+	 */
+	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CacheDisabled>>
+
+	/**
 	 * A callback function to customize the serialization of data before it is written to storage.
 	 *
 	 * This allows you to transform the data `Map<Key, Value>` into a string format suitable
@@ -204,16 +240,16 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 *
 	 * @param data a map of all values stored in this storage
 	 *
-	 * @returns string or undefined
+	 * @returns string or `undefined`
 	 *
 	 * @example
 	 * #### Sanitize data before saving
 	 * ```javascript
 	 * import { Store } from '@superutils/store'
 	 *
-	 * const stringify = data => {
+	 * const stringify = (data) => {
 	 *   // Convert Map to an array of entries, removing sensitive fields
-	 *   const entries = Array.from(data).map(([id, user]) => {
+	 *   const entries = Array.from(data).map(([id, user]) => { // eslint-disable-line @typescript-eslint/no-unused-vars
 	 *     const { password, ...publicData } = user
 	 *     return [id, publicData]
 	 *   })
@@ -222,33 +258,25 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * const storage = new Store('users', { stringify })
 	 * ```
 	 */
-	stringify?: Store_Stringify<Map<Key, Value>, IStore<Key, Value, CD>>
+	stringify?: Store_Stringify<
+		Map<Key, Value>,
+		IStore<Key, Value, CacheDisabled>
+	>
 
-	/**
-	 * Indicates type of data parsed as
-	 *
-	 * Default: 'map'
-	 */
-	type: string
-
-	/**
-	 * The underlying RxJS subject that serves as the primary reactive interface for observing data modifications.
-	 *
-	 * Its implementation type is determined by the caching strategy:
-	 * - **BehaviorSubject**: Used when caching is enabled.
-	 * It maintains the current state and emits it immediately to new subscribers.
-	 * - **Subject**: Used when caching is disabled.
-	 * It acts as a pure event pipe, emitting updates only at the moment they occur without retaining an in-memory copy.
-	 */
-	readonly subject$: CD extends true
-		? Subject<Map<Key, Value>>
-		: BehaviorSubject<Map<Key, Value>>
+	//
+	//
+	//--------------------- Built-in Methods ----------------------
+	//
+	//
 
 	/** Clear all items */
-	readonly clear: () => IStore<Key, Value, CD>
+	readonly clear: () => IStore<Key, Value, CacheDisabled>
 
 	/** Delete one or more items by their respective keys */
-	readonly delete: (key: Key | Key[]) => IStore<Key, Value, CD>
+	readonly delete: (key: Key | Key[]) => IStore<Key, Value, CacheDisabled>
+
+	/** Get entries (2D Array) */
+	readonly entries: () => [Key, Value][]
 
 	/** Filter items by predicate */
 	readonly filter: <AsArray extends boolean = false>(
@@ -259,7 +287,7 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	readonly find: <IncludeKey extends boolean = false>(
 		predicateOrOptions:
 			| FindOptions<Key, Value, IncludeKey>
-			| Parameters<IStore<Key, Value, CD>['filter']>[0],
+			| Parameters<IStore<Key, Value, CacheDisabled>['filter']>[0],
 	) => ReturnType<typeof find<Key, Value, IncludeKey>>
 
 	/** Get item by key */
@@ -271,8 +299,16 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * @param forceUpdate (optional) if `true` and cache is enabled, reads & updates data directly from storage
 	 *
 	 * Default: `false`
+	 * @param silent (optional) Whether to throw error on failure.
+	 *
+	 * Default: `true`
+	 *
+	 * @returns data map
 	 */
-	readonly getAll: (forceUpdate?: boolean) => Map<Key, Value>
+	readonly getAll: (
+		forceUpdate?: boolean,
+		silent?: boolean,
+	) => Map<Key, Value>
 
 	/** Check if key exists */
 	readonly has: (key: Key) => boolean
@@ -285,10 +321,14 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * - During construction, if an `initialValue` with at least one entry is provided.
 	 * - On the first attempt to read or write data.
 	 *
-	 * @param initialValue An optional map to initialize the storage with if it's currently empty.
+	 * @param initialValue - (optional) An optional map to initialize the storage with if it's currently empty.
+	 * @param silent (optional) Whether to throw error on failure.
+	 *
+	 * Default: `true`
+	 *
 	 * @returns `true` if initialization was successful, or `false` if the storage was already initialized.
 	 */
-	readonly init: (initialValue?: Map<Key, Value>) => boolean
+	readonly init: (initialValue?: Map<Key, Value>, silent?: boolean) => boolean
 
 	/** Get all keys */
 	readonly keys: () => Key[]
@@ -313,8 +353,16 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 *
 	 * @param dataStr (optional) A raw string to parse. If omitted, the method fetches
 	 * the current value associated with the instance `name` from the underlying `storage`.
+	 *
+	 * Default: `null`
+	 * @param silent (optional) Whether to throw error on failure.
+	 *
+	 * Default: `false`
 	 */
-	readonly read: (dataStr?: string | null) => Map<Key, Value>
+	readonly read: (
+		dataStr?: string | null,
+		silent?: boolean,
+	) => Map<Key, Value>
 
 	/**
 	 * Search through the stored data (`Map<Key, Value>`).
@@ -355,7 +403,10 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * Set item by key
 	 *
 	 * @param key
-	 * @param value
+	 * @param value value or function
+	 * @param silent (optional) Whether to throw error on failure.
+	 *
+	 * Default: `true`
 	 *
 	 * @example
 	 *
@@ -370,7 +421,8 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	readonly set: (
 		key: Key,
 		value: Value | ((currentValue?: Value) => Value),
-	) => IStore<Key, Value, CD>
+		silent?: boolean,
+	) => IStore<Key, Value, CacheDisabled>
 
 	/**
 	 * Set multiple entries at once and/or replace the storage entries
@@ -381,11 +433,18 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * - `false`: merge with current data (existing entries with matching keys will be overwritten)
 	 *
 	 * Default: `false`
+	 *
+	 * @param silent (optional) Whether to throw error on failure.
+	 *
+	 * Default: `true`
+	 *
+	 * @returns store instance
 	 */
 	readonly setAll: (
 		data?: Map<Key, Value>,
 		replace?: boolean,
-	) => IStore<Key, Value, CD>
+		silent?: boolean,
+	) => IStore<Key, Value, CacheDisabled>
 
 	/**
 	 * Sort items in the storage.
@@ -401,14 +460,13 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 */
 	readonly sort: Store_Sort<Key, Value>
 
-	/** Convert list of items (Map) to 2D Array */
-	readonly toArray: () => [Key, Value][]
-
 	/** Convert list of items (Map) to JSON string of 2D Array */
 	readonly toJSON: Store_ToJSON<Key, Value>
 
 	/** Convert list of items into an object */
-	readonly toObject: <T extends object = object>(data?: Map<Key, Value>) => T
+	readonly toObject: <T extends object = { [key in string & Key]: Value }>(
+		data?: Map<Key, Value>,
+	) => T
 
 	/** Convert list of items (Map) to JSON string of 2D Array */
 	readonly toString: (data?: Map<Key, Value>) => string
@@ -432,7 +490,10 @@ export interface IStore<Key, Value, CD extends boolean = false> {
 	 * @param data (optional) Data to write.
 	 * - If provided, it overwrites the storage.
 	 * - If not provided, the current in-memory data is used (if cache is enabled).
+	 * @param silent (optional) Whether to throw error on failure.
+	 * Default: `true` if delay
+	 *
 	 * @returns `true` if the write was successful, `false` otherwise.
 	 */
-	readonly write: (data?: Map<Key, Value>) => boolean
+	readonly write: (data?: Map<Key, Value>, silent?: boolean) => boolean
 }

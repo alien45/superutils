@@ -2,7 +2,7 @@
 import { IStore } from './IStore'
 
 /** Utility to exclude store props & o in context */
-export type ContextExcludeProps<Context> = Context extends object
+export type Store_ContextExcludeProps<Context> = Context extends object
 	? {
 			[K in keyof Context]: K extends keyof IStore<any, any, any>
 				? never
@@ -11,15 +11,17 @@ export type ContextExcludeProps<Context> = Context extends object
 	: never
 
 /** Extract context return type */
-export type ContextReturn<Context> = Context extends (...args: any[]) => infer R
+export type Store_ContextReturn<Context> = Context extends (
+	...args: any[]
+) => infer R
 	? R
 	: Context extends object
 		? Context
 		: unknown
 
 /** Validate and exclude store properties from context   */
-export type ContextValidate<Context, Store> = Context extends (
+export type Store_ContextValidate<Context, Store> = Context extends (
 	...args: unknown[]
 ) => infer R
-	? (store: Store) => ContextExcludeProps<R>
-	: ContextExcludeProps<Context>
+	? (store: Store) => Store_ContextExcludeProps<R>
+	: Store_ContextExcludeProps<Context>

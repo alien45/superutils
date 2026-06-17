@@ -3,8 +3,8 @@ import createStore from './createStore'
 import type {
 	IObjectStore,
 	ObjectStore_Options,
-	ContextReturn,
-	ContextValidate,
+	Store_ContextReturn,
+	Store_ContextValidate,
 	Store_Options,
 } from './types'
 
@@ -100,9 +100,10 @@ export function createObjectStore<
 	T extends object = Record<string, unknown>,
 	CacheDisabled extends boolean = false,
 >(
-	options: undefined | null | ObjectStore_Options<T, CacheDisabled>,
-	context: Context & ContextValidate<Context, IObjectStore<T, CacheDisabled>>,
-): IObjectStore<T, CacheDisabled> & ContextReturn<Context>
+	options: ObjectStore_Options<T, CacheDisabled>,
+	context: Context
+		& Store_ContextValidate<Context, IObjectStore<T, CacheDisabled>>,
+): IObjectStore<T, CacheDisabled> & Store_ContextReturn<Context>
 
 // Without context
 export function createObjectStore<
@@ -116,15 +117,9 @@ export function createObjectStore<
 	T extends object,
 	CacheDisabled extends boolean,
 	Context extends object,
->(options?: null | ObjectStore_Options<T, CacheDisabled>, context?: Context) {
+>(options?: ObjectStore_Options<T, CacheDisabled>, context?: Context) {
 	options = {
-		// only required for persistent store and can be overriden by options
-		...(options?.name && {
-			parse: str => objToMap(JSON.parse(str ?? '{}') as T),
-			stringify(data) {
-				return JSON.stringify(this.toObject(data))
-			},
-		}),
+		type: 'object',
 		...options,
 		initialValue: !isObj(options?.initialValue, true)
 			? options?.initialValue
@@ -136,10 +131,9 @@ export function createObjectStore<
 		context as object,
 	) as unknown as IObjectStore<T, CacheDisabled>
 
-	store.type = 'object'
-
 	const setAll = store.setAll.bind(store)
 	store.setAll = (obj, replace) => {
+		// convert provided object to map
 		if (obj && !isMap(obj)) obj = objToMap(obj)
 
 		return setAll(obj, replace)

@@ -12,14 +12,28 @@ import {
 	isDefined,
 	isFn,
 	isMap,
+	isObj,
 	isPositiveNumber,
 	isStr,
 	mapJoin,
+	objToMap,
 	search,
 	sort,
 } from '@superutils/core'
-import { BehaviorSubject, skip, Subject, Subscription } from 'rxjs'
+import { BehaviorSubject, Observable, skip, Subject, Subscription } from 'rxjs'
 import { type IStore, Store_OnErrorType, type Store_Options } from './types'
+
+export const TEXTS = Object.freeze({
+	invalidJsonEntries:
+		'Invalid JSON format. Parsed value is expected to be a 2D array representing key-value pairs.',
+	invalidJsonObject:
+		'Invalid JSON format. Parsed value is expected to be a plain object.',
+	invalidStorageOptions:
+		'options.storage: LocalStorage instance or equivalent required. For NodeJS, use `node-localstorage` NPM module.',
+	validationError: 'Validation failed. Action: ',
+})
+
+const SKIP_WRITE_KEY = '__superutils_store_skip_write'
 
 /**
  * RxJS Subject to trigger forced update of cached data from underlying storage of {@link Store} instances.
@@ -212,7 +226,6 @@ export class Store<
 
 	readonly delay: This['delay']
 
-	/** Debounce and throttle related options */
 	readonly delayOptions?: This['delayOptions']
 
 	readonly initialized: This['initialized'] = false
@@ -224,6 +237,8 @@ export class Store<
 	onError?: This['onError']
 
 	parse?: This['parse']
+
+	private silent: boolean
 
 	get size() {
 		return this.getAll().size
@@ -242,13 +257,13 @@ export class Store<
 		forceUpdateCache: undefined as Subscription | undefined,
 	}
 
-	type: This['type'] = 'map'
+	type: This['type']
 
 	validate?: This['validate']
 
 	constructor(
 		name?: This['name'],
-		options?: Store_Options<Key, Value, CacheDisabled> | null,
+		options?: Store_Options<Key, Value, CacheDisabled>,
 	) {
 		this.name = `${name ?? options?.name ?? ''}`.trim() || null
 		const {
@@ -266,10 +281,11 @@ export class Store<
 				undefined,
 			),
 			stringify,
+			type,
 			validate = {},
 		} = options ?? {}
 		if (this.name && !storage && storage !== null)
-			throw new Error(Store.messages.invalidStorageOptions)
+			throw new Error(TEXTS.invalidStorageOptions)
 
 		this.cacheDisabled = (!!storage && cacheDisabled) as CacheDisabled
 		this.delay = (
@@ -279,12 +295,14 @@ export class Store<
 		this.onError = onError
 		this.onChange = onChange
 		this.parse = parse?.bind(this)
+		this.silent = this.delay > 0
 		this.spaces = spaces
 		this.storage = storage as This['storage']
 		this.stringify = stringify?.bind(this)
 		this.subject$ = (
 			this.cacheDisabled ? new Subject() : new BehaviorSubject(new Map())
 		) as This['subject$']
+		this.type = type || 'map'
 
 		const _validate = { ...validate } as Record<PropertyKey, unknown>
 		for (const [key, value] of Object.entries(_validate)) {
@@ -295,7 +313,11 @@ export class Store<
 		// non-empty map provided - initiate the storage immediately
 		isMap(initialValue)
 			&& initialValue.size
-			&& (this.init as (...args: unknown[]) => void)(initialValue, false)
+			&& (this.init as (...args: unknown[]) => void)(
+				initialValue,
+				false,
+				false, // local flag to check storage
+			)
 	}
 
 	clear: This['clear'] = () => {
@@ -315,14 +337,6 @@ export class Store<
 		return this
 	}
 
-	static messages = Object.seal({
-		invalidJsonEntries:
-			'Invalid JSON format. Parsed value must be a 2D array representing key-value pairs.',
-		invalidStorageOptions:
-			'options.storage: LocalStorage instance or equivalent required. For NodeJS, use `node-localstorage` NPM module.',
-		validationError: 'Validation failed. Action: ',
-	})
-
 	filter: This['filter'] = (...args) => filter(this.getAll(), ...args)
 
 	find: This['find'] = predicateOrOptions =>
@@ -341,18 +355,22 @@ export class Store<
 		forceUpdateCache$.next(name)
 	}
 
+	entries: This['entries'] = () => getEntries(this.getAll())
+
 	get: This['get'] = key => this.getAll().get(key)
 
 	getAll: This['getAll'] = (forceRead = false) => {
 		const wasInitialized = this.initialized
-		if (!wasInitialized) this.init()
+		if (!wasInitialized) this.init(undefined)
 
 		const readFromStorage =
 			this.cacheDisabled || (this.storage && forceRead)
 		if (readFromStorage) {
+			if (this.name === 'delay0') console.log('delay0', 'readFromStorage')
 			const data = this.read()
-			const shouldTrigger = forceRead || (!wasInitialized && !!data.size)
-			shouldTrigger && this.subject$.next(data)
+			const shouldTrigger =
+				forceRead || (!wasInitialized && data.size > 0)
+			shouldTrigger && updateSubject(this, data, false, true)
 			return data
 		}
 
@@ -369,25 +387,31 @@ export class Store<
 					: name === true
 		if (!isTarget) return
 
-		const newData = this.read()
-		this.subject$.next(newData)
+		const newData = this.read(undefined, true)
+		updateSubject(this, newData, false, true)
 	}
 
-	private handleSubjectChange = (data: Map<Key, Value>) => {
+	private handleSubjectChange = (
+		data: Map<Key, Value> & { [SKIP_WRITE_KEY]?: boolean },
+	) => {
 		// in-case non-map value is set, reset subject to an empty map
 		if (!isMap(data)) return this.subject$.next(new Map())
 
-		// write quietly
-		fallbackIfFails(
-			this.write,
-			[data],
-			this.triggerOnErrorCb(Store_OnErrorType.write),
-		)
+		// write quietly when debounce/throttle is being used
+		!data[SKIP_WRITE_KEY]
+			&& fallbackIfFails(
+				this.write,
+				[data],
+				this.triggerOnErrorCb({
+					silent: true,
+					type: Store_OnErrorType.write,
+				}),
+			)
 
 		fallbackIfFails(
 			this.onChange?.bind(this) as unknown,
 			[data],
-			this.triggerOnErrorCb(Store_OnErrorType.onChange),
+			this.triggerOnErrorCb({ type: Store_OnErrorType.onChange }),
 		)
 	}
 
@@ -404,8 +428,7 @@ export class Store<
 					undefined,
 				),
 			})
-			if (!this.storage)
-				throw new Error(Store.messages.invalidStorageOptions)
+			if (!this.storage) throw new Error(TEXTS.invalidStorageOptions)
 		}
 
 		Object.defineProperty(this, 'initialized', { value: true })
@@ -420,7 +443,14 @@ export class Store<
 			if (isDefined(dataStr)) firstValue = existingValue
 		}
 
-		firstValue?.size && this.subject$.next(firstValue)
+		if (firstValue?.size) {
+			updateSubject(
+				this,
+				firstValue,
+				firstValue === initialValue, // avoid writing existing value to storage
+				true,
+			)
+		}
 
 		this.unsubscribe()
 		// update cached data from localStorage throughout the application only when triggered
@@ -454,41 +484,60 @@ export class Store<
 	keys: This['keys'] = () => getKeys(this.getAll())
 
 	map: This['map'] = callback =>
-		this.toArray().map(([key, value], index, entries) =>
+		this.entries().map(([key, value], index, entries) =>
 			callback(value, key, entries, index),
 		)
 
 	read: This['read'] = (
 		dataStr = (this.name && this.storage?.getItem(this.name)) ?? null,
+		silent = this.silent,
 	) => {
-		const data = fallbackIfFails(
-			this.parse,
-			[dataStr],
-			this.triggerOnErrorCb(Store_OnErrorType.parse, undefined),
-		)
+		if (isFn(this.parse)) {
+			const data = fallbackIfFails(
+				this.parse,
+				[dataStr],
+				this.triggerOnErrorCb({
+					silent,
+					type: Store_OnErrorType.parse,
+					returnValue: undefined,
+				}),
+			)
+			if (isMap<Key, Value>(data)) return data
+		}
 
-		if (isMap(data) || !isStr(dataStr))
+		if (!dataStr)
 			return (
-				(isFn(this.parse)
-					? data
-					: (this.subject$ as BehaviorSubject<Map<Key, Value>>).value)
+				(this.subject$ as { value?: Map<Key, Value> }).value
 				?? new Map<Key, Value>()
 			)
+
 		// use fallback JSON.parse if this.parse is not provided, returns non-Map value or fails
 		return new Map<Key, Value>(
 			fallbackIfFails(
-				() => {
-					const entries = JSON.parse(dataStr) as [Key, Value][]
-
-					if (!isArr2D(entries))
-						throw new Error(Store.messages.invalidJsonEntries)
-
-					return entries
-				},
-				[],
-				this.triggerOnErrorCb(Store_OnErrorType.parse_json),
+				this.readFromString,
+				[dataStr, this.type],
+				this.triggerOnErrorCb({
+					silent,
+					type: Store_OnErrorType.parse_json,
+					returnValue: [],
+				}),
 			),
 		)
+	}
+
+	private readFromString = (dataStr: string, type: This['type'] = 'map') => {
+		const parsed = JSON.parse(dataStr)
+
+		switch (type) {
+			case 'object':
+				if (!isObj(parsed, true))
+					throw new Error(TEXTS.invalidJsonObject)
+				return objToMap(parsed)
+			case 'map':
+			default:
+				if (!isArr2D(parsed)) throw new Error(TEXTS.invalidJsonEntries)
+				return new Map(parsed as [Key, Value][])
+		}
 	}
 
 	search: This['search'] = (...args) => search(this.getAll(), ...args)
@@ -508,10 +557,11 @@ export class Store<
 
 		this.validate?.setAll?.call(this, [data, replace], 'setAll')
 
-		data = replace
-			? data // override all entries
-			: mapJoin(this.getAll(), data) // merge with existing entries and override only matching keys
-		this.subject$.next(new Map(data))
+		if (!replace) {
+			// merge with existing entries and override only matching keys
+			data = mapJoin(this.getAll(), data)
+		}
+		updateSubject(this, data)
 		return this
 	}
 
@@ -526,31 +576,34 @@ export class Store<
 		return result
 	}
 
-	toArray: This['toArray'] = () => getEntries(this.getAll())
-
-	toJSON: This['toJSON'] = (
-		replacer,
-		spacing = this.spaces,
-		data = this.getAll(),
-	) => {
-		const str = fallbackIfFails(
-			this.stringify as unknown as string,
+	toJSON: This['toJSON'] = (replacer, spaces, data) => {
+		data ??= this.getAll()
+		const errSymbol = Symbol('error')
+		let str: string | undefined = fallbackIfFails(
+			isFn(this.stringify) ? this.stringify : undefined,
 			[data],
-			this.triggerOnErrorCb(Store_OnErrorType.stringify, ''), // if fails return empty string
+			this.triggerOnErrorCb({
+				type: Store_OnErrorType.stringify,
+				returnValue: errSymbol,
+			}),
 		)
 		if (isStr(str)) return str
+		if (str === errSymbol) return undefined
 
 		// use fallback JSON.stringify if this.stringify returns non-string value (undefined)
-		return fallbackIfFails(
+		str = fallbackIfFails(
 			() =>
 				JSON.stringify(
-					Array.from(data),
+					this.type === 'object'
+						? this.toObject(data)
+						: Array.from(data),
 					replacer as undefined,
-					spacing,
+					spaces ?? this.spaces,
 				),
 			[],
-			this.triggerOnErrorCb(Store_OnErrorType.stringify_json, ''),
+			this.triggerOnErrorCb({ type: Store_OnErrorType.stringify_json }),
 		)
+		return str
 	}
 
 	toObject: This['toObject'] = <T>(data = this.getAll()) => {
@@ -564,21 +617,25 @@ export class Store<
 	}
 
 	toString: This['toString'] = (data = this.getAll()) =>
-		this.toJSON(undefined, undefined, data)
+		this.toJSON(null, this.spaces, data) ?? ''
 
 	private triggerOnErrorCb =
-		<T = undefined>(
-			type: Store_OnErrorType,
-			returnValue: T = undefined as T,
-		) =>
+		<T = undefined>(options: {
+			silent?: boolean
+			returnValue?: T
+			type: Store_OnErrorType
+		}) =>
 		(err: unknown) => {
+			const { silent = this.silent, returnValue, type } = options
 			fallbackIfFails(
 				this.onError?.bind(this) as unknown,
 				[err, type],
 				'',
 			)
 
-			return returnValue
+			if (silent) return returnValue as T
+
+			throw err
 		}
 
 	unsubscribe: This['unsubscribe'] = () => {
@@ -592,21 +649,46 @@ export class Store<
 
 	values: This['values'] = () => getValues(this.getAll())
 
-	write: This['write'] = data => {
-		this.init()
+	write: This['write'] = (data, silent = this.silent) => {
+		if (!this.initialized) this.init(new Map(), silent)
 		data ??= (this.subject$ as BehaviorSubject<Map<Key, Value>>)?.value
 		if (!isMap(data) || !this.name || !this.storage) return false
 
-		this.validate?.write?.call(this, [data], 'write')
 		try {
+			this.validate?.write?.call(this, [data], 'write')
 			const jsonStr = this.toString(data)
 			this.storage.setItem(this.name, jsonStr)
 
 			return true
 		} catch (err) {
-			this.triggerOnErrorCb(Store_OnErrorType.write)(err)
+			this.triggerOnErrorCb({
+				returnValue: false,
+				silent,
+				type: Store_OnErrorType.write,
+			})(err)
 			return false
 		}
 	}
 }
 export default Store
+
+const updateSubject = <
+	Key,
+	Value,
+	CacheDisabled extends boolean,
+	T extends Map<Key, Value>,
+>(
+	store: IStore<Key, Value, CacheDisabled>,
+	data: T,
+	write = store.delay === 0,
+	skipDelayedWrite = !write,
+) => {
+	store.subject$.next(data)
+
+	Object.defineProperty(store.subject$, SKIP_WRITE_KEY, {
+		configurable: true,
+		writable: true,
+		value: !skipDelayedWrite,
+	})
+	write && store.write(data, true)
+}
