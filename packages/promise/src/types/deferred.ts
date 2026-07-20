@@ -1,8 +1,4 @@
-import type {
-	DeferredOptions,
-	PositiveNumber,
-	ValueOrPromise,
-} from '@superutils/core'
+import type { DeferredOptions, ValueOrPromise } from '@superutils/core'
 import type { IPromisE } from './PromisEBase'
 
 /** Return type of `PromisE.deferred()` */
@@ -23,7 +19,7 @@ export type DeferredAsyncDefaults<ThisArg = unknown, Delay = unknown> = Pick<
 }
 
 /** Options for `PromisE.deferred` and other related functions */
-export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
+export type DeferredAsyncOptions<ThisArg = unknown, Delay = number> = {
 	/**
 	 * Delay in milliseconds, used for `debounce` and `throttle` modes. Use `0` for sequential execution.
 	 *
@@ -31,7 +27,7 @@ export type DeferredAsyncOptions<ThisArg = unknown, Delay = unknown> = {
 	 *
 	 * Default: `100` (or whatever is set in `PromisE.deferred.defaults.delay`)
 	 */
-	delay?: 0 | PositiveNumber<Delay>
+	delay?: Delay
 
 	/**
 	 * Whether to ignore (based on `resolveIgnored` settings) stale promises.
