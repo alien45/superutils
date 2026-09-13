@@ -42,7 +42,7 @@ import { isObservable, Subject, Subscription } from 'rxjs'
  * const [count, setCount, error] = useRx(count$, { initialValue: 0 });
  * ```
  */
-export default function useRx<
+export function useRx<
 	Source$,
 	TIn = UnwrapSourceValue<Source$>,
 	TOut = TIn,
@@ -148,6 +148,7 @@ export default function useRx<
 
 	return [state.value, setValue, state.error, _source$] as const
 }
+export default useRx
 
 export type UseRx_ErrorType =
 	| 'ObjectMergeError'

@@ -23,7 +23,7 @@ export type RxView_Props<T = unknown> = {
 	subject: BehaviorSubject<T> | (() => BehaviorSubject<T>)
 } & RenderOrChildren<T>
 
-export default function RxView<T = unknown>(props: RxView_Props<T>) {
+export function RxView<T = unknown>(props: RxView_Props<T>) {
 	const { subject } = props
 	const rxSubject = useMemo<BehaviorSubject<T>>(
 		() => (typeof subject === 'function' ? subject() : subject),
@@ -47,34 +47,4 @@ export default function RxView<T = unknown>(props: RxView_Props<T>) {
 	const content = render?.(value, rxSubject) ?? value
 	return content
 }
-
-// type RendrOrChildren = {
-// 	children?: never
-// 	render: Parameters<typeof useRx>[1]['transform']
-// }
-// type Props<TOut, TIn> = {
-// 	options: Parameters<typeof useRx<TOut, TIn>>[1]
-// 	source$: Parameters<typeof useRx<TOut, TIn>>[0]
-// }
-// function UseRxView<TOut, TIn>(props: Props<TOut, TIn>) {
-// 	const { options, source$ } = props
-// 	const [value, setValue] = useRx(source$, options)
-// }
-
-// UseRxView({
-// 	options: { transform: (a, b, c) => {} },
-// 	source$: new BehaviorSubject(1),
-// })
-
-// useRx(new BehaviorSubject(1), { transform: (a, b, c) => {} })
-
-// const sourceArr = [
-// 	new BehaviorSubject(1),
-// 	new BehaviorSubject(''),
-// 	false,
-// ] as const
-// useRx(sourceArr, {
-// 	transform: (a, b, c) => {},
-// })
-
-// type T = UnwrapSourceValue<typeof sourceArr>
+export default RxView
