@@ -1,5 +1,8 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
+	},
 	"description": "Utilities, components and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "*",
@@ -13,11 +16,19 @@
 	"devDependencies": {
 		"@testing-library/react": "^16.3.2"
 	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
+	"homepage": "https://alien45.github.io/superutils/packages/@superutils/react/",
 	"keywords": [
 		"rxjs",
 		"utils",
@@ -26,6 +37,8 @@
 		"hooks"
 	],
 	"license": "MIT",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
 	"name": "@superutils/react",
 	"peerDependencies": {
 		"@superutils/core": "*",
@@ -36,6 +49,10 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
+	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",
 		"_watch": "tsc -p tsconfig.json --watch",
@@ -44,15 +61,6 @@
 		"test": "cd ../../ && npm run test react"
 	},
 	"sideEffects": false,
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
 	"type": "module",
 	"types": "./dist/index.d.ts",
 	"version": "0.1.0"

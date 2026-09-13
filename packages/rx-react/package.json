@@ -1,5 +1,8 @@
 {
 	"author": "Toufiqur Rahaman Chowdhury",
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
+	},
 	"description": "RxJS based utilities, components and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "*",
@@ -24,6 +27,7 @@
 		"README.md",
 		"LICENSE"
 	],
+	"homepage": "https://alien45.github.io/superutils/packages/@superutils/rx-react/",
 	"keywords": [
 		"rxjs",
 		"utils",
@@ -39,9 +43,13 @@
 		"@superutils/core": "*",
 		"@superutils/rx": "*"
 	},
-	"private": true,
+	"private": false,
 	"publishConfig": {
 		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
 	},
 	"scripts": {
 		"_build": "tsc -p tsconfig.json",

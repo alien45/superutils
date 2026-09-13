@@ -8,6 +8,13 @@
 		"@superutils/core": "^1.2.22",
 		"@superutils/promise": "^1.3.24"
 	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
 	"files": [
 		"dist",
 		"README.md",
@@ -21,6 +28,8 @@
 		"typescript"
 	],
 	"license": "MIT",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
 	"name": "@superutils/fetch",
 	"peerDependencies": {
 		"@superutils/core": "^1.2.7",
@@ -42,15 +51,6 @@
 		"test": "cd ../../ && npm run test fetch"
 	},
 	"sideEffects": false,
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
 	"type": "module",
 	"types": "./dist/index.d.ts",
 	"version": "1.5.26"
