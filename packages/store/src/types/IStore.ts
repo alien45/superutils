@@ -14,7 +14,6 @@ import type {
 	Store_Parse,
 	Store_Sort,
 	Store_Stringify,
-	Store_ToArray,
 	Store_ToJSON,
 	Store_Type,
 } from './types'
@@ -464,7 +463,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	readonly toJSON: Store_ToJSON<Key, Value>
 
 	/** Convert list of items into an object */
-	readonly toObject: <T extends object = { [key in string & Key]: Value }>(
+	readonly toObject: <T extends object = Record<PropertyKey & Key, Value>>(
 		data?: Map<Key, Value>,
 	) => T
 

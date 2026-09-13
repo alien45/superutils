@@ -166,7 +166,7 @@ export function createStore<Context, Key, Value, CacheDisabled extends boolean>(
 	options?: null | Store_Options<Key, Value, CacheDisabled>,
 	context?: Context,
 ) {
-	const store = new Store(options?.name, options || undefined)
+	const store = new Store(options?.name, options ?? undefined)
 	const _context = isFn(context) ? (context(store) as object) : context
 
 	if (!isObj(_context, false)) return store

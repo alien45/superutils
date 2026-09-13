@@ -155,13 +155,11 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.any<T>(values)) as PromisEBase<
-			Awaited<T[number]>
-		>
+		new PromisEBase<Awaited<T[number]>>(Promise.any<T>(values))
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
 	static race = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.race(values)) as PromisEBase<Awaited<T[number]>>
+		new PromisEBase<Awaited<T[number]>>(Promise.race(values))
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {
@@ -174,7 +172,7 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.resolve(...))` */
 	static resolve = <T>(value?: T | PromiseLike<T>) =>
-		new PromisEBase<T>(Promise.resolve<T>(value as T)) as PromisEBase<T>
+		new PromisEBase<T>(Promise.resolve<T>(value as T))
 
 	/** Sugar for `new PromisE(Promise.try(...))` */
 	static try = <T, U extends unknown[] = []>(
@@ -182,14 +180,14 @@ export class PromisEBase<T = unknown>
 		...args: U
 	) =>
 		// Promise.try is not supported in Node < 23.
-		new PromisEBase<T>(
+		new PromisEBase<Awaited<T>>(
 			fallbackIfFails(
 				callbackFn,
 				args,
 				// rethrow error to ensure the returned promise is rejected
-				(err: unknown) => PromisEBase.reject(err),
+				(err: Error) => PromisEBase.reject(err),
 			),
-		) as PromisEBase<Awaited<T>>
+		)
 
 	/**
 	 * Creates a `PromisE` instance and returns it in an object, along with its `resolve` and `reject` functions.
@@ -217,7 +215,7 @@ export class PromisEBase<T = unknown>
 	 * ```
 	 */
 	static withResolvers = <T = unknown>() => {
-		const promise = new PromisEBase<T>() as PromisEBase<T>
+		const promise = new PromisEBase<T>()
 		return { promise, reject: promise.reject, resolve: promise.resolve }
 	}
 }

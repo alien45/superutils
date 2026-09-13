@@ -20,7 +20,7 @@ import {
 	search,
 	sort,
 } from '@superutils/core'
-import { BehaviorSubject, Observable, skip, Subject, Subscription } from 'rxjs'
+import { BehaviorSubject, skip, Subject, Subscription } from 'rxjs'
 import { type IStore, Store_OnErrorType, type Store_Options } from './types'
 
 export const TEXTS = Object.freeze({
@@ -302,7 +302,7 @@ export class Store<
 		this.subject$ = (
 			this.cacheDisabled ? new Subject() : new BehaviorSubject(new Map())
 		) as This['subject$']
-		this.type = type || 'map'
+		this.type = type ?? 'map'
 
 		const _validate = { ...validate } as Record<PropertyKey, unknown>
 		for (const [key, value] of Object.entries(_validate)) {
@@ -526,7 +526,7 @@ export class Store<
 	}
 
 	private readFromString = (dataStr: string, type: This['type'] = 'map') => {
-		const parsed = JSON.parse(dataStr)
+		const parsed: unknown = JSON.parse(dataStr)
 
 		switch (type) {
 			case 'object':
