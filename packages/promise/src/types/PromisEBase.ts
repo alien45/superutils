@@ -25,6 +25,7 @@ export interface IPromisE<T = unknown> extends Promise<T> {
 	readonly resolved: boolean
 }
 
+/** Signature for callback function that is invoked if `PromisE` is finalized using `.resolve()` or `.reject()`  */
 export type OnEarlyFinalize<T> = <
 	TResolved extends boolean,
 	TValue = TResolved extends true ? T : unknown,
@@ -33,6 +34,7 @@ export type OnEarlyFinalize<T> = <
 	resultOrReason: TValue,
 ) => ValueOrPromise<unknown>
 
+/** Signature for callback function that is invoked whenver `PromisE` is finalized */
 export type OnFinalize<T> = (
 	result?: T | PromiseLike<T>,
 	error?: unknown,

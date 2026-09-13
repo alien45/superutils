@@ -1,27 +1,33 @@
 import { fallbackIfFails, isFn, isPromise } from '@superutils/core'
 import { Promise } from './types'
-import type {
-	PromiseParams,
-	IPromisE,
-	OnEarlyFinalize,
-	OnFinalize,
-} from './types'
+import type { PromiseParams, IPromisE } from './types'
 
 export class PromisEBase<T = unknown>
 	extends Promise<T>
 	implements IPromisE<T>
 {
-	private _resolve: (value: T | PromiseLike<T>) => void
-	private _reject: (reason: unknown) => void
-	private _state: 0 | 1 | 2 = 0
-
 	/** Callbacks to be invoked whenever promise is finalized externally using `resolve()`/`reject()` methods */
-	public onEarlyFinalize = [] as OnEarlyFinalize<T>[]
+	public onEarlyFinalize = [] as IPromisE<T>['onEarlyFinalize']
 
 	/** Callback to be invoked after promise is resolved or rejected */
-	public onFinalize = [] as OnFinalize<T>[]
+	public onFinalize = [] as IPromisE<T>['onFinalize']
 
-	/** Create a PromisE instance as a drop-in replacement for Promise */
+	/** Early finalize by force rejecting a pending promise */
+	public reject!: IPromisE<T>['reject']
+
+	/** Early finalize by force resolving a pending promise */
+	public resolve!: IPromisE<T>['resolve']
+
+	/**
+	 * Get promise status code:
+	 *
+	 * - `0` = pending
+	 * - `1` = resolved
+	 * - `2` = rejected
+	 */
+	readonly state: IPromisE['state'] = 0
+
+	/** Create a `PromisE` instance as a drop-in replacement for `Promise` */
 	constructor(...args: PromiseParams<T>)
 	/** Extend an existing Promise instance to check status or finalize early */
 	constructor(promise: Promise<T>)
@@ -30,7 +36,9 @@ export class PromisEBase<T = unknown>
 	/** Create a promise to be resolved externally using `.resolve()` and `.reject()` methods */
 	constructor(value: undefined)
 	/**
-	 * If executor function is not provided, the promise must be resolved/rejected externally.
+	 * Create a new promise to be resolved/rejected externally.
+	 *
+	 * #### Caution: If not resolved externally using `.resolve()` or `.reject()`. it will remain pending indefinitely.
 	 *
 	 * @example
 	 * #### An alternative to "Promise.withResolvers()"
@@ -46,46 +54,64 @@ export class PromisEBase<T = unknown>
 	 */
 	constructor()
 	constructor(input?: T | Promise<T> | PromiseParams<T>[0]) {
-		let _resolve: (value: T | PromiseLike<T>) => void
-		let _reject: (reason: unknown) => void
+		let _resolve: IPromisE<T>['resolve']
+		let _reject: IPromisE<T>['reject']
 		let superCalled = false
 
 		const finalize = (
-			fn: typeof _resolve | typeof _reject,
-			resolve = true,
-			value: unknown,
+			valOrErr: unknown, // value or reason
+			resolve = false,
+			early = false,
 		) => {
 			if (!superCalled)
-				return queueMicrotask(() => finalize(fn, resolve, value))
+				return queueMicrotask(() => finalize(valOrErr, resolve, early))
 
-			fn(value as T)
-			this._state = resolve ? 1 : 2
-			this.onFinalize.forEach(fn =>
+			// promise has already been finalized
+			if (!this.pending) return
+
+			const finalizer = resolve ? _resolve : _reject
+			finalizer(valOrErr as T)
+			;(this.state as unknown) = resolve ? 1 : 2
+
+			this.onFinalize?.forEach(fn =>
 				fallbackIfFails(
 					fn,
-					resolve ? [value as T] : [undefined, value],
-					undefined,
+					resolve
+						? [valOrErr as T, undefined]
+						: [undefined, valOrErr],
+					null,
 				),
 			)
+
+			early
+				&& this.onEarlyFinalize.forEach(fn =>
+					fallbackIfFails(fn, [resolve, valOrErr], null),
+				)
 		}
 
 		super((resolve, reject) => {
-			_reject = reason => finalize(reject, false, reason)
-			_resolve = value => finalize(resolve, true, value)
+			_reject = reject
+			_resolve = resolve
 
 			if (isFn(input)) {
-				fallbackIfFails(input, [_resolve, _reject], _reject)
+				fallbackIfFails(
+					input,
+					[v => finalize(v, true), finalize],
+					finalize,
+				)
 			} else if (isPromise(input)) {
-				input.then(_resolve, _reject)
+				input.then(v => finalize(v, true), finalize)
 			} else if (input !== undefined) {
-				_resolve(input)
+				// value provided to be resolved immediately
+				finalize(input, true)
 			}
 			// If input is `undefined`, do nothing and expect external finalization.
 		})
 
 		superCalled = true
-		this._resolve = _resolve!
-		this._reject = _reject!
+
+		this.reject = reason => finalize(reason, false, true)
+		this.resolve = value => finalize(value, true, true)
 	}
 
 	//
@@ -109,43 +135,6 @@ export class PromisEBase<T = unknown>
 		return this.state === 1
 	}
 
-	/**
-	 * Get promise status code:
-	 *
-	 * - `0` = pending
-	 * - `1` = resolved
-	 * - `2` = rejected
-	 */
-	public get state() {
-		return this._state
-	}
-
-	//
-	//
-	// --------------------------- Early resolve/reject ---------------------------
-	//
-	//
-
-	/** Resovle pending promise early. */
-	public resolve = (value: T | PromiseLike<T>) => {
-		if (!this.pending) return
-
-		this._resolve?.(value)
-		this.onEarlyFinalize?.forEach(fn => {
-			fallbackIfFails(fn, [true, value], undefined)
-		})
-	}
-
-	/** Reject pending promise early. */
-	public reject = (reason: unknown) => {
-		if (!this.pending) return
-
-		this._reject?.(reason)
-		this.onEarlyFinalize?.forEach(fn => {
-			fallbackIfFails(fn, [false, reason], undefined)
-		})
-	}
-
 	//
 	//
 	// Extend all static `Promise` methods
@@ -154,23 +143,25 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.all(...))` */
 	static all = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.all<T>(values)) as IPromisE<{
+		new PromisEBase(Promise.all<T>(values)) as PromisEBase<{
 			-readonly [P in keyof T]: Awaited<T[P]>
 		}>
 
 	/** Sugar for `new PromisE(Promise.allSettled(...))` */
 	static allSettled = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.allSettled<T>(values)) as IPromisE<
+		new PromisEBase(Promise.allSettled<T>(values)) as PromisEBase<
 			PromiseSettledResult<Awaited<T[number]>>[]
 		>
 
 	/** Sugar for `new PromisE(Promise.any(...))` */
 	static any = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.any<T>(values)) as IPromisE<Awaited<T[number]>>
+		new PromisEBase(Promise.any<T>(values)) as PromisEBase<
+			Awaited<T[number]>
+		>
 
 	/** Sugar for `new PromisE(Promise.race(..))` */
 	static race = <T extends unknown[]>(values: T) =>
-		new PromisEBase(Promise.race(values)) as IPromisE<Awaited<T[number]>>
+		new PromisEBase(Promise.race(values)) as PromisEBase<Awaited<T[number]>>
 
 	/** Extends Promise.reject */
 	static reject = <T = never>(reason: unknown) => {
@@ -183,7 +174,7 @@ export class PromisEBase<T = unknown>
 
 	/** Sugar for `new PromisE(Promise.resolve(...))` */
 	static resolve = <T>(value?: T | PromiseLike<T>) =>
-		new PromisEBase<T>(Promise.resolve<T>(value as T)) as IPromisE<T>
+		new PromisEBase<T>(Promise.resolve<T>(value as T)) as PromisEBase<T>
 
 	/** Sugar for `new PromisE(Promise.try(...))` */
 	static try = <T, U extends unknown[] = []>(
@@ -196,9 +187,9 @@ export class PromisEBase<T = unknown>
 				callbackFn,
 				args,
 				// rethrow error to ensure the returned promise is rejected
-				err => PromisEBase.reject(err as Error),
+				(err: unknown) => PromisEBase.reject(err),
 			),
-		) as IPromisE<Awaited<T>>
+		) as PromisEBase<Awaited<T>>
 
 	/**
 	 * Creates a `PromisE` instance and returns it in an object, along with its `resolve` and `reject` functions.
@@ -226,7 +217,7 @@ export class PromisEBase<T = unknown>
 	 * ```
 	 */
 	static withResolvers = <T = unknown>() => {
-		const promise = new PromisEBase<T>() as IPromisE<T>
+		const promise = new PromisEBase<T>() as PromisEBase<T>
 		return { promise, reject: promise.reject, resolve: promise.resolve }
 	}
 }
