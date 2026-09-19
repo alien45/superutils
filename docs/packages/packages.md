@@ -3,6 +3,7 @@
 ## Packages
 
 - [@superutils/core](@superutils/core/index.md)
+- [@superutils/expo-binary-module](@superutils/expo-binary-module/index.md)
 - [@superutils/fetch](@superutils/fetch/index.md)
 - [@superutils/promise](@superutils/promise/index.md)
 - [@superutils/react](@superutils/react/index.md)

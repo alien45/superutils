@@ -14,6 +14,8 @@ import sdk, {
 	type ProjectTemplate,
 } from '@stackblitz/sdk'
 
+const EXCLUDE_PACKAGES = ['@superutils/expo-binary-module']
+
 export type ExternalFile = {
 	src: string
 }
@@ -31,14 +33,14 @@ export type PlaygroundProject = Partial<Project> & {
 }
 
 export const extractDependencies = (code: string) => {
-	const dependencies = {}
+	const dependencies = {} as Record<string, string>
 	// Matches: import ... from 'pkg' OR import 'pkg'
 	const regex =
 		/(?:import\s+(?:type\s+)?[\s\S]*?\s+from\s+|import\s+)['"]([^'"]+)['"]/g
 	let match: unknown
 
 	while ((match = regex.exec(code)) !== null) {
-		const pkg = match[1]
+		const pkg = (match as string[])[1]
 		if (pkg.startsWith('.') || pkg.startsWith('/') || isUrlValid(pkg))
 			continue
 
@@ -53,6 +55,9 @@ export const extractDependencies = (code: string) => {
 
 // try now button to code blocks whenever route changes/content-updates
 export const addTryNowBtnNListen = debounce(() => {
+	const { href } = window.location
+	if (EXCLUDE_PACKAGES.find(x => href.includes(x))) return
+
 	const languages = [
 		'typescript',
 		'javascript',
@@ -79,6 +84,7 @@ export const addTryNowBtnNListen = debounce(() => {
 			const lang = getValues(codeBlock.classList)
 				.filter(x => x.startsWith('language-'))[0]
 				.split('-')[1]
+
 			const btn = `
 					<div class="try-button-wrap">
 						<button class="${tryBtnClass}" data-template="${lang}">
@@ -353,7 +359,7 @@ const addNodeLocalStorage = (
 		const ignore =
 			!checkContent(content)
 			// ignore for frontend files
-			|| !['js', 'ts'].includes(fileName.split('.').pop())
+			|| !['js', 'ts'].includes(fileName.split('.').pop()!)
 			// injection not necessary
 			|| content.includes('node-localstorage')
 		if (ignore) return
@@ -383,6 +389,6 @@ export const tryBtnClickHandler = (event: PointerEvent) => {
 		|| 'javascript') as ProjectTemplate
 	const parent = target.closest(`.language-${language}`)
 
-	const code = parent.querySelector('pre code')?.textContent
+	const code = parent?.querySelector('pre code')?.textContent
 	code && embedPlayground({ code, language })
 }

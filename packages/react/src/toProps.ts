@@ -19,7 +19,6 @@ export const toProps = (
 	if (elOrProps === null) return elOrProps
 
 	childrenProp ??= 'children'
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const props = isValidElement(elOrProps)
 		? extractElementProps
 			? elOrProps.props // react element
@@ -27,6 +26,5 @@ export const toProps = (
 		: isObj(elOrProps)
 			? elOrProps // plain object
 			: { [childrenProp]: elOrProps } // assume string or element
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 	return { ...(props ?? {}) }
 }

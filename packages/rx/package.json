@@ -7,8 +7,6 @@
 	"dependencies": {
 		"@superutils/core": "^1.2.22",
 		"@superutils/promise": "^1.3.24",
-		"@types/react": "^18.0.0",
-		"react": ">=16.8.0",
 		"rxjs": "^7.8.2"
 	},
 	"exports": {
@@ -28,16 +26,16 @@
 		"rxjs",
 		"utils",
 		"typescript",
-		"react",
-		"hooks"
+		"reactive"
 	],
 	"license": "MIT",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"name": "@superutils/rx",
 	"peerDependencies": {
-		"@superutils/core": "latest",
-		"@superutils/promise": "latest"
+		"@superutils/core": "*",
+		"@superutils/promise": "*",
+		"rxjs": "*"
 	},
 	"publishConfig": {
 		"access": "public"

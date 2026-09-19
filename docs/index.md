@@ -39,4 +39,7 @@ features:
   - title: '@superutils/store'
     link: /packages/@superutils/store/
     details: A generic, reactive, persistent and fully-typed Map-like data store with advanced search, filtering, and sorting capabilities.
+  - title: '@superutils/expo-binary-module'
+    link: /packages/@superutils/expo-binary-module/
+    details: An Expo native module for running and managing long-running native binaries on Android.
 ---

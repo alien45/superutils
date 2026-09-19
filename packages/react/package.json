@@ -7,14 +7,14 @@
 	"dependencies": {
 		"@superutils/core": "*",
 		"@superutils/promise": "*",
-		"@superutils/rx": "*",
-		"@types/react": ">=16.8.0",
-		"react": ">=16.8.0",
-		"react-dom": ">=16.8.0",
-		"rxjs": "^7.0.0"
+		"@superutils/rx": "*"
 	},
 	"devDependencies": {
-		"@testing-library/react": "^16.3.2"
+		"@testing-library/react": "^16.3.2",
+		"@types/react": ">=16.8.0",
+		"react": "^19.2.3",
+		"react-dom": "^19.2.3",
+		"rxjs": "^7.0.0"
 	},
 	"exports": {
 		".": {
@@ -43,7 +43,10 @@
 	"peerDependencies": {
 		"@superutils/core": "*",
 		"@superutils/promise": "*",
-		"@superutils/rx": "*"
+		"@superutils/rx": "*",
+		"react": "*",
+		"react-dom": "*",
+		"rxjs": "^7.0.0"
 	},
 	"private": true,
 	"publishConfig": {
