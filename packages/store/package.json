@@ -33,7 +33,8 @@
 	"module": "./dist/index.js",
 	"name": "@superutils/store",
 	"peerDependencies": {
-		"@superutils/core": "*"
+		"@superutils/core": "*",
+		"rxjs": "*"
 	},
 	"publishConfig": {
 		"access": "public"

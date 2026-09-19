@@ -28,9 +28,11 @@ export const getResult = async <
 	onDownloadProgress?: OnDownloadProgress,
 ): Promise<Result> => {
 	if (!isFn(onDownloadProgress) || as === FetchAs.response) {
+		// eslint-disable-next-line @typescript-eslint/unbound-method
 		const parseFunc = response[as as keyof typeof response]
-		const result = !isFn(parseFunc) ? response : parseFunc.bind(response)()
-		return result as Result
+		if (!isFn(parseFunc)) return response as Result
+
+		return parseFunc.bind(response)() as Result
 	}
 
 	const reader = response?.body?.getReader()

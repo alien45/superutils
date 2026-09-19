@@ -1,0 +1,11 @@
+{
+	"platforms": ["apple", "android", "web"],
+	"apple": {
+		"modules": ["BinaryModule"]
+	},
+	"android": {
+		"modules": [
+			"io.github.alien45.superutils.expobinarymodule.BinaryModule"
+		]
+	}
+}

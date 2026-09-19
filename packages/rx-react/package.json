@@ -6,14 +6,14 @@
 	"description": "RxJS based utilities, components and hooks for React applications.",
 	"dependencies": {
 		"@superutils/core": "*",
-		"@superutils/rx": "*",
-		"@types/react": "^18.0.0",
-		"react": ">=16.8.0",
-		"react-dom": ">=16.8.0",
-		"rxjs": "^7.0.0"
+		"@superutils/rx": "*"
 	},
 	"devDependencies": {
-		"@testing-library/react": "^16.3.2"
+		"@testing-library/react": "^16.3.2",
+		"@types/react": ">=16.8.0",
+		"react": "^19.2.3",
+		"react-dom": ">=16.8.0",
+		"rxjs": "^7.0.0"
 	},
 	"exports": {
 		".": {

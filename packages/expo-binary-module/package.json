@@ -1,0 +1,63 @@
+{
+	"author": "Toufiqur R Chowdhury",
+	"bugs": {
+		"url": "https://github.com/alien45/superutils/issues"
+	},
+	"description": "Expo native module for managing long-running native binaries on Android.",
+	"devDependencies": {
+		"expo": "^56.0.3",
+		"expo-module-scripts": "^56.0.3",
+		"react-native": "^0.85.3",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {},
+	"exports": {
+		".": {
+			"types": "./build/index.d.ts",
+			"default": "./build/index.js"
+		}
+	},
+	"files": [
+		"android",
+		"build",
+		"app.plugin.js",
+		"expo-module.config.json",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md"
+	],
+	"homepage": "https://alien45.github.io/superutils/packages/@superutils/expo-binary-module/",
+	"keywords": [
+		"expo",
+		"expo-module",
+		"android",
+		"binary"
+	],
+	"license": "MIT",
+	"main": "build/index.js",
+	"name": "@superutils/expo-binary-module",
+	"peerDependencies": {
+		"expo": "*",
+		"react": "*",
+		"react-native": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alien45/superutils.git"
+	},
+	"scripts": {
+		"build": "expo-module build",
+		"clean": "expo-module clean",
+		"configure": "expo-module configure",
+		"lint": "expo-module lint",
+		"prepublishOnly": "expo-module prepublishOnly",
+		"test": "expo-module test"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"types": "build/index.d.ts",
+	"version": "0.1.0"
+}
