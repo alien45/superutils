@@ -144,7 +144,7 @@ export type AutoStopOptions = {
 	/**
 	 * Auto stop if matches any of the network types provided
 	 *
-	 * Default: `[DeviceNetworkType.CELLULAR]`
+	 * Default: `['cellular']`
 	 */
 	networkTypes?: DeviceNetworkType[]
 

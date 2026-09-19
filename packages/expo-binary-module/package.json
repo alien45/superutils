@@ -18,8 +18,9 @@
 		}
 	},
 	"files": [
-		"android",
+		"android/src",
 		"build",
+		"ios",
 		"app.plugin.js",
 		"expo-module.config.json",
 		"README.md",
@@ -53,6 +54,7 @@
 		"clean": "expo-module clean",
 		"configure": "expo-module configure",
 		"lint": "expo-module lint",
+		"npm:dry-run": "npm pack --dry-run",
 		"prepublishOnly": "expo-module prepublishOnly",
 		"test": "expo-module test"
 	},

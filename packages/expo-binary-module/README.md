@@ -21,6 +21,7 @@ The module is designed for applications that need to bundle a native executable 
 - [Start Options](#start-options)
   - [binaryName](#binaryname)
   - [autoStart](#autostart)
+  - [autoStop](#autoStop)
   - [Environment Variables](#environment-variables)
   - [Startup Detection](#startup-detection)
   - [Notifications](#notifications)
@@ -211,11 +212,15 @@ Values marked as `binaryOnly` are passed to the native binary but are not expose
 
 ```ts
 type StartOptions = {
-  binaryName: string
   autoStart?: boolean
-  env?: Record<string, EnvEntry>
+  autoStop?: AutoStopOptions | null
+  awaitStartDelay?: number
+  binaryName: string
+  env?: BinaryEnv
+  ipcOptions?: IpcOptions
+  notification?: Partial<NotificationOptions>
   startupText?: string
-  notification?: NotificationOptions
+  startupTimeout?: number
 }
 ```
 
@@ -237,8 +242,8 @@ Determines whether the binary should automatically start again after Android res
 
 ```ts
 {
-  binaryName: 'libmybinary.so',
   autoStart: true,
+  binaryName: 'libmybinary.so',
 }
 ```
 
@@ -251,6 +256,27 @@ The Android boot receiver uses that configuration to restart the binary after:
 - `MY_PACKAGE_REPLACED`
 
 When `autoStart` is disabled, the persisted auto-start configuration is removed.
+
+### autoStop
+
+Configure to auto-stop and restart the binary based on device network battery status.
+
+```ts
+type AutoStopOptions = {
+  /** Auto stop binary if device is on airplane mode */
+  airplaneMode?: boolean
+  /** Auto stop binary if battery level is below provided level/percentage. Default: 10 (=**10%**) */
+  batteryLevelBelow?: number
+  /** Auto stop binary if battery is not in charging state */
+  batteryNotCharging?: boolean
+  /** Auto stop binary if network is metered. Default: `false` */
+  metered?: boolean
+  /** Auto stop if matches any of the network types provided. Default: "['cellular']" */
+  networkTypes?: DeviceNetworkType[]
+  /** Auto stop binary if device is on power save mode */
+  powerSaveMode?: boolean
+}
+```
 
 ### Environment Variables
 

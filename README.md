@@ -69,6 +69,20 @@ This monorepo contains the following packages. Each is independently versioned a
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/core/">View</a></td>
     </tr>
     <tr>
+      <td>
+        <a href="https://www.npmjs.com/package/@superutils/expo-binary-module">
+          <code>@superutils/expo-binary-module</code>
+        </a>
+      </td>
+      <td>
+        An Expo native module for running and managing long-running native binaries on Android.
+        <br />
+        <b><i>Why:</i></b>Run background binaries reliably on Android.
+      </td>
+      <td id="coverage_expo-binary-module"><div style="color:gray">&#128221;&nbsp;Planned</div></td>
+      <td><a href="https://alien45.github.io/superutils/packages/@superutils/expo-binary-module/">View</a></td>
+    </tr>
+    <tr>
       <td><a href="https://www.npmjs.com/package/@superutils/fetch"><code>@superutils/fetch</code></a></td>
       <td>
         A lightweight <code>fetch</code> wrapper for browsers and Node.js, designed to simplify data fetching and reduce boilerplate.
