@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2026-09-20
+
+- fix binary not auto-starting on manual start or starting manually after force closing the app
+
 ## [0.1.0] - 2026-09-19
 
-### Added
+### Initial release
 
 - Initial release of `@superutils/expo-binary-module`.
 - Run and manage long-running native binaries on Android.

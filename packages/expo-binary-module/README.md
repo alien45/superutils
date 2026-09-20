@@ -8,6 +8,7 @@ The module is designed for applications that need to bundle a native executable 
 
 ## Table of Contents
 
+- [ChangeLog](./CHANGELOG.md)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
