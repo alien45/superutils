@@ -69,7 +69,15 @@ class BinaryModule : Module() {
                     ?: return@OnCreate
 
             val optionsJson = ConfigStore.get(context, START_OPTIONS_KEY)
-            if (optionsJson != null) startOptions = optionsJson.toStartOptions()
+            if (optionsJson != null) {
+                startOptions = optionsJson.toStartOptions()
+
+                // App started by user but binary hasn't yet started.
+                // Or, when app is force closed and user opens the app manually.
+                if (startOptions?.autoStart!! && BinaryService.status == Status.NEVER_STARTED) {
+                    start(optionsJson)
+                }
+            }
 
             notificationService = service?.notificationService ?: NotificationService(context)
         }
