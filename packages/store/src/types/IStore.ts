@@ -17,6 +17,7 @@ import type {
 	Store_ToJSON,
 	Store_Type,
 } from './types'
+import { IStore_ValidatorParams, Store_ValidatorFactory } from './validate'
 
 /** Store properties accepted in {@link Store_Options} */
 export type Store_OptionKeys =
@@ -440,9 +441,10 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * @returns store instance
 	 */
 	readonly setAll: (
-		data?: Map<Key, Value>,
+		data: Map<Key, Value>,
 		replace?: boolean,
 		silent?: boolean,
+		validated?: boolean,
 	) => IStore<Key, Value, CacheDisabled>
 
 	/**
@@ -479,6 +481,65 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - The instance stopping listening to force update cache triggers.
 	 */
 	readonly unsubscribe: () => void
+
+	/**
+	 * A configuration object containing optional validation hooks for specific store operations.
+	 *
+	 * This structure allows for granular control over write operations, enabling you
+	 * to define custom logic to intercept and prevent invalid state updates.
+	 *
+	 * **Behavior:**
+	 * - Invoked immediately before the store's internal state is updated.
+	 * - If validator throws error, the operation is aborted and the error is propagated to the caller.
+	 * - If validator returns `false`, the operation is aborted silently.
+	 * - The `write` validator is invoked during every persistence cycle, serving as a final check
+	 * after operation-specific hooks (e.g., `set` or `delete`).
+	 * - For reference-type values (e.g., Objects, Maps, Arrays), validators can be used to mutate the data
+	 * (e.g., for normalization) before it is committed.
+	 * - `thisArg`: all validators are bound to the store instance.
+	 *
+	 *
+	 * **For a list of actions that can be validated, see {@link IStore_ValidatorParams}.**
+	 *
+	 * @example
+	 * ```javascript
+	 * import { createObjectStore } from '@superutils/store'
+	 *
+	 * const settingsStore = createObjectStore({
+	 *   name: 'app-settings',
+	 *   initialValue: {
+	 *     theme: 'light',
+	 *     version: '1.0.0',
+	 *   },
+	 *   validate: {
+	 *     set([key, value]) {
+	 *       console.log(this.size) // "this" refers to the store instance
+	 *       if (key !== 'theme' || ['light', 'dark', 'system'].includes(value)) return
+	 *
+	 *       // throw error to abort operation
+	 *       throw new Error(`Invalid theme: ${value}`)
+	 *     },
+	 *     delete: ([keys]) => !keys.includes('version'),
+	 *   },
+	 * })
+	 *
+	 * settingsStore.set('theme', 'system')
+	 * console.log(settingsStore.get('theme')) // 'system'
+	 *
+	 * try {
+	 *   settingsStore.set('theme', 'invalid') // throws error
+	 * } catch (err) {
+	 *   console.error(err.message)
+	 * }
+	 *
+	 * // silently ignore
+	 * settingsStore.delete('version')
+	 * ```
+	 */
+	validate?: Store_ValidatorFactory<
+		IStore<Key, Value, CacheDisabled>,
+		IStore_ValidatorParams<Key, Value>
+	>
 
 	/** Get all values as an array */
 	readonly values: () => Value[]

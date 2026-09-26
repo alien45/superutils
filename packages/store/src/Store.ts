@@ -321,19 +321,22 @@ export class Store<
 	}
 
 	clear: This['clear'] = () => {
-		this.validate?.clear?.call(this, [], 'clear')
-		return this.setAll(new Map<Key, Value>(), true)
+		const valid = this.validate?.clear?.call(this, [], 'clear')
+		if (valid === false) return this
+
+		return this.setAll(new Map<Key, Value>(), true, false, true)
 	}
 
 	delete: This['delete'] = keys => {
 		if (!isArr(keys)) keys = [keys]
 
-		this.validate?.delete?.call(this, [keys], 'delete')
+		const valid = this.validate?.delete?.call(this, [keys], 'delete')
+		if (valid === false) return this
 
 		const data = this.getAll()
 		for (const k of keys) data.delete(k)
 
-		this.setAll(data, true)
+		this.setAll(data, true, false, true)
 		return this
 	}
 
@@ -542,20 +545,30 @@ export class Store<
 
 	search: This['search'] = (...args) => search(this.getAll(), ...args)
 
-	set: This['set'] = (key, value) => {
+	set: This['set'] = (key, value, silent) => {
 		const data = this.getAll()
 
 		const _value = isFn(value) ? value(data.get(key)) : value
-		this.validate?.set?.call(this, [key, _value], 'set')
+		const valid = this.validate?.set?.call(this, [key, _value], 'set')
+		if (valid === false) return this
+
 		data.set(key, _value)
 
-		return this.setAll(data, true)
+		return this.setAll(data, true, silent, true)
 	}
 
-	setAll: This['setAll'] = (data, replace = false) => {
+	setAll: This['setAll'] = (
+		data,
+		replace = false,
+		silent = false,
+		validated = false,
+	) => {
 		if (!isMap(data)) return this
 
-		this.validate?.setAll?.call(this, [data, replace], 'setAll')
+		const valid =
+			validated
+			|| this.validate?.setAll?.call(this, [data, replace], 'setAll')
+		if (valid === false) return this
 
 		if (!replace) {
 			// merge with existing entries and override only matching keys
@@ -571,7 +584,7 @@ export class Store<
 			args[0] as EntryComparator<Key, Value>,
 			args[1],
 		)
-		args[1]?.save && this.setAll(result, true)
+		args[1]?.save && this.setAll(result, true, false, true)
 
 		return result
 	}
@@ -655,7 +668,9 @@ export class Store<
 		if (!isMap(data) || !this.name || !this.storage) return false
 
 		try {
-			this.validate?.write?.call(this, [data], 'write')
+			const valid = this.validate?.write?.call(this, [data], 'write')
+			if (valid === false) return false
+
 			const jsonStr = this.toString(data)
 			this.storage.setItem(this.name, jsonStr)
 

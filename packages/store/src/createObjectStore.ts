@@ -1,4 +1,4 @@
-import { objToMap, isObj, isMap } from '@superutils/core'
+import { objToMap, isObj, isMap, TypedMap } from '@superutils/core'
 import createStore from './createStore'
 import type {
 	IObjectStore,
@@ -95,8 +95,7 @@ import type {
  */
 export function createObjectStore<
 	Context extends
-		| object
-		| ((store: IObjectStore<T, CacheDisabled>) => object),
+		object | ((store: IObjectStore<T, CacheDisabled>) => object),
 	T extends object = Record<string, unknown>,
 	CacheDisabled extends boolean = false,
 >(
@@ -119,8 +118,8 @@ export function createObjectStore<
 	Context extends object,
 >(options?: ObjectStore_Options<T, CacheDisabled>, context?: Context) {
 	options = {
-		type: 'object',
 		...options,
+		type: 'object',
 		initialValue: !isObj(options?.initialValue, true)
 			? options?.initialValue
 			: objToMap(options.initialValue),
@@ -131,15 +130,37 @@ export function createObjectStore<
 		context as object,
 	) as unknown as IObjectStore<T, CacheDisabled>
 
-	const setAll = store.setAll.bind(store)
-	store.setAll = (obj, replace) => {
-		// convert provided object to map
-		if (obj && !isMap(obj)) obj = objToMap(obj)
+	// --- Add/Override methods ---
 
-		return setAll(obj, replace)
+	store.patch = (obj, silent = false) => {
+		const valid = store.validate?.patch?.call(store, [obj, silent], 'patch')
+		if (valid === false) return store
+
+		return store.setAll(obj, false, silent, true)
 	}
 
-	store.toMap = data => (!data ? store.getAll() : objToMap(data))
+	const setAll = store.setAll.bind(store)
+	store.setAll = (obj, replace, silent, validated) => {
+		const valid =
+			validated
+			|| store.validate?.setAll?.call(
+				store,
+				[
+					isMap(obj) ? store.toObject(obj as TypedMap<T>) : obj,
+					replace,
+					silent,
+				],
+				'setAll',
+			)
+		if (valid === false) return store
+		// convert provided object to map
+		if (!isMap(obj)) obj = objToMap(obj)
+
+		return setAll(obj, replace, false, true)
+	}
+
+	store.toMap = <Data extends object = T>(data?: Data) =>
+		(!data ? store.getAll() : objToMap(data)) as TypedMap<Data>
 
 	return store
 }
