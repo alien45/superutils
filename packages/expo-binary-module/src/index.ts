@@ -87,8 +87,26 @@ declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 */
 	setAppState: (status: AppStateStatus) => void
 
-	/** Set/update start options */
-	setStartOptions: (options: StartOptions) => void
+	/**
+	 * Start binary (if not already started)
+	 *
+	 * @param options see {@link StartOptions}
+	 *
+	 * @retuns binary status
+	 */
+	start: (options: StartOptions) => Promise<Status>
+
+	/**
+	 * Get/Set start options
+	 * If the binary has not been previously started, this will NOT start the binary.
+	 *
+	 * If the binary has already been running or stopped using auto-stop options,
+	 * auto-stop options come into effect on the next device status change.
+	 */
+	startOptions: (options?: Partial<StartOptions>) => StartOptions | null
+
+	/** Stop the binary, foreground service and close persistent notification*/
+	stop: () => Promise<void>
 
 	/** Check if app has read/write permission to external storage */
 	storagePermissionCheck: () => boolean
@@ -103,26 +121,10 @@ declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 * ```
 	 */
 	storagePermissionRequest: () => Promise<boolean>
-
-	/**
-	 * Start binary (if not already started)
-	 *
-	 * @param options see {@link StartOptions}
-	 *
-	 * @retuns binary status
-	 */
-	start: (options: StartOptions) => Promise<Status>
-
-	/** Stop the binary, foreground service and close persistent notification*/
-	stop: () => Promise<void>
 }
 
 export type AppStateStatus =
-	| 'active'
-	| 'background'
-	| 'inactive'
-	| 'unknown'
-	| 'extension'
+	'active' | 'background' | 'inactive' | 'unknown' | 'extension'
 
 export type AutoStopOptions = {
 	/** Auto stop binary if device is on airplane mode */
@@ -424,6 +426,21 @@ const { notificationCancel, notificationSet, start } =
 	}
 let startPromise = null as null | Promise<Status>
 
+binaryModule.notification = {
+	binary: options =>
+		notificationSet({ ...options, id: BINARY_NOTIFICATION_ID }),
+	close: notificationCancel,
+	set: options => {
+		const { id } = options
+		if ([undefined, BINARY_NOTIFICATION_ID].includes(id)) {
+			options.id = ++lastId
+		} else if (`${id}`.startsWith(ID_PREFIX) && id! > lastId) {
+			lastId = id!
+		}
+		options.ongoing ??= false
+		return notificationSet(options)
+	},
+} as NotificationManager
 binaryModule.start = async options => {
 	options.notification ??= {}
 	options.notification.id ??= BINARY_NOTIFICATION_ID
@@ -466,21 +483,6 @@ binaryModule.start = async options => {
 
 	return await startPromise
 }
-binaryModule.notification = {
-	binary: options =>
-		notificationSet({ ...options, id: BINARY_NOTIFICATION_ID }),
-	close: notificationCancel,
-	set: options => {
-		const { id } = options
-		if ([undefined, BINARY_NOTIFICATION_ID].includes(id)) {
-			options.id = ++lastId
-		} else if (`${id}`.startsWith(ID_PREFIX) && id! > lastId) {
-			lastId = id!
-		}
-		options.ongoing ??= false
-		return notificationSet(options)
-	},
-} as NotificationManager
 
 // set the initial state
 binaryModule.setAppState(AppState.currentState)

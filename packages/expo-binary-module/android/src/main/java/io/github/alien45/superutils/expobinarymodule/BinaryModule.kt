@@ -137,11 +137,6 @@ class BinaryModule : Module() {
         Function("setAppState") { state: AppStateStatus ->
             BinaryService.appState = state
         }
-
-        Function("setStartOptions") { options: StartOptions ->
-            startOptions = options
-            ConfigStore.set(getReactContext(), START_OPTIONS_KEY, options.toJson())
-        }
         
         AsyncFunction("start") { options: StartOptions? ->
             startOptions = options ?: startOptions
@@ -157,6 +152,18 @@ class BinaryModule : Module() {
                 )
             }
             start(startOptions!!.toJson())
+        }
+
+        Function("startOptions") { options: StartOptions? ->
+            if (options != null) {
+                if (options.binaryName.isBlank()) {
+                    options.binaryName = startOptions?.binaryName!!
+                }
+                startOptions = options!!
+                ConfigStore.set(getReactContext(), START_OPTIONS_KEY, options.toJson())
+            }
+
+            startOptions
         }
 
         AsyncFunction("stop") {

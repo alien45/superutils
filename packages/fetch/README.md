@@ -691,7 +691,7 @@ fetch
      */
     fetchFunc: axios as FetchFunc,
 
-    // if request fails retry maximus 3 more times
+    // if request fails retry maximum 3 more times
     retry: 3,
     // ...additional options
   })
