@@ -47,7 +47,7 @@ export function useRx<
 	TIn = UnwrapSourceValue<Source$>,
 	TOut = TIn,
 	ThisArg = unknown,
-	Merge extends boolean | never = TOut extends object ? boolean : false,
+	Merge extends boolean = TOut extends object ? boolean : never,
 >(
 	source$?: Source$ | null | (() => Source$ | void | undefined),
 	options: UseRx_Options<TIn, TOut, ThisArg, Merge> = {},
@@ -183,12 +183,7 @@ export class UseRx_Error extends Error {
 	}
 }
 
-export type UseRx_Options<
-	TIn,
-	TOut,
-	ThisArg = unknown,
-	Merge = boolean | never,
-> = {
+export type UseRx_Options<TIn, TOut, ThisArg = unknown, Merge = boolean> = {
 	/** Delay in milliseconds to debounce or throttle state updates. */
 	defer?: number
 	/** Configuration for the deferral logic (e.g., throttle vs debounce). */

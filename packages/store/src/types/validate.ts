@@ -55,7 +55,7 @@ export type Store_ValidateAction =
 
 export type Store_ValidatorFactory<
 	ThisArg,
-	AllParams extends Record<Store_ValidateAction, any[]>,
+	AllParams extends Record<Store_ValidateAction, unknown[]>,
 > = {
 	-readonly [K in keyof AllParams]?: Store_Validate<ThisArg, AllParams[K], K>
 }
