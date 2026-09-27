@@ -41,7 +41,8 @@
 	"name": "@superutils/rx-react",
 	"peerDependencies": {
 		"@superutils/core": "*",
-		"@superutils/rx": "*"
+		"@superutils/rx": "*",
+		"react": "*"
 	},
 	"private": false,
 	"publishConfig": {
