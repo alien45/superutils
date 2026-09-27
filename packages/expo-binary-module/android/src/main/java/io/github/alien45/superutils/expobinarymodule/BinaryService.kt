@@ -122,7 +122,7 @@ class BinaryService : Service() {
         if (startOptions == null || aso == null) return
 
         val batLevel = aso.batteryLevelBelow
-        val stop = aso.airplaneMode && status.isAirplaneMode ||
+        val stop = (aso.airplaneMode && status.isAirplaneMode) ||
             (batLevel > 0 && status.batteryLevel <= batLevel) ||
             (aso.batteryNotCharging && !status.batteryCharging ) ||
             (aso.metered && status.isMetered) ||

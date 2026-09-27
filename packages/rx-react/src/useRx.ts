@@ -11,7 +11,7 @@ import {
 } from '@superutils/core'
 import { copyRx, UnwrapSourceValue } from '@superutils/rx'
 import { useEffect, useMemo, useState } from 'react'
-import { isObservable, Subject, Subscription } from 'rxjs'
+import { isObservable, Observable, Subject, Subscription } from 'rxjs'
 
 /**
  * A React hook that synchronizes component state with an RxJS Observable or Subject.
@@ -47,9 +47,10 @@ export function useRx<
 	TIn = UnwrapSourceValue<Source$>,
 	TOut = TIn,
 	ThisArg = unknown,
+	Merge extends boolean = TOut extends object ? boolean : never,
 >(
 	source$?: Source$ | null | (() => Source$ | void | undefined),
-	options: UseRx_Options<TIn, TOut, ThisArg> = {},
+	options: UseRx_Options<TIn, TOut, ThisArg, Merge> = {},
 ) {
 	const {
 		defer,
@@ -100,7 +101,7 @@ export function useRx<
 		return !isPositiveNumber(defer)
 			? _setValue
 			: deferred(_setValue, defer, deferOptions)
-	}, []) as UseRx_SetValue<TOut>
+	}, []) as UseRx_SetValue<TOut, Merge>
 
 	useEffect(function subscribe() {
 		if (_source$.closed) {
@@ -146,15 +147,17 @@ export function useRx<
 		}
 	}, [])
 
-	return [state.value, setValue, state.error, _source$] as const
+	return [
+		state.value,
+		setValue,
+		state.error, //
+		_source$ as Source$ extends Observable<TIn> ? Source$ : Subject<TIn>,
+	] as const
 }
 export default useRx
 
 export type UseRx_ErrorType =
-	| 'ObjectMergeError'
-	| 'ProducerError'
-	| 'SubjectClosed'
-	| 'TransformError'
+	'ObjectMergeError' | 'ProducerError' | 'SubjectClosed' | 'TransformError'
 
 /**
  * Custom error class for errors encountered within the `useRx` hook.
@@ -180,7 +183,7 @@ export class UseRx_Error extends Error {
 	}
 }
 
-export type UseRx_Options<TIn, TOut, ThisArg = unknown> = {
+export type UseRx_Options<TIn, TOut, ThisArg = unknown, Merge = boolean> = {
 	/** Delay in milliseconds to debounce or throttle state updates. */
 	defer?: number
 	/** Configuration for the deferral logic (e.g., throttle vs debounce). */
@@ -193,7 +196,7 @@ export type UseRx_Options<TIn, TOut, ThisArg = unknown> = {
 	 * If true, performs a shallow merge (`{...prev, ...next}`) when the value is an object.
 	 * New properties will overwrite existing ones.
 	 */
-	merge?: TOut extends object ? boolean : never
+	merge?: Merge //TOut extends object ? boolean : never
 	/**
 	 * Number of initial emissions to ignore from the source observable.
 	 *
@@ -219,8 +222,8 @@ export type UseRx_Options<TIn, TOut, ThisArg = unknown> = {
  * The state dispatcher returned by `useRx`.
  * Includes a `mounted` flag (used internally) to prevent state updates on unmounted components.
  */
-export type UseRx_SetValue<TOut> = React.Dispatch<
-	React.SetStateAction<TOut | undefined>
+export type UseRx_SetValue<TOut, Merge extends boolean> = React.Dispatch<
+	React.SetStateAction<Merge extends true ? Partial<TOut> : TOut>
 > & {
 	mounted: boolean
 	subscription?: Subscription

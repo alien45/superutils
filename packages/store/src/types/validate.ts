@@ -14,7 +14,7 @@ export type IObjectStore_ValidatorParams<
 	patch: [data: Partial<T>, silent?: boolean]
 	set: [key: Key, Value: T[Key], silent?: boolean]
 	setAll: [data: T, replace?: boolean, silent?: boolean]
-	write: [data?: TypedMap<T>, silent?: boolean]
+	write: [data: TypedMap<T>, silent?: boolean]
 }
 
 /**
@@ -27,7 +27,7 @@ export type IStore_ValidatorParams<Key, Value> = {
 	delete: [keys: Key[]]
 	set: [key: Key, Value: Value, silent?: boolean]
 	setAll: [data: Map<Key, Value>, replace?: boolean, silent?: boolean]
-	write: [data?: Map<Key, Value>, silent?: boolean]
+	write: [data: Map<Key, Value>, silent?: boolean]
 }
 
 /**
@@ -47,15 +47,15 @@ export type Store_Validate<ThisArg, Params, Action> = (
 	action: Action,
 ) => boolean | void
 
-export type Store_ValidatorFactory<
-	ThisArg,
-	AllParams extends Record<Store_ValidateAction, any[]>,
-> = {
-	-readonly [K in keyof AllParams]?: Store_Validate<ThisArg, AllParams[K], K>
-}
-
 /**
  * Literal union of all operations that can be intercepted by a validator.
  */
 export type Store_ValidateAction =
 	'clear' | 'delete' | 'set' | 'setAll' | 'write'
+
+export type Store_ValidatorFactory<
+	ThisArg,
+	AllParams extends Record<Store_ValidateAction, unknown[]>,
+> = {
+	-readonly [K in keyof AllParams]?: Store_Validate<ThisArg, AllParams[K], K>
+}

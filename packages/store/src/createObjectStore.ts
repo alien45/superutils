@@ -140,7 +140,7 @@ export function createObjectStore<
 	}
 
 	const setAll = store.setAll.bind(store)
-	store.setAll = (obj, replace, silent, validated) => {
+	store.setAll = (obj, replace, silent, validated = false) => {
 		const valid =
 			validated
 			|| store.validate?.setAll?.call(
