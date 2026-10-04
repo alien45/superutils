@@ -12,23 +12,33 @@ import android.util.Log
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val tag = "${TAG}[BootReceiver]"
         val action = intent.action ?: return
         val ignore = action != Intent.ACTION_BOOT_COMPLETED &&
             action != Intent.ACTION_LOCKED_BOOT_COMPLETED &&
             action != Intent.ACTION_MY_PACKAGE_REPLACED
         if (ignore) return
 
-        val optionsJson = ConfigStore.get(context, START_OPTIONS_KEY) ?: return
+        val optionsJson = EncryptedStore.get(context, START_OPTIONS_KEY) ?: return
 
         val options = try {
             optionsJson.toStartOptions()
         } catch (e: Exception) {
-            Log.e(TAG, "BootReceiver: Failed to parse service options", e)
+            Log.e(tag, "Failed to parse service options", e)
             null
         }
         if (options == null || !options.autoStart || options.binaryName.isBlank()) return
+        if (BinaryService.status == Status.STARTED || BinaryService.status == Status.STARTING) {
+            Log.e(tag, "Binary is already running. Skipping autostart.")
+            return
+        }
 
-        Log.i(TAG, "Restarting binary after $action")
+        if (options.autoStartDelay > 0) {
+            Log.i(tag, "Delaying ${options.autoStartDelay} seconds before starting binary...")
+            Thread.sleep(options.autoStartDelay * 1000)
+        }
+
+        Log.i(tag, "Restarting binary after $action")
 
         val start = Intent(context, BinaryService::class.java).apply {
             putExtra(START_OPTIONS_KEY, optionsJson)
@@ -39,15 +49,5 @@ class BootReceiver : BroadcastReceiver() {
         } else {
             context.startService(start)
         }
-        // var attempts = 0
-        // while (BinaryModule.instance == null && attempts < 20) {
-        //     val service = BinaryService.LocalBinder?.getService()
-        //     Log.d(TAG, "BinaryModule.instance: ${BinaryModule.instance != null} | service: ${service != null}")
-        //     Thread.sleep(500)
-        //     attempts++
-        // }
-       
-        // if(BinaryModule.instance !== null) Log.i(TAG, "Restarting binary after $action ---------")
-        // BinaryModule.instance?.start(optionsJson)
     }
 }

@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import android.app.Activity
 
 import expo.modules.core.interfaces.ActivityProvider
+import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
@@ -68,7 +69,7 @@ class BinaryModule : Module() {
                 appContext.reactContext?.applicationContext
                     ?: return@OnCreate
 
-            val optionsJson = ConfigStore.get(context, START_OPTIONS_KEY)
+            val optionsJson = EncryptedStore.get(context, START_OPTIONS_KEY)
             if (optionsJson != null) {
                 startOptions = optionsJson.toStartOptions()
 
@@ -126,12 +127,12 @@ class BinaryModule : Module() {
             notificationService!!.cancel(id)
         }
 
-        Function("permissionCheck") { code: Int ->
-            permissionCheck(code)
+        Function("permissionCheck") { permission: String ->
+            permissionCheck(permission)
         }
 
-        Function("permissionRequest") { code: Int ->
-            permissionRequest(code)
+        Function("permissionRequest") { permission: String, code: Int ->
+            permissionRequest(permission, code)
         }
 
         Function("setAppState") { state: AppStateStatus ->
@@ -160,7 +161,7 @@ class BinaryModule : Module() {
                     options.binaryName = startOptions?.binaryName!!
                 }
                 startOptions = options!!
-                ConfigStore.set(getReactContext(), START_OPTIONS_KEY, options.toJson())
+                EncryptedStore.set(getReactContext(), START_OPTIONS_KEY, options.toJson())
             }
 
             startOptions
@@ -172,12 +173,72 @@ class BinaryModule : Module() {
             stop()
         }
 
-        Function("storagePermissionCheck") {
-            permissionCheck(STORAGE_PERMISSION_CODE)
+        Function("storagePermissionCheck") { 
+            permissionCheck(STORAGE_PERMISSION)
         }
 
-        AsyncFunction("storagePermissionRequest") {
-            permissionRequest(STORAGE_PERMISSION_CODE)
+        AsyncFunction("storagePermissionRequest") { code: Int ->
+            permissionRequest(STORAGE_PERMISSION, code)
+        }
+
+        Function("store") { key: String, value: String?, remove: Boolean? ->
+            val context = getReactContext()
+            when {
+                key.startsWith(CONFIG_STORE_RESERVED_PREFIX) -> { null }
+
+                remove == true -> {
+                    ConfigStore.delete(context, key)
+                    null
+                }
+
+                else -> {
+                    if (value != null) ConfigStore.set(context, key, value)
+                    ConfigStore.get(context, key)
+                }
+            }
+        }
+
+        Function("storeEncrypted") {
+            key: String,
+            value: String?,
+            remove: Boolean?
+        ->
+            val context = getReactContext()
+            when {
+                key.startsWith(CONFIG_STORE_RESERVED_PREFIX) -> { null }
+
+                remove == true -> {
+                    EncryptedStore.delete(context, key)
+                    null
+                }
+
+                else -> {
+                    if (value != null) EncryptedStore.set(context, key, value)
+                    EncryptedStore.get(context, key)
+                }
+            }
+        }
+
+        AsyncFunction("storeEncryptedAsync") Coroutine {
+            key: String,
+            value: String?,
+            remove: Boolean?
+        ->
+            val context = getReactContext()
+            return@Coroutine when {
+                key.startsWith(CONFIG_STORE_RESERVED_PREFIX) -> { null }
+
+                remove == true -> {
+                    EncryptedStore.deleteAsync(context, key)
+                    null
+                }
+
+                else -> {
+                    if (value != null) EncryptedStore.setAsync(context, key, value)
+
+                    EncryptedStore.getAsync(context, key)
+                }
+            }
         }
     }
 
@@ -233,50 +294,55 @@ class BinaryModule : Module() {
             )
     }
 
-    private fun permissionCheck(code: Int): Boolean {
+    private fun permissionCheck(permission: String): Boolean {
         val context = appContext.reactContext
             ?: return false
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && code == STORAGE_PERMISSION_CODE) {
+        val isAndroidRStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+            && permission == STORAGE_PERMISSION
             /**
              * Android 11+  → Environment.isExternalStorageManager()
              * Android ≤10  → WRITE_EXTERNAL_STORAGE
              */
-            return Environment.isExternalStorageManager()
-        }
+        if (isAndroidRStorage) return Environment.isExternalStorageManager()
 
-
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
+        val result = ContextCompat.checkSelfPermission(context, permission)
+        return result == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun permissionRequest(code: Int): Boolean {
-        if (permissionCheck(code)) {
-            return true
-        }
+    // returns boolean indicating whether request has been made
+    private fun permissionRequest(permission: String, code: Int): Boolean {
+        var permissions = permission
+            .split(",")
+            .map { it.trim() }
+        if (permissions.size == 0) return false
+            
+        var notGranted = permissions.filter { !permissionCheck(it) }
+        // all permissions already granted
+        if (notGranted.size == 0) return false
 
         val activity = appContext.currentActivity
             ?: throw IllegalStateException("No current activity available")
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && code == STORAGE_PERMISSION_CODE) {
+        val isAndroidRStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R 
+            && notGranted.filter { it == STORAGE_PERMISSION }.size >= 0
+        if (isAndroidRStorage) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                 Uri.parse("package:${activity.packageName}")
             )
-
             activity.startActivity(intent)
-        } else {
+            notGranted = notGranted.filter { it != STORAGE_PERMISSION }
+        }
+        if (notGranted.size > 0) {
             ActivityCompat.requestPermissions(
                 activity,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                STORAGE_PERMISSION_CODE
+                notGranted.toTypedArray(),
+                code
             )
         }
 
-        return permissionCheck(code)
+        return true
     }
 
     fun start(optionsJson: String): Status {

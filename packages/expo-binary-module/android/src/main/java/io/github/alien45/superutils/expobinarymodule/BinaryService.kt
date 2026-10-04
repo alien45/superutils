@@ -242,7 +242,7 @@ class BinaryService : Service() {
          */
         val optionsJson = intent
             ?.getStringExtra(START_OPTIONS_KEY)
-            ?: ConfigStore.get(this, START_OPTIONS_KEY)
+            ?: EncryptedStore.get(this, START_OPTIONS_KEY)
             ?: return START_NOT_STICKY
 
         val options = try {
@@ -261,7 +261,7 @@ class BinaryService : Service() {
 
         val binaryName = options.binaryName
         Log.d(TAG, "starting binary $binaryName")
-        Log.d(TAG, "StartOptions: ${options}")
+        // Log.d(TAG, "StartOptions: ${options.toString()}")
         if (binaryName.isBlank()) {
             error = "Binary required"
             Log.e(TAG, error!!)
@@ -298,9 +298,9 @@ class BinaryService : Service() {
          * Persist only when automatic restarting is enabled.
          */
         if (autoStart) {
-            ConfigStore.set(this, START_OPTIONS_KEY, options.toJson())
+            EncryptedStore.set(this, START_OPTIONS_KEY, options.toJson())
         } else {
-            ConfigStore.delete(this, START_OPTIONS_KEY)
+            EncryptedStore.delete(this, START_OPTIONS_KEY)
         }
 
         try {

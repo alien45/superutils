@@ -205,6 +205,9 @@ class StartOptions: Record {
     var autoStart: Boolean = false
 
     @Field
+    var autoStartDelay: Long = 0 // delay in seconds
+
+    @Field
     var autoStop: AutoStopOptions? = AutoStopOptions()
     
     @Field
