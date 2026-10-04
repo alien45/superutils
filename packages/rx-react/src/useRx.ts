@@ -47,7 +47,7 @@ export function useRx<
 	TIn = UnwrapSourceValue<Source$>,
 	TOut = TIn,
 	ThisArg = unknown,
-	Merge extends boolean = TOut extends object ? boolean : never,
+	Merge extends boolean = TOut extends object ? boolean : false,
 >(
 	source$?: Source$ | null | (() => Source$ | void | undefined),
 	options: UseRx_Options<TIn, TOut, ThisArg, Merge> = {},
@@ -183,26 +183,36 @@ export class UseRx_Error extends Error {
 	}
 }
 
-export type UseRx_Options<TIn, TOut, ThisArg = unknown, Merge = boolean> = {
+export type UseRx_Options<
+	TIn,
+	TOut,
+	ThisArg = unknown,
+	Merge extends boolean = boolean,
+> = {
 	/** Delay in milliseconds to debounce or throttle state updates. */
 	defer?: number
+
 	/** Configuration for the deferral logic (e.g., throttle vs debounce). */
 	deferOptions?: DeferredOptions<ThisArg>
+
 	/**
 	 * The value used during the initial render if the observable has not yet emitted.
 	 */
 	initialValue?: TOut
+
 	/**
 	 * If true, performs a shallow merge (`{...prev, ...next}`) when the value is an object.
 	 * New properties will overwrite existing ones.
 	 */
-	merge?: Merge //TOut extends object ? boolean : never
+	merge?: Merge
+
 	/**
 	 * Number of initial emissions to ignore from the source observable.
 	 *
 	 * Default: `1` if source is a `BehaviorSubject`, otherwise `0`.
 	 */
 	skipEmits?: number
+
 	/**
 	 * A callback to modify the incoming value before it hits the state.
 	 * Return `undefined` to use the raw value, or the previous value to skip the update.
