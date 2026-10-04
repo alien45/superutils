@@ -28,8 +28,8 @@ let startPromise = null as null | Promise<Status>
 
 binaryModule.store = {
 	delete: key => configStore(key, null, true),
-	get: key => configStore(key) as string | null,
-	set: (key, value) => configStore(key, value) as string | null,
+	get: key => configStore(key),
+	set: (key, value) => configStore(key, value),
 }
 
 binaryModule.storeEncrypted = {

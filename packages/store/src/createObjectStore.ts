@@ -6,9 +6,7 @@ import type {
 	Store_ContextReturn,
 	Store_ContextValidate,
 	Store_Options,
-	Store_Type,
 } from './types'
-import { Store } from './Store'
 
 /**
  * Creates a {@link IObjectStore} instance initialized from a plain object.
