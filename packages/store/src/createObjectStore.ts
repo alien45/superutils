@@ -6,7 +6,9 @@ import type {
 	Store_ContextReturn,
 	Store_ContextValidate,
 	Store_Options,
+	Store_Type,
 } from './types'
+import { Store } from './Store'
 
 /**
  * Creates a {@link IObjectStore} instance initialized from a plain object.
@@ -131,15 +133,14 @@ export function createObjectStore<
 	) as unknown as IObjectStore<T, CacheDisabled>
 
 	// --- Add/Override methods ---
-
-	store.patch = (obj, silent = false) => {
-		const valid = store.validate?.patch?.call(store, [obj, silent], 'patch')
+	const setAll = store.setAll.bind(store)
+	store.patch = (...args) => {
+		const [obj, silent = false] = args
+		const valid = store.validate?.patch?.call(store, args, 'patch')
 		if (valid === false) return store
 
 		return store.setAll(obj, false, silent, true)
 	}
-
-	const setAll = store.setAll.bind(store)
 	store.setAll = (obj, replace, silent, validated = false) => {
 		const valid =
 			validated
@@ -153,12 +154,14 @@ export function createObjectStore<
 				'setAll',
 			)
 		if (valid === false) return store
-		// convert provided object to map
-		if (!isMap(obj)) obj = objToMap(obj)
 
-		return setAll(obj, replace, false, true)
+		return setAll(
+			!isMap(obj) ? objToMap(obj) : obj,
+			replace,
+			silent,
+			true, // prevent re-validatation
+		)
 	}
-
 	store.toMap = <Data extends object = T>(data?: Data) =>
 		(!data ? store.getAll() : objToMap(data)) as TypedMap<Data>
 

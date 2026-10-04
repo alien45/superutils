@@ -16,7 +16,7 @@ export interface IObjectStore<
 	 */
 	type: string
 
-	get<TKey extends keyof T>(key: TKey): T[keyof T] | undefined
+	get<TKey extends keyof T>(key: TKey): T[TKey] | undefined
 
 	getAll(forceRead?: boolean): TypedMap<T>
 
@@ -28,7 +28,7 @@ export interface IObjectStore<
 		silent?: boolean,
 	) => IObjectStore<T, CacheDisabled>
 
-	set<TKey extends keyof T, Value extends T[keyof T]>(
+	set<TKey extends keyof T, Value extends T[TKey]>(
 		key: TKey,
 		value: Value | ((currentValue?: Value) => Value),
 	): IObjectStore<T, CacheDisabled>

@@ -146,8 +146,7 @@ export const OPTIONAL_STORE_PROPS = [
  */
 export function createStore<
 	Context extends
-		| object
-		| ((store: IStore<Key, Value, CacheDisabled>) => object),
+		object | ((store: IStore<Key, Value, CacheDisabled>) => object),
 	Key,
 	Value,
 	CacheDisabled extends boolean,
