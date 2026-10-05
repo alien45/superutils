@@ -1,4 +1,5 @@
 import type { BinaryModule } from './binaryModule'
+import type { NotificationOptions } from './notification'
 
 export type StoreAIOFuncInternal = (
 	key: string,

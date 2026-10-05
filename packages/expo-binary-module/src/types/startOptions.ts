@@ -1,5 +1,6 @@
-import type { BinaryEnv } from './env'
-import type { IpcOptions } from './ipc'
+import type { BinaryEnv, EnvEntry } from './env'
+import type { IpcNotificationOptions, IpcOptions } from './ipc'
+import type { NotificationOptions } from './notification'
 
 export type AutoStopOptions = {
 	/** Auto stop binary if device is on airplane mode */
@@ -88,7 +89,7 @@ export type StartOptions = {
 	 *
 	 * #### How this works?
 	 * If enabled (by setting a `tag`), the binary service will monitor each line printed by executed binary
-	 * and create a notification if matched. See {@link IpcOptions.tag}
+	 * and create a notification if matched. See {@link IpcNotificationOptions.tag}
 	 */
 	ipcOptions?: IpcOptions
 

@@ -135,6 +135,15 @@ class BinaryModule : Module() {
             permissionRequest(permission, code)
         }
 
+        Function("sendToBinary") { message: string ->
+            val process = service?.process
+            if (process == null) {
+                false
+            } else {
+                service!!.sendToProcess(process!!)
+            }
+        }
+
         Function("setAppState") { state: AppStateStatus ->
             BinaryService.appState = state
         }

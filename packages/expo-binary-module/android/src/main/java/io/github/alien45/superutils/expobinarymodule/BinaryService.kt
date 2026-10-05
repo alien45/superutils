@@ -25,8 +25,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-val JNI_LIBS_DIR = "[[JNI_LIBS_DIR]]"
-
 /**
  * Generic foreground service that runs a single binary from
  * nativeLibraryDir with a configurable environment.
@@ -118,26 +116,31 @@ class BinaryService : Service() {
     }
 
     private fun handleDeviceStatus(status: DeviceStatus) {
-        val aso = startOptions?.autoStop
-        if (startOptions == null || aso == null) return
+        // emit the status to the react side
+        BinaryModule.instance?.emitDeviceStatus(status)
+        sendToProcess(process, "${TAG}[DeviceStatus] ${status.toJson()}")
 
-        val batLevel = aso.batteryLevelBelow
-        val stop = (aso.airplaneMode && status.isAirplaneMode) ||
-            (batLevel > 0 && status.batteryLevel <= batLevel) ||
-            (aso.batteryNotCharging && !status.batteryCharging ) ||
-            (aso.metered && status.isMetered) ||
-            (aso.networkTypes.size > 0 && status.networkType in aso.networkTypes) ||
-            (aso.powerSaveMode && status.powerSaveMode)
-        val status = BinaryService.status
+        val aso = startOptions?.autoStop
+        // if (startOptions == null || aso == null) return
+        var stop = false
+        if (aso !== null) {
+            val batLevel = aso.batteryLevelBelow
+            val stop = (aso.airplaneMode && status.isAirplaneMode) ||
+                (batLevel > 0 && status.batteryLevel <= batLevel) ||
+                (aso.batteryNotCharging && !status.batteryCharging ) ||
+                (aso.metered && status.isMetered) ||
+                (aso.networkTypes.size > 0 && status.networkType in aso.networkTypes) ||
+                (aso.powerSaveMode && status.powerSaveMode)
+        }
         if (stop) {
             // already stopping or stopped
-            if (status in listOf(Status.STOPPING, Status.STOPPED)) return
+            if (BinaryService.status in listOf(Status.STOPPING, Status.STOPPED)) return
             stopProcess()
             return
         }
 
         // already starting or started
-        if (status in listOf(Status.STARTING, Status.STARTED)) return
+        if (BinaryService.status in listOf(Status.STARTING, Status.STARTED)) return
 
         onStartCommand(null, 0, 0)
     }
@@ -184,7 +187,6 @@ class BinaryService : Service() {
         deviceStatusMonitor = DeviceStatusMonitor(this)
         serviceScope.launch {
             deviceStatusMonitor.status.collect { status ->
-                BinaryModule.instance?.emitDeviceStatus(status)
                 handleDeviceStatus(status)
             }
         }
@@ -328,6 +330,21 @@ class BinaryService : Service() {
         } else {
             START_NOT_STICKY
         }
+    }
+
+    fun sendToProcess(process: Process?, message: String) Boolean {
+        if (process == null) return false
+
+        synchronized(process) {
+            check(process.isAlive) {
+                "Process is no longer running"
+            }
+
+            process.outputStream.write((message + "\n").toByteArray(Charsets.UTF_8))
+            process.outputStream.flush()
+        }
+
+        return true
     }
 
     private fun startProcess(

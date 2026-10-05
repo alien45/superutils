@@ -1,12 +1,15 @@
+import type { BINARY_NOTIFICATION_ID, DEVICE_STATUS_TAG } from './constants'
+import type { NotificationOptions } from './notification'
+
 export type AppStateStatus =
 	'active' | 'background' | 'inactive' | 'unknown' | 'extension'
 
-export type IpcOptions = {
+export type IpcNotificationOptions = {
 	/**
-	 * Choose which {@link AppState} the binary service is allowed to create an IPC notification
+	 * Sets the {@link AppState} the binary service is allowed to create a notification from the IPC message received
+	 * from the binary throught the log/output stream.
 	 *
-	 *
-	 * Default: `undefined` (notifies on all states excluding "active")
+	 * Default: `undefined` (notifies on all states excluding when app is open - status is "active")
 	 */
 	notifyOnAppStates?: AppStateStatus[]
 
@@ -28,4 +31,17 @@ export type IpcOptions = {
 	 * ```
 	 */
 	tag: string
+}
+
+export type IpcOptions = {
+	/**
+	 * If false, will send the {@link NotificationOptions} as a single line string to the binary's input stream
+	 * prefixed by {@link DEVICE_STATUS_TAG}
+	 */
+	disableDeviceStatus: boolean
+
+	/**
+	 * Options for incoming notifications from the binary
+	 */
+	notification: IpcNotificationOptions
 }

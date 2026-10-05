@@ -79,6 +79,8 @@ fun DeviceStatus.checkChanged(
     }
     return changed ?: false
 }
+// Convert to string
+fun DeviceStatus.toJson(): String = gson.toJson(this)
 
 enum class DeviceNetworkType(val value: String) {
     CELLULAR("cellular"),
@@ -231,10 +233,8 @@ class StartOptions: Record {
     @Field
     var startupTimeout: Long = 30
 }
-fun StartOptions.toJson(): String =
-    gson.toJson(this)
-fun String.toStartOptions(): StartOptions =
-    gson.fromJson(this, StartOptions::class.java)
+fun StartOptions.toJson(): String = gson.toJson(this)
+fun String.toStartOptions(): StartOptions = gson.fromJson(this, StartOptions::class.java)
 
 enum class Status(val value: String) {
     CRASHED("crashed"),

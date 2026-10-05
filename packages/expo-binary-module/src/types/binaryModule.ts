@@ -1,8 +1,9 @@
 import { NativeModule } from 'expo'
-import type { NotificationManager } from './notification'
-import type { Store } from './store'
 import type { AppStateStatus } from 'react-native'
+import type { EnvEntry } from './env'
+import type { NotificationManager, NotificationOptions } from './notification'
 import type { StartOptions, Status } from './startOptions'
+import type { Store } from './store'
 
 export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	/**
@@ -10,8 +11,8 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 *
 	 * If enabled, each line of stdout log from the binary will be emitted as they appear with event named "log".
 	 *
-	 * **CAUTION:** make sure to disable it when logs are no longer needed. For notifications use
-	 * {@link StartOptions.ipcOptions}
+	 * **CAUTION:** make sure to disable it when logs are no longer needed. If you only need to receive notifications
+	 * use {@link StartOptions.ipcOptions} when starting the binary.
 	 *
 	 * Default: `undefined`
 	 *
@@ -24,26 +25,6 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 * ```
 	 */
 	emitLog: (emitLog?: boolean) => boolean
-
-	/**
-	 * Simple unencrypted app-private storage using Android SharedPreferences.
-	 *
-	 * Data may be backed up uncrypted or unencrypted by Android backup depending on the backup provider.
-	 *
-	 * You can also exclude it from backup: https://developer.android.com/identity/data/autobackup.
-	 *
-	 * For encrypted data use {@link BinaryModule.storeEncrypted}
-	 */
-	store: Store
-
-	/**
-	 * Simple encrypted storage using Android Keystore and SharedPreferences.
-	 */
-	storeEncrypted: Store & {
-		deleteAsync: (key: string) => Promise<null>
-		getAsync: (key: string) => Promise<string | null>
-		setAsync: (key: string, value: string) => Promise<string | null>
-	}
 
 	/** Get exposed environment variables */
 	getEnv: () => object
@@ -105,6 +86,11 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	permissionRequest: (permission: string, code: number) => boolean
 
 	/**
+	 * Send a message to the binary's input stream.
+	 */
+	sendToBinary: (mesasge: string) => boolean
+
+	/**
 	 * Update current app status
 	 *
 	 * PS: Binary module will auto update the app state. Only use this if you would like to manually trigger a change
@@ -115,7 +101,7 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	/**
 	 * Start binary (if not already started)
 	 *
-	 * @param options see {@link StartOptions}
+	 * @param options Persistent options used to start the binary. See {@link StartOptions} for more details.
 	 *
 	 * @retuns binary status
 	 */
@@ -147,10 +133,36 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 * @param code any number for self reference
 	 */
 	storagePermissionRequest: (code: number) => Promise<boolean>
+
+	/**
+	 * Simple unencrypted app-private storage using Android SharedPreferences.
+	 *
+	 * Data may be backed up uncrypted or unencrypted by Android backup depending on the backup provider.
+	 *
+	 * You can also exclude it from backup: https://developer.android.com/identity/data/autobackup.
+	 *
+	 * For encrypted data use {@link BinaryModule.storeEncrypted}
+	 */
+	store: Store
+
+	/**
+	 * Simple encrypted storage using Android Keystore and SharedPreferences.
+	 */
+	storeEncrypted: Store & {
+		deleteAsync: (key: string) => Promise<null>
+		getAsync: (key: string) => Promise<string | null>
+		setAsync: (key: string, value: string) => Promise<string | null>
+	}
 }
 
 export type BinaryModuleEvents = {
+	/**
+	 * Emits each log output stream line by line from the binary.
+	 *
+	 * Event emitted only when enabled using {@link BinaryModule.emitLog}.
+	 */
 	log: (data: {
+		/**  */
 		line: string
 		/**
 		 * UTC timestamp of when the event is emitted
@@ -158,8 +170,17 @@ export type BinaryModuleEvents = {
 		 */
 		timestamp: string
 	}) => void
+
+	/**
+	 * Emits notifications received from the binary's output stream
+	 *
+	 * Event is only emitted when {@link StartOptions.ipcOptions} contains a non-empty tag and individual
+	 * binary output stream line matches the tag.
+	 */
 	notification: (data: {
 		/**
+		 * The JSON string excluding the tag in {@link StartOptions.ipcOptions} and anything before it.
+		 *
 		 * {@link NotificationOptions} JSON string
 		 */
 		notification: string

@@ -1,4 +1,6 @@
+import type { BinaryModule } from './binaryModule'
 import type { BINARY_NOTIFICATION_ID } from './constants'
+import type { StartOptions } from './startOptions'
 
 export type NotificationAction = {
 	/**
@@ -29,7 +31,7 @@ export type NotificationManager = {
 	/**
 	 * Set/update persistent foreground service notification
 	 *
-	 * Options will be merged with {@link StartOptions.notification} if {@link binaryModule.start()} function
+	 * Options will be merged with {@link StartOptions.notification} if {@link BinaryModule.start()} function
 	 * has already been invoked.
 	 *
 	 * @returns Notification id: {@link BINARY_NOTIFICATION_ID}
