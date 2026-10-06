@@ -118,7 +118,7 @@ class BinaryService : Service() {
     private fun handleDeviceStatus(status: DeviceStatus) {
         // emit the status to the react side
         BinaryModule.instance?.emitDeviceStatus(status)
-        sendToProcess(process, "${TAG}[DeviceStatus] ${status.toJson()}")
+        sendToBinary("${TAG}[DeviceStatus] ${status.toJson()}")
 
         val aso = startOptions?.autoStop
         // if (startOptions == null || aso == null) return
@@ -332,16 +332,17 @@ class BinaryService : Service() {
         }
     }
 
-    fun sendToProcess(process: Process?, message: String) Boolean {
+    fun sendToBinary(message: String): Boolean {
         if (process == null) return false
 
-        synchronized(process) {
-            check(process.isAlive) {
+        val p = process!!
+        synchronized(p) {
+            check(p.isAlive) {
                 "Process is no longer running"
             }
 
-            process.outputStream.write((message + "\n").toByteArray(Charsets.UTF_8))
-            process.outputStream.flush()
+            p.outputStream.write((message + "\n").toByteArray(Charsets.UTF_8))
+            p.outputStream.flush()
         }
 
         return true

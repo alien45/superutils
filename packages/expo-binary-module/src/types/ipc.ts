@@ -37,11 +37,13 @@ export type IpcOptions = {
 	/**
 	 * If false, will send the {@link NotificationOptions} as a single line string to the binary's input stream
 	 * prefixed by {@link DEVICE_STATUS_TAG}
+	 *
+	 * Default: `false`
 	 */
-	disableDeviceStatus: boolean
+	disableDeviceStatus?: boolean
 
 	/**
 	 * Options for incoming notifications from the binary
 	 */
-	notification: IpcNotificationOptions
+	notification?: IpcNotificationOptions
 }
