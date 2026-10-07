@@ -88,7 +88,7 @@ const fetch = <
 				opts.body as unknown as Promise<PostBody>,
 				[],
 				(err: Error) =>
-					Promise.reject(
+					Promise.reject<PostBody>(
 						new Error(
 							'Failed to execute body() function. '
 								+ err?.message,
@@ -149,6 +149,7 @@ const fetch = <
 			let result: unknown = await getResult(
 				response,
 				parseAs,
+				opts.method,
 				opts.onDownloadProgress,
 			).catch((err: Error) =>
 				Promise.reject(

@@ -1,5 +1,11 @@
 import { fallbackIfFails, isFn } from '@superutils/core'
-import { ContentType, FetchAs, FetchResult, OnDownloadProgress } from './types'
+import {
+	ContentType,
+	FetchAs,
+	FetchOptions,
+	FetchResult,
+	OnDownloadProgress,
+} from './types'
 
 /**
  * Processes the response body based on the `as` parameter, optionally reporting download progress.
@@ -25,9 +31,12 @@ export const getResult = async <
 >(
 	response: Response,
 	as = FetchAs.json as As,
+	method: FetchOptions['method'],
 	onDownloadProgress?: OnDownloadProgress,
 ): Promise<Result> => {
 	if (!isFn(onDownloadProgress) || as === FetchAs.response) {
+		if (method?.toUpperCase() === 'DELETE')
+			return parseDelete<Result>(response)
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		const parseFunc = response[as as keyof typeof response]
 		if (!isFn(parseFunc)) return response as Result
@@ -77,6 +86,11 @@ export const getResult = async <
 			break
 	}
 	return chunks.toJSON()
+}
+
+const parseDelete = async <T>(response: Response) => {
+	const text = await response.text?.()
+	return (!text ? undefined : JSON.parse(text)) as T
 }
 
 export default getResult
