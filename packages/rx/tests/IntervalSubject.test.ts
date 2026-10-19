@@ -13,7 +13,12 @@ describe('IntervalSubject', () => {
 
 	it('should initialize with initialValue and start immediately if autoStart is true', () => {
 		const initialValue = 10
-		const subject = new IntervalSubject(true, 1000, initialValue, 1)
+		const subject = new IntervalSubject({
+			autoStart: true,
+			delayMs: 1000,
+			initialValue,
+			incrementBy: 1,
+		})
 
 		expect(subject.value).toBe(initialValue)
 		expect(subject.running).toBe(true)
@@ -23,7 +28,11 @@ describe('IntervalSubject', () => {
 	})
 
 	it('should not start if autoStart is false', () => {
-		const subject = new IntervalSubject(false, 1000, 0)
+		const subject = new IntervalSubject({
+			autoStart: false,
+			delayMs: 1000,
+			initialValue: 0,
+		})
 
 		expect(subject.running).toBe(false)
 		vi.advanceTimersByTime(2000)
@@ -31,7 +40,12 @@ describe('IntervalSubject', () => {
 	})
 
 	it('should increment by the specified incrementBy value', () => {
-		const subject = new IntervalSubject(true, 1000, 0, 5)
+		const subject = new IntervalSubject({
+			autoStart: true,
+			delayMs: 1000,
+			incrementBy: 5,
+			initialValue: 0,
+		})
 
 		vi.advanceTimersByTime(1000)
 		expect(subject.value).toBe(5)
@@ -41,7 +55,12 @@ describe('IntervalSubject', () => {
 	})
 
 	it('should correctly pause and resume execution', () => {
-		const subject = new IntervalSubject(true, 1000, 0, 1)
+		const subject = new IntervalSubject({
+			autoStart: true,
+			delayMs: 1000,
+			incrementBy: 1,
+			initialValue: 0,
+		})
 
 		vi.advanceTimersByTime(1000)
 		expect(subject.value).toBe(1)
@@ -60,18 +79,27 @@ describe('IntervalSubject', () => {
 	})
 
 	it('should stop and reset value to 0', () => {
-		const subject = new IntervalSubject(true, 1000, 50, 1)
+		const subject = new IntervalSubject({
+			autoStart: true,
+			delayMs: 1000,
+			incrementBy: 1,
+			initialValue: 50,
+		})
 
 		vi.advanceTimersByTime(1000)
 		expect(subject.value).toBe(51)
 
 		subject.stop()
 		expect(subject.running).toBe(false)
-		expect(subject.value).toBe(0)
+		expect(subject.value).toBe(50)
 	})
 
-	it('should ignore delay updates while running', () => {
-		const subject = new IntervalSubject(true, 1000, 0)
+	it('should ignore delay duration changes until next start/resume', () => {
+		const subject = new IntervalSubject({
+			autoStart: true,
+			delayMs: 1000,
+			initialValue: 0,
+		})
 
 		// Attempting to change delay while running
 		subject.delay = 500
@@ -88,7 +116,7 @@ describe('IntervalSubject', () => {
 
 	it('should prevent multiple interval assignments on redundant start calls', () => {
 		const setIntervalSpy = vi.spyOn(global, 'setInterval')
-		const subject = new IntervalSubject(false, 1000)
+		const subject = new IntervalSubject({ autoStart: false, delayMs: 1000 })
 
 		subject.start()
 		subject.start()
@@ -98,5 +126,41 @@ describe('IntervalSubject', () => {
 
 		subject.stop()
 		expect(subject.running).toBe(false)
+	})
+
+	it('should conditionally pause using "pauseIf()"', () => {
+		const subject = new IntervalSubject(true)
+		const stopAfter = 2
+		subject.pauseIf = value => value === stopAfter
+
+		vi.advanceTimersByTime(stopAfter * 1000)
+		expect(subject.running).toBe(true)
+		expect(subject.value).toBe(stopAfter)
+
+		vi.advanceTimersByTime(1000)
+		expect(subject.running).toBe(false)
+		expect(subject.value).toBe(2)
+
+		vi.advanceTimersByTime(1000)
+		expect(subject.running).toBe(false)
+		expect(subject.value).toBe(2)
+	})
+
+	it('should conditionally stop using "stopIf()"', () => {
+		const subject = new IntervalSubject(true)
+		const stopAfter = 2
+		subject.stopIf = value => value === stopAfter
+
+		vi.advanceTimersByTime(stopAfter * 1000)
+		expect(subject.running).toBe(true)
+		expect(subject.value).toBe(stopAfter)
+
+		vi.advanceTimersByTime(1000)
+		expect(subject.running).toBe(false)
+		expect(subject.value).toBe(0)
+
+		vi.advanceTimersByTime(1000)
+		expect(subject.running).toBe(false)
+		expect(subject.value).toBe(0)
 	})
 })
