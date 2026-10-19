@@ -72,10 +72,9 @@ export class IntervalSubject extends BehaviorSubject<number> {
 	private _intervalId: TimeoutId
 	private _running = false
 
-	public autoStart!: boolean
-	private _delay!: number
-	public incrementBy!: number
-	public initialValue!: number
+	private _delay: number
+	public incrementBy: number
+	public initialValue: number
 	public stopIf?: IntervalSubjectOptions['stopIf']
 	public pauseIf?: IntervalSubjectOptions['pauseIf']
 
@@ -92,13 +91,12 @@ export class IntervalSubject extends BehaviorSubject<number> {
 			: optionsOrAutoStart
 		super(initialValue)
 
-		this.autoStart = autoStart
 		this._delay = delayMs
 		this.incrementBy = incrementBy
 		this.initialValue = initialValue
 		this.pauseIf = pauseIf
 		this.stopIf = stopIf
-		this.autoStart && this.start()
+		autoStart && this.start()
 	}
 
 	get delay() {
