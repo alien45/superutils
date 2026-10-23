@@ -17,7 +17,7 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 * Default: `undefined`
 	 *
 	 * #### Subscribe to log events:
-	 * ```
+	 * ```js
 	 * binaryModule.emitLog(true)
 	 * binaryModule.addListener('log', data => {
 	 * 	console.log('log', data)
@@ -49,21 +49,22 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	getPathAppFilesDir: () => string
 
 	/**
-	 * Get path of the native library directory where the executable binaries (from `jniLibs` in Android) are stored
-	 * for the current device where the app is running.
+	 * Get path of the native library directory where the executable binaries (from `jniLibs` in Android) are stored.
 	 *
-	 * Eg: /data/app/~~.......==/com.your.app-......==/lib/<ARCH>
+	 * Returned path example:
+	 * ```
+	 * "/data/app/~~.......==/<PACKAGE>-......==/lib/<ARCH>"
+	 * ```
 	 *
-	 * `ARCH` here refers to one of the following:
-	 * - `arm64-v8a`: most modern smartphones
-	 * - `x86_64`: devices or most of the emulators running on X86 64 bit
-	 * - `armeabi-v7a`: older Arm based devices
-	 * - `x86`: older x86 based devices
+	 * - `PACKAGE` refers to the package name. Eg:  `com.google.chrome`
+	 * - `ARCH` refers to one of the following:
+	 *   - `arm64-v8a`: most modern smartphones
+	 *   - `x86_64`: devices or most of the emulators running on X86 64 bit
+	 *   - `armeabi-v7a`: older Arm based devices
+	 *   - `x86`: older x86 based devices
 	 *
 	 * **CAUTION: the path returned is not a permanent path and may change on app/device restart/reinstall.
 	 * See {@link EnvEntry} for more details.**
-	 *
-	 *
 	 */
 	getPathJniLibsDir: () => string
 
@@ -103,7 +104,7 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 *
 	 * @param options Persistent options used to start the binary. See {@link StartOptions} for more details.
 	 *
-	 * @retuns binary status
+	 * @returns binary status
 	 */
 	start: (options: StartOptions) => Promise<Status>
 
@@ -116,7 +117,7 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 */
 	startOptions: (options?: Partial<StartOptions>) => StartOptions | null
 
-	/** Stop the binary, foreground service and close persistent notification*/
+	/** Stop the binary, foreground service and close persistent notification */
 	stop: () => Promise<void>
 
 	/** Check if app has read/write permission to external storage */

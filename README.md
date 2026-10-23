@@ -117,7 +117,7 @@ This monorepo contains the following packages. Each is independently versioned a
         <br />
         <b><i>Why:</i></b> simplify management of complex, searchable, and persisted datasets.
       </td>
-      <td id="coverage_store"><div style="color:green">&#128152;&nbsp;100%</div></td>
+      <td id="coverage_store"><div style="color:green">&#128153;&nbsp;98%</div></td>
       <td><a href="https://alien45.github.io/superutils/packages/@superutils/store/">View</a></td>
     </tr>
     <tr>
