@@ -33,6 +33,22 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	getError: () => string | null
 
 	/**
+	 * Get the number of times binary has started since the app launched.
+	 * Can be useful to check if there were any crashes causing auto-restart.
+	 */
+	getStartCount: () => number
+
+	/** Get binary/foreground service status */
+	getStatus: () => Status
+
+	/**
+	 * Get app files storage directory path
+	 *
+	 * Eg: `"/storage/emulated/0/Android/data/app.package.name/files"`
+	 */
+	getPathAppFilesDir: () => string
+
+	/**
 	 * Get path of the native library directory where the executable binaries (from `jniLibs` in Android) are stored
 	 * for the current device where the app is running.
 	 *
@@ -49,23 +65,7 @@ export declare class BinaryModule extends NativeModule<BinaryModuleEvents> {
 	 *
 	 *
 	 */
-	getLibsDirPath: () => string
-
-	/**
-	 * Get the number of times binary has started since the app launched.
-	 * Can be useful to check if there were any crashes causing auto-restart.
-	 */
-	getStartCount: () => number
-
-	/** Get binary/foreground service status */
-	getStatus: () => Status
-
-	/**
-	 * Get app files storage directory path
-	 *
-	 * Eg: `"/storage/emulated/0/Android/data/app.package.name/files"`
-	 */
-	getStoragePath: () => string
+	getPathJniLibsDir: () => string
 
 	notification: NotificationManager
 

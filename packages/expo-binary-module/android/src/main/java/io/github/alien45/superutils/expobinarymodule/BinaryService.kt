@@ -358,7 +358,7 @@ class BinaryService : Service() {
         Log.d(TAG, "starting process...")
 
         status = Status.STARTING
-        val nativeLibDir = applicationInfo.nativeLibraryDir
+        val nativeLibDir = this.applicationInfo.nativeLibraryDir
         val bin = File(nativeLibDir, binaryName)
 
         if (!bin.exists()) {
@@ -370,6 +370,8 @@ class BinaryService : Service() {
 
         val resolvedEnv = mutableMapOf<String, String>()
         val exposed = mutableMapOf<String, String>()
+        val appDataDir = this.getExternalFilesDir(null)
+        Log.d(TAG, "------------------------------appDataDir ${appDataDir}")
 
         for ((key, config) in env) {
             var resolvedValue = if (config.random) {
@@ -378,8 +380,10 @@ class BinaryService : Service() {
                 config.value
             }
 
-            if (resolvedValue.contains(JNI_LIBS_DIR)) {
-                resolvedValue = resolvedValue.replace(JNI_LIBS_DIR, nativeLibDir)
+            if (resolvedValue.contains(DIR_JNI_LIBS)) {
+                resolvedValue = resolvedValue.replace(DIR_JNI_LIBS, nativeLibDir)
+            } else if (resolvedValue.contains(DIR_APP_FILES) && appDataDir != null) {
+                resolvedValue = resolvedValue.replace(DIR_APP_FILES, appDataDir.absolutePath)
             }
             resolvedEnv[key] = resolvedValue
 

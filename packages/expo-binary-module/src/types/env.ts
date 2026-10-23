@@ -1,4 +1,4 @@
-import type { JNI_LIBS_DIR } from './constants'
+import type { DIR_JNI_LIBS } from './constants'
 
 export type BinaryEnv = Record<string, EnvEntry | EnvText>
 
@@ -32,7 +32,7 @@ export type EnvEntry = {
  * Fixed value.
  *
  * To provide the JNI Libs directory as part of an environment variable use the keyword:
- * {@link JNI_LIBS_DIR}.
+ * {@link DIR_JNI_LIBS}.
  *
  * Eg: `[[JNI_LIBS_DIR]]/mylib.so` will be transformed to `/data/app/~~.......==/com.your.app-......==/lib/<ARCH>/mylib.so`
  */

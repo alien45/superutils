@@ -103,10 +103,6 @@ class BinaryModule : Module() {
             BinaryService.error
         }
 
-        Function("getLibsDirPath") { ->
-            getLibsDirPath()
-        }
-
         Function("getStartCount") { ->
             BinaryService.startCount
         }
@@ -115,8 +111,18 @@ class BinaryModule : Module() {
             BinaryService.status
         }
 
-        Function("getStoragePath") { ->
-            getReactContext().getExternalFilesDir(null)
+        Function("getPathAppFilesDir") { ->
+            var filesDir = getReactContext().getExternalFilesDir(null)
+                ?: throw IllegalStateException(
+                    "App file directory path not available"
+                )
+            
+            filesDir.absolutePath
+
+        }
+
+        Function("getPathJniLibsDir") { ->
+            getReactContext().applicationInfo.nativeLibraryDir
         }
 
         Function("notificationSet") { options: NotificationOptions ->
@@ -145,12 +151,12 @@ class BinaryModule : Module() {
         
         AsyncFunction("start") { options: StartOptions? ->
             startOptions = options ?: startOptions
-            if (options == null) {
+            if (startOptions == null) {
                 throw IllegalStateException(
                     "Start options required"
                 )
             }
-            val binaryName = options.binaryName
+            val binaryName = startOptions!!.binaryName
             if (binaryName.isBlank()) {
                 throw IllegalStateException(
                     "Binary name required"
@@ -272,7 +278,7 @@ class BinaryModule : Module() {
     }
 
     fun emitLog(line: String) {
-        Log.d(TAG, "[Emit:log]: ${line}" )
+        // Log.d(TAG, "[Emit:log]: ${line}" )
         sendEvent("log", mapOf(
             "line" to line,
             "timestamp" to Instant.now().toString()
@@ -280,15 +286,11 @@ class BinaryModule : Module() {
     }
 
     fun emitNotification(notificationOptions: String) {
-        Log.d(TAG, "[Emit:notification]: ${notificationOptions}" )
+        // Log.d(TAG, "[Emit:notification]: ${notificationOptions}" )
         sendEvent("notification", mapOf(
             "notification" to notificationOptions,
             "timestamp" to Instant.now().toString()
         ))
-    }
-
-    fun getLibsDirPath(): String {
-        return getReactContext().applicationInfo.nativeLibraryDir 
     }
     
     private fun getReactContext(): Context {
