@@ -126,6 +126,7 @@ class NotificationService(private val context: Context) {
 
         // if uri is provided, open the app 
         action.uri?.let {
+            launchIntent.action = Intent.ACTION_VIEW
             launchIntent.data = Uri.parse(it)
         }
 

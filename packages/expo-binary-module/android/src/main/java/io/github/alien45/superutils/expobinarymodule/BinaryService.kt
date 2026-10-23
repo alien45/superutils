@@ -371,7 +371,6 @@ class BinaryService : Service() {
         val resolvedEnv = mutableMapOf<String, String>()
         val exposed = mutableMapOf<String, String>()
         val appDataDir = this.getExternalFilesDir(null)
-        Log.d(TAG, "------------------------------appDataDir ${appDataDir}")
 
         for ((key, config) in env) {
             var resolvedValue = if (config.random) {
