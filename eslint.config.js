@@ -1,7 +1,8 @@
+import { defineConfig } from 'eslint/config'
 import js from '@eslint/js'
 import prettierConfig from 'eslint-config-prettier'
+import jsdoc from 'eslint-plugin-jsdoc'
 import tseslint from 'typescript-eslint'
-import { defineConfig } from 'eslint/config'
 
 const languageOptions = {
 	parserOptions: {
@@ -29,9 +30,7 @@ export default defineConfig(
 
 	// TypeScript specific rules for TS files
 	...tseslint.configs.recommendedTypeChecked,
-	{
-		languageOptions,
-	},
+	{ languageOptions },
 	...tseslint.configs.stylisticTypeChecked,
 	{
 		files: ['./packages/**/*.{ts,tsx}'],
@@ -63,4 +62,13 @@ export default defineConfig(
 	},
 	// This must be the last config to override other configs
 	prettierConfig,
+	{
+		plugins: { jsdoc },
+		settings: {
+			jsdoc: { mode: 'typescript' },
+		},
+		rules: {
+			'jsdoc/no-undefined-types': 'error',
+		},
+	},
 )

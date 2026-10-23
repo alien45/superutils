@@ -1,9 +1,8 @@
-import {
+import { filter, find, search } from '@superutils/core'
+import type {
 	DropFirst,
-	filter,
-	find,
 	FindOptions,
-	search,
+	SearchOptions,
 	ValueOrPromise,
 } from '@superutils/core'
 import { BehaviorSubject, Subject } from 'rxjs'
@@ -17,7 +16,7 @@ import type {
 	Store_ToJSON,
 	Store_Type,
 } from './types'
-import { IStore_ValidatorParams, Store_ValidatorFactory } from './validate'
+import type { IStore_ValidatorParams, Store_ValidatorFactory } from './validate'
 
 /** Store properties accepted in {@link Store_Options} */
 export type Store_OptionKeys =
@@ -173,11 +172,11 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * A callback function executed whenever a data change occurs within the storage.
 	 *
 	 * This hook allows for reactive side-effects. If the callback throws an error or returns a
-	 * rejected Promise, the exception is caught gracefully and redirected to the {@link onError}
+	 * rejected Promise, the exception is caught gracefully and redirected to the {@link IStore.onError}
 	 * callback with the type {@link Store_OnErrorType.onChange}.
 	 *
 	 * Note: Execution of this callback is managed by internal subscriptions and will stop
-	 * firing once {@link unsubscribe} is called.
+	 * firing once {@link IStore.unsubscribe} is called.
 	 */
 	onChange?: (
 		this: IStore<Key, Value, CacheDisabled>,
@@ -190,7 +189,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * It captures failures in the following areas:
 	 * - Data parsing and serialization (JSON or custom logic).
 	 * - Storage access (e.g., `localStorage` quota or permission errors).
-	 * - Execution of user-provided callbacks like {@link onChange}.
+	 * - Execution of user-provided callbacks like {@link IStore.onChange}.
 	 *
 	 * **Note:** If this handler itself throws an error, the exception is
 	 * ignored gracefully to prevent application crashes during storage cycles.
@@ -205,7 +204,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * A callback to customize the deserialization of data read from storage.
 	 *
 	 * This allows you to transform the raw string from the underlying storage back into a
-	 * `Map<Key, Value>`. It serves as the functional inverse of {@link stringify}.
+	 * `Map<Key, Value>`. It serves as the functional inverse of {@link IStore.stringify}.
 	 *
 	 *
 	 * **Fallback Behavior:**
@@ -214,8 +213,10 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - If the function throws an error, it will use and empty map.
 	 *
 	 * **Error Triggers:**
-	 * - If this custom `parse` function fails: {@link onError} is triggered with {@link Store_OnErrorType.parse}.
-	 * - If the default `JSON.parse` fallback fails: {@link onError} is triggered with {@link Store_OnErrorType.parse_json}.
+	 * - If this custom `parse` function fails: {@link IStore.onError} is triggered with
+	 * {@link Store_OnErrorType.parse}.
+	 * - If the default `JSON.parse` fallback fails: {@link IStore.onError} is triggered with
+	 * {@link Store_OnErrorType.parse_json}.
 	 */
 	parse?: Store_Parse<Map<Key, Value>, IStore<Key, Value, CacheDisabled>>
 
@@ -223,7 +224,7 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * A callback function to customize the serialization of data before it is written to storage.
 	 *
 	 * This allows you to transform the data `Map<Key, Value>` into a string format suitable
-	 * for the underlying storage (e.g., JSON). It serves as the functional inverse of {@link parse}.
+	 * for the underlying storage (e.g., JSON). It serves as the functional inverse of {@link IStore.parse}.
 	 *
 	 * Use this to sanitize data, remove circular references, or optimize the storage size by
 	 * only persisting necessary fields.
@@ -234,8 +235,9 @@ export interface IStore<Key, Value, CacheDisabled extends boolean = false> {
 	 * - If the function throws an error, it will use and empty string.
 	 *
 	 * **Error Triggers:**
-	 * - If this custom `stringify` function fails: {@link onError} is triggered with {@link Store_OnErrorType.stringify}.
-	 * - If the default `JSON.stringify` fallback fails: {@link onError} is triggered with
+	 * - If this custom `stringify` function fails: {@link IStore.onError} is triggered with
+	 * {@link Store_OnErrorType.stringify}.
+	 * - If the default `JSON.stringify` fallback fails: {@link IStore.onError} is triggered with
 	 * {@link Store_OnErrorType.stringify_json}.
 	 *
 	 * @param data a map of all values stored in this storage

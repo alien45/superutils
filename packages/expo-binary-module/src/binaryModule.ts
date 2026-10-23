@@ -6,10 +6,7 @@ import type {
 	NotificationManager,
 } from './types'
 import { BINARY_NOTIFICATION_ID, ID_PREFIX, Status } from './types'
-import type {
-	BinaryModuleInternal,
-	NotificationInernal,
-} from './types/internal'
+import type { BinaryModuleInternal } from './types/internal'
 
 // ID to be auto incremented for non-binary notifications. Excludes BINARY_NOTIFICATION_ID.
 let lastId = BINARY_NOTIFICATION_ID
@@ -70,7 +67,7 @@ binaryModule.start = async options => {
 			notification: {
 				...options.notification,
 				id: BINARY_NOTIFICATION_ID,
-			} as NotificationInernal,
+			},
 		})
 		const { startupTimeout = 30 } = options
 		const delay = 100

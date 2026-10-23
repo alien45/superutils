@@ -53,7 +53,8 @@
 		"build": "expo-module build",
 		"clean": "expo-module clean",
 		"configure": "expo-module configure",
-		"lint": "expo-module lint",
+		"_lint:expo": "expo-module lint",
+		"lint": "cd ../../ && npm run eslint \"packages/expo-binary-module/src/**/*.{ts,tsx}\"",
 		"npm:dry-run": "npm pack --dry-run",
 		"prepublishOnly": "expo-module prepublishOnly",
 		"test": "expo-module test"

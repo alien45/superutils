@@ -1,3 +1,4 @@
+import { AppState } from 'react-native'
 import type { BINARY_NOTIFICATION_ID, DEVICE_STATUS_TAG } from './constants'
 import type { NotificationOptions } from './notification'
 

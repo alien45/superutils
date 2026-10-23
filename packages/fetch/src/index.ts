@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // Re-export fetch relevant & useful things from '@superutils/promise' for ease of use
 export {
 	ResolveError,

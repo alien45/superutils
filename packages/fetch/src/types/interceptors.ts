@@ -1,6 +1,7 @@
-import { ValueOrPromise } from '@superutils/core'
+import type { ValueOrPromise } from '@superutils/core'
 import { FetchError } from './FetchError'
-import { FetchArgs, FetchArgsInterceptor } from './options'
+import type { FetchArgs, FetchArgsInterceptor, FetchOptions } from './options'
+import { FetchAs } from './constants'
 
 /**
  * Fetch error interceptor to be invoked whenever an exception occurs.

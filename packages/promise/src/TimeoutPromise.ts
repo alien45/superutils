@@ -8,7 +8,10 @@ import type {
 	TimeoutOptions,
 } from './types'
 
-/** Timeout duration (in milliseconds) used as a fallback when positive number is not provided to {@link timeout} */
+/**
+ * Timeout duration (in milliseconds) used as a fallback when positive number is not provided
+ * to {@link TimeoutOptions.timeout}
+ */
 export const TIMEOUT_FALLBACK = 10_000
 /** Node.js setTimeout limit is 2147483647 (2^31-1). Larger values fire immediately. */
 export const TIMEOUT_MAX = 2147483647
