@@ -15,7 +15,7 @@ describe('IntervalSubject', () => {
 		const initialValue = 10
 		const subject = new IntervalSubject({
 			autoStart: true,
-			delayMs: 1000,
+			delay: 1000,
 			initialValue,
 			incrementBy: 1,
 		})
@@ -30,7 +30,7 @@ describe('IntervalSubject', () => {
 	it('should not start if autoStart is false', () => {
 		const subject = new IntervalSubject({
 			autoStart: false,
-			delayMs: 1000,
+			delay: 1000,
 			initialValue: 0,
 		})
 
@@ -42,7 +42,7 @@ describe('IntervalSubject', () => {
 	it('should increment by the specified incrementBy value', () => {
 		const subject = new IntervalSubject({
 			autoStart: true,
-			delayMs: 1000,
+			delay: 1000,
 			incrementBy: 5,
 			initialValue: 0,
 		})
@@ -57,7 +57,7 @@ describe('IntervalSubject', () => {
 	it('should correctly pause and resume execution', () => {
 		const subject = new IntervalSubject({
 			autoStart: true,
-			delayMs: 1000,
+			delay: 1000,
 			incrementBy: 1,
 			initialValue: 0,
 		})
@@ -81,7 +81,7 @@ describe('IntervalSubject', () => {
 	it('should stop and reset value to 0', () => {
 		const subject = new IntervalSubject({
 			autoStart: true,
-			delayMs: 1000,
+			delay: 1000,
 			incrementBy: 1,
 			initialValue: 50,
 		})
@@ -97,7 +97,7 @@ describe('IntervalSubject', () => {
 	it('should ignore delay duration changes until next start/resume', () => {
 		const subject = new IntervalSubject({
 			autoStart: true,
-			delayMs: 1000,
+			delay: 1000,
 			initialValue: 0,
 		})
 
@@ -116,7 +116,7 @@ describe('IntervalSubject', () => {
 
 	it('should prevent multiple interval assignments on redundant start calls', () => {
 		const setIntervalSpy = vi.spyOn(global, 'setInterval')
-		const subject = new IntervalSubject({ autoStart: false, delayMs: 1000 })
+		const subject = new IntervalSubject({ autoStart: false, delay: 1000 })
 
 		subject.start()
 		subject.start()

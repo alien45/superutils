@@ -166,9 +166,10 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		if (this._running) return this
 		this._running = true
 
-		const start = performance.now()
 		const delay = this._delay
 		let lastTick = 0
+		const start = performance.now()
+		const startValue = this.value
 
 		this._intervalId = setInterval(() => {
 			const tick = Math.floor((performance.now() - start) / delay)
@@ -177,7 +178,7 @@ export class IntervalSubject extends BehaviorSubject<number> {
 			lastTick = tick
 
 			const next = this.ensureIncrement
-				? this.initialValue + tick * this.incrementBy
+				? startValue + tick * this.incrementBy
 				: this.value + this.incrementBy
 
 			!this.checkDone(next) && this.next(next)
