@@ -1,15 +1,33 @@
 import { isBool, TimeoutId } from '@superutils/core'
 import { BehaviorSubject } from 'rxjs'
 
-export type IntervalSubjectOptions = {
+export type IntervalOptions = {
 	/** Whether to start the timer immediately. Default: `false` */
 	autoStart?: boolean
+
 	/** Interval duration in milliseconds. Default: `1000` */
-	delayMs?: number
+	delay?: number
+
+	/**
+	 * When true, derive each emitted value from the elapsed time since the interval
+	 * started, rather than incrementing from the most recently emitted value.
+	 *
+	 * This keeps the value aligned with the number of intervals expected to have
+	 * elapsed if timer callbacks are delayed. Missed increments may be applied in a
+	 * single update; callbacks are not replayed for each missed interval.
+	 *
+	 * This is useful when the browser or device throttles timeouts/intervals.
+	 *
+	 * Default: `true`
+	 */
+	ensureIncrement?: boolean
+
 	/** Initial counter value. Default: `0` */
 	initialValue?: number
+
 	/** Number to increment the counter by. Default: `1` */
 	incrementBy?: number
+
 	/**
 	 * Optional, callback invoked before every interval to determine whether timer should pause or continue running.
 	 *
@@ -22,6 +40,7 @@ export type IntervalSubjectOptions = {
 		currentValue: number,
 		nextValue: number,
 	) => boolean
+
 	/**
 	 * Optional, callback invoked before every interval to determine whether timer should stop or continue running.
 	 *
@@ -71,17 +90,19 @@ export type IntervalSubjectOptions = {
 export class IntervalSubject extends BehaviorSubject<number> {
 	private _intervalId: TimeoutId
 	private _running = false
-
 	private _delay: number
-	public incrementBy: number
-	public initialValue: number
-	public stopIf?: IntervalSubjectOptions['stopIf']
-	public pauseIf?: IntervalSubjectOptions['pauseIf']
 
-	constructor(optionsOrAutoStart = {} as IntervalSubjectOptions | boolean) {
+	public ensureIncrement: boolean
+	public incrementBy!: number
+	public initialValue!: number
+	public stopIf?: IntervalOptions['stopIf']
+	public pauseIf?: IntervalOptions['pauseIf']
+
+	constructor(optionsOrAutoStart = {} as IntervalOptions | boolean) {
 		const {
 			autoStart = false,
-			delayMs = 1000,
+			delay = 1000,
+			ensureIncrement = true,
 			initialValue = 0,
 			incrementBy = 1,
 			pauseIf,
@@ -91,14 +112,32 @@ export class IntervalSubject extends BehaviorSubject<number> {
 			: optionsOrAutoStart
 		super(initialValue)
 
-		this._delay = delayMs
-		this.incrementBy = incrementBy
-		this.initialValue = initialValue
+		this._delay = delay
+		this.ensureIncrement = ensureIncrement!
+		this.incrementBy = incrementBy!
+		this.initialValue = initialValue!
 		this.pauseIf = pauseIf
 		this.stopIf = stopIf
 		autoStart && this.start()
 	}
 
+	private checkDone = (next: number) => {
+		const stop = !!this.stopIf?.call(this, this.value, next)
+		if (stop === true) {
+			this.stop()
+			return true
+		}
+
+		const pause = this.pauseIf?.call(this, this.value, next)
+		if (pause === true) {
+			this.pause()
+			return true
+		}
+
+		return false
+	}
+
+	/** Interval duration in milliseconds. Default: `1000` */
 	get delay() {
 		return this._delay
 	}
@@ -112,6 +151,7 @@ export class IntervalSubject extends BehaviorSubject<number> {
 		return this._running
 	}
 
+	/** Pauses */
 	pause = () => {
 		clearInterval(this._intervalId)
 
@@ -123,19 +163,26 @@ export class IntervalSubject extends BehaviorSubject<number> {
 
 	/** Start the counter if not already started */
 	start = () => {
-		if (!this._running) {
-			this._running = true
-			this._intervalId = setInterval(() => {
-				const next = this.value + this.incrementBy
-				const stop = this.stopIf?.call(this, this.value, next)
-				if (stop === true) return this.stop()
+		if (this._running) return this
+		this._running = true
 
-				const pause = this.pauseIf?.call(this, this.value, next)
-				if (pause === true) return this.pause()
+		const start = performance.now()
+		const delay = this._delay
+		let lastTick = 0
 
-				this.next(this.value + this.incrementBy)
-			}, this._delay)
-		}
+		this._intervalId = setInterval(() => {
+			const tick = Math.floor((performance.now() - start) / delay)
+			if (tick <= lastTick) return
+
+			lastTick = tick
+
+			const next = this.ensureIncrement
+				? this.initialValue + tick * this.incrementBy
+				: this.value + this.incrementBy
+
+			!this.checkDone(next) && this.next(next)
+		}, delay)
+
 		return this
 	}
 

@@ -128,6 +128,11 @@ class NotificationService(private val context: Context) {
         action.uri?.let {
             launchIntent.action = Intent.ACTION_VIEW
             launchIntent.data = Uri.parse(it)
+            //
+            // launchIntent.addFlags(
+            //     Intent.FLAG_ACTIVITY_CLEAR_TOP or
+            //         Intent.FLAG_ACTIVITY_SINGLE_TOP
+            // )
         }
 
         return PendingIntent.getActivity(
